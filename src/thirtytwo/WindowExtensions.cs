@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Buffers;
-using System.ComponentModel.Design;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Support;
+using Windows.Win32.UI.Controls;
 
 namespace Windows;
 
@@ -101,7 +101,7 @@ public static unsafe partial class WindowExtensions
     /// <summary>
     ///  Gets the font currently set for the window, if any.
     /// </summary>
-    public static HFONT GetFontHandle<T>(this T window)
+    public static HFONT GetFont<T>(this T window)
         where T : IHandle<HWND>
     {
         HFONT font = new(window.SendMessage(MessageType.GetFont));
@@ -227,6 +227,18 @@ public static unsafe partial class WindowExtensions
     }
 
     /// <summary>
+    ///  Dimensions of the bounding rectangle of the specified <paramref name="window"/>
+    ///  in screen coordinates relative to the upper-left corner.
+    /// </summary>
+    public static unsafe Rectangle GetWindowRectangle<T>(this T window) where T : IHandle<HWND>
+    {
+        Unsafe.SkipInit(out RECT rect);
+        Error.ThrowLastErrorIfFalse(Interop.GetWindowRect(window.Handle, &rect));
+        GC.KeepAlive(window.Wrapper);
+        return rect;
+    }
+
+    /// <summary>
     ///  Enumerates child windows for the given <paramref name="parent"/>.
     /// </summary>
     /// <param name="callback">
@@ -268,14 +280,58 @@ public static unsafe partial class WindowExtensions
         GC.KeepAlive(window.Wrapper);
     }
 
-    public static unsafe MessageBoxResult MessageBox<T>(
+    private const MessageBoxStyles TaskDialogValidMessageBoxStyles =
+        MessageBoxStyles.Ok
+        | MessageBoxStyles.OkCancel
+        | MessageBoxStyles.RetryCancel
+        | MessageBoxStyles.YesNo
+        | MessageBoxStyles.YesNoCancel
+        | MessageBoxStyles.IconAsterisk
+        | MessageBoxStyles.IconExclamation
+        | MessageBoxStyles.IconInformation
+        | MessageBoxStyles.IconError;
+
+    public static unsafe DialogResult TaskDialog<T>(
+        this T owner,
+        string? mainInstruction = null,
+        string? content = null,
+        string? title = null,
+        TaskDialogButtons buttons = TaskDialogButtons.Ok,
+        TaskDialogIcon? icon = null)
+        where T : IHandle<HWND>
+    {
+        using var themeScope = Application.ThemingScope;
+        Application.EnsureDpiAwareness();
+
+        fixed (char* mi = mainInstruction)
+        fixed (char* c = content)
+        fixed (char* t = title)
+        {
+            int button;
+            Interop.TaskDialog(
+                owner.Handle,
+                HINSTANCE.Null,
+                t,
+                mi,
+                c,
+                (TASKDIALOG_COMMON_BUTTON_FLAGS)buttons,
+                icon.HasValue ? (PWSTR)(char*)(nint)icon.Value : default,
+                &button).ThrowOnFailure();
+            return (DialogResult)button;
+        }
+    }
+
+    public static unsafe DialogResult MessageBox<T>(
         this T owner,
         string text,
         string caption,
-        MessageBoxStyle style = MessageBoxStyle.Ok)
+        MessageBoxStyles style = MessageBoxStyles.Ok)
         where T : IHandle<HWND>
     {
-        MessageBoxResult result = (MessageBoxResult)Interop.MessageBoxEx(
+        using var themeScope = Application.ThemingScope;
+        Application.EnsureDpiAwareness();
+
+        DialogResult result = (DialogResult)Interop.MessageBoxEx(
             owner.Handle,
             text,
             caption,
@@ -293,11 +349,36 @@ public static unsafe partial class WindowExtensions
 
     public static unsafe DeviceContext BeginPaint<T>(this T window)
         where T : IHandle<HWND>
+        => window.BeginPaint(out _);
+
+    public static unsafe DeviceContext BeginPaint<T>(this T window, out Rectangle paintBounds)
+        where T : IHandle<HWND>
     {
         PAINTSTRUCT paintStruct = default;
         Interop.BeginPaint(window.Handle, &paintStruct);
         DeviceContext context = DeviceContext.Create(ref paintStruct, window);
+        paintBounds = paintStruct.rcPaint;
         GC.KeepAlive(window.Wrapper);
         return context;
     }
+
+    public static unsafe bool InvalidateRectangle<T>(this T window, Rectangle rectangle, bool erase)
+        where T : IHandle<HWND>
+    {
+        RECT rect = rectangle;
+        bool result = Interop.InvalidateRect(window.Handle, &rect, erase);
+        GC.KeepAlive(window.Wrapper);
+        return result;
+    }
+
+    public static unsafe bool Invalidate<T>(this T window, bool erase = true)
+        where T : IHandle<HWND>
+    {
+        bool result = Interop.InvalidateRect(window.Handle, (RECT*)null, erase);
+        GC.KeepAlive(window.Wrapper);
+        return result;
+    }
+
+    public static LayoutBinder AddLayoutHandler(this Window window, ILayoutHandler handler)
+        => new(window, handler);
 }

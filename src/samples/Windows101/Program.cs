@@ -22,8 +22,8 @@ internal class Program
     [STAThread]
     private static void Main()
     {
-        //  You can just show message boxes to interact
-        Application.MessageBox("Hello World.", caption: "Hello");
+        //  You can just show dialog boxes to interact
+        Application.ShowTaskDialog("Hello World", "Hello from .NET and Win32!", title: "Hello");
 
         //  Or create actual Window classes and run them. A Window Class in Windows
         //  includes a few basic things:

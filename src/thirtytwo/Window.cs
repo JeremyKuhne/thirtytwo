@@ -1,24 +1,25 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Concurrent;
 using System.Drawing;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using Windows.Support;
 
 namespace Windows;
 
-public unsafe class Window : IDisposable, IHandle<HWND>, ILayoutHandler
+public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
 {
     // Stash the delegate to keep it from being collected
     private readonly WindowProcedure _windowProcedure;
     private readonly WNDPROC _priorWindowProcedure;
-
     private readonly WindowClass _windowClass;
-    private readonly GCHandle _gcHandle;
+
+    private string? _text;
+
+    private static readonly ConcurrentDictionary<HWND, WeakReference<Window>> s_windows = new();
 
     private static readonly HFONT s_defaultFont = CreateDefaultFont();
-    private string? _text;
 
     public static Rectangle DefaultBounds { get; }
         = new(Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT);
@@ -43,14 +44,7 @@ public unsafe class Window : IDisposable, IHandle<HWND>, ILayoutHandler
             _windowClass.Register();
         }
 
-        // Enable High DPI awareness if not enabled already. Requires Windows 10.
-        if (Interop.GetAwarenessFromDpiAwarenessContext(Interop.GetThreadDpiAwarenessContext()) == DPI_AWARENESS.DPI_AWARENESS_UNAWARE
-            && Interop.SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2).IsNull)
-        {
-            // Fall back from V2 if needed
-            Interop.SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
-        }
-
+        _text = text;
         Handle = _windowClass.CreateWindow(
             bounds,
             text,
@@ -59,6 +53,8 @@ public unsafe class Window : IDisposable, IHandle<HWND>, ILayoutHandler
             parentWindow?.Handle ?? default,
             parameters,
             menuHandle);
+
+        s_windows[Handle] = new(this);
 
         if (parentWindow is null)
         {
@@ -70,7 +66,7 @@ public unsafe class Window : IDisposable, IHandle<HWND>, ILayoutHandler
             deviceContext.SetWorldTransform(ref transform);
         }
 
-        if (this.GetFontHandle().IsNull)
+        if (this.GetFont().IsNull)
         {
             // Default system font is applied, use a nicer (ClearType) font
             Handle.SetFont(s_defaultFont);
@@ -78,10 +74,6 @@ public unsafe class Window : IDisposable, IHandle<HWND>, ILayoutHandler
 
         _windowProcedure = WindowProcedureInternal;
         _priorWindowProcedure = Handle.SetWindowProcedure(_windowProcedure);
-
-        // Stash our managed pointer so we can find the Window from an HWND
-        _gcHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-        Handle.SetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_USERDATA, GCHandle.ToIntPtr(_gcHandle));
     }
 
     private static HFONT CreateDefaultFont()
@@ -170,14 +162,53 @@ public unsafe class Window : IDisposable, IHandle<HWND>, ILayoutHandler
         }
     }
 
-    public void Dispose()
+    /// <summary>
+    ///  Try to get the <see cref="Window"/> from the given <paramref name="handle"/>. Walks parent windows
+    ///  if there is no matching <see cref="Window"/> and <paramref name="walkParents"/> is <see langword="true"/>.
+    /// </summary>
+    public static Window? FromHandle<T>(T handle, bool walkParents = false)
+        where T : IHandle<HWND>
     {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
+        if (handle is null || handle.Handle.IsNull)
+        {
+            return null;
+        }
+
+        if (handle is Window window)
+        {
+            return window;
+        }
+
+        HWND hwnd = handle.Handle;
+        if (s_windows.TryGetValue(hwnd, out var weakReference))
+        {
+            if (weakReference.TryGetTarget(out Window? found))
+            {
+                return found;
+            }
+            else
+            {
+                Debug.Fail("Dead weak ref. Window.Dispose not called.");
+            }
+        }
+
+        if (!walkParents)
+        {
+            return null;
+        }
+
+        hwnd = Interop.GetAncestor(hwnd, GET_ANCESTOR_FLAGS.GA_PARENT);
+        return hwnd.IsNull ? null : FromHandle(hwnd, walkParents: true);
     }
 
-    protected unsafe virtual void Dispose(bool disposing)
+    protected override void Dispose(bool disposing)
     {
+        if (disposing)
+        {
+            bool success = s_windows.TryRemove(Handle, out _);
+            Debug.Assert(success);
+        }
+
         this.SetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, (nint)(void*)_priorWindowProcedure.Value);
     }
 

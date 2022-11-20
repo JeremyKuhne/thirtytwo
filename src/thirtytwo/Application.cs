@@ -2,28 +2,72 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
+using System.Runtime.InteropServices;
 using Windows.Support;
 
 namespace Windows;
 
 public unsafe static class Application
 {
-    public static MessageBoxResult MessageBox(
-        string text,
-        string caption,
-        MessageBoxStyle style = MessageBoxStyle.Ok)
+    private static ActivationContext? s_visualStylesContext;
+    internal static ActivationScope ThemingScope => new(GetStylesContext());
+
+    internal static void EnsureDpiAwareness()
     {
-        return HWND.Null.MessageBox(text, caption, style);
+        // Enable High DPI awareness if not enabled already. Requires Windows 10.
+        if (Interop.GetAwarenessFromDpiAwarenessContext(Interop.GetThreadDpiAwarenessContext()) == DPI_AWARENESS.DPI_AWARENESS_UNAWARE
+            && Interop.SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2).IsNull)
+        {
+            // Fall back from V2 if needed
+            Interop.SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+        }
     }
 
-    public static MessageBoxResult MessageBox<T>(
+    public static DialogResult ShowTaskDialog(
+        string? mainInstruction = null,
+        string? content = null,
+        string? title = null,
+        TaskDialogButtons buttons = TaskDialogButtons.Ok,
+        TaskDialogIcon? icon = null)
+    {
+        HWND active = Interop.GetActiveWindow();
+        return new HandleRef<HWND>(Window.FromHandle(active), active).TaskDialog(mainInstruction, content, title, buttons, icon);
+    }
+
+    public static DialogResult ShowTaskDialog<T>(
+        T owner,
+        string? mainInstruction = null,
+        string? content = null,
+        string? title = null,
+        TaskDialogButtons buttons = TaskDialogButtons.Ok,
+        TaskDialogIcon? icon = null)
+        where T : IHandle<HWND>
+    {
+        return owner.TaskDialog(mainInstruction, content, title, buttons, icon);
+    }
+
+    // TaskDialog is not a 1-1 replacement for MessageBox. There is very little reason to use MessageBox, but leaving
+    // this here to help discovery of ShowTaskDialog.
+
+    [Obsolete($"{nameof(ShowMessageBox)} does not support high DPI, use {nameof(ShowTaskDialog)} instead.", error: false)]
+    public static DialogResult ShowMessageBox(
+        string text,
+        string caption,
+        MessageBoxStyles style = MessageBoxStyles.Ok)
+    {
+        HWND active = Interop.GetActiveWindow();
+        return new HandleRef<HWND>(Window.FromHandle(active), active).MessageBox(text, caption, style);
+    }
+
+    [Obsolete($"{nameof(ShowMessageBox)} does not support high DPI, use {nameof(ShowTaskDialog)} instead.", error: false)]
+    public static DialogResult ShowMessageBox<T>(
         T owner,
         string text,
         string caption,
-        MessageBoxStyle style = MessageBoxStyle.Ok)
+        MessageBoxStyles style = MessageBoxStyles.Ok)
         where T : IHandle<HWND>
     {
-        return owner.Handle.MessageBox(text, caption, style);
+        return owner.MessageBox(text, caption, style);
     }
 
     public static void Run(
@@ -98,5 +142,34 @@ public unsafe static class Application
         }
 
         return null;
+    }
+
+    /// <summary>
+    ///  If <see langword="true"/>, styles support for common controls will be used for newly created controls. If
+    ///  <see langword="false"/> the application manifest setting (if any) will be used.
+    /// </summary>
+    public static bool UseVisualStyles { get; set; } = true;
+
+    private static ActivationContext? GetStylesContext()
+    {
+        if (!UseVisualStyles)
+        {
+            return null;
+        }
+
+        if (s_visualStylesContext is not null)
+        {
+            return s_visualStylesContext;
+        }
+
+        HINSTANCE instance = (HINSTANCE)Marshal.GetHINSTANCE(typeof(Application).Module);
+        if (!instance.IsNull && instance != (HINSTANCE)(-1))
+        {
+            // We have a native module, point to our native embedded manifest resource.
+            // CSC embeds DLL manifests as native resource ID 2.
+            s_visualStylesContext = new ActivationContext(instance, nativeResourceManifestID: 2);
+        }
+
+        return s_visualStylesContext;
     }
 }

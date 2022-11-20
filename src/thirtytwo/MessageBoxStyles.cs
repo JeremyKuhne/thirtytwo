@@ -7,7 +7,7 @@ namespace Windows;
 ///  <inheritdoc cref="Interop.MessageBoxEx(HWND, PCWSTR, PCWSTR, MESSAGEBOX_STYLE, ushort)"/>
 /// </remarks>
 [Flags]
-public enum MessageBoxStyle : uint
+public enum MessageBoxStyles : uint
 {
     /// <summary>
     ///  One OK button, default.

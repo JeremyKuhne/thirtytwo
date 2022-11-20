@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Runtime.CompilerServices;
 using Windows.Support;
 
 namespace Windows.Win32.Graphics.Gdi;
@@ -65,6 +66,28 @@ public unsafe partial struct HFONT : IHandle<HFONT>, IDisposable
                 (uint)((byte)pitch | (byte)family),
                 t);
         }
+    }
+
+    public LOGFONTW GetLogicalFont()
+    {
+        Unsafe.SkipInit(out LOGFONTW logfont);
+        if (Interop.GetObject(this, sizeof(LOGFONTW), &logfont) == 0)
+        {
+            logfont = default;
+        }
+        return logfont;
+    }
+
+    public FontQuality GetQuality()
+    {
+        LOGFONTW logfont = GetLogicalFont();
+        return (FontQuality)logfont.lfQuality;
+    }
+
+    public string GetFaceName()
+    {
+        LOGFONTW logfont = GetLogicalFont();
+        return logfont.lfFaceName.AsReadOnlySpan().SliceAtNull().ToString();
     }
 
     public void Dispose()

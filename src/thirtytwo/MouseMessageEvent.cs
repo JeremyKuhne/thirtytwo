@@ -8,10 +8,8 @@ namespace Windows;
 /// <summary>
 ///  Delegate for processing mouse messages.
 /// </summary>
-/// <param name="sender">The class invoking the delegate.</param>
 public delegate void MouseMessageEvent(
-    object sender,
-    HWND window,
+    Window window,
     Point position,
     MouseButton button,
     MouseKey mouseState);

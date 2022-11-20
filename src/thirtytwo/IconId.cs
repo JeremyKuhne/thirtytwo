@@ -5,6 +5,8 @@ namespace Windows;
 
 public enum IconId : uint
 {
+    // Unfortunately the metadata defines most of these as PCWSTR, which has CsWin32 defining them as statics.
+
     /// <summary>
     ///  Application icon. (IDI_APPLICATION)
     /// </summary>
@@ -43,15 +45,15 @@ public enum IconId : uint
     /// <summary>
     ///  Warning icon (exclamation point). (IDI_WARNING)
     /// </summary>
-    Warning = Exclamation,
+    Warning = Interop.IDI_WARNING,
 
     /// <summary>
     ///  Error icon (hand). (IDI_ERROR)
     /// </summary>
-    Error = Hand,
+    Error = Interop.IDI_ERROR,
 
     /// <summary>
     ///  Information icon (asterisk). (IDI_INFORMATION)
     /// </summary>
-    Information = Asterisk
+    Information = Interop.IDI_INFORMATION
 }

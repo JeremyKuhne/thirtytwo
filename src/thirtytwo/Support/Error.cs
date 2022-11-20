@@ -22,7 +22,7 @@ public unsafe static class Error
     public static void Throw(this WIN32_ERROR error, string? path = null) => throw error.GetException(path);
 
     [DoesNotReturn]
-    public static void ThrowLastError(string? path = null)  => Throw(GetLastError(), path);
+    public static void ThrowLastError(string? path = null) => Throw(GetLastError(), path);
 
     /// <summary>
     ///  Throw the last error code from windows if <paramref name="result"/> is false.

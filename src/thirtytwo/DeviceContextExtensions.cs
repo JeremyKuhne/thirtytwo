@@ -107,7 +107,7 @@ public unsafe static class DeviceContextExtensions
                 int result = Interop.DrawTextEx(context.Handle, (PWSTR)c, text.Length, bounds, 0, dtp);
                 if (result == 0)
                 {
-                    Error.ThrowLastError();
+                    Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_SUCCESS);
                 }
 
                 GC.KeepAlive(context.Wrapper);

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Concurrent;
 using System.Drawing;
 using Windows.Support;
 
@@ -142,6 +143,9 @@ public unsafe partial class WindowClass : IDisposable
         fixed (char* wn = windowName)
         fixed (char* cn = _className)
         {
+            using var themeScope = Application.ThemingScope;
+            Application.EnsureDpiAwareness();
+
             HWND hwnd = Interop.CreateWindowEx(
                 (WINDOW_EX_STYLE)extendedStyle,
                 Atom.IsValid ? (char*)Atom.Value : cn,
