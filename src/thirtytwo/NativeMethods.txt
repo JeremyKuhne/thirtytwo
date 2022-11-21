@@ -5,6 +5,7 @@ BS_*
 CallWindowProc
 CLEARTYPE_NATURAL_QUALITY
 ClientToScreen
+CoCreateInstance
 CreateActCtx
 CreateErrorInfo
 CreateFont
@@ -58,12 +59,13 @@ GetWindowText
 GetWindowTextLength
 HFONT
 HRESULT
-IErrorInfo
 ICreateErrorInfo
 IDI_*
+IErrorInfo
+IGlobalInterfaceTable
 InitCommonControlsEx
-InvalidateRect
 INVALID_HANDLE_VALUE
+InvalidateRect
 IUnknown
 LoadCursor
 LoadIcon
