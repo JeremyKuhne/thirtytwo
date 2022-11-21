@@ -44,16 +44,31 @@ public enum MessageType : uint
 
     Enable = Interop.WM_ENABLE,
     SetRedraw = Interop.WM_SETREDRAW,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/winmsg/wm-settext">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     SetText = Interop.WM_SETTEXT,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/winmsg/wm-gettext">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     GetText = Interop.WM_GETTEXT,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/winmsg/wm-gettextlength">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     GetTextLength = Interop.WM_GETTEXTLENGTH,
     Paint = Interop.WM_PAINT,
     Close = Interop.WM_CLOSE,
     Quit = Interop.WM_QUIT,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/winmsg/wm-erasebkd">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     EraseBackground = Interop.WM_ERASEBKGND,
     SystemColorChange = Interop.WM_SYSCOLORCHANGE,
     ShowWindow = Interop.WM_SHOWWINDOW,
-    WinIniChange = Interop.WM_WININICHANGE,
     SettingChange = Interop.WM_SETTINGCHANGE,
     DevModeChange = Interop.WM_DEVMODECHANGE,
     ActivateApp = Interop.WM_ACTIVATEAPP,
@@ -74,8 +89,17 @@ public enum MessageType : uint
     DeleteItem = Interop.WM_DELETEITEM,
     VirtualKeyToItem = Interop.WM_VKEYTOITEM,
     CharToItem = Interop.WM_CHARTOITEM,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/winmsg/wm-setfont">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     SetFont = Interop.WM_SETFONT,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/winmsg/wm-getfont">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     GetFont = Interop.WM_GETFONT,
+
     SetHotKey = Interop.WM_SETHOTKEY,
     GetHotKey = Interop.WM_GETHOTKEY,
     QueryDragIcon = Interop.WM_QUERYDRAGICON,
@@ -258,9 +282,25 @@ public enum MessageType : uint
     NonClientMouseHover = Interop.WM_NCMOUSEHOVER,
     NonClientMouseLeave = Interop.WM_NCMOUSELEAVE,
     WtsSessionChange = Interop.WM_WTSSESSION_CHANGE,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/hidpi/wm-dpichanged">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     DpiChanged = Interop.WM_DPICHANGED,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/hidpi/wm-dpichanged-beforeparent">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     DpiChangedBeforeParent = Interop.WM_DPICHANGED_BEFOREPARENT,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/hidpi/wm-dpichanged-afterparent">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     DpiChangedAfterParent = Interop.WM_DPICHANGED_AFTERPARENT,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/hidpi/wm-getdpiscaledsize">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     GetDpiScaledSize = Interop.WM_GETDPISCALEDSIZE,
     Cut = Interop.WM_CUT,
     Copy = Interop.WM_COPY,

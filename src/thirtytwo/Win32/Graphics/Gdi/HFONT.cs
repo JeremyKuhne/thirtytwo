@@ -90,6 +90,15 @@ public unsafe partial struct HFONT : IHandle<HFONT>, IDisposable
         return logfont.lfFaceName.AsReadOnlySpan().SliceAtNull().ToString();
     }
 
+    public static int GetHeightForDpi(int pointSize, int dpi)
+    {
+        // A point is 1/72 of an inch (1/12 of a pica)
+        return -Interop.MulDiv(
+            pointSize,
+            dpi,
+            72);
+    }
+
     public void Dispose()
     {
         if (!IsNull)

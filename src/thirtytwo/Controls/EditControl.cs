@@ -11,7 +11,7 @@ public partial class EditControl : Window
 
     public EditControl(
         Rectangle bounds,
-        string? windowName = default,
+        string? text = default,
         Styles editStyle = Styles.Left,
         WindowStyles style = WindowStyles.Overlapped,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
@@ -19,7 +19,7 @@ public partial class EditControl : Window
         IntPtr parameters = default) : base(
             s_editClass,
             bounds,
-            windowName,
+            text,
             style |= (WindowStyles)editStyle,
             extendedStyle,
             parentWindow,

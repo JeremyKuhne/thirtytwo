@@ -2,9 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
+using System.Runtime.Intrinsics.Arm;
 using Windows.Support;
+using static Windows.Message;
 
 namespace Windows;
 
@@ -14,12 +17,16 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
     private readonly WindowProcedure _windowProcedure;
     private readonly WNDPROC _priorWindowProcedure;
     private readonly WindowClass _windowClass;
+    private static readonly object s_lock = new();
 
     private string? _text;
+    private uint _lastDpi;
 
     private static readonly ConcurrentDictionary<HWND, WeakReference<Window>> s_windows = new();
+    private HFONT _lastCreatedFont;
 
-    private static readonly HFONT s_defaultFont = CreateDefaultFont();
+    // Default fonts for each DPI
+    private static readonly ConcurrentDictionary<int, HFONT> s_defaultFonts = new();
 
     public static Rectangle DefaultBounds { get; }
         = new(Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT);
@@ -61,29 +68,58 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
             // Set up HDC for scaling
             using var deviceContext = this.GetDeviceContext();
             deviceContext.SetGraphicsMode(GRAPHICS_MODE.GM_ADVANCED);
-            uint dpi = this.GetDpiForWindow();
+            uint dpi = this.GetDpi();
             Matrix3x2 transform = Matrix3x2.CreateScale((dpi / 96.0f) * 5.0f);
             deviceContext.SetWorldTransform(ref transform);
         }
 
-        if (this.GetFont().IsNull)
+        _lastDpi = this.GetDpi();
+        if (this.GetFontHandle().IsNull)
         {
             // Default system font is applied, use a nicer (ClearType) font
-            Handle.SetFont(s_defaultFont);
+            this.SetFontHandle(GetDefaultFontForDpi((int)_lastDpi));
         }
 
         _windowProcedure = WindowProcedureInternal;
-        _priorWindowProcedure = Handle.SetWindowProcedure(_windowProcedure);
+        _priorWindowProcedure = this.SetWindowProcedure(_windowProcedure);
     }
 
-    private static HFONT CreateDefaultFont()
+    private static HFONT GetDefaultFontForDpi(int dpi)
     {
-        // Get the Screen DC
-        using var hdc = HWND.Null.GetDeviceContext();
-        return HFONT.CreateFont(
-            typeface: "Microsoft Sans Serif",
-            height: hdc.FontPointSizeToHeight(11),
+        if (!s_defaultFonts.TryGetValue(dpi, out HFONT font))
+        {
+            lock (s_lock)
+            {
+                if (!s_defaultFonts.TryGetValue(dpi, out font))
+                {
+                    font = HFONT.CreateFont(
+                        typeface: "Microsoft Sans Serif",
+                        height: HFONT.GetHeightForDpi(pointSize: 12, dpi),
+                        quality: FontQuality.ClearTypeNatural);
+
+                    s_defaultFonts[dpi] = font;
+                }
+            }
+        }
+
+        return font;
+    }
+
+    public void SetFont(string typeFace, int pointSize)
+    {
+        HFONT newFont = HFONT.CreateFont(
+            typeface: typeFace,
+            height: HFONT.GetHeightForDpi(pointSize, (int)this.GetDpi()),
             quality: FontQuality.ClearTypeNatural);
+
+        if (!_lastCreatedFont.IsNull)
+        {
+            _lastCreatedFont.Dispose();
+        }
+
+        _lastCreatedFont = newFont;
+
+        this.SetFontHandle(_lastCreatedFont);
     }
 
     private LRESULT WindowProcedureInternal(HWND window, uint message, WPARAM wParam, LPARAM lParam)
@@ -127,29 +163,51 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
             case MessageType.DpiChanged:
                 {
                     // Resize and reposition for the new DPI
-                    Message.DpiChanged dpiChanged = new(wParam, lParam);
-
-                    using var oldFont = s_defaultFont;
-                    var newFont = HFONT.CreateFont(
-                        typeface: "Microsoft Sans Serif",
-                        height: window.FontPointSizeToHeight(11),
-                        quality: FontQuality.ClearTypeNatural);
-
-                    window.SetFont(newFont);
-                    window.EnumerateChildWindows(
-                        (HWND child) =>
-                        {
-                            child.SetFont(newFont);
-                            return true;
-                        });
-
-                    window.MoveWindow(dpiChanged.SuggestedBounds, repaint: true);
-
+                    HandleDpiChanged(new(wParam, lParam));
                     break;
                 }
         }
 
         return Interop.CallWindowProc(_priorWindowProcedure, window, (uint)message, wParam, lParam);
+    }
+
+    private void HandleDpiChanged(Message.DpiChanged dpiChanged)
+    {
+        uint lastDpi = _lastDpi;
+        _lastDpi = dpiChanged.Dpi;
+        UpdateFontsForDpi(lastDpi, _lastDpi);
+        this.MoveWindow(dpiChanged.SuggestedBounds, repaint: true);
+    }
+
+    private void UpdateFontsForDpi(uint lastDpi, uint newDpi)
+    {
+        HFONT currentFont = this.GetFontHandle();
+        HFONT lastCreatedFont = _lastCreatedFont;
+
+        // Check to see if we're using one of our managed fonts.
+
+        if (!lastCreatedFont.IsNull && lastCreatedFont == currentFont)
+        {
+            // One that we created that isn't a static default
+            var logfont = currentFont.GetLogicalFont();
+            float scale = (float)newDpi / lastDpi;
+            logfont.lfHeight = (int)(logfont.lfHeight * scale);
+            HFONT newFont = Interop.CreateFontIndirect(&logfont);
+            this.SetFontHandle(newFont);
+            _lastCreatedFont = newFont;
+            lastCreatedFont.Dispose();
+        }
+        else if (GetDefaultFontForDpi((int)lastDpi) == currentFont)
+        {
+            // Was our default font, use the new scale
+            this.SetFontHandle(GetDefaultFontForDpi((int)newDpi));
+        }
+
+        this.EnumerateChildWindows((HWND child) =>
+        {
+            FromHandle(child)?.UpdateFontsForDpi(lastDpi, newDpi);
+            return true;
+        });
     }
 
     public string Text

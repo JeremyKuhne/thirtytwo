@@ -46,6 +46,7 @@ public unsafe static class DeviceContextExtensions
     public static int FontPointSizeToHeight<T>(this T deviceContext, int pointSize)
         where T : IHandle<HDC>
     {
+        Application.EnsureDpiAwareness();
         int result = Interop.MulDiv(
            pointSize,
            Interop.GetDeviceCaps(deviceContext.Handle, GET_DEVICE_CAPS_INDEX.LOGPIXELSY),

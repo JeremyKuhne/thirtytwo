@@ -65,7 +65,7 @@ public static unsafe partial class WindowExtensions
 
     /// <returns/>
     /// <inheritdoc cref="Interop.GetDpiForWindow(HWND)"/>
-    public static uint GetDpiForWindow<T>(this T window) where T : IHandle<HWND>
+    public static uint GetDpi<T>(this T window) where T : IHandle<HWND>
     {
         uint dpi = Interop.GetDpiForWindow(window.Handle);
         GC.KeepAlive(window.Wrapper);
@@ -101,7 +101,7 @@ public static unsafe partial class WindowExtensions
     /// <summary>
     ///  Gets the font currently set for the window, if any.
     /// </summary>
-    public static HFONT GetFont<T>(this T window)
+    public static HFONT GetFontHandle<T>(this T window)
         where T : IHandle<HWND>
     {
         HFONT font = new(window.SendMessage(MessageType.GetFont));
@@ -116,7 +116,7 @@ public static unsafe partial class WindowExtensions
     {
         int result = Interop.MulDiv(
             pointSize,
-            (int)window.GetDpiForWindow(),
+            (int)window.GetDpi(),
             72);
 
         GC.KeepAlive(window.Wrapper);
@@ -177,7 +177,7 @@ public static unsafe partial class WindowExtensions
     /// <summary>
     ///  Set the specified font for the window.
     /// </summary>
-    public static unsafe LRESULT SetFont<T>(this T window, HFONT font)
+    public static unsafe LRESULT SetFontHandle<T>(this T window, HFONT font)
         where T : IHandle<HWND>
     {
         return window.SendMessage(

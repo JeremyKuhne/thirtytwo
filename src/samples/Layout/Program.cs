@@ -32,11 +32,14 @@ internal class Program
         {
             _editControl = new EditControl(
                 DefaultBounds,
+                "Type text here...",
                 editStyle: EditControl.Styles.Multiline | EditControl.Styles.Left
                     | EditControl.Styles.AutoHorizontalScroll | EditControl.Styles.AutoVerticalScroll,
                 style: WindowStyles.Child | WindowStyles.Visible | WindowStyles.HorizontalScroll
                     | WindowStyles.VerticalScroll | WindowStyles.Border,
                 parentWindow: this);
+
+            _editControl.SetFont("Times New Roman", 24);
 
             _buttonControl = new ButtonControl(
                 DefaultBounds,
@@ -56,18 +59,8 @@ internal class Program
                 style: WindowStyles.Child | WindowStyles.Visible,
                 parentWindow: this);
 
-            var font = _staticControl.GetFont();
+            var font = _staticControl.GetFontHandle();
             _staticControl.SetWindowText($"{font.GetFaceName()} {font.GetQuality()}");
-
-            //this.SetLayout(Layout.FixedSize(new (200, 400), _editControl));
-
-            //this.SetLayout(
-            //    Layout.Margin(10, Layout.FixedPercent
-            //        (new (.6f, .4f), _editControl, VerticalAlignment.Top, HorizontalAlignment.Left)));
-
-            //this.SetLayout(Layout.Horizontal(
-            //    (.5f, Layout.Margin(5, Layout.Fill(_editControl))),
-            //    (.5f, Layout.Empty)));
 
             _replaceableLayout = new ReplaceableLayout(_textLabel);
 

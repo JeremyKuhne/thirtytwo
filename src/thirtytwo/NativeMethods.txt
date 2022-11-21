@@ -8,6 +8,7 @@ ClientToScreen
 CreateActCtx
 CreateErrorInfo
 CreateFont
+CreateFontIndirect
 CREATESTRUCTW
 CreateWindowEx
 CW_USEDEFAULT
@@ -43,6 +44,7 @@ GetDC
 GetDeviceCaps
 GetDpiForWindow
 GetGraphicsMode
+GetMapMode
 GetMessage
 GetModuleHandleEx
 GetObject
@@ -84,6 +86,7 @@ ScreenToClient
 SendMessage
 SelectObject
 SetGraphicsMode
+SetMapMode
 SetThreadDpiAwarenessContext
 SetWindowLong
 SetWindowText
