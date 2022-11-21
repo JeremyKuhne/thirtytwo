@@ -8,7 +8,7 @@ using Windows.Support;
 
 namespace Windows;
 
-public unsafe static class DeviceContextExtensions
+public static unsafe partial class DeviceContextExtensions
 {
     /// <inheritdoc cref="Interop.GetGraphicsMode(HDC)"/>
     public static GRAPHICS_MODE GetGraphicsMode<T>(this T deviceContext)
@@ -56,7 +56,7 @@ public unsafe static class DeviceContextExtensions
         return result;
     }
 
-    public static HGDIOBJ SelectObject<T>(this T context, HGDIOBJ @object)
+    public static ObjectScope<T> SelectObject<T>(this T context, HGDIOBJ @object)
         where T : IHandle<HDC>
     {
         HGDIOBJ handle = Interop.SelectObject(context.Handle, @object);
@@ -66,7 +66,7 @@ public unsafe static class DeviceContextExtensions
         }
 
         OBJ_TYPE type = (OBJ_TYPE)Interop.GetObjectType(@object);
-        return type == OBJ_TYPE.OBJ_REGION ? default : handle;
+        return type == OBJ_TYPE.OBJ_REGION ? default : new(handle, context);
     }
 
     public static unsafe (int Height, uint LengthDrawn, Rectangle Bounds) DrawText<T>(

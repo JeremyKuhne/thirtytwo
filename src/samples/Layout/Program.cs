@@ -59,7 +59,7 @@ internal class Program
                 style: WindowStyles.Child | WindowStyles.Visible,
                 parentWindow: this);
 
-            var font = _staticControl.GetFontHandle();
+            var font = _buttonControl.GetFontHandle();
             _staticControl.SetWindowText($"{font.GetFaceName()} {font.GetQuality()}");
 
             _replaceableLayout = new ReplaceableLayout(_textLabel);

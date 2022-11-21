@@ -5,7 +5,7 @@ using System.Drawing;
 
 namespace Windows;
 
-public class TextLabelControl : Window
+public class TextLabelControl : Control
 {
     private static readonly WindowClass s_textLabelClass = new(className: "TextLabelClass");
 
@@ -37,6 +37,7 @@ public class TextLabelControl : Window
             case MessageType.Paint:
                 {
                     using var deviceContext = window.BeginPaint(out Rectangle paintBounds);
+                    using var selectionScope = deviceContext.SelectObject(this.GetFontHandle());
                     deviceContext.DrawText(Text, paintBounds, _textFormat);
                     break;
                 }

@@ -73,15 +73,17 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
             deviceContext.SetWorldTransform(ref transform);
         }
 
+        // Need to set our Window Procedure to get messages before we set
+        // the font (which sends a message to do so).
+        _windowProcedure = WindowProcedureInternal;
+        _priorWindowProcedure = this.SetWindowProcedure(_windowProcedure);
+
         _lastDpi = this.GetDpi();
         if (this.GetFontHandle().IsNull)
         {
             // Default system font is applied, use a nicer (ClearType) font
             this.SetFontHandle(GetDefaultFontForDpi((int)_lastDpi));
         }
-
-        _windowProcedure = WindowProcedureInternal;
-        _priorWindowProcedure = this.SetWindowProcedure(_windowProcedure);
     }
 
     private static HFONT GetDefaultFontForDpi(int dpi)

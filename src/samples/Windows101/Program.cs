@@ -61,20 +61,20 @@ internal class Program
                     {
                         Rectangle client = window.GetClientRectangle();
 
-                        // The default font is really small on modern PCs, so we'll take the extra step
-                        // to select a font into our device context before drawing the text.
+                        // In a using statement to delete the object after we create it.
+                        // This is a bit wasteful, but for simplicity sake we're not caching.
                         using HFONT font = HFONT.CreateFont(
                             height: client.Height / 5,
                             family: FontFamilyType.Swiss);
-                        HGDIOBJ priorFont = dc.SelectObject(font);
+
+                        // In a using to put back the original font.
+                        using var selectionScope = dc.SelectObject(font);
 
                         // Draw the given text in the middle of the client area of the Window.
                         dc.DrawText(
                             "Hello .NET and Win32!",
                             bounds: client,
                             DrawTextFormat.SingleLine | DrawTextFormat.Center | DrawTextFormat.VerticallyCenter);
-
-                        dc.SelectObject(priorFont);
                     }
 
                     // Return 0 to indicate we've handled the message

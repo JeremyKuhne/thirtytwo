@@ -1,6 +1,7 @@
 ﻿ACTCTX_FLAG_*
 ActivateActCtx
 BeginPaint
+BOOLEAN
 BS_*
 CallWindowProc
 CLEARTYPE_NATURAL_QUALITY
