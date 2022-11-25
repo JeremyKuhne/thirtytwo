@@ -99,6 +99,7 @@ public partial class WindowClass
                 {
                     Error.GetLastError().Throw();
                 }
+
                 return result;
             }
         }

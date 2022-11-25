@@ -31,7 +31,7 @@ public readonly partial struct WPARAM
     public static explicit operator WPARAM(Color value) => new((nuint)ColorTranslator.ToWin32(value));
 
     // #define HIWORD(l)           ((WORD)((((DWORD_PTR)(l)) >> 16) & 0xffff))
-    public ushort HIWORD => (ushort)(((Value) >> 16) & 0xffff);
+    public ushort HIWORD => (ushort)((Value >> 16) & 0xffff);
     public short SIGNEDHIWORD => (short)HIWORD;
 
     // #define LOWORD(l)           ((WORD)(((DWORD_PTR)(l)) & 0xffff))

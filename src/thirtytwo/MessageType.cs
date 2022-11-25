@@ -82,6 +82,10 @@ public enum MessageType : uint
     GetMinMaxInfo = Interop.WM_GETMINMAXINFO,
     PaintIcon = Interop.WM_PAINTICON,
     IconEraseBackground = Interop.WM_ICONERASEBKGND,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/dlgbox/wm-nextdlgctl">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     NextDialogControl = Interop.WM_NEXTDLGCTL,
     SpoolerStatus = Interop.WM_SPOOLERSTATUS,
     DrawItem = Interop.WM_DRAWITEM,
@@ -152,6 +156,10 @@ public enum MessageType : uint
     NonClientHitTest = Interop.WM_NCHITTEST,
     NonClientPaint = Interop.WM_NCPAINT,
     NonClientActivate = Interop.WM_NCACTIVATE,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/dlgbox/wm-getdlgcode">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     GetDialogCode = Interop.WM_GETDLGCODE,
     SyncPaint = Interop.WM_SYNCPAINT,
     NonClientMouseMove = Interop.WM_NCMOUSEMOVE,
@@ -181,6 +189,10 @@ public enum MessageType : uint
     ImeStartComposition = Interop.WM_IME_STARTCOMPOSITION,
     ImeEndComposition = Interop.WM_IME_ENDCOMPOSITION,
     ImeComposition = Interop.WM_IME_COMPOSITION,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/dlgbox/wm-initdialog">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     InitDialog = Interop.WM_INITDIALOG,
     Command = Interop.WM_COMMAND,
     SystemCommand = Interop.WM_SYSCOMMAND,
@@ -193,6 +205,10 @@ public enum MessageType : uint
     GestureNotify = Interop.WM_GESTURENOTIFY,
     MenuSelect = Interop.WM_MENUSELECT,
     MenuChar = Interop.WM_MENUCHAR,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/dlgbox/wm-enteridle">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     EnterIdle = Interop.WM_ENTERIDLE,
     MenuRightButtonUp = Interop.WM_MENURBUTTONUP,
     MenuDrag = Interop.WM_MENUDRAG,
@@ -206,6 +222,10 @@ public enum MessageType : uint
     ControlColorEdit = Interop.WM_CTLCOLOREDIT,
     ControlColorListBox = Interop.WM_CTLCOLORLISTBOX,
     ControlColorButton = Interop.WM_CTLCOLORBTN,
+
+    /// <remarks>
+    ///  <para><see href="https://learn.microsoft.com/windows/win32/dlgbox/wm-ctlcolordlg">Learn more about this message from learn.microsoft.com</see>.</para>
+    /// </remarks>
     ControlColorDialog = Interop.WM_CTLCOLORDLG,
     ControlColorScrollBar = Interop.WM_CTLCOLORSCROLLBAR,
     ControlColorStatic = Interop.WM_CTLCOLORSTATIC,

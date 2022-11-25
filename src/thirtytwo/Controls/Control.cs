@@ -24,14 +24,14 @@ public class Control : Window
     private HFONT _font;
 
     public Control(
-        WindowClass windowClass,
         Rectangle bounds,
-        string? text = null,
+        string? text = default,
         WindowStyles style = WindowStyles.Overlapped,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
-        Window? parentWindow = null,
+        Window? parentWindow = default,
+        WindowClass? windowClass = default,
         nint parameters = 0,
-        HMENU menuHandle = default) : base(windowClass, bounds, text, style, extendedStyle, parentWindow, parameters, menuHandle)
+        HMENU menuHandle = default) : base(bounds, text, style, extendedStyle, parentWindow, windowClass, parameters, menuHandle)
     {
     }
 

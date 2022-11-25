@@ -28,7 +28,7 @@ internal static unsafe class GlobalInterfaceTable
                 pUnkOuter: null,
                 CLSCTX.CLSCTX_INPROC_SERVER,
                 IID.Get<IGlobalInterfaceTable>(),
-                (void**)git).ThrowOnFailure();
+                (void**)git);
         }
     }
 
@@ -44,7 +44,7 @@ internal static unsafe class GlobalInterfaceTable
         s_globalInterfaceTable->RegisterInterfaceInGlobal(
             (IUnknown*)@interface,
             IID.Get<TInterface>(),
-            &cookie).ThrowOnFailure();
+            &cookie);
         return cookie;
     }
 

@@ -362,6 +362,9 @@ dotnet_diagnostic.CS1591.severity = silent
 
 # CS1573: Parameter has no matching param tag in the XML comment (but other parameters do)
 dotnet_diagnostic.CS1573.severity = none
+csharp_style_prefer_local_over_anonymous_function = true:suggestion
+dotnet_diagnostic.SA1617.severity = silent
+dotnet_diagnostic.xUnit1004.severity = silent
 
 [*.{cs,vb}]
 dotnet_style_coalesce_expression = true:suggestion
@@ -381,3 +384,4 @@ tab_width = 4
 indent_size = 4
 end_of_line = crlf
 dotnet_style_prefer_compound_assignment = true:suggestion
+dotnet_code_quality_unused_parameters = all:suggestion

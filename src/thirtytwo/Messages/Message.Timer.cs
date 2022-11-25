@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Runtime.InteropServices;
-
 namespace Windows;
 
 public static partial class Message
@@ -19,7 +17,8 @@ public static partial class Message
         }
 
         public uint Id => (uint)_wParam;
-        //public TimerProcedure? Procedure
+
+        // public TimerProcedure? Procedure
         //    => _lParam.IsNull ? null : Marshal.GetDelegateForFunctionPointer<TimerProcedure>(_lParam);
     }
 }

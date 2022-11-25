@@ -4,5 +4,3 @@
 using Windows.Win32.UI.Controls;
 
 namespace Windows;
-
-

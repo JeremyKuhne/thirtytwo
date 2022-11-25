@@ -82,12 +82,14 @@ public readonly struct DeviceContext : IDisposable, IHandle<HDC>
                 {
                     Debug.WriteLine("Failed to delete DC");
                 }
+
                 break;
             case CollectionType.Release:
                 if (Interop.ReleaseDC(HWND, Handle) == 0)
                 {
                     Debug.WriteLine("Failed to release DC");
                 }
+
                 break;
             case CollectionType.EndPaint:
                 // This is all that matters for ending paint, we take advantage of this to not carry
@@ -101,6 +103,7 @@ public readonly struct DeviceContext : IDisposable, IHandle<HDC>
                 {
                     Debug.WriteLine("Failed to end paint");
                 }
+
                 break;
             case CollectionType.None:
                 break;
@@ -108,7 +111,6 @@ public readonly struct DeviceContext : IDisposable, IHandle<HDC>
                 throw new InvalidOperationException();
         }
     }
-
 
     public static implicit operator HDC(DeviceContext context) => context.Handle;
     public static unsafe explicit operator DeviceContext(WPARAM wparam) => Create(new(new(wparam)));

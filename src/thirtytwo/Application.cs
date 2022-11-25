@@ -98,11 +98,11 @@ public unsafe static class Application
         }
 
         Window mainWindow = new(
-            windowClass,
             bounds,
             windowTitle,
             style,
             extendedStyle,
+            windowClass: windowClass,
             menuHandle: menuHandle);
 
         Run(mainWindow);
@@ -171,5 +171,36 @@ public unsafe static class Application
         }
 
         return s_visualStylesContext;
+    }
+
+    /// <summary>
+    ///  Enters a modal scope for the current thread. All active visible windows are disabled until the returned
+    ///  scope is disposed.
+    /// </summary>
+    public static ThreadModalScope EnterThreadModalScope() => new();
+
+    /// <summary>
+    ///  Enumerates thread windows for the current thread.
+    /// </summary>
+    /// <param name="callback">
+    ///  The provided function will be passed thread window handles. Return <see langword="true"/> to continue enumeration.
+    /// </param>
+    public static void EnumerateThreadWindows(
+        Func<HWND, bool> callback)
+    {
+        using var enumerator = new ThreadWindowEnumerator(Interop.GetCurrentThreadId(), callback);
+    }
+
+    /// <summary>
+    ///  Enumerates thread windows for the given <paramref name="threadId"/>.
+    /// </summary>
+    /// <param name="callback">
+    ///  The provided function will be passed thread window handles. Return <see langword="true"/> to continue enumeration.
+    /// </param>
+    public static void EnumerateThreadWindows(
+        uint threadId,
+        Func<HWND, bool> callback)
+    {
+        using var enumerator = new ThreadWindowEnumerator(threadId, callback);
     }
 }

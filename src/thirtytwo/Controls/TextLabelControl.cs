@@ -19,12 +19,12 @@ public class TextLabelControl : Control
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
         Window? parentWindow = default,
         IntPtr parameters = default) : base(
-            s_textLabelClass,
             bounds,
             text,
             style,
             extendedStyle,
             parentWindow,
+            s_textLabelClass,
             parameters)
     {
         _textFormat = textFormat;

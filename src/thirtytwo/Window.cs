@@ -19,6 +19,8 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
     private readonly WindowClass _windowClass;
     private static readonly object s_lock = new();
 
+    private static readonly WindowClass s_defaultWindowClass = new(className: $"DefaultWindowClass_{Guid.NewGuid()}");
+
     private string? _text;
     private uint _lastDpi;
 
@@ -36,16 +38,16 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
     public event WindowsMessageEvent? MessageHandler;
 
     public Window(
-        WindowClass windowClass,
         Rectangle bounds,
         string? text = default,
         WindowStyles style = WindowStyles.Overlapped,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
         Window? parentWindow = default,
+        WindowClass? windowClass = default,
         nint parameters = default,
         HMENU menuHandle = default)
     {
-        _windowClass = windowClass;
+        _windowClass = windowClass ?? s_defaultWindowClass;
         if (!_windowClass.IsRegistered)
         {
             _windowClass.Register();

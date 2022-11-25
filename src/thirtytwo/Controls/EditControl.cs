@@ -17,12 +17,12 @@ public partial class EditControl : Window
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
         Window? parentWindow = default,
         IntPtr parameters = default) : base(
-            s_editClass,
             bounds,
             text,
             style |= (WindowStyles)editStyle,
             extendedStyle,
             parentWindow,
+            s_editClass,
             parameters)
     {
     }

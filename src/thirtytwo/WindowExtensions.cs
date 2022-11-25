@@ -98,6 +98,17 @@ public static unsafe partial class WindowExtensions
         return result;
     }
 
+    /// <inheritdoc cref="Interop.PostMessage(HWND, uint, WPARAM, LPARAM)"/>
+    public static void PostMessage<T>(
+        this T window,
+        MessageType message,
+        WPARAM wParam = default,
+        LPARAM lParam = default) where T : IHandle<HWND>
+    {
+        Interop.PostMessage(window.Handle, (uint)message, wParam, lParam).ThrowLastErrorIfFalse();
+        GC.KeepAlive(window.Wrapper);
+    }
+
     /// <summary>
     ///  Gets the font currently set for the window, if any.
     /// </summary>
@@ -242,7 +253,7 @@ public static unsafe partial class WindowExtensions
     ///  Enumerates child windows for the given <paramref name="parent"/>.
     /// </summary>
     /// <param name="callback">
-    ///  The provided function will be passed child window handles. Return true to continue enumeration.
+    ///  The provided function will be passed child window handles. Return <see langword="true"/> to continue enumeration.
     /// </param>
     public static void EnumerateChildWindows<T>(
         this T parent,

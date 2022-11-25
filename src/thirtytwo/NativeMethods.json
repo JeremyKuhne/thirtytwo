@@ -4,5 +4,13 @@
     "className" : "Interop",
     "emitSingleFile": false,
     "public": true,
-    "useSafeHandles": false
+    "useSafeHandles": false,
+    "comInterop": {
+        "preserveSigMethods": [
+            "IGlobalInterfaceTable.GetInterfaceFromGlobal",
+            "IGlobalInterfaceTable.RevokeInterfaceFromGlobal",
+            "IFileDialog.Show",
+            "IUnknown.QueryInterface"
+        ]
+    }
 }

@@ -25,7 +25,6 @@ internal class Program
         private readonly TextLabelControl _textLabel;
 
         public MainWindow(string title) : base(
-            new WindowClass(),
             DefaultBounds,
             text: title,
             style: WindowStyles.OverlappedWindow)

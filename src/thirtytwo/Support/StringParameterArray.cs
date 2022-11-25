@@ -17,7 +17,7 @@ public unsafe readonly ref struct StringParameterArray
 
     public StringParameterArray(string[]? values)
     {
-        int length = values?.Length?? 0;
+        int length = values?.Length ?? 0;
         if (length > 0)
         {
             _param = GC.AllocateArray<nint>(length, pinned: true);

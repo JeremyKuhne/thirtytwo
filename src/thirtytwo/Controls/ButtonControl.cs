@@ -17,12 +17,12 @@ public partial class ButtonControl : Window
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
         Window? parentWindow = default,
         IntPtr parameters = default) : base(
-            s_buttonClass,
             bounds,
             text,
             style |= (WindowStyles)buttonStyle,
             extendedStyle,
             parentWindow,
+            s_buttonClass,
             parameters)
     {
     }

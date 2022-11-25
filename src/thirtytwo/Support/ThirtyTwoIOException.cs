@@ -51,7 +51,7 @@ public class ThirtyTwoIOException : IOException
         : base() { }
 
     public ThirtyTwoIOException(HRESULT hr, string? message = null)
-        : base(message ?? hr.ToStringWithDescription(), hr) { }
+        : base(message ?? hr.ToStringWithDescription(), hresult: hr) { }
 
     public ThirtyTwoIOException(WIN32_ERROR error, string? message = null)
         : base(message ?? error.ErrorToString(), (int)error.ToHRESULT()) { }

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Windows.Support;
 using Windows.Win32.System.Diagnostics.Debug;
 
@@ -33,6 +35,11 @@ public partial struct HRESULT
 
     // COR_* HRESULTs are .NET HRESULTs
     public static readonly HRESULT COR_E_OBJECTDISPOSED = (HRESULT)unchecked((int)0x80131622);
+
+    public static implicit operator Exception(HRESULT result)
+    {
+        return Marshal.GetExceptionForHR(result) ?? new InvalidOperationException("Not a failing result.");
+    }
 
     /// <summary>
     ///  Format an <see cref="HRESULT"/> with a message.

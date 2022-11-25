@@ -23,7 +23,6 @@ public unsafe partial struct HFONT : IHandle<HFONT>, IDisposable
 
     public static explicit operator HFONT(LRESULT result) => new(result.Value);
 
-
     /// <summary>
     ///  Creates a logical font with the specified characteristics that can be selected into a <see cref="DeviceContext"/>.
     /// </summary>

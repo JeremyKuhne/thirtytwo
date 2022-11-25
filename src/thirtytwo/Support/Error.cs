@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Windows.Win32.Foundation;
 using Windows.Win32.System.Diagnostics.Debug;
-using Windows.Win32.System.Ole;
 
 namespace Windows.Support;
 
@@ -28,7 +25,19 @@ public unsafe static class Error
     ///  Throw the last error code from windows if <paramref name="result"/> is false.
     /// </summary>
     /// <param name="path">Optional path or other input detail.</param>
-    public static void ThrowLastErrorIfFalse(this bool result, string? path = null)
+    internal static void ThrowLastErrorIfFalse(this bool result, string? path = null)
+    {
+        if (!result)
+        {
+            GetLastError().Throw(path);
+        }
+    }
+
+    /// <summary>
+    ///  Throw the last error code from windows if <paramref name="result"/> is false.
+    /// </summary>
+    /// <param name="path">Optional path or other input detail.</param>
+    internal static void ThrowLastErrorIfFalse(this BOOL result, string? path = null)
     {
         if (!result)
         {

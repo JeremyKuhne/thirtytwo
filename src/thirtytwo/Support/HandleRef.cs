@@ -17,8 +17,8 @@ namespace Windows.Support;
 internal readonly struct HandleRef<THandle> : IHandle<THandle>, IEquatable<HandleRef<THandle>>
     where THandle : unmanaged, IEquatable<THandle>
 {
-    public required object? Wrapper { get; init; }
-    public required THandle Handle { get; init; }
+    required public object? Wrapper { get; init; }
+    required public THandle Handle { get; init; }
 
     [SetsRequiredMembers]
     public HandleRef(object? wrapper, THandle handle)
@@ -46,5 +46,3 @@ internal readonly struct HandleRef<THandle> : IHandle<THandle>, IEquatable<Handl
 
     public bool IsNull => Handle.Equals(default);
 }
-
-
