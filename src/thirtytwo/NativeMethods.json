@@ -10,6 +10,7 @@
             "IGlobalInterfaceTable.GetInterfaceFromGlobal",
             "IGlobalInterfaceTable.RevokeInterfaceFromGlobal",
             "IFileDialog.Show",
+            "IFileDialog.GetCurrentSelection",
             "IUnknown.QueryInterface"
         ]
     }

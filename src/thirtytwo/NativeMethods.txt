@@ -7,6 +7,7 @@ CallWindowProc
 CLEARTYPE_NATURAL_QUALITY
 ClientToScreen
 CoCreateInstance
+CoTaskMemFree
 CreateActCtx
 CreateErrorInfo
 CreateFont
@@ -23,6 +24,8 @@ DPI_AWARENESS_CONTEXT_*
 DRAWITEMSTRUCT
 DrawTextEx
 E_FAIL
+E_NOINTERFACE
+E_POINTER
 EnableWindow
 EndPaint
 EnumChildWindows
@@ -78,6 +81,11 @@ IModalWindow
 InitCommonControlsEx
 INVALID_HANDLE_VALUE
 InvalidateRect
+IOleClientSite
+IOleContainer
+IOleControlSite
+IOleInPlaceSite
+IOleInPlaceFrame
 IOleWindow
 IsWindowEnabled
 IsWindowVisible

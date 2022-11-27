@@ -4,11 +4,16 @@
 using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Windows.Dialogs;
 
 namespace Windows.Win32.System.Com;
 
 internal unsafe sealed class CustomComWrapper : ComWrappers
 {
+    internal static CustomComWrapper Instance { get; } = new();
+
+    private static readonly ComInterfaceEntry* s_fileDialogEvents = InitializeEntry<IFileDialogEvents, IFileDialogEvents.Vtbl>();
+
     private static ComInterfaceEntry* InitializeEntry<TComInterface, TVTable>()
         where TComInterface : unmanaged, IInitializeVTable<TVTable>, IComIID
         where TVTable : unmanaged
@@ -30,9 +35,21 @@ internal unsafe sealed class CustomComWrapper : ComWrappers
         return wrapperEntry;
     }
 
+    internal static IUnknown* GetComInterfaceForObject(object obj)
+        => Instance.ComputeVtables(obj, default, out _) is not null
+            ? (IUnknown*)Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None)
+            : null;
+
     protected override unsafe ComInterfaceEntry* ComputeVtables(object obj, CreateComInterfaceFlags flags, out int count)
     {
-        throw new NotImplementedException();
+        if (obj is FileDialog.FileDialogEvents)
+        {
+            count = 1;
+            return s_fileDialogEvents;
+        }
+
+        count = 0;
+        return null;
     }
 
     protected override object? CreateObject(nint externalComObject, CreateObjectFlags flags)

@@ -38,30 +38,9 @@ public unsafe partial class FileOpenDialog : FileDialog
         {
             using ComScope<IShellItem> item = new(null);
             items.Value->GetItemAt(0, item);
-            item.Value->GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEEDITING, out PWSTR name);
-            paths[i] = new(name);
+            paths[i] = item.Value->GetFullPath();
         }
 
         return paths;
-    }
-
-    public string DefaultFolder
-    {
-        set
-        {
-            using ComScope<IFileOpenDialog> dialog = Interface.GetInterface<IFileOpenDialog>();
-            using ComScope<IShellItem> item = Interop.SHCreateShellItem(value);
-            dialog.Value->SetDefaultFolder(item);
-        }
-    }
-
-    public string InitialFolder
-    {
-        set
-        {
-            using ComScope<IFileOpenDialog> dialog = Interface.GetInterface<IFileOpenDialog>();
-            using ComScope<IShellItem> item = Interop.SHCreateShellItem(value);
-            dialog.Value->SetFolder(item);
-        }
     }
 }

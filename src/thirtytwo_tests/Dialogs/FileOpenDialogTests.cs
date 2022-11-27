@@ -72,10 +72,36 @@ public class FileOpenDialogTests
         options.Should().Be(FileDialog.Options.NoChangeDirectory | FileDialog.Options.PathMustExist | FileDialog.Options.FileMustExist);
     }
 
+    [StaFact]
+    public void FileOpenDialog_CurrentSelection_AfterCreate()
+    {
+        using FileOpenDialog dialog = new();
+        dialog.CurrentSelection.Should().BeNull();
+    }
+
+    [StaFact]
+    public void FileOpenDialog_CurrentSelection_AfterShow()
+    {
+        using FileOpenDialog dialog = new();
+        dialog.SelectionChanged += (object? sender, EventArgs e) =>
+        {
+            dialog.CurrentSelection.Should().BeNull();
+            dialog.Close();
+        };
+
+        dialog.ShowDialog().Should().BeFalse();
+    }
+
     [StaFact(Skip = "For manual testing.")]
     public void FileOpenDialog_Manual()
     {
         using FileOpenDialog dialog = new();
+
+        dialog.SelectionChanged += (object? sender, EventArgs e) =>
+        {
+            string? selection = dialog.CurrentSelection;
+        };
+
         dialog.ShowDialog();
     }
 }

@@ -7,7 +7,7 @@ using Windows.Support;
 
 namespace Windows;
 
-public unsafe static class Application
+public static unsafe class Application
 {
     private static ActivationContext? s_visualStylesContext;
     internal static ActivationScope ThemingScope => new(GetStylesContext());

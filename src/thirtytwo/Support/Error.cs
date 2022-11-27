@@ -7,7 +7,7 @@ using Windows.Win32.System.Diagnostics.Debug;
 
 namespace Windows.Support;
 
-public unsafe static class Error
+public static unsafe class Error
 {
     public static WIN32_ERROR GetLastError() => (WIN32_ERROR)Marshal.GetLastWin32Error();
 
