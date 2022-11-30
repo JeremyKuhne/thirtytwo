@@ -12,44 +12,30 @@ internal unsafe sealed class CustomComWrapper : ComWrappers
 {
     internal static CustomComWrapper Instance { get; } = new();
 
-    private static readonly ComInterfaceEntry* s_fileDialogEvents = InitializeEntry<IFileDialogEvents, IFileDialogEvents.Vtbl>();
-
-    private static ComInterfaceEntry* InitializeEntry<TComInterface, TVTable>()
-        where TComInterface : unmanaged, IInitializeVTable<TVTable>, IComIID
-        where TVTable : unmanaged
+    internal static void PopulateIUnknown(IUnknown.Vtbl* vtable)
     {
-        TVTable* vtable = (TVTable*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(TComInterface), sizeof(TVTable));
-
-        IUnknown.Vtbl* unknown = (IUnknown.Vtbl*)vtable;
-
-        GetIUnknownImpl(out IntPtr fpQueryInterface, out IntPtr fpAddRef, out IntPtr fpRelease);
-        unknown->QueryInterface_1 = (delegate* unmanaged[Stdcall]<IUnknown*, Guid*, void**, HRESULT>)fpQueryInterface;
-        unknown->AddRef_2 = (delegate* unmanaged[Stdcall]<IUnknown*, uint>)fpAddRef;
-        unknown->Release_3 = (delegate* unmanaged[Stdcall]<IUnknown*, uint>)fpRelease;
-
-        TComInterface.PopulateVTable(vtable);
-
-        ComInterfaceEntry* wrapperEntry = (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(CustomComWrapper), sizeof(ComInterfaceEntry));
-        wrapperEntry->IID = *IID.Get<TComInterface>();
-        wrapperEntry->Vtable = (nint)(void*)vtable;
-        return wrapperEntry;
+        GetIUnknownImpl(out nint fpQueryInterface, out nint fpAddRef, out nint fpRelease);
+        vtable->QueryInterface_1 = (delegate* unmanaged[Stdcall]<IUnknown*, Guid*, void**, HRESULT>)fpQueryInterface;
+        vtable->AddRef_2 = (delegate* unmanaged[Stdcall]<IUnknown*, uint>)fpAddRef;
+        vtable->Release_3 = (delegate* unmanaged[Stdcall]<IUnknown*, uint>)fpRelease;
     }
 
     internal static IUnknown* GetComInterfaceForObject(object obj)
-        => Instance.ComputeVtables(obj, default, out _) is not null
+        => obj is IManagedWrapper
             ? (IUnknown*)Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None)
             : null;
 
     protected override unsafe ComInterfaceEntry* ComputeVtables(object obj, CreateComInterfaceFlags flags, out int count)
     {
-        if (obj is FileDialog.FileDialogEvents)
+        if (obj is not IManagedWrapper wrapper)
         {
-            count = 1;
-            return s_fileDialogEvents;
+            count = 0;
+            return null;
         }
 
-        count = 0;
-        return null;
+        ComInterfaceTable table = wrapper.GetInterfaceTable();
+        count = table.Count;
+        return table.Entries;
     }
 
     protected override object? CreateObject(nint externalComObject, CreateObjectFlags flags)
@@ -58,5 +44,4 @@ internal unsafe sealed class CustomComWrapper : ComWrappers
     }
 
     protected override void ReleaseObjects(IEnumerable objects) => throw new NotImplementedException();
-
 }

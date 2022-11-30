@@ -13,7 +13,7 @@ internal readonly ref struct ThreadWindowEnumerator
     public unsafe ThreadWindowEnumerator(uint threadId, Func<HWND, bool> callback)
     {
         _callback = GCHandle.Alloc(callback, GCHandleType.Normal);
-        Interop.EnumThreadWindows(threadId, &CallBack, (IntPtr)_callback);
+        Interop.EnumThreadWindows(threadId, &CallBack, (nint)_callback);
     }
 
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]

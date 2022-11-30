@@ -129,7 +129,7 @@ public unsafe partial class WindowClass : IDisposable
         WindowStyles style = WindowStyles.Overlapped,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
         HWND parentWindow = default,
-        IntPtr parameters = default,
+        nint parameters = default,
         HMENU menuHandle = default)
     {
         if (!IsRegistered)

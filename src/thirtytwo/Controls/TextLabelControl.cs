@@ -18,7 +18,7 @@ public class TextLabelControl : Control
         WindowStyles style = default,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
         Window? parentWindow = default,
-        IntPtr parameters = default) : base(
+        nint parameters = default) : base(
             bounds,
             text,
             style,

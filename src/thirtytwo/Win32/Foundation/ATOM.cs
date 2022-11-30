@@ -9,7 +9,7 @@ public readonly struct ATOM
     // #define MAKEINTATOM(i)  (LPTSTR)((ULONG_PTR)((WORD)(i)))
     // #define INVALID_ATOM ((ATOM)0)
 
-    // Strange uses for window class atoms
+    // "Strange uses for window class atoms"
     // https://devblogs.microsoft.com/oldnewthing/20080501-00/?p=22503
 
     public ushort Value { get; }

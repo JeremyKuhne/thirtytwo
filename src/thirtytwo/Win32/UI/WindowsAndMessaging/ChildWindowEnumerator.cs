@@ -13,7 +13,7 @@ internal readonly ref struct ChildWindowEnumerator
     public unsafe ChildWindowEnumerator(HWND parent, Func<HWND, bool> callback)
     {
         _callback = GCHandle.Alloc(callback, GCHandleType.Normal);
-        Interop.EnumChildWindows(parent, &CallBack, (IntPtr)_callback);
+        Interop.EnumChildWindows(parent, &CallBack, (nint)_callback);
     }
 
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]

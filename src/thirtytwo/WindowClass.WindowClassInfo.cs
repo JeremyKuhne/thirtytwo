@@ -32,7 +32,7 @@ public partial class WindowClass
         public static implicit operator WindowClassInfo(WNDCLASSEXW nativeClass)
         {
             var windowClass = new WindowClassInfo(
-                Marshal.GetDelegateForFunctionPointer<WindowProcedure>((IntPtr)nativeClass.lpfnWndProc))
+                Marshal.GetDelegateForFunctionPointer<WindowProcedure>((nint)nativeClass.lpfnWndProc))
             {
                 Size = nativeClass.cbSize,
                 Style = (ClassStyle)nativeClass.style,

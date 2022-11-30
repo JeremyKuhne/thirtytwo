@@ -47,6 +47,7 @@ public class Control : Window
                 {
                     this.Invalidate();
                 }
+
                 return (LRESULT)0;
         }
 

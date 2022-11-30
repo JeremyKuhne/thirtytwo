@@ -1,14 +1,20 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Windows.Win32.System.Com;
+
 namespace Windows.Dialogs;
 
 public unsafe partial class FileDialog
 {
-    internal class FileDialogEvents : IFileDialogEvents.Interface
+    internal class FileDialogEvents : IFileDialogEvents.Interface, IManagedWrapper
     {
+        private static readonly ComInterfaceTable s_interfaceTable = ComInterfaceTable.Create<IFileDialogEvents>();
         private readonly FileDialog _dialog;
+
         public FileDialogEvents(FileDialog dialog) => _dialog = dialog;
+
+        ComInterfaceTable IManagedWrapper.GetInterfaceTable() => s_interfaceTable;
 
         public unsafe HRESULT OnFileOk(IFileDialog* pfd)
         {

@@ -4,9 +4,11 @@ BeginPaint
 BOOLEAN
 BS_*
 CallWindowProc
+CLASS_E_NOTLICENSED
 CLEARTYPE_NATURAL_QUALITY
 ClientToScreen
 CoCreateInstance
+CoGetClassObject
 CoTaskMemFree
 CreateActCtx
 CreateErrorInfo
@@ -24,7 +26,9 @@ DPI_AWARENESS_CONTEXT_*
 DRAWITEMSTRUCT
 DrawTextEx
 E_FAIL
+E_INVALIDARG
 E_NOINTERFACE
+E_NOTIMPL
 E_POINTER
 EnableWindow
 EndPaint
@@ -68,6 +72,9 @@ GetWindowText
 GetWindowTextLength
 HFONT
 HRESULT
+IClassFactory2
+IConnectionPoint
+IConnectionPointContainer
 ICreateErrorInfo
 IDI_*
 IErrorInfo
@@ -86,6 +93,7 @@ IOleContainer
 IOleControlSite
 IOleInPlaceSite
 IOleInPlaceFrame
+IOleObject
 IOleWindow
 IsWindowEnabled
 IsWindowVisible
@@ -100,6 +108,7 @@ MoveWindow
 MSGF_*
 MulDiv
 NTSTATUS
+OLEIVERB_*
 OBJ_TYPE
 WIN32_ERROR
 WM_*
