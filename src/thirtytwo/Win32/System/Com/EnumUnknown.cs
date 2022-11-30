@@ -3,7 +3,7 @@
 
 namespace Windows.Win32.System.Com;
 
-public unsafe abstract class EnumUnknown : IEnumUnknown.Interface
+public unsafe abstract class EnumUnknown : IEnumUnknown.Interface, IManagedWrapper<IEnumUnknown>
 {
     private readonly int _count;
     private int _index;

@@ -7,14 +7,11 @@ namespace Windows.Dialogs;
 
 public unsafe partial class FileDialog
 {
-    internal class FileDialogEvents : IFileDialogEvents.Interface, IManagedWrapper
+    internal class FileDialogEvents : IFileDialogEvents.Interface, IManagedWrapper<IFileDialogEvents>
     {
-        private static readonly ComInterfaceTable s_interfaceTable = ComInterfaceTable.Create<IFileDialogEvents>();
         private readonly FileDialog _dialog;
 
         public FileDialogEvents(FileDialog dialog) => _dialog = dialog;
-
-        ComInterfaceTable IManagedWrapper.GetInterfaceTable() => s_interfaceTable;
 
         public unsafe HRESULT OnFileOk(IFileDialog* pfd)
         {
