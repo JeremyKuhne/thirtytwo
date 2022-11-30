@@ -57,7 +57,7 @@ internal unsafe readonly struct ComInterfaceTable
         return new()
         {
             Entries = entries,
-            Count = 1
+            Count = 2
         };
     }
 }

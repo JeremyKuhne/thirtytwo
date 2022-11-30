@@ -4,7 +4,7 @@
 namespace Windows.Win32.System.Com;
 
 /// <summary>
-///  An interface that provides a COM callable wrapper for the implmenting class.
+///  An interface that provides a COM callable wrapper for the implementing class.
 /// </summary>
 internal interface IManagedWrapper
 {
