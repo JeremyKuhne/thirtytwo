@@ -25,3 +25,17 @@ internal interface IManagedWrapper<TComInterface> : IManagedWrapper
 
     ComInterfaceTable IManagedWrapper.GetInterfaceTable() => InterfaceTable;
 }
+
+/// <summary>
+///  Apply to a class to apply a COM callable wrapper of the given <typeparamref name="TComInterface1"/> and
+///  <typeparamref name="TComInterface2"/>. The class must also derive from the given COM wrapper structs' nested
+///  Interfaces.
+/// </summary>
+internal interface IManagedWrapper<TComInterface1, TComInterface2> : IManagedWrapper
+    where TComInterface1 : unmanaged, IComIID, IVTable
+    where TComInterface2 : unmanaged, IComIID, IVTable
+{
+    private static ComInterfaceTable InterfaceTable { get; set; } = ComInterfaceTable.Create<TComInterface1, TComInterface2>();
+
+    ComInterfaceTable IManagedWrapper.GetInterfaceTable() => InterfaceTable;
+}
