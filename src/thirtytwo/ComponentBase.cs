@@ -12,15 +12,15 @@ namespace Windows;
 public class ComponentBase : IComponent
 {
     private bool _disposedValue;
-    private event EventHandler? _disposed;
+    private event EventHandler? Disposed;
     private readonly object _lock = new();
 
     ISite? IComponent.Site { get; set; }
 
     event EventHandler? IComponent.Disposed
     {
-        add => _disposed += value;
-        remove => _disposed -= value;
+        add => Disposed += value;
+        remove => Disposed -= value;
     }
 
     protected virtual void Dispose(bool disposing)
@@ -35,7 +35,7 @@ public class ComponentBase : IComponent
             lock (_lock)
             {
                 ((IComponent)this).Site?.Container?.Remove(this);
-                _disposed?.Invoke(this, EventArgs.Empty);
+                Disposed?.Invoke(this, EventArgs.Empty);
             }
         }
 

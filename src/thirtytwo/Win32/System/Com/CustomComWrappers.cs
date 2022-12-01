@@ -2,15 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Windows.Dialogs;
 
 namespace Windows.Win32.System.Com;
 
-internal unsafe sealed class CustomComWrapper : ComWrappers
+internal unsafe sealed class CustomComWrappers : ComWrappers
 {
-    internal static CustomComWrapper Instance { get; } = new();
+    internal static CustomComWrappers Instance { get; } = new();
 
     internal static void PopulateIUnknown(IUnknown.Vtbl* vtable)
     {

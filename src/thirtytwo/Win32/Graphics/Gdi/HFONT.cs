@@ -74,6 +74,7 @@ public unsafe partial struct HFONT : IHandle<HFONT>, IDisposable
         {
             logfont = default;
         }
+
         return logfont;
     }
 

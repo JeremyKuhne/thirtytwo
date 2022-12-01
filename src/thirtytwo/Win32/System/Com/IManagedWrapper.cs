@@ -39,3 +39,51 @@ internal interface IManagedWrapper<TComInterface1, TComInterface2> : IManagedWra
 
     ComInterfaceTable IManagedWrapper.GetInterfaceTable() => InterfaceTable;
 }
+
+/// <summary>
+///  Apply to a class to apply a COM callable wrapper of the given interfaces. The class must also derive from the
+///  given COM wrapper structs' nested Interfaces.
+/// </summary>
+internal interface IManagedWrapper<TComInterface1, TComInterface2, TComInterface3> : IManagedWrapper
+    where TComInterface1 : unmanaged, IComIID, IVTable
+    where TComInterface2 : unmanaged, IComIID, IVTable
+    where TComInterface3 : unmanaged, IComIID, IVTable
+{
+    private static ComInterfaceTable InterfaceTable { get; set; }
+        = ComInterfaceTable.Create<TComInterface1, TComInterface2, TComInterface3>();
+
+    ComInterfaceTable IManagedWrapper.GetInterfaceTable() => InterfaceTable;
+}
+
+/// <summary>
+///  Apply to a class to apply a COM callable wrapper of the given interfaces. The class must also derive from the
+///  given COM wrapper structs' nested Interfaces.
+/// </summary>
+internal interface IManagedWrapper<TComInterface1, TComInterface2, TComInterface3, TComInterface4> : IManagedWrapper
+    where TComInterface1 : unmanaged, IComIID, IVTable
+    where TComInterface2 : unmanaged, IComIID, IVTable
+    where TComInterface3 : unmanaged, IComIID, IVTable
+    where TComInterface4 : unmanaged, IComIID, IVTable
+{
+    private static ComInterfaceTable InterfaceTable { get; set; }
+        = ComInterfaceTable.Create<TComInterface1, TComInterface2, TComInterface3, TComInterface4>();
+
+    ComInterfaceTable IManagedWrapper.GetInterfaceTable() => InterfaceTable;
+}
+
+/// <summary>
+///  Apply to a class to apply a COM callable wrapper of the given interfaces. The class must also derive from the
+///  given COM wrapper structs' nested Interfaces.
+/// </summary>
+internal interface IManagedWrapper<TComInterface1, TComInterface2, TComInterface3, TComInterface4, TComInterface5> : IManagedWrapper
+    where TComInterface1 : unmanaged, IComIID, IVTable
+    where TComInterface2 : unmanaged, IComIID, IVTable
+    where TComInterface3 : unmanaged, IComIID, IVTable
+    where TComInterface4 : unmanaged, IComIID, IVTable
+    where TComInterface5 : unmanaged, IComIID, IVTable
+{
+    private static ComInterfaceTable InterfaceTable { get; set; }
+        = ComInterfaceTable.Create<TComInterface1, TComInterface2, TComInterface3, TComInterface4, TComInterface5>();
+
+    ComInterfaceTable IManagedWrapper.GetInterfaceTable() => InterfaceTable;
+}

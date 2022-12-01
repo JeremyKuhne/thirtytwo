@@ -53,7 +53,7 @@ internal static unsafe class Com
             return null;
         }
 
-        IUnknown* ccw = CustomComWrapper.GetComInterfaceForObject(obj);
+        IUnknown* ccw = CustomComWrappers.GetComInterfaceForObject(obj);
         if (ccw is null)
         {
             // Not handled, fall back to classic COM interop methods.

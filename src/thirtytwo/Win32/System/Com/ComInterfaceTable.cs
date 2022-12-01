@@ -60,4 +60,127 @@ internal unsafe readonly struct ComInterfaceTable
             Count = 2
         };
     }
+
+    /// <summary>
+    ///  Create an interface table for the given interfaces.
+    /// </summary>
+    public static ComInterfaceTable Create<TComInterface1, TComInterface2, TComInterface3>()
+        where TComInterface1 : unmanaged, IComIID, IVTable
+        where TComInterface2 : unmanaged, IComIID, IVTable
+        where TComInterface3 : unmanaged, IComIID, IVTable
+    {
+        ComInterfaceEntry* entries = (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(TComInterface1), sizeof(ComInterfaceEntry) * 3);
+        entries[0] = new()
+        {
+            Vtable = (nint)TComInterface1.GetVTable(),
+            IID = *IID.Get<TComInterface1>()
+        };
+
+        entries[1] = new()
+        {
+            Vtable = (nint)TComInterface2.GetVTable(),
+            IID = *IID.Get<TComInterface2>()
+        };
+
+        entries[2] = new()
+        {
+            Vtable = (nint)TComInterface3.GetVTable(),
+            IID = *IID.Get<TComInterface3>()
+        };
+
+        return new()
+        {
+            Entries = entries,
+            Count = 3
+        };
+    }
+
+    /// <summary>
+    ///  Create an interface table for the given interfaces.
+    /// </summary>
+    public static ComInterfaceTable Create<TComInterface1, TComInterface2, TComInterface3, TComInterface4>()
+        where TComInterface1 : unmanaged, IComIID, IVTable
+        where TComInterface2 : unmanaged, IComIID, IVTable
+        where TComInterface3 : unmanaged, IComIID, IVTable
+        where TComInterface4 : unmanaged, IComIID, IVTable
+    {
+        ComInterfaceEntry* entries = (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(TComInterface1), sizeof(ComInterfaceEntry) * 4);
+        entries[0] = new()
+        {
+            Vtable = (nint)TComInterface1.GetVTable(),
+            IID = *IID.Get<TComInterface1>()
+        };
+
+        entries[1] = new()
+        {
+            Vtable = (nint)TComInterface2.GetVTable(),
+            IID = *IID.Get<TComInterface2>()
+        };
+
+        entries[2] = new()
+        {
+            Vtable = (nint)TComInterface3.GetVTable(),
+            IID = *IID.Get<TComInterface3>()
+        };
+
+        entries[3] = new()
+        {
+            Vtable = (nint)TComInterface4.GetVTable(),
+            IID = *IID.Get<TComInterface4>()
+        };
+
+        return new()
+        {
+            Entries = entries,
+            Count = 4
+        };
+    }
+
+    /// <summary>
+    ///  Create an interface table for the given interfaces.
+    /// </summary>
+    public static ComInterfaceTable Create<TComInterface1, TComInterface2, TComInterface3, TComInterface4, TComInterface5>()
+        where TComInterface1 : unmanaged, IComIID, IVTable
+        where TComInterface2 : unmanaged, IComIID, IVTable
+        where TComInterface3 : unmanaged, IComIID, IVTable
+        where TComInterface4 : unmanaged, IComIID, IVTable
+        where TComInterface5 : unmanaged, IComIID, IVTable
+    {
+        ComInterfaceEntry* entries = (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(TComInterface1), sizeof(ComInterfaceEntry) * 5);
+        entries[0] = new()
+        {
+            Vtable = (nint)TComInterface1.GetVTable(),
+            IID = *IID.Get<TComInterface1>()
+        };
+
+        entries[1] = new()
+        {
+            Vtable = (nint)TComInterface2.GetVTable(),
+            IID = *IID.Get<TComInterface2>()
+        };
+
+        entries[2] = new()
+        {
+            Vtable = (nint)TComInterface3.GetVTable(),
+            IID = *IID.Get<TComInterface3>()
+        };
+
+        entries[3] = new()
+        {
+            Vtable = (nint)TComInterface4.GetVTable(),
+            IID = *IID.Get<TComInterface4>()
+        };
+
+        entries[3] = new()
+        {
+            Vtable = (nint)TComInterface5.GetVTable(),
+            IID = *IID.Get<TComInterface5>()
+        };
+
+        return new()
+        {
+            Entries = entries,
+            Count = 5
+        };
+    }
 }

@@ -84,12 +84,15 @@ public unsafe abstract class EnumUnknown : IEnumUnknown.Interface, IManagedWrapp
             return HRESULT.E_INVALIDARG;
         }
 
-        *ppenum = Com.TryGetComPointer<IEnumUnknown>(Clone(_index), out HRESULT hr);
+        EnumUnknown clone = Clone();
+        clone._index = _index;
+
+        *ppenum = Com.TryGetComPointer<IEnumUnknown>(clone, out HRESULT hr);
         return hr;
     }
 
     /// <summary>
     ///  Clones the current object with the same enumeration state.
     /// </summary>
-    protected abstract EnumUnknown Clone(int index);
+    protected abstract EnumUnknown Clone();
 }

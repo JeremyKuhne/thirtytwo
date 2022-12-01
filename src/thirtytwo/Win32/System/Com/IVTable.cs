@@ -30,7 +30,7 @@ internal unsafe interface IVTable<TComInterface, TVTable> : IVTable
         if (VTable is null)
         {
             TVTable* vtable = (TVTable*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(TVTable), sizeof(TVTable));
-            CustomComWrapper.PopulateIUnknown((IUnknown.Vtbl*)vtable);
+            CustomComWrappers.PopulateIUnknown((IUnknown.Vtbl*)vtable);
             VTable = vtable;
             TComInterface.InitializeVTable(VTable);
         }

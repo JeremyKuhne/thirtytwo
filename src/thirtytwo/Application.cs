@@ -133,7 +133,7 @@ public static unsafe class Application
         }
     }
 
-    private static LRESULT? Window_QuitHandler(object _, HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
+    private static LRESULT? Window_QuitHandler(object obj, HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
     {
         if (message == MessageType.Destroy)
         {
