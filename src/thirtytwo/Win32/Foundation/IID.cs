@@ -10,11 +10,26 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Windows.Win32.Foundation;
 
 internal static unsafe class IID
 {
+    private static ref readonly Guid IID_NULL
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            ReadOnlySpan<byte> data = new byte[]
+            {
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+            };
+
+            return ref Unsafe.As<byte, Guid>(ref MemoryMarshal.GetReference(data));
+        }
+    }
+
     // We cast away the "readonly" here as there is no way to communicate that through a pointer and
     // Marshal APIs take the Guid as ref. Even though none of our usages actually change the state.
 
@@ -29,4 +44,6 @@ internal static unsafe class IID
     {
         return ref Unsafe.AsRef(in T.Guid);
     }
+
+    public static Guid* NULL() => (Guid*)Unsafe.AsPointer(ref Unsafe.AsRef(in IID_NULL));
 }

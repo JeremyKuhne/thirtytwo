@@ -25,7 +25,6 @@ public sealed unsafe class AgileComPointer<TInterface> : IDisposable
 
         // We let the GlobalInterfaceTable maintain the ref count here
         uint count = ((IUnknown*)@interface)->Release();
-        Debug.Assert(count == 1);
     }
 
     public ComScope<TInterface> GetInterface()

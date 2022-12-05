@@ -2,7 +2,7 @@
 root = true
 
 # Native .cs files
-[**Native/*.cs]
+[**/Win32/**/I*.cs]
 
 # SA1015: Closing generic bracket should be followed by a space.
 dotnet_diagnostic.SA1015.severity = none

@@ -14,6 +14,7 @@ public unsafe partial class WindowClass : IDisposable
     private readonly string _className;
     private readonly WindowClassInfo? _windowClass;
     private bool _disposedValue;
+    private object _lock = new();
 
     public ATOM Atom { get; private set; }
     public HINSTANCE ModuleInstance { get; }
@@ -107,7 +108,13 @@ public unsafe partial class WindowClass : IDisposable
     {
         if (_windowClass is not null && !IsRegistered)
         {
-            Atom = _windowClass.Register();
+            lock (_lock)
+            {
+                if (_windowClass is not null && !IsRegistered)
+                {
+                    Atom = _windowClass.Register();
+                }
+            }
         }
 
         return this;

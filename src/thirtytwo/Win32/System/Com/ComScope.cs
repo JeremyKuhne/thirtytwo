@@ -42,6 +42,8 @@ public readonly unsafe ref struct ComScope<T> where T : unmanaged, IComIID
 
     public ComScope(T* value) => _value = (nint)value;
 
+    public ComScope(void* value) => _value = (nint)value;
+
     public static implicit operator T*(in ComScope<T> scope) => (T*)scope._value;
 
     public static implicit operator void*(in ComScope<T> scope) => (void*)scope._value;
@@ -60,6 +62,13 @@ public readonly unsafe ref struct ComScope<T> where T : unmanaged, IComIID
     {
         ComScope<T> scope = new(null);
         result = ((IUnknown*)from)->QueryInterface(IID.Get<T>(), scope);
+        return scope;
+    }
+
+    public static ComScope<T> QueryFrom<TFrom>(TFrom* from) where TFrom : unmanaged, IComIID
+    {
+        ComScope<T> scope = new(null);
+        ((IUnknown*)from)->QueryInterface(IID.Get<T>(), scope).ThrowOnFailure();
         return scope;
     }
 

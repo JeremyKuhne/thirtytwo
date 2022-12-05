@@ -4,6 +4,7 @@ BeginPaint
 BOOLEAN
 BS_*
 CallWindowProc
+CHILDID_SELF
 CLASS_E_NOTLICENSED
 CLEARTYPE_NATURAL_QUALITY
 ClientToScreen
@@ -11,9 +12,13 @@ CoCreateInstance
 CoGetClassObject
 CoTaskMemFree
 CreateActCtx
+CreateDispTypeInfo
 CreateErrorInfo
 CreateFont
 CreateFontIndirect
+CreateStdAccessibleObject
+CreateStdAccessibleProxy
+CreateStdDispatch
 CREATESTRUCTW
 CreateWindowEx
 CW_USEDEFAULT
@@ -22,6 +27,9 @@ DefWindowProc
 DeleteDC
 DestroyWindow
 DispatchMessage
+DISP_E_*
+DISPID_ACC_*
+DISPID_UNKNOWN
 DPI_AWARENESS_CONTEXT_*
 DRAWITEMSTRUCT
 DrawTextEx
@@ -72,11 +80,13 @@ GetWindowText
 GetWindowTextLength
 HFONT
 HRESULT
+IAccessible
 IClassFactory2
 IConnectionPoint
 IConnectionPointContainer
 ICreateErrorInfo
 IDI_*
+IDispatch
 IErrorInfo
 IFileDialog
 IFileDialogControlEvents
@@ -86,6 +96,7 @@ IFileOpenDialog
 IGlobalInterfaceTable
 IModalWindow
 InitCommonControlsEx
+INTERFACEDATA
 INVALID_HANDLE_VALUE
 InvalidateRect
 IOleClientSite
@@ -98,11 +109,14 @@ IOleWindow
 IsWindowEnabled
 IsWindowVisible
 IUnknown
+LIBFLAGS
 LoadCursor
 LoadIcon
+LoadRegTypeLib
 LocalFree
 LOGFONTW
 MessageBoxEx
+METHODDATA
 MODIFIERKEYS_FLAGS
 MoveWindow
 MSGF_*
@@ -110,6 +124,8 @@ MulDiv
 NTSTATUS
 OLEIVERB_*
 OBJ_TYPE
+OBJECT_IDENTIFIER
+PARAMDATA
 WIN32_ERROR
 WM_*
 PeekMessage
@@ -138,5 +154,6 @@ SYS_COLOR_INDEX
 TaskDialog
 TD_*
 TranslateMessage
+TYPEFLAGS
 UpdateWindow
 WINDOWPOS

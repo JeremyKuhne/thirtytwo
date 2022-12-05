@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 
 namespace Windows.Win32.System.Com;
 
@@ -19,9 +20,20 @@ internal unsafe sealed class CustomComWrappers : ComWrappers
     }
 
     internal static IUnknown* GetComInterfaceForObject(object obj)
-        => obj is IManagedWrapper
-            ? (IUnknown*)Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None)
-            : null;
+    {
+        if (obj is not IManagedWrapper)
+        {
+            return null;
+        }
+
+        IUnknown* result = (IUnknown*)Instance.GetOrCreateComInterfaceForObject(obj, CreateComInterfaceFlags.None);
+        if (obj is IWrapperInitialize initialize)
+        {
+            initialize.OnInitialized(result);
+        }
+
+        return result;
+    }
 
     protected override unsafe ComInterfaceEntry* ComputeVtables(object obj, CreateComInterfaceFlags flags, out int count)
     {
