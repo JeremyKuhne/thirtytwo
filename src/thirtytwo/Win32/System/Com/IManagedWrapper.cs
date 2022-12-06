@@ -21,7 +21,7 @@ internal interface IManagedWrapper
 internal interface IManagedWrapper<TComInterface> : IManagedWrapper
     where TComInterface : unmanaged, IComIID, IVTable
 {
-    private static ComInterfaceTable InterfaceTable { get; set; } = ComInterfaceTable.Create<TComInterface>();
+    private static ComInterfaceTable InterfaceTable { get; } = ComInterfaceTable.Create<TComInterface>();
 
     ComInterfaceTable IManagedWrapper.GetInterfaceTable() => InterfaceTable;
 }
@@ -35,7 +35,7 @@ internal interface IManagedWrapper<TComInterface1, TComInterface2> : IManagedWra
     where TComInterface1 : unmanaged, IComIID, IVTable
     where TComInterface2 : unmanaged, IComIID, IVTable
 {
-    private static ComInterfaceTable InterfaceTable { get; set; } = ComInterfaceTable.Create<TComInterface1, TComInterface2>();
+    private static ComInterfaceTable InterfaceTable { get; } = ComInterfaceTable.Create<TComInterface1, TComInterface2>();
 
     ComInterfaceTable IManagedWrapper.GetInterfaceTable() => InterfaceTable;
 }
@@ -49,7 +49,7 @@ internal interface IManagedWrapper<TComInterface1, TComInterface2, TComInterface
     where TComInterface2 : unmanaged, IComIID, IVTable
     where TComInterface3 : unmanaged, IComIID, IVTable
 {
-    private static ComInterfaceTable InterfaceTable { get; set; }
+    private static ComInterfaceTable InterfaceTable { get; }
         = ComInterfaceTable.Create<TComInterface1, TComInterface2, TComInterface3>();
 
     ComInterfaceTable IManagedWrapper.GetInterfaceTable() => InterfaceTable;
@@ -65,7 +65,7 @@ internal interface IManagedWrapper<TComInterface1, TComInterface2, TComInterface
     where TComInterface3 : unmanaged, IComIID, IVTable
     where TComInterface4 : unmanaged, IComIID, IVTable
 {
-    private static ComInterfaceTable InterfaceTable { get; set; }
+    private static ComInterfaceTable InterfaceTable { get; }
         = ComInterfaceTable.Create<TComInterface1, TComInterface2, TComInterface3, TComInterface4>();
 
     ComInterfaceTable IManagedWrapper.GetInterfaceTable() => InterfaceTable;
@@ -82,7 +82,7 @@ internal interface IManagedWrapper<TComInterface1, TComInterface2, TComInterface
     where TComInterface4 : unmanaged, IComIID, IVTable
     where TComInterface5 : unmanaged, IComIID, IVTable
 {
-    private static ComInterfaceTable InterfaceTable { get; set; }
+    private static ComInterfaceTable InterfaceTable { get; }
         = ComInterfaceTable.Create<TComInterface1, TComInterface2, TComInterface3, TComInterface4, TComInterface5>();
 
     ComInterfaceTable IManagedWrapper.GetInterfaceTable() => InterfaceTable;
