@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.Numerics;
+using Windows.Components;
 using Windows.Support;
 
 namespace Windows;
