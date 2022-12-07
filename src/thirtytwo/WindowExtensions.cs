@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Support;
-using Windows.Win32.UI.Controls;
 
 namespace Windows;
 

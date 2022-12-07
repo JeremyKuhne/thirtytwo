@@ -3,7 +3,6 @@
 
 using System.Drawing;
 using Windows.Support;
-using Windows.Win32.Foundation;
 
 namespace Windows;
 

@@ -3,7 +3,6 @@
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Windows.Win32.UI.Accessibility;
 using static Windows.Win32.System.Com.Com;
 
 namespace Windows.Win32.System.Com;
