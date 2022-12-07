@@ -20,17 +20,14 @@ internal unsafe readonly struct ComInterfaceTable
     public static ComInterfaceTable Create<TComInterface>()
         where TComInterface : unmanaged, IComIID, IVTable
     {
-        ComInterfaceEntry* entries = (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(TComInterface), sizeof(ComInterfaceEntry));
-        entries[0] = new()
-        {
-            Vtable = (nint)TComInterface.GetVTable(),
-            IID = *IID.Get<TComInterface>()
-        };
+        Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface>(2);
+        entries[0] = GetEntry<IComCallableWrapper>();
+        entries[1] = GetEntry<TComInterface>();
 
         return new()
         {
-            Entries = entries,
-            Count = 1
+            Entries = (ComInterfaceEntry*)Unsafe.AsPointer(ref entries[0]),
+            Count = entries.Length
         };
     }
 
@@ -41,23 +38,15 @@ internal unsafe readonly struct ComInterfaceTable
         where TComInterface1 : unmanaged, IComIID, IVTable
         where TComInterface2 : unmanaged, IComIID, IVTable
     {
-        ComInterfaceEntry* entries = (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(TComInterface1), sizeof(ComInterfaceEntry) * 2);
-        entries[0] = new()
-        {
-            Vtable = (nint)TComInterface1.GetVTable(),
-            IID = *IID.Get<TComInterface1>()
-        };
-
-        entries[1] = new()
-        {
-            Vtable = (nint)TComInterface2.GetVTable(),
-            IID = *IID.Get<TComInterface2>()
-        };
+        Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface1>(3);
+        entries[0] = GetEntry<IComCallableWrapper>();
+        entries[1] = GetEntry<TComInterface1>();
+        entries[2] = GetEntry<TComInterface2>();
 
         return new()
         {
-            Entries = entries,
-            Count = 2
+            Entries = (ComInterfaceEntry*)Unsafe.AsPointer(ref entries[0]),
+            Count = entries.Length
         };
     }
 
@@ -69,29 +58,16 @@ internal unsafe readonly struct ComInterfaceTable
         where TComInterface2 : unmanaged, IComIID, IVTable
         where TComInterface3 : unmanaged, IComIID, IVTable
     {
-        ComInterfaceEntry* entries = (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(TComInterface1), sizeof(ComInterfaceEntry) * 3);
-        entries[0] = new()
-        {
-            Vtable = (nint)TComInterface1.GetVTable(),
-            IID = *IID.Get<TComInterface1>()
-        };
-
-        entries[1] = new()
-        {
-            Vtable = (nint)TComInterface2.GetVTable(),
-            IID = *IID.Get<TComInterface2>()
-        };
-
-        entries[2] = new()
-        {
-            Vtable = (nint)TComInterface3.GetVTable(),
-            IID = *IID.Get<TComInterface3>()
-        };
+        Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface1>(4);
+        entries[0] = GetEntry<IComCallableWrapper>();
+        entries[1] = GetEntry<TComInterface1>();
+        entries[2] = GetEntry<TComInterface2>();
+        entries[3] = GetEntry<TComInterface3>();
 
         return new()
         {
-            Entries = entries,
-            Count = 3
+            Entries = (ComInterfaceEntry*)Unsafe.AsPointer(ref entries[0]),
+            Count = entries.Length
         };
     }
 
@@ -104,35 +80,17 @@ internal unsafe readonly struct ComInterfaceTable
         where TComInterface3 : unmanaged, IComIID, IVTable
         where TComInterface4 : unmanaged, IComIID, IVTable
     {
-        ComInterfaceEntry* entries = (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(TComInterface1), sizeof(ComInterfaceEntry) * 4);
-        entries[0] = new()
-        {
-            Vtable = (nint)TComInterface1.GetVTable(),
-            IID = *IID.Get<TComInterface1>()
-        };
-
-        entries[1] = new()
-        {
-            Vtable = (nint)TComInterface2.GetVTable(),
-            IID = *IID.Get<TComInterface2>()
-        };
-
-        entries[2] = new()
-        {
-            Vtable = (nint)TComInterface3.GetVTable(),
-            IID = *IID.Get<TComInterface3>()
-        };
-
-        entries[3] = new()
-        {
-            Vtable = (nint)TComInterface4.GetVTable(),
-            IID = *IID.Get<TComInterface4>()
-        };
+        Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface1>(5);
+        entries[0] = GetEntry<IComCallableWrapper>();
+        entries[1] = GetEntry<TComInterface1>();
+        entries[2] = GetEntry<TComInterface2>();
+        entries[3] = GetEntry<TComInterface3>();
+        entries[4] = GetEntry<TComInterface4>();
 
         return new()
         {
-            Entries = entries,
-            Count = 4
+            Entries = (ComInterfaceEntry*)Unsafe.AsPointer(ref entries[0]),
+            Count = entries.Length
         };
     }
 
@@ -146,41 +104,32 @@ internal unsafe readonly struct ComInterfaceTable
         where TComInterface4 : unmanaged, IComIID, IVTable
         where TComInterface5 : unmanaged, IComIID, IVTable
     {
-        ComInterfaceEntry* entries = (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(TComInterface1), sizeof(ComInterfaceEntry) * 5);
-        entries[0] = new()
-        {
-            Vtable = (nint)TComInterface1.GetVTable(),
-            IID = *IID.Get<TComInterface1>()
-        };
-
-        entries[1] = new()
-        {
-            Vtable = (nint)TComInterface2.GetVTable(),
-            IID = *IID.Get<TComInterface2>()
-        };
-
-        entries[2] = new()
-        {
-            Vtable = (nint)TComInterface3.GetVTable(),
-            IID = *IID.Get<TComInterface3>()
-        };
-
-        entries[3] = new()
-        {
-            Vtable = (nint)TComInterface4.GetVTable(),
-            IID = *IID.Get<TComInterface4>()
-        };
-
-        entries[3] = new()
-        {
-            Vtable = (nint)TComInterface5.GetVTable(),
-            IID = *IID.Get<TComInterface5>()
-        };
+        Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface1>(6);
+        entries[0] = GetEntry<IComCallableWrapper>();
+        entries[1] = GetEntry<TComInterface1>();
+        entries[2] = GetEntry<TComInterface2>();
+        entries[3] = GetEntry<TComInterface3>();
+        entries[4] = GetEntry<TComInterface4>();
+        entries[5] = GetEntry<TComInterface5>();
 
         return new()
         {
-            Entries = entries,
-            Count = 5
+            Entries = (ComInterfaceEntry*)Unsafe.AsPointer(ref entries[0]),
+            Count = entries.Length
         };
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Span<ComInterfaceEntry> AllocateEntries<T>(int count)
+        => new(
+            (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(T), sizeof(ComInterfaceEntry) * count),
+            count);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static ComInterfaceEntry GetEntry<TComInterface>() where TComInterface : unmanaged, IComIID, IVTable
+        => new()
+        {
+            Vtable = (nint)TComInterface.GetVTable(),
+            IID = *IID.Get<TComInterface>()
+        };
 }

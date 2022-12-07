@@ -2,7 +2,7 @@
 root = true
 
 # Native .cs files
-[**/Win32/**/I*.cs]
+[**/Win32/**/*.cs]
 
 # SA1015: Closing generic bracket should be followed by a space.
 dotnet_diagnostic.SA1015.severity = none
@@ -119,7 +119,7 @@ csharp_preferred_modifier_order = public,private,protected,internal,static,exter
 
 # Code-block preferences
 csharp_prefer_braces = true:silent
-csharp_prefer_simple_using_statement = true:suggestion
+csharp_prefer_simple_using_statement = true:warning
 
 # Expression-level preferences
 csharp_prefer_simple_default_expression = true:suggestion
@@ -133,7 +133,7 @@ csharp_style_unused_value_assignment_preference = discard_variable:suggestion
 csharp_style_unused_value_expression_statement_preference = discard_variable:silent
 
 # 'using' directive preferences
-csharp_using_directive_placement = outside_namespace:warning
+csharp_using_directive_placement = outside_namespace:error
 csharp_style_namespace_declarations = file_scoped:warning
 
 # New line preferences
@@ -366,6 +366,9 @@ csharp_style_prefer_local_over_anonymous_function = true:suggestion
 dotnet_diagnostic.SA1617.severity = silent
 dotnet_diagnostic.xUnit1004.severity = silent
 
+# IDE0005: Using directive is unnecessary.
+dotnet_diagnostic.IDE0005.severity = error
+
 [*.{cs,vb}]
 dotnet_style_coalesce_expression = true:suggestion
 dotnet_style_null_propagation = true:suggestion
@@ -385,3 +388,5 @@ indent_size = 4
 end_of_line = crlf
 dotnet_style_prefer_compound_assignment = true:suggestion
 dotnet_code_quality_unused_parameters = all:suggestion
+dotnet_style_prefer_simplified_interpolation = true:suggestion
+dotnet_style_namespace_match_folder = true:suggestion
