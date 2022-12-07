@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Windows.Components;
 using Windows.Support;
 using Windows.Win32.System.Com;
 using Windows.Win32.System.Ole;

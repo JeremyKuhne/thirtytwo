@@ -3,7 +3,7 @@
 
 using System.ComponentModel;
 
-namespace Windows;
+namespace Windows.Components;
 
 /// <summary>
 ///  Lighter weight replacement for <see cref="Component"/>.
