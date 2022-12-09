@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "thirtytwo_tests": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

@@ -38,29 +38,11 @@ public unsafe partial struct IAccessible : IVTable<IAccessible, IAccessible.Vtbl
 
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static HRESULT get_accParent(IAccessible* @this, IDispatch** ppdispParent)
-        => UnwrapAndInvoke<IAccessible, Interface>(@this, o =>
-        {
-            if (ppdispParent is null)
-            {
-                return HRESULT.E_POINTER;
-            }
-
-            *ppdispParent = o.accParent;
-            return HRESULT.S_OK;
-        });
+        => UnwrapAndInvoke<IAccessible, Interface>(@this, o => o.get_accParent(ppdispParent));
 
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static HRESULT get_accChildCount(IAccessible* @this, int* pcountChildren)
-        => UnwrapAndInvoke<IAccessible, Interface>(@this, o =>
-        {
-            if (pcountChildren is null)
-            {
-                return HRESULT.E_POINTER;
-            }
-
-            *pcountChildren = o.accChildCount;
-            return HRESULT.S_OK;
-        });
+        => UnwrapAndInvoke<IAccessible, Interface>(@this, o => o.get_accChildCount(pcountChildren));
 
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static HRESULT get_accChild(IAccessible* @this, VARIANT varChild, IDispatch** ppdispChild)
@@ -100,29 +82,11 @@ public unsafe partial struct IAccessible : IVTable<IAccessible, IAccessible.Vtbl
 
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static HRESULT get_accFocus(IAccessible* @this, VARIANT* pvarChild)
-        => UnwrapAndInvoke<IAccessible, Interface>(@this, o =>
-        {
-            if (pvarChild is null)
-            {
-                return HRESULT.E_POINTER;
-            }
-
-            *pvarChild = o.accFocus;
-            return HRESULT.S_OK;
-        });
+        => UnwrapAndInvoke<IAccessible, Interface>(@this, o => o.get_accFocus(pvarChild));
 
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
-    private static HRESULT get_accSelection(IAccessible* @this, VARIANT *pvarChildren)
-        => UnwrapAndInvoke<IAccessible, Interface>(@this, o =>
-        {
-            if (pvarChildren is null)
-            {
-                return HRESULT.E_POINTER;
-            }
-
-            *pvarChildren = o.accSelection;
-            return HRESULT.S_OK;
-        });
+    private static HRESULT get_accSelection(IAccessible* @this, VARIANT* pvarChildren)
+        => UnwrapAndInvoke<IAccessible, Interface>(@this, o => o.get_accSelection(pvarChildren));
 
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
     private static HRESULT get_accDefaultAction(IAccessible* @this, VARIANT varChild, BSTR *pszDefaultAction)

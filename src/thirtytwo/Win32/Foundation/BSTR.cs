@@ -20,5 +20,12 @@ public readonly unsafe partial struct BSTR : IDisposable
         }
     }
 
+    public string ToStringAndFree()
+    {
+        string result = ToString();
+        Dispose();
+        return result;
+    }
+
     public bool IsNull => Value is null;
 }

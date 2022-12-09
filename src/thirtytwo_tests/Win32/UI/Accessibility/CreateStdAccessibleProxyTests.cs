@@ -8,8 +8,87 @@ using Windows.Win32.System.Com;
 using Windows.Win32.System.Ole;
 using Windows.Win32.UI.Accessibility;
 using Windows.Win32.UI.WindowsAndMessaging;
+using IServiceProvider = Windows.Win32.System.Com.IServiceProvider;
 
 namespace Tests.Windows.Win32.UI.Accessibility;
+
+public unsafe class CreateStdAccessibleObjectTests
+{
+    [StaFact]
+    public void CreateStdAccessibleObject_Window()
+    {
+        // Default accessibility objects implement the following publicly documented interfaces:
+        //
+        //      IAccessible, IEnumVARIANT, IOleWindow, IServiceProvider, IAccIdentity
+
+        using Window window = new(Window.DefaultBounds);
+
+        // using ComScope<IAccessible> accessible = new(null);
+        // HRESULT hr = Interop.AccessibleObjectFromWindow(
+        //     window,
+        //     (uint)OBJECT_IDENTIFIER.OBJID_WINDOW,
+        //     IID.Get<IDispatch>(),
+        //     accessible);
+
+        HRESULT hr = Interop.CreateStdAccessibleObject(
+            window.Handle,
+            (int)OBJECT_IDENTIFIER.OBJID_WINDOW,
+            IID.GetRef<IAccessible>(),
+            out void* ppvObject);
+
+        hr.Succeeded.Should().BeTrue();
+        using ComScope<IAccessible> accessible = new(ppvObject);
+
+        // For OBJID_WINDOW the child count is always 7 (OBJID_SYSMENU through OBJID_SIZEGRIP)
+        accessible.Value->get_accChildCount(out int childCount).Succeeded.Should().BeTrue();
+        childCount.Should().Be(7);
+
+        using BSTR description = default;
+        accessible.Value->get_accDescription((VARIANT)(int)Interop.CHILDID_SELF, &description).Should().Be(HRESULT.S_FALSE);
+        accessible.Value->get_accDescription((VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU, &description).Succeeded.Should().BeTrue();
+        description.ToStringAndFree().Should().Be("Contains commands to manipulate the window");
+
+        // Navigating left from the system menu goes nowhere.
+        VARIANT result = accessible.Value->accNavigate((int)Interop.NAVDIR_LEFT, (VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU);
+        result.vt.Should().Be(VARENUM.VT_EMPTY);
+
+        // We get IDispatch for the title bar going right from the system menu and it implements IAccessibleEx and IRawElementProvider.
+        result = accessible.Value->accNavigate((int)Interop.NAVDIR_RIGHT, (VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU);
+        using ComScope<IDispatch> right = new((IDispatch*)result);
+        using ComScope<IAccessibleEx> accessibleEx = right.QueryInterface<IAccessibleEx>();
+        accessibleEx.IsNull.Should().BeFalse();
+        using ComScope<IRawElementProviderSimple> elementProvider = right.QueryInterface<IRawElementProviderSimple>();
+
+        // The title bar is not content, and it's ID is "TitleBar"
+        elementProvider.IsNull.Should().BeFalse();
+        result = elementProvider.Value->GetPropertyValue(UIA_PROPERTY_ID.UIA_IsContentElementPropertyId);
+        ((bool)result).Should().BeFalse();
+
+        using ComScope<IEnumVARIANT> enumVariant = accessible.QueryInterface<IEnumVARIANT>(out hr);
+        hr.Succeeded.Should().BeTrue();
+
+        using ComScope<IOleWindow> oleWindow = accessible.QueryInterface<IOleWindow>(out hr);
+        hr.Succeeded.Should().BeTrue();
+        oleWindow.Value->GetWindow(out HWND hwnd);
+
+        // Not sure why this is the case. Proxy behavior?
+        hwnd.Should().Be((HWND)1);
+
+        using ComScope<IServiceProvider> serviceProvider = accessible.QueryInterface<IServiceProvider>(out hr);
+        hr.Succeeded.Should().BeTrue();
+
+        using ComScope<IAccIdentity> identity = accessible.QueryInterface<IAccIdentity>(out hr);
+        hr.Succeeded.Should().BeTrue();
+
+        // This AVs in oleacc.dll.
+
+        // byte* id = default;
+        // uint length;
+        // identity.Value->GetIdentityString(Interop.CHILDID_SELF, &id, &length);
+        // Span<byte> idSpan = new(id, (int)length);
+        // Interop.CoTaskMemFree(id);
+    }
+}
 
 public unsafe class CreateStdAccessibleProxyTests
 {
