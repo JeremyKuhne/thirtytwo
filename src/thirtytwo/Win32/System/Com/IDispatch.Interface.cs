@@ -9,7 +9,7 @@ namespace Windows.Win32.System.Com;
 
 public unsafe partial struct IDispatch : IVTable<IDispatch, IDispatch.Vtbl>
 {
-    public static void InitializeVTable(Vtbl* vtable)
+    public static void PopulateVTable(Vtbl* vtable)
     {
         vtable->GetTypeInfoCount_4 = &GetTypeInfoCount;
         vtable->GetTypeInfo_5 = &GetTypeInfo;

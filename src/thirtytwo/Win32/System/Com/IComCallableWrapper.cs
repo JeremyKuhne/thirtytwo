@@ -73,5 +73,5 @@ public unsafe struct IComCallableWrapper : IComIID, IVTable<IComCallableWrapper,
     {
     }
 
-    static void IVTable<IComCallableWrapper, Vtbl>.InitializeVTable(Vtbl* vtable) { }
+    static void IVTable<IComCallableWrapper, Vtbl>.PopulateVTable(Vtbl* vtable) { }
 }

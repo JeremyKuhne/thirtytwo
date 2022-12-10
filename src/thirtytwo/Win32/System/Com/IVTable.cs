@@ -23,16 +23,17 @@ internal unsafe interface IVTable<TComInterface, TVTable> : IVTable
     /// <summary>
     ///  Populate the <see cref="VTable"/> with the function pointers.
     /// </summary>
-    private protected static abstract void InitializeVTable(TVTable* vtable);
+    private protected static abstract void PopulateVTable(TVTable* vtable);
 
     static IUnknown.Vtbl* IVTable.GetVTable()
     {
         if (VTable is null)
         {
             TVTable* vtable = (TVTable*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(TVTable), sizeof(TVTable));
+            // This needs to be an extension point (partial method somewhere?)
             CustomComWrappers.PopulateIUnknown((IUnknown.Vtbl*)vtable);
             VTable = vtable;
-            TComInterface.InitializeVTable(VTable);
+            TComInterface.PopulateVTable(VTable);
         }
 
         return (IUnknown.Vtbl*)VTable;
