@@ -5,6 +5,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
 using Windows.Win32.UI.Accessibility;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Tests.Windows.Win32.UI.Accessibility;
 
@@ -63,10 +64,10 @@ public unsafe class AccessibleBaseTests
 
         public int ChildRequested { get; private set; } = -1;
 
-        public override unsafe HRESULT get_accChild(VARIANT varChild, IDispatch** ppdispChild)
+        protected override unsafe IDispatch* GetChild(int childId)
         {
-            ChildRequested = (int)varChild;
-            return HRESULT.S_OK;
+            ChildRequested = childId;
+            return null;
         }
     }
 }

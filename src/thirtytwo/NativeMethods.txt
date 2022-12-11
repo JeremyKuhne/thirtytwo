@@ -1,4 +1,7 @@
-﻿ACTCTX_FLAG_*
+﻿AccessibleObjectFromEvent
+AccessibleObjectFromPoint
+AccessibleObjectFromWindow
+ACTCTX_FLAG_*
 ActivateActCtx
 BeginPaint
 BOOLEAN
@@ -81,12 +84,15 @@ GetWindowTextLength
 HFONT
 HRESULT
 IAccessible
+IAccessibleEx
+IAccIdentity
 IClassFactory2
 IConnectionPoint
 IConnectionPointContainer
 ICreateErrorInfo
 IDI_*
 IDispatch
+IEnumVARIANT
 IErrorInfo
 IFileDialog
 IFileDialogControlEvents
@@ -106,6 +112,8 @@ IOleInPlaceSite
 IOleInPlaceFrame
 IOleObject
 IOleWindow
+IRawElementProviderSimple
+IServiceProvider
 IsWindowEnabled
 IsWindowVisible
 IUnknown
@@ -121,6 +129,7 @@ MODIFIERKEYS_FLAGS
 MoveWindow
 MSGF_*
 MulDiv
+NAVDIR_*
 NTSTATUS
 OLEIVERB_*
 OBJ_TYPE
@@ -133,10 +142,12 @@ POINTS
 PostMessage
 PostQuitMessage
 RegisterClassEx
+ROLE_SYSTEM_*
 S_FALSE
 S_OK
 ScreenToClient
 SendMessage
+SELFLAG_*
 SelectObject
 SetActiveWindow
 SetFocus
@@ -149,6 +160,7 @@ SetWorldTransform
 SHCreateShellItem
 SHParseDisplayName
 ShowWindow
+STATE_SYSTEM_*
 STATIC_STYLES
 SYS_COLOR_INDEX
 TaskDialog

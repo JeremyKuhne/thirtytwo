@@ -7,6 +7,10 @@ namespace Windows.Win32.System.Com;
 
 public unsafe partial struct VARIANT
 {
+    public static VARIANT Empty { get; } = default;
+
+    public bool IsEmpty => vt == VARENUM.VT_EMPTY;
+
     [UnscopedRef]
     public ref VARENUM vt => ref Anonymous.Anonymous.vt;
 
@@ -16,6 +20,36 @@ public unsafe partial struct VARIANT
     public static explicit operator int(VARIANT value)
         => value.vt == VARENUM.VT_I4 || value.vt == VARENUM.VT_INT ? value.data.intVal : ThrowInvalidCast<int>();
 
+    public static explicit operator VARIANT(int value)
+        => new()
+        {
+            vt = VARENUM.VT_I4,
+            data = new() { intVal = value }
+        };
+
+    public static explicit operator bool(VARIANT value)
+        => value.vt == VARENUM.VT_BOOL ? value.data.boolVal != VARIANT_BOOL.VARIANT_FALSE : ThrowInvalidCast<bool>();
+
+    public static explicit operator VARIANT(bool value)
+        => new()
+        {
+            vt = VARENUM.VT_BOOL,
+            data = new() { boolVal = value ? VARIANT_BOOL.VARIANT_TRUE : VARIANT_BOOL.VARIANT_FALSE }
+        };
+
+    public static explicit operator IDispatch*(VARIANT value)
+        => value.vt == VARENUM.VT_DISPATCH ? value.data.pdispVal : ThrowInvalidPointerCast<IDispatch>();
+
+    public static explicit operator VARIANT(IDispatch* value)
+        => new()
+        {
+            vt = VARENUM.VT_DISPATCH,
+            data = new() { pdispVal = value }
+        };
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static T ThrowInvalidCast<T>() => throw new InvalidCastException();
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static T* ThrowInvalidPointerCast<T>() where T : unmanaged => throw new InvalidCastException();
 }

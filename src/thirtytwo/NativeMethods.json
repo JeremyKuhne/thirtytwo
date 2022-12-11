@@ -7,6 +7,11 @@
     "useSafeHandles": false,
     "comInterop": {
         "preserveSigMethods": [
+            "IAccessible.get_accChildCount",
+            "IAccessible.get_accDescription",
+            "IAccessible.get_accFocus",
+            "IAccessible.get_accParent",
+            "IAccessible.get_accSelection",
             "IGlobalInterfaceTable.GetInterfaceFromGlobal",
             "IGlobalInterfaceTable.RevokeInterfaceFromGlobal",
             "IFileDialog.Show",
