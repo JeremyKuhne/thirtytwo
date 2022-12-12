@@ -6,7 +6,15 @@ using Windows.Win32.System.Com;
 
 namespace Windows.Win32.UI.Accessibility;
 
-public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Interface, IManagedWrapper<IAccessible, IDispatch>
+/// <summary>
+///  Base accessibility class that implements <see cref="IAccessible"/>. Derive from either <see cref="LegacyAccessibleBase"/>
+///  for just Active Accessibility or <see cref="UiaBase"/> for UI Automation support as well.
+/// </summary>
+/// <remarks>
+///  Trying to use this class directly will not get picked up by <see cref="CustomComWrappers"/> and will end up
+///  with the .NET provided <see cref="IDispatch"/>.
+/// </remarks>
+public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Interface
 {
     // https://learn.microsoft.com/windows/win32/winauto/active-accessibility-user-interface-services-dev-guide
 
@@ -19,8 +27,15 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
 
     public static Rectangle InvalidBounds { get; } = new(int.MinValue, int.MinValue, int.MinValue, int.MinValue);
 
-    public AccessibleBase() : base(s_accessibilityTypeLib, 1, 1, IAccessible.IID_Guid)
+    private readonly IAccessible.Interface? _childHandler;
+
+    /// <param name="childHandler">
+    ///  Used to delegate calls to when referring to a child id other than <see cref="Interop.CHILDID_SELF"/>.
+    /// </param>
+    public AccessibleBase(IAccessible.Interface? childHandler = default)
+        : base(s_accessibilityTypeLib, 1, 1, IAccessible.IID_Guid)
     {
+        _childHandler = childHandler;
     }
 
     protected VARIANT AsVariant(AccessibleBase accessible)
@@ -41,7 +56,12 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
         // OBJID_WINDOW doesn't have a description, but it's children do.
         // OBJID_CLIENT doesn't have this by default. Docs recommend not to support this as UIA doesn't use it.
 
-        if (GetDescription((int)varChild) is not { } description)
+        if ((int)varChild != Interop.CHILDID_SELF)
+        {
+            return _childHandler?.get_accDescription(varChild, pszDescription) ?? HRESULT.S_FALSE;
+        }
+
+        if (Description is not { } description)
         {
             *pszDescription = default;
             return HRESULT.S_FALSE;
@@ -51,8 +71,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
         return HRESULT.S_OK;
     }
 
-    /// <param name="id"><see cref="Interop.CHILDID_SELF"/> or a child element's id.</param>
-    public virtual string? GetDescription(int id) => null;
+    public virtual string? Description => null;
 
     HRESULT IAccessible.Interface.get_accRole(VARIANT varChild, VARIANT* pvarRole)
     {
@@ -66,17 +85,22 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
             return HRESULT.E_INVALIDARG;
         }
 
+        if ((int)varChild != Interop.CHILDID_SELF)
+        {
+            *pvarRole = VARIANT.Empty;
+            return _childHandler?.get_accRole(varChild, pvarRole) ?? HRESULT.S_FALSE;
+        }
+
         // For OBJID_WINDOW this is ROLE_SYSTEM_WINDOW. For OBJID_CLIENT this is ROLE_SYSTEM_CLIENT.
 
-        *pvarRole = (VARIANT)GetRole((int)varChild);
+        *pvarRole = (VARIANT)Role;
         return HRESULT.S_OK;
     }
 
     /// <summary>
     ///  Returns the <see href="https://learn.microsoft.com/windows/win32/winauto/object-roles">role</see> of the object.
     /// </summary>
-    /// <param name="id"><see cref="Interop.CHILDID_SELF"/> or a child element's id.</param>
-    public virtual int GetRole(int id) => 0;
+    public virtual int Role => (int)Interop.ROLE_SYSTEM_CLIENT;
 
     HRESULT IAccessible.Interface.get_accState(VARIANT varChild, VARIANT* pvarState)
     {
@@ -99,7 +123,13 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
         //
         // OBJID_CLIENT always adds STATE_SYSTEM_FOCUSABLE and adds STATE_SYSTEM_FOCUSED if the HWND has focus
 
-        *pvarState = (VARIANT)GetState((int)varChild);
+        if ((int)varChild != Interop.CHILDID_SELF)
+        {
+            *pvarState = VARIANT.Empty;
+            return _childHandler?.get_accRole(varChild, pvarState) ?? HRESULT.S_FALSE;
+        }
+
+        *pvarState = (VARIANT)State;
         return HRESULT.S_OK;
     }
 
@@ -107,8 +137,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
     ///  Returns the <see href="https://learn.microsoft.com/windows/win32/winauto/object-state-constants">state flags</see>
     ///  for the object.
     /// </summary>
-    /// <param name="id"><see cref="Interop.CHILDID_SELF"/> or a child element's id.</param>
-    public virtual int GetState(int id) => 0;
+    public virtual int State => 0;
 
     HRESULT IAccessible.Interface.get_accHelp(VARIANT varChild, BSTR* pszHelp)
     {
@@ -122,7 +151,13 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
             return HRESULT.E_INVALIDARG;
         }
 
-        if (GetHelp((int)varChild) is not { } help)
+        if ((int)varChild != Interop.CHILDID_SELF)
+        {
+            *pszHelp = default;
+            return _childHandler?.get_accHelp(varChild, pszHelp) ?? HRESULT.S_FALSE;
+        }
+
+        if (Help is not { } help)
         {
             *pszHelp = default;
             return HRESULT.S_FALSE;
@@ -132,8 +167,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
         return HRESULT.S_OK;
     }
 
-    /// <param name="id"><see cref="Interop.CHILDID_SELF"/> or a child element's id.</param>
-    protected virtual string? GetHelp(int id) => null;
+    protected virtual string? Help => null;
 
     HRESULT IAccessible.Interface.get_accHelpTopic(BSTR* pszHelpFile, VARIANT varChild, int* pidTopic)
     {
@@ -153,7 +187,13 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
             return HRESULT.E_INVALIDARG;
         }
 
-        if (GetKeyboardShortcut((int)varChild) is not { } shortcut)
+        if ((int)varChild != Interop.CHILDID_SELF)
+        {
+            *pszKeyboardShortcut = default;
+            return _childHandler?.get_accKeyboardShortcut(varChild, pszKeyboardShortcut) ?? HRESULT.S_FALSE;
+        }
+
+        if (KeyboardShortcut is not { } shortcut)
         {
             *pszKeyboardShortcut = default;
             return HRESULT.S_FALSE;
@@ -163,8 +203,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
         return HRESULT.S_OK;
     }
 
-    /// <param name="id"><see cref="Interop.CHILDID_SELF"/> or a child element's id.</param>
-    protected virtual string? GetKeyboardShortcut(int id) => null;
+    protected virtual string? KeyboardShortcut => null;
 
     HRESULT IAccessible.Interface.get_accDefaultAction(VARIANT varChild, BSTR* pszDefaultAction)
     {
@@ -178,7 +217,13 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
             return HRESULT.E_INVALIDARG;
         }
 
-        if (GetDefaultAction((int)varChild) is not { } action)
+        if ((int)varChild != Interop.CHILDID_SELF)
+        {
+            *pszDefaultAction = default;
+            return _childHandler?.get_accDefaultAction(varChild, pszDefaultAction) ?? HRESULT.S_FALSE;
+        }
+
+        if (DefaultAction is not { } action)
         {
             *pszDefaultAction = default;
             return HRESULT.S_FALSE;
@@ -188,8 +233,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
         return HRESULT.S_OK;
     }
 
-    /// <param name="id"><see cref="Interop.CHILDID_SELF"/> or a child element's id.</param>
-    protected virtual string? GetDefaultAction(int id) => null;
+    protected virtual string? DefaultAction => null;
 
     HRESULT IAccessible.Interface.accLocation(int* pxLeft, int* pyTop, int* pcxWidth, int* pcyHeight, VARIANT varChild)
     {
@@ -203,7 +247,12 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
             return HRESULT.E_INVALIDARG;
         }
 
-        Rectangle bounds = GetLocation((int)varChild);
+        if ((int)varChild != Interop.CHILDID_SELF)
+        {
+            return _childHandler?.accLocation(pxLeft, pyTop, pcxWidth, pcyHeight, varChild) ?? HRESULT.S_FALSE;
+        }
+
+        Rectangle bounds = Bounds;
         if (bounds == InvalidBounds)
         {
             return HRESULT.DISP_E_MEMBERNOTFOUND;
@@ -220,9 +269,8 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
     /// <summary>
     ///  Gets the bounds of the specified object in screen coordinates.
     /// </summary>
-    /// <param name="id"><see cref="Interop.CHILDID_SELF"/> or a child element's id.</param>
     /// <returns>The bounds or <see cref="InvalidBounds"/> if the object is not a visual object.</returns>
-    public virtual Rectangle GetLocation(int id) => InvalidBounds;
+    public virtual Rectangle Bounds => InvalidBounds;
 
     private static bool ValidateNavigationDirection(int direction, int id)
     {
@@ -273,11 +321,6 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
             return HRESULT.E_INVALIDARG;
         }
 
-        if (!Navigate(navDir, (int)varStart, out VARIANT result))
-        {
-            return HRESULT.S_FALSE;
-        }
-
         // OBJID_WINDOW Up/Down/Left/Right navigation is as follows:
         //
         //      OBJID_SYSMENU  ↔  OBJID_TITLEBAR
@@ -313,13 +356,23 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
         //
         // All directional navigation works off of finding the closest visible window bounds in the requested direction.
 
-        * pvarEndUpAt = result;
+        if (!Navigate(navDir, (int)varStart, out VARIANT result))
+        {
+            return HRESULT.S_FALSE;
+        }
+
+        *pvarEndUpAt = result;
         return HRESULT.S_OK;
     }
 
     /// <param name="startFromId"><see cref="Interop.CHILDID_SELF"/> or a child element's id to start navigation from.</param>
     public virtual bool Navigate(int direction, int startFromId, out VARIANT result)
     {
+        // IMPORTANT:
+        //
+        // The prescribed way to return children is with IEnumVARIANT. The recommended API AccessibleChildren()
+        // attempts to cast IAccessible to IEnumVARIANT first. Should avoid implementing this if at all possible.
+
         result = default;
         return false;
     }
@@ -425,6 +478,11 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
             return HRESULT.E_INVALIDARG;
         }
 
+        if ((int)varChild != Interop.CHILDID_SELF)
+        {
+            return _childHandler?.accDoDefaultAction(varChild) ?? HRESULT.S_FALSE;
+        }
+
         return !DoDefaultAction((int)varChild) ? HRESULT.DISP_E_MEMBERNOTFOUND : HRESULT.S_OK;
     }
 
@@ -449,10 +507,15 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
 
         // OBJID_WINDOW defers to OJBID_CLIENT, which uses WM_GETTEXT as the name.
 
-        string? name = GetName((int)varChild);
-        if (name is null)
+        if ((int)varChild != Interop.CHILDID_SELF)
         {
-            pszName = null;
+            *pszName = default;
+            return _childHandler?.get_accName(varChild, pszName) ?? HRESULT.S_FALSE;
+        }
+
+        if (Name is not { } name)
+        {
+            *pszName = default;
             return HRESULT.S_FALSE;
         }
 
@@ -466,8 +529,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
         return HRESULT.E_NOTIMPL;
     }
 
-    /// <param name="id"><see cref="Interop.CHILDID_SELF"/> or a child element's id.</param>
-    public virtual string? GetName(int id) => null;
+    public virtual string? Name => null;
 
     HRESULT IAccessible.Interface.get_accValue(VARIANT varChild, BSTR* pszValue)
     {
@@ -481,8 +543,15 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
             return HRESULT.E_INVALIDARG;
         }
 
-        if (GetValue((int)varChild) is not { } value)
+        if ((int)varChild != Interop.CHILDID_SELF)
         {
+            *pszValue = default;
+            return _childHandler?.get_accValue(varChild, pszValue) ?? HRESULT.S_FALSE;
+        }
+
+        if (GetValue() is not { } value)
+        {
+            *pszValue = default;
             return HRESULT.S_FALSE;
         }
 
@@ -497,22 +566,25 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
             return HRESULT.E_INVALIDARG;
         }
 
-        return !SetValue((int)varChild, szValue) ? HRESULT.S_FALSE : HRESULT.S_OK;
+        if ((int)varChild != Interop.CHILDID_SELF)
+        {
+            return _childHandler?.put_accValue(varChild, szValue) ?? HRESULT.S_FALSE;
+        }
+
+        return !SetValue(szValue) ? HRESULT.S_FALSE : HRESULT.S_OK;
     }
 
     /// <summary>
-    ///  Returns the value for the given <paramref name="id"/>.
+    ///  Returns the value.
     /// </summary>
-    /// <param name="id"><see cref="Interop.CHILDID_SELF"/> or a child element's id.</param>
     /// <returns>The value or <see langword="null"/> if unsupported.</returns>
-    protected virtual string? GetValue(int id) => null;
+    protected virtual string? GetValue() => null;
 
     /// <summary>
-    ///  Sets the value for the given <paramref name="id"/>.
+    ///  Sets the value.
     /// </summary>
-    /// <param name="id"><see cref="Interop.CHILDID_SELF"/> or a child element's id.</param>
     /// <returns><see langword="true"/> if setting values is supported/successful.</returns>
-    protected virtual bool SetValue(int id, BSTR value) => false;
+    protected virtual bool SetValue(BSTR value) => false;
 
     HRESULT IAccessible.Interface.get_accFocus(VARIANT* pvarChild)
     {

@@ -47,6 +47,13 @@ public unsafe partial struct VARIANT
             data = new() { pdispVal = value }
         };
 
+    public static explicit operator VARIANT(BSTR value)
+        => new()
+        {
+            vt = VARENUM.VT_BSTR,
+            data = new() { bstrVal = value }
+        };
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static T ThrowInvalidCast<T>() => throw new InvalidCastException();
 

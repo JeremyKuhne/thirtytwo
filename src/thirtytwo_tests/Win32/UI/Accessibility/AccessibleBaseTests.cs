@@ -5,7 +5,6 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
 using Windows.Win32.UI.Accessibility;
-using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Tests.Windows.Win32.UI.Accessibility;
 
@@ -58,7 +57,7 @@ public unsafe class AccessibleBaseTests
         callback.ChildRequested.Should().Be(3);
     }
 
-    private class AccessibleCallback : AccessibleBase
+    private class AccessibleCallback : LegacyAccessibleBase
     {
         public AccessibleCallback() { }
 

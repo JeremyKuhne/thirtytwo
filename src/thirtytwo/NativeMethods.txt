@@ -167,5 +167,10 @@ TaskDialog
 TD_*
 TranslateMessage
 TYPEFLAGS
+UiaClientsAreListening
+UiaHostProviderFromHwnd
+UiaIAccessibleFromProvider
+UiaProviderFromIAccessible
+UiaReturnRawElementProvider
 UpdateWindow
 WINDOWPOS
