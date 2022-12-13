@@ -54,4 +54,21 @@ internal static unsafe partial class ComHelpers
         ccw->Release();
         return (T*)ppvObject;
     }
+
+    public static void PopulateIUnknown<TComInterface>(IUnknown.Vtbl* vtable)
+        where TComInterface : unmanaged, IComIID
+        => PopulateIUnknownImpl<TComInterface>(vtable);
+
+    static partial void PopulateIUnknownImpl<TComInterface>(IUnknown.Vtbl* vtable) where TComInterface : unmanaged, IComIID;
+}
+
+// This is temporary to illustrate the feature request in https://github.com/microsoft/CsWin32/issues/831
+internal static unsafe partial class ComHelpers
+{
+    static partial void PopulateIUnknownImpl<TComInterface>(IUnknown.Vtbl* vtable) where TComInterface : unmanaged, IComIID
+    {
+        // Custom behavior for specific COM CCWs can be done by checking typeof(TComInterface) against a specific
+        // interface, such as typeof(IAccessible).
+        CustomComWrappers.PopulateIUnknown(vtable);
+    }
 }

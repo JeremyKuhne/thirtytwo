@@ -16,12 +16,12 @@ internal unsafe interface IVTable
 
 internal unsafe interface IVTable<TComInterface, TVTable> : IVTable
     where TVTable : unmanaged
-    where TComInterface : IComIID, IVTable<TComInterface, TVTable>
+    where TComInterface : unmanaged, IComIID, IVTable<TComInterface, TVTable>
 {
     private static sealed TVTable* VTable { get; set; }
 
     /// <summary>
-    ///  Populate the <see cref="VTable"/> with the function pointers.
+    ///  Populate the <see cref="VTable"/> with the relevant function pointers.
     /// </summary>
     private protected static abstract void PopulateVTable(TVTable* vtable);
 
@@ -30,8 +30,7 @@ internal unsafe interface IVTable<TComInterface, TVTable> : IVTable
         if (VTable is null)
         {
             TVTable* vtable = (TVTable*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(TVTable), sizeof(TVTable));
-            // This needs to be an extension point (partial method somewhere?)
-            CustomComWrappers.PopulateIUnknown((IUnknown.Vtbl*)vtable);
+            ComHelpers.PopulateIUnknown<TComInterface>((IUnknown.Vtbl*)vtable);
             VTable = vtable;
             TComInterface.PopulateVTable(VTable);
         }
