@@ -143,6 +143,8 @@ PeekMessage
 POINTS
 PostMessage
 PostQuitMessage
+PROPVARIANT
+PropVariantClear
 RegisterClassEx
 ROLE_SYSTEM_*
 S_FALSE
