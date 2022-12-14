@@ -3,8 +3,9 @@
 
 using System.Drawing;
 using Windows.Win32.System.Com;
+using Windows.Win32.UI.Accessibility;
 
-namespace Windows.Win32.UI.Accessibility;
+namespace Windows.Accessibility;
 
 /// <summary>
 ///  Base accessibility class that implements <see cref="IAccessible"/>. Derive from either <see cref="LegacyAccessibleBase"/>
@@ -93,14 +94,14 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
 
         // For OBJID_WINDOW this is ROLE_SYSTEM_WINDOW. For OBJID_CLIENT this is ROLE_SYSTEM_CLIENT.
 
-        *pvarRole = (VARIANT)Role;
+        *pvarRole = (VARIANT)(int)Role;
         return HRESULT.S_OK;
     }
 
     /// <summary>
     ///  Returns the <see href="https://learn.microsoft.com/windows/win32/winauto/object-roles">role</see> of the object.
     /// </summary>
-    public virtual int Role => (int)Interop.ROLE_SYSTEM_CLIENT;
+    public virtual AccessibleRole Role => AccessibleRole.Client;
 
     HRESULT IAccessible.Interface.get_accState(VARIANT varChild, VARIANT* pvarState)
     {

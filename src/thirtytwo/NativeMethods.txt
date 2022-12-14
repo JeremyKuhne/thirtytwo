@@ -102,6 +102,7 @@ IFileOpenDialog
 IGlobalInterfaceTable
 IModalWindow
 InitCommonControlsEx
+InitVariantFromDoubleArray
 INTERFACEDATA
 INVALID_HANDLE_VALUE
 InvalidateRect
@@ -116,6 +117,7 @@ IRawElementProviderSimple
 IServiceProvider
 IsWindowEnabled
 IsWindowVisible
+IUIAutomationElement
 IUnknown
 LIBFLAGS
 LoadCursor
@@ -167,10 +169,13 @@ TaskDialog
 TD_*
 TranslateMessage
 TYPEFLAGS
+UIA_PFIA_*
 UiaClientsAreListening
 UiaHostProviderFromHwnd
 UiaIAccessibleFromProvider
+UiaProviderForNonClient
 UiaProviderFromIAccessible
+UiaRect
 UiaReturnRawElementProvider
 UpdateWindow
 WINDOWPOS
