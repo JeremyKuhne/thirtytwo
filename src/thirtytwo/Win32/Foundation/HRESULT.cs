@@ -33,6 +33,7 @@ public partial struct HRESULT
         => (FACILITY_CODE)((Value >> 16) & 0x1fff);
 
     // COR_* HRESULTs are .NET HRESULTs
+    public static readonly HRESULT COR_E_NOTSUPPORTED   = (HRESULT)unchecked((int)0x80131515);
     public static readonly HRESULT COR_E_OBJECTDISPOSED = (HRESULT)unchecked((int)0x80131622);
 
     public static implicit operator Exception(HRESULT result)

@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
-using Windows.Win32.UI.Accessibility;
 using static Windows.Win32.System.Com.Com;
 
 namespace Tests.Windows.Win32.System.Com;
@@ -31,31 +30,85 @@ public unsafe class VariantTests
     }
 
     [Fact]
-    public void MarshalArrayToVariant()
+    public void MarshalRectangleToVariant_ThroughLegacyCCW()
     {
-        int[] array = new[] { 1, 2, 3, 4 };
-        using VARIANT variant = default;
-        nint address = (nint)(void*)&variant;
-        Marshal.GetNativeVariantForObject(array, address);
-        variant.vt.Should().Be(VARENUM.VT_ARRAY | VARENUM.VT_I4);
-
-        using TestVariant test = new();
-        using ComScope<IUnknown> scope = new(GetComPointer<IUnknown>(test));
-        ITestVariantComInterop comInterop = (ITestVariantComInterop)Marshal.GetObjectForIUnknown(scope);
-        comInterop.SetVariant(array);
-        test.Variant.vt.Should().Be(VARENUM.VT_ARRAY | VARENUM.VT_I4);
-    }
-
-    [Fact]
-    public void TestLegacy()
-    {
+        // Create a managed object that marshals through `object`
         LegacyVariantObject legacy = new();
         IUnknown* unknown = GetComPointer<IUnknown>(legacy);
         using ComScope<IUnknown> scope = new(unknown);
         using ComScope<ITestVariant> testVariant = ComScope<ITestVariant>.QueryFrom(unknown);
         legacy.Variant = new Rectangle();
+
+        // Getting the variant from the native pointer gives the NotSupported HRESULT
         VARIANT variant = default;
-        testVariant.Value->GetVariant(&variant);
+        testVariant.Value->GetVariant(&variant).Should().Be(HRESULT.COR_E_NOTSUPPORTED);
+        variant.IsEmpty.Should().BeTrue();
+    }
+
+    [Fact]
+    public void MarshalArrayToVariant()
+    {
+        int[] array = new[] { 1, 2, 3, 4 };
+        using VARIANT variant = default;
+        nint address = (nint)(void*)&variant;
+
+        // Use Marshal to create the VARIANT directly
+        Marshal.GetNativeVariantForObject(array, address);
+        variant.vt.Should().Be(VARENUM.VT_ARRAY | VARENUM.VT_I4);
+
+        SAFEARRAY* safeArray = variant.data.parray;
+        safeArray->cDims.Should().Be(1);
+        safeArray->cLocks.Should().Be(0);
+        safeArray->cbElements.Should().Be(4);
+        safeArray->fFeatures.Should().Be(ADVANCED_FEATURE_FLAGS.FADF_HAVEVARTYPE);
+
+        // Now create an object to expose as a CCW through ComWrappers.
+        // We can't do a using on TestVariant as the same SAFEARRAY instance is generated below.
+        TestVariant test = new();
+        using ComScope<IUnknown> scope = new(GetComPointer<IUnknown>(test));
+
+        // Use legacy COM interop to create an RCW for the pointer and set through that projection.
+        ITestVariantComInterop comInterop = (ITestVariantComInterop)Marshal.GetObjectForIUnknown(scope);
+        comInterop.SetVariant(array);
+
+        VARIANT setVariant = test.Variant;
+        setVariant.vt.Should().Be(VARENUM.VT_ARRAY | VARENUM.VT_I4);
+        SAFEARRAY* newSafeArray = variant.data.parray;
+
+        // It's surprising that the SAFEARRAY is reused, but it is.
+        Assert.True(newSafeArray == safeArray);
+    }
+
+
+    [Fact]
+    public void ArrayToVariantAfterFreeIsNewObject()
+    {
+        int[] array = new[] { 1, 2, 3, 4 };
+        SAFEARRAY* safeArray = null;
+
+        using (VARIANT variant = default)
+        {
+            nint address = (nint)(void*)&variant;
+
+            // Use Marshal to create the VARIANT directly
+            Marshal.GetNativeVariantForObject(array, address);
+            variant.vt.Should().Be(VARENUM.VT_ARRAY | VARENUM.VT_I4);
+
+            safeArray = variant.data.parray;
+        }
+
+        using (VARIANT variant = default)
+        {
+            nint address = (nint)(void*)&variant;
+
+            // Use Marshal to create the VARIANT directly
+            Marshal.GetNativeVariantForObject(array, address);
+            variant.vt.Should().Be(VARENUM.VT_ARRAY | VARENUM.VT_I4);
+
+            SAFEARRAY* newSafeArray = variant.data.parray;
+
+            Assert.False(safeArray == newSafeArray);
+        }
     }
 
     public class LegacyVariantObject : ITestVariantComInterop
@@ -88,16 +141,6 @@ public unsafe class VariantTests
         public void SetVariant(object? variant);
 
         public void SetVariantByRef(ref object? variant);
-    }
-
-    public class UiaProvider : IRawElementProviderSimple.Interface, IManagedWrapper<IRawElementProviderSimple>
-    {
-        public ProviderOptions ProviderOptions => throw new NotImplementedException();
-
-        public HRESULT GetPatternProvider(UIA_PATTERN_ID patternId, IUnknown** pRetVal) => throw new NotImplementedException();
-        public HRESULT GetPropertyValue(UIA_PROPERTY_ID propertyId, VARIANT* pRetVal) => throw new NotImplementedException();
-
-        public IRawElementProviderSimple* HostRawElementProvider => throw new NotImplementedException();
     }
 
     public class TestVariant : ITestVariant.Interface, IDisposable, IManagedWrapper<ITestVariant>

@@ -147,6 +147,7 @@ PROPVARIANT
 PropVariantClear
 RegisterClassEx
 ROLE_SYSTEM_*
+SAFEARRAY
 S_FALSE
 S_OK
 ScreenToClient
