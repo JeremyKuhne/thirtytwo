@@ -16,7 +16,7 @@ public unsafe class VariantTests
     [Fact]
     public void MarshalRectangleToVariant()
     {
-        // COM Interop can't handle converting arbitrary struct conversion to VARIANT. The one special case type from
+        // COM Interop can't handle converting arbitrary structs to VARIANT. The one special case type from
         // System.Drawing is Color which does the OLE color conversion to int.
         Rectangle rectangle = new(1, 2, 3, 4);
         using VARIANT variant = default;

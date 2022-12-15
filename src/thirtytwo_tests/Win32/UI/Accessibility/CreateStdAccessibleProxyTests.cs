@@ -11,6 +11,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Tests.Windows.Win32.UI.Accessibility;
 
+[Collection("Accessibility")]
 public unsafe class CreateStdAccessibleProxyTests
 {
     [StaFact]

@@ -101,7 +101,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
     /// <summary>
     ///  Returns the <see href="https://learn.microsoft.com/windows/win32/winauto/object-roles">role</see> of the object.
     /// </summary>
-    public virtual AccessibleRole Role => AccessibleRole.Client;
+    public virtual ObjectRoles Role => ObjectRoles.Client;
 
     HRESULT IAccessible.Interface.get_accState(VARIANT varChild, VARIANT* pvarState)
     {
@@ -130,7 +130,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
             return _childHandler?.get_accRole(varChild, pvarState) ?? HRESULT.S_FALSE;
         }
 
-        *pvarState = (VARIANT)State;
+        *pvarState = (VARIANT)(int)State;
         return HRESULT.S_OK;
     }
 
@@ -138,7 +138,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
     ///  Returns the <see href="https://learn.microsoft.com/windows/win32/winauto/object-state-constants">state flags</see>
     ///  for the object.
     /// </summary>
-    public virtual int State => 0;
+    public virtual ObjectState State => default;
 
     HRESULT IAccessible.Interface.get_accHelp(VARIANT varChild, BSTR* pszHelp)
     {
@@ -434,11 +434,11 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
         // For OBJID_CLIENT the default behavior is to count each child window.
         // For OBJID_WINDOW the child count is always 7 (OBJID_SYSMENU through OBJID_SIZEGRIP).
 
-        *pcountChildren = GetChildCount();
+        *pcountChildren = ChildCount;
         return HRESULT.S_OK;
     }
 
-    public virtual int GetChildCount() => 0;
+    public virtual int ChildCount => 0;
 
     HRESULT IAccessible.Interface.accHitTest(int xLeft, int yTop, VARIANT* pvarChild)
     {
@@ -484,7 +484,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
             return _childHandler?.accDoDefaultAction(varChild) ?? HRESULT.S_FALSE;
         }
 
-        return !DoDefaultAction((int)varChild) ? HRESULT.DISP_E_MEMBERNOTFOUND : HRESULT.S_OK;
+        return !DoDefaultAction() ? HRESULT.DISP_E_MEMBERNOTFOUND : HRESULT.S_OK;
     }
 
     /// <summary>
@@ -492,7 +492,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
     /// </summary>
     /// <param name="id"><see cref="Interop.CHILDID_SELF"/> or a child element's id.</param>
     /// <returns><see langword="true"/> if the object has a default action.</returns>
-    public virtual bool DoDefaultAction(int id) => false;
+    public virtual bool DoDefaultAction() => false;
 
     HRESULT IAccessible.Interface.get_accName(VARIANT varChild, BSTR* pszName)
     {
@@ -634,7 +634,12 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
             return HRESULT.E_INVALIDARG;
         }
 
-        return !SupportsSelection ? HRESULT.DISP_E_MEMBERNOTFOUND : SetSelection((int)varChild, flagsSelect);
+        if ((int)varChild != Interop.CHILDID_SELF)
+        {
+            return _childHandler?.accSelect(flagsSelect, varChild) ?? HRESULT.S_FALSE;
+        }
+
+        return !SupportsSelection ? HRESULT.DISP_E_MEMBERNOTFOUND : SetSelection((SelectionFlags)flagsSelect);
     }
 
     /// <summary>
@@ -649,8 +654,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
     /// </summary>
     protected virtual VARIANT GetSelection() => VARIANT.Empty;
 
-    /// <param name="id"><see cref="Interop.CHILDID_SELF"/> or a child element's id.</param>
-    protected virtual HRESULT SetSelection(int id, int flagsSelect) => HRESULT.E_INVALIDARG;
+    protected virtual HRESULT SetSelection(SelectionFlags flags) => HRESULT.E_INVALIDARG;
 
     // Default accessibility objects implement the following publicly documented interfaces:
     //

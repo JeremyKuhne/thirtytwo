@@ -29,42 +29,42 @@ public unsafe abstract class UiaBase :
         {
             switch (Role)
             {
-                case AccessibleRole.MenuItem:
-                case AccessibleRole.Link:
-                case AccessibleRole.PushButton:
-                case AccessibleRole.ButtonDropDown:
-                case AccessibleRole.ButtonMenu:
-                case AccessibleRole.ButtonDropDownGrid:
-                case AccessibleRole.Clock:
-                case AccessibleRole.SplitButton:
-                case AccessibleRole.CheckButton:
-                case AccessibleRole.Cell:
-                case AccessibleRole.ListItem:
+                case ObjectRoles.MenuItem:
+                case ObjectRoles.Link:
+                case ObjectRoles.PushButton:
+                case ObjectRoles.ButtonDropDown:
+                case ObjectRoles.ButtonMenu:
+                case ObjectRoles.ButtonDropDownGrid:
+                case ObjectRoles.Clock:
+                case ObjectRoles.SplitButton:
+                case ObjectRoles.CheckButton:
+                case ObjectRoles.Cell:
+                case ObjectRoles.ListItem:
                     return true;
 
-                case AccessibleRole.Sound:
-                case AccessibleRole.Cursor:
-                case AccessibleRole.Caret:
-                case AccessibleRole.Alert:
-                case AccessibleRole.Client:
-                case AccessibleRole.Chart:
-                case AccessibleRole.Dialog:
-                case AccessibleRole.Border:
-                case AccessibleRole.Column:
-                case AccessibleRole.Row:
-                case AccessibleRole.HelpBalloon:
-                case AccessibleRole.Character:
-                case AccessibleRole.PageTab:
-                case AccessibleRole.PropertyPage:
-                case AccessibleRole.DropList:
-                case AccessibleRole.Dial:
-                case AccessibleRole.HotkeyField:
-                case AccessibleRole.Diagram:
-                case AccessibleRole.Animation:
-                case AccessibleRole.Equation:
-                case AccessibleRole.WhiteSpace:
-                case AccessibleRole.IPAddress:
-                case AccessibleRole.OutlineButton:
+                case ObjectRoles.Sound:
+                case ObjectRoles.Cursor:
+                case ObjectRoles.Caret:
+                case ObjectRoles.Alert:
+                case ObjectRoles.Client:
+                case ObjectRoles.Chart:
+                case ObjectRoles.Dialog:
+                case ObjectRoles.Border:
+                case ObjectRoles.Column:
+                case ObjectRoles.Row:
+                case ObjectRoles.HelpBalloon:
+                case ObjectRoles.Character:
+                case ObjectRoles.PageTab:
+                case ObjectRoles.PropertyPage:
+                case ObjectRoles.DropList:
+                case ObjectRoles.Dial:
+                case ObjectRoles.HotkeyField:
+                case ObjectRoles.Diagram:
+                case ObjectRoles.Animation:
+                case ObjectRoles.Equation:
+                case ObjectRoles.WhiteSpace:
+                case ObjectRoles.IPAddress:
+                case ObjectRoles.OutlineButton:
                     return false;
 
                 default:

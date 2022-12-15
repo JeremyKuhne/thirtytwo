@@ -12,6 +12,7 @@ using IServiceProvider = Windows.Win32.System.Com.IServiceProvider;
 
 namespace Tests.Windows.Win32.UI.Accessibility;
 
+[Collection("Accessibility")]
 public unsafe class CreateStdAccessibleObjectTests
 {
     [StaFact]

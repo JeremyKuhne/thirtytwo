@@ -3,7 +3,13 @@
 
 namespace Windows.Accessibility;
 
-public enum AccessibleRole : int
+/// <remarks>
+///  <para>
+///   See <see href="https://learn.microsoft.com/windows/win32/winauto/object-roles">Object Roles</see>
+///   documentation.
+///  </para>
+/// </remarks>
+public enum ObjectRoles : int
 {
     TitleBar = (int)Interop.ROLE_SYSTEM_TITLEBAR,
     MenuBar = (int)Interop.ROLE_SYSTEM_MENUBAR,

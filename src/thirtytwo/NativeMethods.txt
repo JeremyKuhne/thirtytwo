@@ -13,6 +13,7 @@ CLEARTYPE_NATURAL_QUALITY
 ClientToScreen
 CoCreateInstance
 CoGetClassObject
+COMBOBOXINFO_BUTTON_STATE
 CoTaskMemFree
 CreateActCtx
 CreateDispTypeInfo
