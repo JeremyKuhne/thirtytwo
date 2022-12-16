@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
-using static Windows.Win32.System.Com.Com;
 
 namespace Tests.Windows.Win32.System.Com;
 
@@ -24,8 +23,8 @@ public unsafe class VariantTests
         Assert.Throws<NotSupportedException>(() => Marshal.GetNativeVariantForObject(rectangle, address));
 
         using TestVariant test = new();
-        using ComScope<IUnknown> scope = new(GetComPointer<IUnknown>(test));
-        ITestVariantComInterop comInterop = (ITestVariantComInterop)Marshal.GetObjectForIUnknown(scope);
+        using var unknown = ComScope<IUnknown>.GetComCallableWrapper(test);
+        ITestVariantComInterop comInterop = (ITestVariantComInterop)Marshal.GetObjectForIUnknown(unknown);
         Assert.Throws<NotSupportedException>(() => comInterop.SetVariant(rectangle));
     }
 
@@ -34,9 +33,8 @@ public unsafe class VariantTests
     {
         // Create a managed object that marshals through `object`
         LegacyVariantObject legacy = new();
-        IUnknown* unknown = GetComPointer<IUnknown>(legacy);
-        using ComScope<IUnknown> scope = new(unknown);
-        using ComScope<ITestVariant> testVariant = ComScope<ITestVariant>.QueryFrom(unknown);
+        using var unknown = ComScope<IUnknown>.GetComCallableWrapper(legacy);
+        using ComScope<ITestVariant> testVariant = unknown.QueryInterface<ITestVariant>();
         legacy.Variant = new Rectangle();
 
         // Getting the variant from the native pointer gives the NotSupported HRESULT
@@ -65,10 +63,10 @@ public unsafe class VariantTests
         // Now create an object to expose as a CCW through ComWrappers.
         // We can't do a using on TestVariant as the same SAFEARRAY instance is generated below.
         TestVariant test = new();
-        using ComScope<IUnknown> scope = new(GetComPointer<IUnknown>(test));
+        using var unkown = ComScope<IUnknown>.GetComCallableWrapper(test);
 
         // Use legacy COM interop to create an RCW for the pointer and set through that projection.
-        ITestVariantComInterop comInterop = (ITestVariantComInterop)Marshal.GetObjectForIUnknown(scope);
+        ITestVariantComInterop comInterop = (ITestVariantComInterop)Marshal.GetObjectForIUnknown(unkown);
         comInterop.SetVariant(array);
 
         VARIANT setVariant = test.Variant;
@@ -81,10 +79,10 @@ public unsafe class VariantTests
 
 
     [Fact]
-    public void ArrayToVariantAfterFreeIsNewObject()
+    public void ArrayToVariantAfterFreeIsSometimesNewObject()
     {
         int[] array = new[] { 1, 2, 3, 4 };
-        SAFEARRAY* safeArray = null;
+        SAFEARRAY* safeArray;
 
         using (VARIANT variant = default)
         {
@@ -107,7 +105,9 @@ public unsafe class VariantTests
 
             SAFEARRAY* newSafeArray = variant.data.parray;
 
-            Assert.False(safeArray == newSafeArray);
+            // Usually this is the case, presumably there is no way to guarantee this as the same memory location
+            // could be allocated again.
+            // Assert.False(safeArray == newSafeArray);
         }
     }
 
@@ -143,7 +143,7 @@ public unsafe class VariantTests
         public void SetVariantByRef(ref object? variant);
     }
 
-    public class TestVariant : ITestVariant.Interface, IDisposable, IManagedWrapper<ITestVariant>
+    public sealed class TestVariant : ITestVariant.Interface, IDisposable, IManagedWrapper<ITestVariant>
     {
         public VARIANT Variant { get; set; }
 
@@ -195,15 +195,15 @@ public unsafe class VariantTests
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static HRESULT GetVariant(ITestVariant* @this, VARIANT* variant)
-            => UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.GetVariant(variant));
+            => ComHelpers.UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.GetVariant(variant));
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static HRESULT SetVariant(ITestVariant* @this, VARIANT variant)
-            => UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.SetVariant(variant));
+            => ComHelpers.UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.SetVariant(variant));
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static HRESULT SetVariantByRef(ITestVariant* @this, VARIANT* variant)
-            => UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.SetVariantByRef(variant));
+            => ComHelpers.UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.SetVariantByRef(variant));
 
         [ComImport]
         [Guid("3BE9EE32-26FB-4E7A-B8A8-25795A7EFB53")]

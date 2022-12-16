@@ -4,7 +4,6 @@
 using Windows.Dialogs;
 using Windows.Win32.System.Com;
 using Windows.Win32.UI.Shell;
-using static Windows.Win32.System.Com.Com;
 
 namespace Tests.Windows.Win32.System.Com;
 
@@ -14,19 +13,19 @@ public unsafe class ComTests
     public void Com_GetComPointer_SameUnknownInstance()
     {
         FileDialog.FileDialogEvents events = new(null!);
-        IUnknown* unknown1 = GetComPointer<IUnknown>(events);
-        IUnknown* unknown2 = GetComPointer<IUnknown>(events);
+        using var unknown1 = ComScope<IUnknown>.GetComCallableWrapper(events);
+        using var unknown2 = ComScope<IUnknown>.GetComCallableWrapper(events);
 
-        Assert.True(unknown1 == unknown2);
+        Assert.True(unknown1.Value == unknown2.Value);
     }
 
     [Fact]
     public void Com_GetComPointer_SameInterfaceInstance()
     {
         FileDialog.FileDialogEvents events = new(null!);
-        IFileDialogEvents* iEvents1 = GetComPointer<IFileDialogEvents>(events);
-        IFileDialogEvents* iEvents2 = GetComPointer<IFileDialogEvents>(events);
+        using var iEvents1 = ComScope<IFileDialogEvents>.GetComCallableWrapper(events);
+        using var iEvents2 = ComScope<IFileDialogEvents>.GetComCallableWrapper(events);
 
-        Assert.True(iEvents1 == iEvents2);
+        Assert.True(iEvents1.Value == iEvents2.Value);
     }
 }

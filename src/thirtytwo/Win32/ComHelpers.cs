@@ -3,6 +3,7 @@
 
 using System.Runtime.InteropServices;
 using Windows.Win32.System.Com;
+using static System.Runtime.InteropServices.ComWrappers;
 
 namespace Windows.Win32;
 
@@ -53,6 +54,55 @@ internal static unsafe partial class ComHelpers
         result = ccw->QueryInterface(IID.GetRef<T>(), out void* ppvObject);
         ccw->Release();
         return (T*)ppvObject;
+    }
+
+    /// <summary>
+    ///  For the given <paramref name="this"/> pointer unwrap the associated managed object and use it to
+    ///  invoke <paramref name="func"/>.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   Handles exceptions and converts to <see cref="HRESULT"/>.
+    ///  </para>
+    /// </remarks>
+    internal static HRESULT UnwrapAndInvoke<TThis, TInterface>(TThis* @this, Func<TInterface, HRESULT> func)
+        where TThis : unmanaged, IComIID
+        where TInterface : class
+    {
+        try
+        {
+            TInterface? @object = ComInterfaceDispatch.GetInstance<TInterface>((ComInterfaceDispatch*)@this);
+            return @object is null ? HRESULT.COR_E_OBJECTDISPOSED : func(@object);
+        }
+        catch (Exception ex)
+        {
+            return (HRESULT)ex.HResult;
+        }
+    }
+
+    /// <summary>
+    ///  For the given <paramref name="this"/> pointer unwrap the associated managed object and use it to
+    ///  invoke <paramref name="func"/>.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   Handles exceptions and converts to <see langword="default"/>.
+    ///  </para>
+    /// </remarks>
+    internal static TReturn? UnwrapAndInvoke<TThis, TInterface, TReturn>(TThis* @this, Func<TInterface, TReturn> func)
+        where TThis : unmanaged, IComIID
+        where TInterface : class
+    {
+        try
+        {
+            TInterface? @object = ComInterfaceDispatch.GetInstance<TInterface>((ComInterfaceDispatch*)@this);
+            return @object is null ? default : func(@object);
+        }
+        catch (Exception ex)
+        {
+            Debug.Fail(ex.Message);
+            return default;
+        }
     }
 
     public static void PopulateIUnknown<TComInterface>(IUnknown.Vtbl* vtable)

@@ -87,7 +87,7 @@ public unsafe abstract class EnumUnknown : IEnumUnknown.Interface, IManagedWrapp
         EnumUnknown clone = Clone();
         clone._index = _index;
 
-        *ppenum = Com.TryGetComPointer<IEnumUnknown>(clone, out HRESULT hr);
+        *ppenum = ComHelpers.TryGetComPointer<IEnumUnknown>(clone, out HRESULT hr);
         return hr;
     }
 

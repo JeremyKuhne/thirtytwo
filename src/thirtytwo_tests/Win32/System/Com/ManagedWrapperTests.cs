@@ -45,7 +45,7 @@ public unsafe class ManagedWrapperTests
         ComInterfaceTable table = ((IManagedWrapper)thing).GetInterfaceTable();
 
         Assert.False(table.Entries is null);
-        table.Count.Should().Be(3);
+        table.Count.Should().BeGreaterThanOrEqualTo(3);
         table.Entries[0].Vtable.Should().NotBe(0);
         table.Entries[0].IID.Should().Be(*IID.Get<IComCallableWrapper>());
         table.Entries[1].Vtable.Should().NotBe(0);
@@ -61,7 +61,7 @@ public unsafe class ManagedWrapperTests
         ComInterfaceTable table = ((IManagedWrapper)thing).GetInterfaceTable();
 
         Assert.False(table.Entries is null);
-        table.Count.Should().Be(2);
+        table.Count.Should().BeGreaterThanOrEqualTo(2);
         table.Entries[0].Vtable.Should().NotBe(0);
         table.Entries[0].IID.Should().Be(*IID.Get<IComCallableWrapper>());
         table.Entries[1].Vtable.Should().NotBe(0);

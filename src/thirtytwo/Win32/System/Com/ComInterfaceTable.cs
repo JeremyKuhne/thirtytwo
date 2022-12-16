@@ -121,9 +121,10 @@ internal unsafe readonly struct ComInterfaceTable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Span<ComInterfaceEntry> AllocateEntries<T>(int count)
+        // Reserve an extra slot for a custom IUnkown once we figure that out
         => new(
-            (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(T), sizeof(ComInterfaceEntry) * count),
-            count);
+            (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(T), sizeof(ComInterfaceEntry) * (count + 1)),
+            count + 1);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static ComInterfaceEntry GetEntry<TComInterface>() where TComInterface : unmanaged, IComIID, IVTable

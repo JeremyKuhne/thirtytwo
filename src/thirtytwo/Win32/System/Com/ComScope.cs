@@ -15,7 +15,7 @@ namespace Windows.Win32.System.Com;
 
 /// <summary>
 ///  Lifetime management struct for a native COM pointer. Meant to be utilized in a <see langword="using"/> statement
-///  to ensure <see cref="IUnknown.Release"/> is called when going out of scope with the using.
+///  to ensure <see cref="IUnknown.Release(IUnknown*)"/> is called when going out of scope with the using.
 /// </summary>
 /// <remarks>
 ///  <para>
@@ -84,6 +84,12 @@ public readonly unsafe ref struct ComScope<T> where T : unmanaged, IComIID
         ((IUnknown*)from)->QueryInterface(IID.Get<T>(), scope).ThrowOnFailure();
         return scope;
     }
+
+    public static ComScope<T> GetComCallableWrapper(object? obj)
+        => new(ComHelpers.GetComPointer<T>(obj));
+
+    public static ComScope<T> TryGetComCallableWrapper(object? obj, out HRESULT result)
+        => new(ComHelpers.TryGetComPointer<T>(obj, out result));
 
     public void Dispose()
     {

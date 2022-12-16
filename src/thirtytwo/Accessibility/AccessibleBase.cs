@@ -40,7 +40,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
     }
 
     protected VARIANT AsVariant(AccessibleBase accessible)
-        => accessible == this ? Self : (VARIANT)Com.GetComPointer<IDispatch>(accessible);
+        => accessible == this ? Self : (VARIANT)ComHelpers.GetComPointer<IDispatch>(accessible);
 
     HRESULT IAccessible.Interface.get_accDescription(VARIANT varChild, BSTR* pszDescription)
     {
@@ -490,7 +490,6 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
     /// <summary>
     ///  Do the default action for the object, if it has one.
     /// </summary>
-    /// <param name="id"><see cref="Interop.CHILDID_SELF"/> or a child element's id.</param>
     /// <returns><see langword="true"/> if the object has a default action.</returns>
     public virtual bool DoDefaultAction() => false;
 
