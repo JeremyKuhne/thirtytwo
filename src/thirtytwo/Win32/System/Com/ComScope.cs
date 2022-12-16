@@ -85,6 +85,9 @@ public readonly unsafe ref struct ComScope<T> where T : unmanaged, IComIID
         return scope;
     }
 
+    /// <summary>
+    ///  Gets a COM callable wrapper (CCW) for the given <paramref name="obj"/>.
+    /// </summary>
     public static ComScope<T> GetComCallableWrapper(object? obj)
         => new(ComHelpers.GetComPointer<T>(obj));
 

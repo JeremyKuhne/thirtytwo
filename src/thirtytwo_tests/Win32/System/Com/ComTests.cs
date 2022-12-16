@@ -13,8 +13,8 @@ public unsafe class ComTests
     public void Com_GetComPointer_SameUnknownInstance()
     {
         FileDialog.FileDialogEvents events = new(null!);
-        using var unknown1 = ComScope<IUnknown>.GetComCallableWrapper(events);
-        using var unknown2 = ComScope<IUnknown>.GetComCallableWrapper(events);
+        using ComScope<IUnknown> unknown1 = events.GetComCallableWrapper();
+        using ComScope<IUnknown> unknown2 = events.GetComCallableWrapper();
 
         Assert.True(unknown1.Value == unknown2.Value);
     }
@@ -23,8 +23,8 @@ public unsafe class ComTests
     public void Com_GetComPointer_SameInterfaceInstance()
     {
         FileDialog.FileDialogEvents events = new(null!);
-        using var iEvents1 = ComScope<IFileDialogEvents>.GetComCallableWrapper(events);
-        using var iEvents2 = ComScope<IFileDialogEvents>.GetComCallableWrapper(events);
+        using ComScope<IFileDialogEvents> iEvents1 = events.GetComCallableWrapper<IFileDialogEvents>();
+        using ComScope<IFileDialogEvents> iEvents2 = events.GetComCallableWrapper<IFileDialogEvents>();
 
         Assert.True(iEvents1.Value == iEvents2.Value);
     }

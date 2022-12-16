@@ -23,7 +23,7 @@ public unsafe class VariantTests
         Assert.Throws<NotSupportedException>(() => Marshal.GetNativeVariantForObject(rectangle, address));
 
         using TestVariant test = new();
-        using var unknown = ComScope<IUnknown>.GetComCallableWrapper(test);
+        using ComScope<IUnknown> unknown = test.GetComCallableWrapper();
         ITestVariantComInterop comInterop = (ITestVariantComInterop)Marshal.GetObjectForIUnknown(unknown);
         Assert.Throws<NotSupportedException>(() => comInterop.SetVariant(rectangle));
     }
@@ -33,7 +33,7 @@ public unsafe class VariantTests
     {
         // Create a managed object that marshals through `object`
         LegacyVariantObject legacy = new();
-        using var unknown = ComScope<IUnknown>.GetComCallableWrapper(legacy);
+        using ComScope<IUnknown> unknown = ComScope<IUnknown>.GetComCallableWrapper(legacy);
         using ComScope<ITestVariant> testVariant = unknown.QueryInterface<ITestVariant>();
         legacy.Variant = new Rectangle();
 
@@ -63,7 +63,7 @@ public unsafe class VariantTests
         // Now create an object to expose as a CCW through ComWrappers.
         // We can't do a using on TestVariant as the same SAFEARRAY instance is generated below.
         TestVariant test = new();
-        using var unkown = ComScope<IUnknown>.GetComCallableWrapper(test);
+        using ComScope<IUnknown> unkown = test.GetComCallableWrapper();
 
         // Use legacy COM interop to create an RCW for the pointer and set through that projection.
         ITestVariantComInterop comInterop = (ITestVariantComInterop)Marshal.GetObjectForIUnknown(unkown);
