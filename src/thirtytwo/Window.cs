@@ -11,6 +11,9 @@ namespace Windows;
 
 public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
 {
+    // High precision metric units are .01mm each
+    private const int HiMetricUnitsPerInch = 2540;
+
     // Stash the delegate to keep it from being collected
     private readonly WindowProcedure _windowProcedure;
     private readonly WNDPROC _priorWindowProcedure;
@@ -125,15 +128,12 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
     }
 
     private LRESULT WindowProcedureInternal(HWND window, uint message, WPARAM wParam, LPARAM lParam)
-        => WindowProcedure(window, (MessageType)message, wParam, lParam);
-
-    protected virtual LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
     {
         if (MessageHandler is { } handlers)
         {
             foreach (var handler in handlers.GetInvocationList().OfType<WindowsMessageEvent>())
             {
-                var result = handler(this, window, message, wParam, lParam);
+                var result = handler(this, window, (MessageType)message, wParam, lParam);
                 if (result.HasValue)
                 {
                     return result.Value;
@@ -141,6 +141,11 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
             }
         }
 
+        return WindowProcedure(window, (MessageType)message, wParam, lParam);
+    }
+
+    protected virtual LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
+    {
         switch (message)
         {
             case MessageType.SetText:
@@ -272,7 +277,30 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
         this.SetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, (nint)(void*)_priorWindowProcedure.Value);
     }
 
-    void ILayoutHandler.Layout(Rectangle bounds) => Handle.MoveWindow(bounds, repaint: true);
+    void ILayoutHandler.Layout(Rectangle bounds) => LayoutWindow(bounds);
+
+    protected virtual void LayoutWindow(Rectangle bounds)
+    {
+        if (bounds != this.GetClientRectangle())
+        {
+            Handle.MoveWindow(bounds, repaint: true);
+        }
+    }
 
     public static implicit operator HWND(Window window) => window.Handle;
+
+    /// <summary>
+    ///  Allows preprocessing messages before they are translated and dispatched.
+    /// </summary>
+    /// <returns><see langword="true"/> if handled and translation and dispatching should be skipped.</returns>
+    protected internal virtual bool PreProcessMessage(ref MSG message) => false;
+
+    public int PixelToHiMetric(int pixels)
+        => (int)(((HiMetricUnitsPerInch * pixels) + (_lastDpi >> 1)) / _lastDpi);
+
+    public Size PixelToHiMetric(Size size)
+        => new(PixelToHiMetric(size.Width), PixelToHiMetric(size.Height));
+
+    public int HiMetricToPixel(int units)
+        => (int)(((_lastDpi * units) + (HiMetricUnitsPerInch / 2)) / HiMetricUnitsPerInch);
 }

@@ -25,7 +25,7 @@ public class LayoutBinder
             return null;
         }
 
-        _handler.Layout(new Message.WindowPositionChanged(lParam).ClientBounds);
-        return (LRESULT)0;
+        _handler.Layout(window.GetClientRectangle());
+        return null;
     }
 }

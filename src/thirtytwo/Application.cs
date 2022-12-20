@@ -119,6 +119,11 @@ public static unsafe class Application
 
             while (Interop.GetMessage(out MSG message, HWND.Null, 0, 0))
             {
+                if (Window.FromHandle(message.hwnd) is { } target && target.PreProcessMessage(ref message))
+                {
+                    continue;
+                }
+
                 Interop.TranslateMessage(&message);
                 Interop.DispatchMessage(&message);
             }

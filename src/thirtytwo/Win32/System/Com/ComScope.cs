@@ -60,18 +60,21 @@ public readonly unsafe ref struct ComScope<T> where T : unmanaged, IComIID
     public ComScope<TInterface> QueryInterface<TInterface>() where TInterface : unmanaged, IComIID
     {
         ComScope<TInterface> scope = new(null);
-        ((IUnknown*)Value)->QueryInterface(IID.Get<TInterface>(), scope);
+        ((IUnknown*)Value)->QueryInterface(IID.Get<TInterface>(), scope).ThrowOnFailure();
         return scope;
     }
 
-    public ComScope<TInterface> QueryInterface<TInterface>(out HRESULT result) where TInterface : unmanaged, IComIID
+    public ComScope<TInterface> TryQueryInterface<TInterface>() where TInterface : unmanaged, IComIID
+        => TryQueryInterface<TInterface>(out _);
+
+    public ComScope<TInterface> TryQueryInterface<TInterface>(out HRESULT result) where TInterface : unmanaged, IComIID
     {
         ComScope<TInterface> scope = new(null);
         result = ((IUnknown*)Value)->QueryInterface(IID.Get<TInterface>(), scope);
         return scope;
     }
 
-    public static ComScope<T> QueryFrom<TFrom>(TFrom* from, out HRESULT result) where TFrom : unmanaged, IComIID
+    public static ComScope<T> TryQueryFrom<TFrom>(TFrom* from, out HRESULT result) where TFrom : unmanaged, IComIID
     {
         ComScope<T> scope = new(null);
         result = ((IUnknown*)from)->QueryInterface(IID.Get<T>(), scope);

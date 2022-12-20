@@ -58,8 +58,8 @@ public unsafe class CreateStdAccessibleObjectTests
         using ComScope<IDispatch> right = new((IDispatch*)result);
 
         // Can't directly get IAccessibleEx / IRawElementProviderSimple
-        right.QueryInterface<IAccessibleEx>().IsNull.Should().BeTrue();
-        right.QueryInterface<IRawElementProviderSimple>().IsNull.Should().BeTrue();
+        right.TryQueryInterface<IAccessibleEx>().IsNull.Should().BeTrue();
+        right.TryQueryInterface<IRawElementProviderSimple>().IsNull.Should().BeTrue();
 
         using (ComScope<IServiceProvider> rightService = right.QueryInterface<IServiceProvider>())
         {
@@ -73,19 +73,19 @@ public unsafe class CreateStdAccessibleObjectTests
             property.IsEmpty.Should().BeTrue();
         }
 
-        using ComScope<IEnumVARIANT> enumVariant = accessible.QueryInterface<IEnumVARIANT>(out hr);
+        using ComScope<IEnumVARIANT> enumVariant = accessible.TryQueryInterface<IEnumVARIANT>(out hr);
         hr.Succeeded.Should().BeTrue();
 
-        using ComScope<IOleWindow> oleWindow = accessible.QueryInterface<IOleWindow>(out hr);
+        using ComScope<IOleWindow> oleWindow = accessible.TryQueryInterface<IOleWindow>(out hr);
         hr.Succeeded.Should().BeTrue();
         oleWindow.Value->GetWindow(out HWND hwnd);
 
         hwnd.Should().Be(window.Handle);
 
-        using ComScope<IServiceProvider> serviceProvider = accessible.QueryInterface<IServiceProvider>(out hr);
+        using ComScope<IServiceProvider> serviceProvider = accessible.TryQueryInterface<IServiceProvider>(out hr);
         hr.Succeeded.Should().BeTrue();
 
-        using ComScope<IAccIdentity> identity = accessible.QueryInterface<IAccIdentity>(out hr);
+        using ComScope<IAccIdentity> identity = accessible.TryQueryInterface<IAccIdentity>(out hr);
         hr.Succeeded.Should().BeTrue();
 
         byte* id = default;

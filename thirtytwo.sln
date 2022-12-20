@@ -22,6 +22,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Windows101", "src\samples\W
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Layout", "src\samples\Layout\Layout.csproj", "{21D5FC2F-7BDC-4D5E-8EE2-1F9FC253B54D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ActiveX", "src\samples\ActiveX\ActiveX.csproj", "{919DE42D-A835-4105-8C92-4A3EECC861CD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,10 @@ Global
 		{21D5FC2F-7BDC-4D5E-8EE2-1F9FC253B54D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21D5FC2F-7BDC-4D5E-8EE2-1F9FC253B54D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21D5FC2F-7BDC-4D5E-8EE2-1F9FC253B54D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{919DE42D-A835-4105-8C92-4A3EECC861CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{919DE42D-A835-4105-8C92-4A3EECC861CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{919DE42D-A835-4105-8C92-4A3EECC861CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{919DE42D-A835-4105-8C92-4A3EECC861CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -51,6 +57,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{D2F78405-AE04-4260-8486-9C336FD960AC} = {C059056C-D771-4CF5-A93F-AA7140FF7827}
 		{21D5FC2F-7BDC-4D5E-8EE2-1F9FC253B54D} = {C059056C-D771-4CF5-A93F-AA7140FF7827}
+		{919DE42D-A835-4105-8C92-4A3EECC861CD} = {C059056C-D771-4CF5-A93F-AA7140FF7827}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3761BFC9-DBEF-4186-BB8B-BC0D84ED9AE5}

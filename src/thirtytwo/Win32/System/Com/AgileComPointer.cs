@@ -18,9 +18,11 @@ public sealed unsafe class AgileComPointer<TInterface> : IDisposable
     where TInterface : unmanaged, IComIID
 {
     private readonly uint _cookie;
+    private readonly TInterface* _originalHandle;
 
     public AgileComPointer(TInterface* @interface)
     {
+        _originalHandle = @interface;
         _cookie = GlobalInterfaceTable.RegisterInterface(@interface);
 
         // We let the GlobalInterfaceTable maintain the ref count here
@@ -42,6 +44,8 @@ public sealed unsafe class AgileComPointer<TInterface> : IDisposable
         return scope;
     }
 
+    public ComScope<TInterface> TryGetInterface() => GlobalInterfaceTable.GetInterface<TInterface>(_cookie, out _);
+
     public ComScope<TAsInterface> TryGetInterface<TAsInterface>(out HRESULT hr)
         where TAsInterface : unmanaged, IComIID
     {
@@ -54,6 +58,8 @@ public sealed unsafe class AgileComPointer<TInterface> : IDisposable
         Debug.Fail($"Did not dispose {nameof(AgileComPointer<TInterface>)}");
         Dispose();
     }
+
+    public bool Equals(TInterface* other) => other == _originalHandle;
 
     public void Dispose()
     {

@@ -248,6 +248,13 @@ public static unsafe partial class WindowExtensions
         return rect;
     }
 
+    public static HWND GetParent<T>(this T child) where T : IHandle<HWND>
+    {
+        HWND parent = Interop.GetParent(child.Handle);
+        GC.KeepAlive(child.Wrapper);
+        return parent;
+    }
+
     /// <summary>
     ///  Enumerates child windows for the given <paramref name="parent"/>.
     /// </summary>
@@ -262,7 +269,7 @@ public static unsafe partial class WindowExtensions
         GC.KeepAlive(parent.Wrapper);
     }
 
-    public static bool ShowWindow<T>(this T window, ShowWindowCommand command)
+    public static bool ShowWindow<T>(this T window, ShowWindowCommand command = ShowWindowCommand.Show)
         where T : IHandle<HWND>
     {
         bool result = Interop.ShowWindow(window.Handle, (SHOW_WINDOW_CMD)command);

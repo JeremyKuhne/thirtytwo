@@ -75,6 +75,7 @@ GetMessage
 GetModuleHandleEx
 GetObject
 GetObjectType
+GetParent
 GetProcessDpiAwareness
 GetStockObject
 GetSysColorBrush
@@ -110,12 +111,15 @@ InvalidateRect
 IOleClientSite
 IOleContainer
 IOleControlSite
+IOleInPlaceObject
 IOleInPlaceSite
 IOleInPlaceFrame
 IOleObject
 IOleWindow
+IPropertyNotifySink
 IRawElementProviderSimple
 IServiceProvider
+ISimpleFrameSite
 IsWindowEnabled
 IsWindowVisible
 IUIAutomationElement
@@ -134,6 +138,7 @@ MSGF_*
 MulDiv
 NAVDIR_*
 NTSTATUS
+OLEIVERB*
 OLEIVERB_*
 OBJ_TYPE
 OBJECT_IDENTIFIER
