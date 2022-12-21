@@ -25,7 +25,8 @@ internal class Program
         {
             _mediaPlayer = new(DefaultBounds, this)
             {
-                URL = Path.GetFullPath("Media.mpg")
+                URL = Path.GetFullPath("Media.mpg"),
+                StretchToFit = true
             };
 
             this.AddLayoutHandler(Layout.Fill(_mediaPlayer));
@@ -45,6 +46,12 @@ internal class Program
         {
             get => (string?)GetComProperty("URL");
             set => SetComProperty("URL", value);
+        }
+
+        public bool StretchToFit
+        {
+            get => (bool)(GetComProperty("stretchToFit") ?? false);
+            set => SetComProperty("stretchToFit", value);
         }
     }
 }
