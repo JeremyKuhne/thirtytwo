@@ -94,7 +94,7 @@ public unsafe partial class ActiveXControl
             }
 
             // We need the object to call TranslateAccelerator on for incoming key messages.
-            ActiveObject = new(pActiveObject, takeOwnership: true);
+            ActiveObject = pActiveObject is null ? null : new(pActiveObject, takeOwnership: true);
             return HRESULT.S_OK;
         }
 

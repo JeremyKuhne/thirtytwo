@@ -10,8 +10,7 @@ public unsafe partial class ActiveXControl
     private sealed class ConnectionPoint<TSink> : IDisposable
         where TSink : unmanaged, IComIID
     {
-        private readonly AgileComPointer<IConnectionPoint>? _connectionPoint;
-        private readonly uint _cookie;
+        private readonly ConnectionHandle? _connectionPoint;
 
         public ConnectionPoint(AgileComPointer<IUnknown> control, IManagedWrapper sink)
         {
@@ -27,29 +26,46 @@ public unsafe partial class ActiveXControl
                 return;
             }
 
-            _connectionPoint = new(connectionPoint, takeOwnership: true);
-
-            uint cookie = 0;
-            IUnknown* ccw = ComHelpers.TryGetComPointer<IUnknown>(sink, out hr);
-            if (hr.Failed || connectionPoint->Advise(ccw, &cookie).Failed)
-            {
-                _connectionPoint.Dispose();
-                _connectionPoint = null;
-            }
-
-            _cookie = cookie;
+            _connectionPoint = new(connectionPoint, sink);
         }
 
-        public void Dispose()
+        public void Dispose() => _connectionPoint?.Dispose();
+
+        private class ConnectionHandle : AgileComPointer<IConnectionPoint>
         {
-            if (_connectionPoint is null)
+            private readonly uint _cookie;
+            private readonly bool _connected;
+
+            public ConnectionHandle(IConnectionPoint* connectionPoint, IManagedWrapper sink)
+                : base(connectionPoint, takeOwnership: true)
             {
-                return;
+                uint cookie = 0;
+                IUnknown* ccw = ComHelpers.TryGetComPointer<IUnknown>(sink, out HRESULT hr);
+                if (hr.Failed || connectionPoint->Advise(ccw, &cookie).Failed)
+                {
+                    Dispose();
+                }
+                else
+                {
+                    _connected = true;
+                }
+
+                _cookie = cookie;
             }
 
-            using var connectionPoint = _connectionPoint.TryGetInterface();
-            HRESULT hr = connectionPoint.Value->Unadvise(_cookie);
-            _connectionPoint.Dispose();
+            protected override void Dispose(bool disposing)
+            {
+                if (_connected)
+                {
+                    using var connectionPoint = TryGetInterface(out HRESULT hr);
+                    if (hr.Succeeded)
+                    {
+                        hr = connectionPoint.Value->Unadvise(_cookie);
+                    }
+                }
+
+                base.Dispose(disposing);
+            }
         }
     }
 }

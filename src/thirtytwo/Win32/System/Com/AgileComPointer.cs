@@ -14,7 +14,7 @@ namespace Windows.Win32.System.Com;
 /// <summary>
 ///  Finalizable wrapper for COM pointers that gives agile access to the specified interface.
 /// </summary>
-public sealed unsafe class AgileComPointer<TInterface> : IComPointer
+public unsafe class AgileComPointer<TInterface> : IComPointer
     where TInterface : unmanaged, IComIID
 {
     private readonly uint _cookie;
@@ -49,6 +49,9 @@ public sealed unsafe class AgileComPointer<TInterface> : IComPointer
 
     public ComScope<TInterface> TryGetInterface() => GlobalInterfaceTable.GetInterface<TInterface>(_cookie, out _);
 
+    public ComScope<TInterface> TryGetInterface(out HRESULT hr)
+        => GlobalInterfaceTable.GetInterface<TInterface>(_cookie, out hr);
+
     public ComScope<TAsInterface> TryGetInterface<TAsInterface>(out HRESULT hr)
         where TAsInterface : unmanaged, IComIID
     {
@@ -59,15 +62,24 @@ public sealed unsafe class AgileComPointer<TInterface> : IComPointer
     ~AgileComPointer()
     {
         Debug.Fail($"Did not dispose {nameof(AgileComPointer<TInterface>)}");
-        Dispose();
+        Dispose(disposing: false);
     }
 
     public bool Equals(TInterface* other) => other == _originalHandle;
 
     public void Dispose()
     {
-        HRESULT hr = GlobalInterfaceTable.RevokeInterface(_cookie);
-        Debug.Assert(hr.Succeeded);
+        Dispose(disposing: true);
         GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        HRESULT hr = GlobalInterfaceTable.RevokeInterface(_cookie);
+        if (disposing)
+        {
+            // Don't assert from the finalizer thread.
+            Debug.Assert(hr.Succeeded);
+        }
     }
 }

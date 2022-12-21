@@ -17,7 +17,7 @@ public unsafe partial class ActiveXControl
         IOleControlSite.Interface,
         IPropertyNotifySink.Interface,
         IDisposable,
-        IManagedWrapper<IOleClientSite, ISimpleFrameSite, IPropertyNotifySink, IOleInPlaceSite, IOleWindow>
+        IManagedWrapper<IOleClientSite, ISimpleFrameSite, IOleInPlaceSite, IOleWindow, IOleControlSite, IPropertyNotifySink>
     {
         private readonly ActiveXControl _control;
         private bool _inOnChanged;

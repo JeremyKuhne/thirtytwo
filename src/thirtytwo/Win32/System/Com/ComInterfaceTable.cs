@@ -20,9 +20,8 @@ internal unsafe readonly struct ComInterfaceTable
     public static ComInterfaceTable Create<TComInterface>()
         where TComInterface : unmanaged, IComIID, IVTable
     {
-        Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface>(2);
-        entries[0] = GetEntry<IComCallableWrapper>();
-        entries[1] = GetEntry<TComInterface>();
+        Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface>(1);
+        entries[0] = GetEntry<TComInterface>();
 
         return new()
         {
@@ -38,10 +37,9 @@ internal unsafe readonly struct ComInterfaceTable
         where TComInterface1 : unmanaged, IComIID, IVTable
         where TComInterface2 : unmanaged, IComIID, IVTable
     {
-        Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface1>(3);
-        entries[0] = GetEntry<IComCallableWrapper>();
-        entries[1] = GetEntry<TComInterface1>();
-        entries[2] = GetEntry<TComInterface2>();
+        Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface1>(2);
+        entries[0] = GetEntry<TComInterface1>();
+        entries[1] = GetEntry<TComInterface2>();
 
         return new()
         {
@@ -58,11 +56,10 @@ internal unsafe readonly struct ComInterfaceTable
         where TComInterface2 : unmanaged, IComIID, IVTable
         where TComInterface3 : unmanaged, IComIID, IVTable
     {
-        Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface1>(4);
-        entries[0] = GetEntry<IComCallableWrapper>();
-        entries[1] = GetEntry<TComInterface1>();
-        entries[2] = GetEntry<TComInterface2>();
-        entries[3] = GetEntry<TComInterface3>();
+        Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface1>(3);
+        entries[0] = GetEntry<TComInterface1>();
+        entries[1] = GetEntry<TComInterface2>();
+        entries[2] = GetEntry<TComInterface3>();
 
         return new()
         {
@@ -80,12 +77,11 @@ internal unsafe readonly struct ComInterfaceTable
         where TComInterface3 : unmanaged, IComIID, IVTable
         where TComInterface4 : unmanaged, IComIID, IVTable
     {
-        Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface1>(5);
-        entries[0] = GetEntry<IComCallableWrapper>();
-        entries[1] = GetEntry<TComInterface1>();
-        entries[2] = GetEntry<TComInterface2>();
-        entries[3] = GetEntry<TComInterface3>();
-        entries[4] = GetEntry<TComInterface4>();
+        Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface1>(4);
+        entries[0] = GetEntry<TComInterface1>();
+        entries[1] = GetEntry<TComInterface2>();
+        entries[2] = GetEntry<TComInterface3>();
+        entries[3] = GetEntry<TComInterface4>();
 
         return new()
         {
@@ -104,13 +100,38 @@ internal unsafe readonly struct ComInterfaceTable
         where TComInterface4 : unmanaged, IComIID, IVTable
         where TComInterface5 : unmanaged, IComIID, IVTable
     {
+        Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface1>(5);
+        entries[0] = GetEntry<TComInterface1>();
+        entries[1] = GetEntry<TComInterface2>();
+        entries[2] = GetEntry<TComInterface3>();
+        entries[3] = GetEntry<TComInterface4>();
+        entries[4] = GetEntry<TComInterface5>();
+
+        return new()
+        {
+            Entries = (ComInterfaceEntry*)Unsafe.AsPointer(ref entries[0]),
+            Count = entries.Length
+        };
+    }
+
+    /// <summary>
+    ///  Create an interface table for the given interfaces.
+    /// </summary>
+    public static ComInterfaceTable Create<TComInterface1, TComInterface2, TComInterface3, TComInterface4, TComInterface5, TComInterface6>()
+        where TComInterface1 : unmanaged, IComIID, IVTable
+        where TComInterface2 : unmanaged, IComIID, IVTable
+        where TComInterface3 : unmanaged, IComIID, IVTable
+        where TComInterface4 : unmanaged, IComIID, IVTable
+        where TComInterface5 : unmanaged, IComIID, IVTable
+        where TComInterface6 : unmanaged, IComIID, IVTable
+    {
         Span<ComInterfaceEntry> entries = AllocateEntries<TComInterface1>(6);
-        entries[0] = GetEntry<IComCallableWrapper>();
-        entries[1] = GetEntry<TComInterface1>();
-        entries[2] = GetEntry<TComInterface2>();
-        entries[3] = GetEntry<TComInterface3>();
-        entries[4] = GetEntry<TComInterface4>();
-        entries[5] = GetEntry<TComInterface5>();
+        entries[0] = GetEntry<TComInterface1>();
+        entries[1] = GetEntry<TComInterface2>();
+        entries[2] = GetEntry<TComInterface3>();
+        entries[3] = GetEntry<TComInterface4>();
+        entries[4] = GetEntry<TComInterface5>();
+        entries[5] = GetEntry<TComInterface6>();
 
         return new()
         {
@@ -121,10 +142,15 @@ internal unsafe readonly struct ComInterfaceTable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Span<ComInterfaceEntry> AllocateEntries<T>(int count)
-        // Reserve an extra slot for a custom IUnkown once we figure that out
-        => new(
+    {
+        Span<ComInterfaceEntry> entries = new(
             (ComInterfaceEntry*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(T), sizeof(ComInterfaceEntry) * (count + 1)),
             count + 1);
+
+        // Add our sentinel interface.
+        entries[^1] = GetEntry<IComCallableWrapper>();
+        return entries;
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static ComInterfaceEntry GetEntry<TComInterface>() where TComInterface : unmanaged, IComIID, IVTable

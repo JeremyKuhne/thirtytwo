@@ -47,11 +47,11 @@ public unsafe class ManagedWrapperTests
         Assert.False(table.Entries is null);
         table.Count.Should().BeGreaterThanOrEqualTo(3);
         table.Entries[0].Vtable.Should().NotBe(0);
-        table.Entries[0].IID.Should().Be(*IID.Get<IComCallableWrapper>());
+        table.Entries[0].IID.Should().Be(*IID.Get<IOleClientSite>());
         table.Entries[1].Vtable.Should().NotBe(0);
-        table.Entries[1].IID.Should().Be(*IID.Get<IOleClientSite>());
+        table.Entries[1].IID.Should().Be(*IID.Get<IOleContainer>());
         table.Entries[2].Vtable.Should().NotBe(0);
-        table.Entries[2].IID.Should().Be(*IID.Get<IOleContainer>());
+        table.Entries[2].IID.Should().Be(*IID.Get<IComCallableWrapper>());
     }
 
     [Fact]
@@ -63,9 +63,9 @@ public unsafe class ManagedWrapperTests
         Assert.False(table.Entries is null);
         table.Count.Should().BeGreaterThanOrEqualTo(2);
         table.Entries[0].Vtable.Should().NotBe(0);
-        table.Entries[0].IID.Should().Be(*IID.Get<IComCallableWrapper>());
+        table.Entries[0].IID.Should().Be(*IID.Get<IOleContainer>());
         table.Entries[1].Vtable.Should().NotBe(0);
-        table.Entries[1].IID.Should().Be(*IID.Get<IOleContainer>());
+        table.Entries[1].IID.Should().Be(*IID.Get<IComCallableWrapper>());
     }
 
     private class OleContainerOne : IOleContainer.Interface, IManagedWrapper<IOleContainer>
