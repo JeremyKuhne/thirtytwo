@@ -3,6 +3,7 @@
 
 using System.Runtime.InteropServices;
 using Windows.Win32.System.Com;
+using Windows.Win32.System.Ole;
 using static System.Runtime.InteropServices.ComWrappers;
 
 namespace Windows.Win32;
@@ -102,6 +103,59 @@ internal static unsafe partial class ComHelpers
         {
             Debug.Fail(ex.Message);
             return default;
+        }
+    }
+
+    /// <summary>
+    ///  Creates the given <paramref name="classId"/>.
+    /// </summary>
+    /// <param name="classId">The class guid.</param>
+    /// <exception cref="COMException">Thrown if the class can't be created.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown if the class can't be created.</exception>
+    /// <returns><see cref="IUnknown"/> for the class. Throws if unable to create the class.</returns>
+    public static IUnknown* CreateComClass(Guid classId)
+    {
+        Guid* rclsid = &classId;
+        IUnknown* unknown = CreateWithIClassFactory2();
+
+        if (unknown is null)
+        {
+            HRESULT hr = Interop.CoCreateInstance(rclsid, null, CLSCTX.CLSCTX_INPROC_SERVER, IID.Get<IUnknown>(), (void**)&unknown);
+            hr.ThrowOnFailure();
+        }
+
+        return unknown;
+
+        IUnknown* CreateWithIClassFactory2()
+        {
+            using ComScope<IClassFactory2> factory = new(null);
+
+            HRESULT hr = Interop.CoGetClassObject(rclsid, CLSCTX.CLSCTX_INPROC_SERVER, null, IID.Get<IClassFactory2>(), factory);
+
+            if (hr.Failed)
+            {
+                Debug.Assert(hr == HRESULT.E_NOINTERFACE);
+                return null;
+            }
+
+            LICINFO info = new()
+            {
+                cbLicInfo = sizeof(LICINFO)
+            };
+
+            factory.Value->GetLicInfo(&info);
+            if (info.fRuntimeKeyAvail)
+            {
+                using BSTR key = default;
+                factory.Value->RequestLicKey(0, &key);
+                factory.Value->CreateInstanceLic(null, null, IID.GetRef<IUnknown>(), key, out void* unknown);
+                return (IUnknown*)unknown;
+            }
+            else
+            {
+                factory.Value->CreateInstance(null, IID.GetRef<IUnknown>(), out void* unknown);
+                return (IUnknown*)unknown;
+            }
         }
     }
 

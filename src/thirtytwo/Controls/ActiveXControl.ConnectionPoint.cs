@@ -27,7 +27,7 @@ public unsafe partial class ActiveXControl
                 return;
             }
 
-            _connectionPoint = new(connectionPoint);
+            _connectionPoint = new(connectionPoint, takeOwnership: true);
 
             uint cookie = 0;
             IUnknown* ccw = ComHelpers.TryGetComPointer<IUnknown>(sink, out hr);

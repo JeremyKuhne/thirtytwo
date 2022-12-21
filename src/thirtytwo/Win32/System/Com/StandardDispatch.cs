@@ -52,7 +52,7 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IWrapperIni
             typeinfo.Value,
             &standard).ThrowOnFailure();
 
-        _standardDispatch = new AgileComPointer<IDispatch>((IDispatch*)standard);
+        _standardDispatch = new AgileComPointer<IDispatch>((IDispatch*)standard, takeOwnership: true);
     }
 
     private ComScope<IDispatch> Dispatch =>

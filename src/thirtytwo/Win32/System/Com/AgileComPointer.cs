@@ -14,19 +14,22 @@ namespace Windows.Win32.System.Com;
 /// <summary>
 ///  Finalizable wrapper for COM pointers that gives agile access to the specified interface.
 /// </summary>
-public sealed unsafe class AgileComPointer<TInterface> : IDisposable
+public sealed unsafe class AgileComPointer<TInterface> : IComPointer
     where TInterface : unmanaged, IComIID
 {
     private readonly uint _cookie;
     private readonly TInterface* _originalHandle;
 
-    public AgileComPointer(TInterface* @interface)
+    public AgileComPointer(TInterface* @interface, bool takeOwnership)
     {
         _originalHandle = @interface;
         _cookie = GlobalInterfaceTable.RegisterInterface(@interface);
 
         // We let the GlobalInterfaceTable maintain the ref count here
-        uint count = ((IUnknown*)@interface)->Release();
+        if (takeOwnership)
+        {
+            uint count = ((IUnknown*)@interface)->Release();
+        }
     }
 
     public ComScope<TInterface> GetInterface()

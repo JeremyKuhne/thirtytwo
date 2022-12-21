@@ -90,6 +90,13 @@ public unsafe partial struct VARIANT : IDisposable
             data = new() { bstrVal = value }
         };
 
+    public static explicit operator string(VARIANT value) => value.vt switch
+    {
+        VARENUM.VT_BSTR => value.data.bstrVal.ToString(),
+        VARENUM.VT_LPWSTR => new((char*)value.data.pcVal.Value),        // Technically a PROPVARIANT.pwszVal
+        _ => ThrowInvalidCast<string>(),
+    };
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static T ThrowInvalidCast<T>() => throw new InvalidCastException();
 

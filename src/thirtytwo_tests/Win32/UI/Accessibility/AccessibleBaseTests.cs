@@ -17,14 +17,14 @@ public unsafe class AccessibleBaseTests
         AccessibleCallback callback = new();
         using ComScope<IAccessible> accessible = callback.GetComCallableWrapper<IAccessible>();
         IDispatch* dispatch = (IDispatch*)accessible.Value;
-        int[] result = dispatch->GetIDsOfNames("accHitTest", "xLeft", "yTop", "pvarChild");
+        int[] result = dispatch->GetIdsOfNames("accHitTest", "xLeft", "yTop", "pvarChild");
         result.Should().HaveCount(4);
         result[0].Should().Be(Interop.DISPID_ACC_HITTEST);
         result[1].Should().Be(0);
         result[2].Should().Be(1);
         result[3].Should().Be(Interop.DISPID_UNKNOWN);
 
-        result = dispatch->GetIDsOfNames("accChild");
+        result = dispatch->GetIdsOfNames("accChild");
         result.Should().HaveCount(1);
 
         VARIANT invokeResult = default;

@@ -26,7 +26,7 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         dialog->Advise(ComHelpers.GetComPointer<IFileDialogEvents>(new FileDialogEvents(this)), out _cookie);
 
         // Wrap in an agile reference so it will be safely finalized if Dispose isn't called.
-        Interface = new AgileComPointer<IFileDialog>(dialog);
+        Interface = new AgileComPointer<IFileDialog>(dialog, takeOwnership: true);
         Owner = owner;
     }
 

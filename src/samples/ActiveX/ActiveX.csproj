@@ -8,4 +8,10 @@
     <ProjectReference Include="..\..\thirtytwo\thirtytwo.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="media.mpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

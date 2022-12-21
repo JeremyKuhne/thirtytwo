@@ -33,6 +33,11 @@ DestroyWindow
 DispatchMessage
 DISP_E_*
 DISPID_ACC_*
+DISPID_Delete
+DISPID_Name
+DISPID_Object
+DISPID_Parent
+DISPID_PROPERTYPUT
 DISPID_UNKNOWN
 DPI_AWARENESS_CONTEXT_*
 DRAWITEMSTRUCT
@@ -80,6 +85,7 @@ GetProcessDpiAwareness
 GetStockObject
 GetSysColorBrush
 GetThreadDpiAwarenessContext
+GetThreadLocale
 GetWindowRect
 GetWindowText
 GetWindowTextLength
@@ -117,6 +123,8 @@ IOleInPlaceFrame
 IOleObject
 IOleWindow
 IPropertyNotifySink
+IProvideClassInfo
+IProvideMultipleClassInfo
 IRawElementProviderSimple
 IServiceProvider
 ISimpleFrameSite
@@ -130,6 +138,7 @@ LoadIcon
 LoadRegTypeLib
 LocalFree
 LOGFONTW
+MEMBERID_NIL
 MessageBoxEx
 METHODDATA
 MODIFIERKEYS_FLAGS

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.ComponentModel;
 using System.Drawing;
 using Windows.Win32.System.Com;
 using Windows.Win32.System.Ole;
@@ -19,6 +20,8 @@ public unsafe partial class ActiveXControl : Control
     private readonly Container _container;
     private readonly Site _site;
     private readonly OLEMISC _status;
+    private readonly ICustomTypeDescriptor _typeDescriptor;
+    private PropertyDescriptorCollection? _propertyDescriptors;
 
     public ActiveXControl(
         Guid classId,
@@ -32,8 +35,8 @@ public unsafe partial class ActiveXControl : Control
             parameters: parameters)
     {
         _classId = classId;
-        IUnknown* unknown = CreateInstance();
-        _instance = new(unknown);
+        IUnknown* unknown = ComHelpers.CreateComClass(classId);
+        _instance = new(unknown, takeOwnership: true);
         _instanceAsActiveObject = unknown->QueryAgileInterface<IOleInPlaceActiveObject>();
 
         using ComScope<IOleObject> oleObject = ComScope<IOleObject>.QueryFrom(unknown);
@@ -49,56 +52,8 @@ public unsafe partial class ActiveXControl : Control
         HRESULT hr = oleObject.Value->SetClientSite(site);
 
         DoVerb(OLEIVERB.OLEIVERB_INPLACEACTIVATE);
-    }
 
-    private IUnknown* CreateInstance()
-    {
-        IUnknown* unknown = CreateWithIClassFactory2();
-        if (unknown is null)
-        {
-            fixed (Guid* g = &_classId)
-            {
-                HRESULT hr = Interop.CoCreateInstance(g, null, CLSCTX.CLSCTX_INPROC_SERVER, IID.Get<IUnknown>(), (void**)&unknown);
-                hr.ThrowOnFailure();
-            }
-        }
-
-        return unknown;
-
-        IUnknown* CreateWithIClassFactory2()
-        {
-            using ComScope<IClassFactory2> factory = new(null);
-
-            fixed (Guid* g = &_classId)
-            {
-                HRESULT hr = Interop.CoGetClassObject(g, CLSCTX.CLSCTX_INPROC_SERVER, null, IID.Get<IClassFactory2>(), factory);
-
-                if (hr.Failed)
-                {
-                    Debug.Assert(hr == HRESULT.E_NOINTERFACE);
-                    return null;
-                }
-            }
-
-            LICINFO info = new()
-            {
-                cbLicInfo = sizeof(LICINFO)
-            };
-
-            factory.Value->GetLicInfo(&info);
-            if (info.fRuntimeKeyAvail)
-            {
-                using BSTR key = default;
-                factory.Value->RequestLicKey(0, &key);
-                factory.Value->CreateInstanceLic(null, null, IID.GetRef<IUnknown>(), key, out void* unknown);
-                return (IUnknown*)unknown;
-            }
-            else
-            {
-                factory.Value->CreateInstance(null, IID.GetRef<IUnknown>(), out void* unknown);
-                return (IUnknown*)unknown;
-            }
-        }
+        _typeDescriptor = new ComTypeDescriptor(_instance);
     }
 
     protected internal override bool PreProcessMessage(ref MSG message)
@@ -165,6 +120,15 @@ public unsafe partial class ActiveXControl : Control
 
         return base.WindowProcedure(window, message, wParam, lParam);
     }
+
+    protected PropertyDescriptorCollection ComPropertyDescriptors
+        => _propertyDescriptors ??= _typeDescriptor.GetProperties();
+
+    protected void SetComProperty(string name, object? value)
+        => ComPropertyDescriptors[name]!.SetValue(_instance, value);
+
+    protected object? GetComProperty(string name)
+        => ComPropertyDescriptors[name]!.GetValue(_instance);
 
     protected override void Dispose(bool disposing)
     {

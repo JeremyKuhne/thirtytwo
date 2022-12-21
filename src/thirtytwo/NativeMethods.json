@@ -15,6 +15,9 @@
             "IConnectionPoint.Advise",
             "IConnectionPoint.Unadvise",
             "IConnectionPointContainer.FindConnectionPoint",
+            "IDispatch.GetIDsOfNames",
+            "IDispatch.GetTypeInfo",
+            "IDispatch.Invoke",
             "IGlobalInterfaceTable.GetInterfaceFromGlobal",
             "IGlobalInterfaceTable.RevokeInterfaceFromGlobal",
             "IFileDialog.Show",
@@ -26,7 +29,16 @@
             "IOleObject.SetExtent",
             "IOleObject.GetMiscStatus",
             "IOleObject.SetClientSite",
+            "IProvideClassInfo.GetClassInfo",
+            "IProvideMultipleClassInfo.GetMultiTypeInfoCount",
+            "IProvideMultipleClassInfo.GetInfoOfIndex",
             "IRawElementProviderSimple.GetPropertyValue",
+            "ITypeInfo.GetDocumentation",
+            "ITypeInfo.GetNames",
+            "ITypeInfo.GetFuncDesc",
+            "ITypeInfo.GetTypeAttr",
+            "ITypeInfo.ReleaseFuncDesc",
+            "ITypeInfo.ReleaseTypeAttr",
             "IUnknown.QueryInterface"
         ]
     }

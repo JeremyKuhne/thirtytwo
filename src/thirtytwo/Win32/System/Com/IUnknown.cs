@@ -16,10 +16,11 @@ public unsafe partial struct IUnknown : IVTable<IUnknown, IUnknown.Vtbl>
         return @interface;
     }
 
-    public AgileComPointer<TInterface>? QueryAgileInterface<TInterface>() where TInterface : unmanaged, IComIID
+    public AgileComPointer<TInterface>? QueryAgileInterface<TInterface>()
+        where TInterface : unmanaged, IComIID
     {
         TInterface* @interface = QueryInterface<TInterface>();
-        return @interface is null ? null : new(@interface);
+        return @interface is null ? null : new(@interface, takeOwnership: true);
     }
 
     public static void PopulateVTable(Vtbl* vtable)
