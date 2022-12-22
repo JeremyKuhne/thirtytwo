@@ -138,6 +138,7 @@ LoadIcon
 LoadRegTypeLib
 LocalFree
 LOGFONTW
+MapWindowPoints
 MEMBERID_NIL
 MessageBoxEx
 METHODDATA

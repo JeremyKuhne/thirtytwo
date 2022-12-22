@@ -160,8 +160,9 @@ public unsafe partial class ActiveXControl
             *ppFrame = ComHelpers.GetComPointer<IOleInPlaceFrame>(_control._container);
             *ppDoc = null;
 
-            *lprcPosRect = _control.GetClientRectangle();
-            *lprcClipRect = new(int.MinValue, int.MinValue, int.MaxValue, int.MaxValue);
+            // The positioning is in the container frame's client coordinates.
+            *lprcPosRect = _control.MapTo(_control._container.Window, _control.GetClientRectangle());
+            *lprcClipRect = *lprcPosRect;
             lpFrameInfo->cb = (uint)sizeof(OLEINPLACEFRAMEINFO);
             lpFrameInfo->fMDIApp = false;
             lpFrameInfo->haccel = HACCEL.Null;

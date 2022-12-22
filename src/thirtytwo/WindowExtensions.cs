@@ -248,6 +248,34 @@ public static unsafe partial class WindowExtensions
         return rect;
     }
 
+    /// <summary>
+    ///  Converts (maps) a set of points from a coordinate space relative to one window to a coordinate space
+    ///  relative to another window.
+    /// </summary>
+    public static unsafe Rectangle MapTo<TFrom, TTo>(this TFrom from, TTo to, Rectangle rectangle)
+        where TFrom : IHandle<HWND> where TTo : IHandle<HWND>
+    {
+        RECT rect = rectangle;
+        _ = Interop.MapWindowPoints(from.Handle, to.Handle, (Point*)&rect, 2);
+        GC.KeepAlive(to.Wrapper);
+        GC.KeepAlive(from.Wrapper);
+        return rect;
+    }
+
+    /// <summary>
+    ///  Converts (maps) a set of points from a coordinate space relative to one window to a coordinate space
+    ///  relative to another window.
+    /// </summary>
+    public static unsafe Rectangle MapFrom<TFrom, TTo>(this TTo to, TFrom from, Rectangle rectangle)
+        where TFrom : IHandle<HWND> where TTo : IHandle<HWND>
+    {
+        RECT rect = rectangle;
+        _ = Interop.MapWindowPoints(from.Handle, to.Handle, (Point*)&rect, 2);
+        GC.KeepAlive(to.Wrapper);
+        GC.KeepAlive(from.Wrapper);
+        return rect;
+    }
+
     public static HWND GetParent<T>(this T child) where T : IHandle<HWND>
     {
         HWND parent = Interop.GetParent(child.Handle);

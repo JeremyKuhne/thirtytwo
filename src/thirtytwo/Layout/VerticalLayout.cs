@@ -12,13 +12,13 @@ public class VerticalLayout : ILayoutHandler
     public VerticalLayout(params (float Percent, ILayoutHandler Handler)[] handlers)
     {
         float totalPercent = 0f;
-        foreach (var handler in handlers)
+        foreach (var (percent, handler) in handlers)
         {
-            totalPercent += handler.Percent;
+            totalPercent += percent;
         }
 
         if (totalPercent != 1.0f)
-            throw new ArgumentOutOfRangeException($"Total percentage must be 1.0f.");
+            throw new ArgumentOutOfRangeException(nameof(handlers), $"Total percentage must be 1.0f.");
 
         _handlers = handlers;
     }

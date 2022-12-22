@@ -21,7 +21,10 @@ public unsafe partial class ActiveXControl : Control
     private readonly Site _site;
     private readonly OLEMISC _status;
     private readonly ICustomTypeDescriptor _typeDescriptor;
+    private readonly Window _parentWindow;
     private PropertyDescriptorCollection? _propertyDescriptors;
+    private bool _activated;
+    private bool _shown;
 
     public ActiveXControl(
         Guid classId,
@@ -45,13 +48,12 @@ public unsafe partial class ActiveXControl : Control
             _status = status;
         }
 
-        _container = new Container(parentWindow.Handle);
+        _parentWindow = parentWindow;
+        _container = new Container(parentWindow);
         _site = new Site(this);
 
         IOleClientSite* site = ComHelpers.GetComPointer<IOleClientSite>(_site);
         HRESULT hr = oleObject.Value->SetClientSite(site);
-
-        DoVerb(OLEIVERB.OLEIVERB_INPLACEACTIVATE);
 
         _typeDescriptor = new ComTypeDescriptor(_instance);
     }
@@ -77,13 +79,19 @@ public unsafe partial class ActiveXControl : Control
         return base.PreProcessMessage(ref message);
     }
 
-    private void DoVerb(OLEIVERB verb)
+    /// <summary>
+    ///  Send the desired <paramref name="verb"/>.
+    /// </summary>
+    /// <param name="bounds">Bounds of the control in parent client pixel coordinates.</param>
+    private void DoVerb(OLEIVERB verb, Rectangle bounds)
     {
         // The ActiveX Control should be sited with IOleObject::SetClientSite() before doing verbs.
         // https://learn.microsoft.com/windows/win32/api/oleidl/nf-oleidl-ioleobject-doverb#notes-to-callers
 
         using var oleObject = _instance.GetInterface<IOleObject>();
-        RECT bounds = this.GetClientRectangle();
+
+        // Bounds are in pixels here, not HIMETRIC
+        RECT rect = bounds;
         IOleClientSite* clientSite = ComHelpers.GetComPointer<IOleClientSite>(_site);
 
         HRESULT hr = oleObject.Value->DoVerb(
@@ -91,8 +99,8 @@ public unsafe partial class ActiveXControl : Control
             lpmsg: (MSG*)null,
             pActiveSite: clientSite,
             lindex: 0,
-            hwndParent: this.GetParent(),
-            lprcPosRect: &bounds);
+            hwndParent: _parentWindow,
+            lprcPosRect: &rect);
     }
 
     /// <summary>
@@ -111,14 +119,55 @@ public unsafe partial class ActiveXControl : Control
         switch (message)
         {
             case MessageType.WindowPositionChanged:
-                // The control will ask us for bounds and update appropriately (via IOleInPlaceSite.GetWindowContext)
-                DoVerb(OLEIVERB.OLEIVERB_SHOW);
+                PositionChanged();
                 return (LRESULT)0;
             case MessageType.Paint:
                 return (LRESULT)0;
         }
 
         return base.WindowProcedure(window, message, wParam, lParam);
+
+        void PositionChanged()
+        {
+            Rectangle bounds = this.GetClientRectangle();
+            Rectangle boundsInParent = this.MapTo(_parentWindow, bounds);
+
+            if (!_activated)
+            {
+                // Some controls only query size on activation, so we wait until the initial resize comes through.
+                DoVerb(OLEIVERB.OLEIVERB_INPLACEACTIVATE, boundsInParent);
+                _activated = true;
+            }
+
+            if (_status.HasFlag(OLEMISC.OLEMISC_RECOMPOSEONRESIZE))
+            {
+                // Control wants notified.
+                using var oleObject = _instance.TryGetInterface<IOleObject>(out HRESULT hr);
+                if (hr.Succeeded)
+                {
+                    // Not specifically called out in the SetExtent docs, but OLE defaults are HIMETRic
+                    Size size = PixelToHiMetric(this.GetClientRectangle().Size);
+                    oleObject.Value->SetExtent(DVASPECT.DVASPECT_CONTENT, (SIZE*)&size);
+                }
+            }
+
+            using (var inPlaceObject = _instance.TryGetInterface<IOleInPlaceObject>(out HRESULT hr))
+            {
+                // Coordinates here are in pixels, not HIMETRIC
+                if (hr.Succeeded)
+                {
+                    RECT rect = boundsInParent;
+                    inPlaceObject.Value->SetObjectRects(&rect, &rect);
+                }
+            }
+
+            if (!_shown)
+            {
+                // Some controls, but not all, ask for bounds on show (via IOleInPlaceSite.GetWindowContext)
+                DoVerb(OLEIVERB.OLEIVERB_SHOW, boundsInParent);
+                _shown = true;
+            }
+        }
     }
 
     protected PropertyDescriptorCollection ComPropertyDescriptors

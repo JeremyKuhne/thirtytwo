@@ -12,12 +12,13 @@ public unsafe partial class ActiveXControl
         // IOleContainer : IParseDisplayName  -   IOleInPlaceFrame : IOleInPlaceUIWindow : IOleWindow
         IManagedWrapper<IOleContainer, IParseDisplayName, IOleInPlaceFrame, IOleInPlaceUIWindow, IOleWindow>
     {
-        private readonly HWND _parentWindow;
+        internal Window Window { get; }
+
         public AgileComPointer<IOleInPlaceActiveObject>? ActiveObject { get; private set; }
 
-        public Container(HWND parentWindow)
+        public Container(Window containerWindow)
         {
-            _parentWindow = parentWindow;
+            Window = containerWindow;
         }
 
         HRESULT IOleContainer.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut)
@@ -45,10 +46,10 @@ public unsafe partial class ActiveXControl
             }
 
             List<ActiveXControl>? activeXControls = null;
-            if (grfFlags.HasFlag(OLECONTF.OLECONTF_EMBEDDINGS) && !_parentWindow.IsNull)
+            if (grfFlags.HasFlag(OLECONTF.OLECONTF_EMBEDDINGS) && Window is not null)
             {
                 activeXControls = new();
-                _parentWindow.EnumerateChildWindows((HWND child) =>
+                Window.EnumerateChildWindows((HWND child) =>
                 {
                     if (FromHandle(child) is ActiveXControl control)
                     {
@@ -76,7 +77,7 @@ public unsafe partial class ActiveXControl
                 return HRESULT.E_POINTER;
             }
 
-            *phwnd = _parentWindow;
+            *phwnd = Window.Handle;
             return HRESULT.S_OK;
         }
 

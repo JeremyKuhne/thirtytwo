@@ -17,6 +17,7 @@ internal class Program
     private class MainWindow : Window
     {
         private readonly MediaPlayer _mediaPlayer;
+        private readonly MediaPlayer _mediaPlayer2;
 
         public MainWindow(string title) : base(
             DefaultBounds,
@@ -29,7 +30,15 @@ internal class Program
                 StretchToFit = true
             };
 
-            this.AddLayoutHandler(Layout.Fill(_mediaPlayer));
+
+            _mediaPlayer2 = new(DefaultBounds, this)
+            {
+                URL = Path.GetFullPath("Media.mpg"),
+            };
+
+            this.AddLayoutHandler(Layout.Vertical(
+                (.5f, _mediaPlayer),
+                (.5f, _mediaPlayer2)));
         }
     }
 
@@ -52,6 +61,16 @@ internal class Program
         {
             get => (bool)(GetComProperty("stretchToFit") ?? false);
             set => SetComProperty("stretchToFit", value);
+        }
+    }
+
+    private class SystemMonitor : ActiveXControl
+    {
+        private static readonly Guid s_systemMonitorClassId = new("C4D2D8E0-D1DD-11CE-940F-008029004347");
+
+        public SystemMonitor(Rectangle bounds, Window parentWindow, nint parameters = 0)
+            : base(s_systemMonitorClassId, bounds, parentWindow, parameters)
+        {
         }
     }
 }
