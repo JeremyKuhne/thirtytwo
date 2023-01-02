@@ -1,19 +1,33 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Reflection;
+using Windows.Win32.System.Ole;
+
 namespace Windows.Win32.System.Com;
 
 /// <summary>
 ///  Base class for providing <see cref="IDispatch"/> services through a standard dispatch implementation
 ///  generated from a type library.
 /// </summary>
-public unsafe abstract class StandardDispatch : IDispatch.Interface, IWrapperInitialize, IDisposable
+public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx.Interface, IWrapperInitialize, IDisposable
 {
     private readonly Guid _typeLibrary;
     private readonly ushort _majorVersion;
     private readonly ushort _minorVersion;
     private readonly Guid _interfaceId;
     private AgileComPointer<IDispatch>? _standardDispatch;
+
+    // StdOle32.tlb
+    private static readonly Guid s_stdole = new("00020430-0000-0000-C000-000000000046");
+
+    /// <summary>
+    ///  Construct an <see cref="IUnknown"/> instance. This is useful as a replacement for types exposed as
+    ///  <see cref="IDispatch"/> and <see cref="IDispatchEx"/> purely through <see cref="IReflect"/>.
+    /// </summary>
+    public StandardDispatch() : this(s_stdole, 2, 0, IUnknown.IID_Guid)
+    {
+    }
 
     /// <summary>
     ///  Construct a new instance from a registered type library.
@@ -38,7 +52,8 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IWrapperIni
     {
         // Load the registered type library and get the relevant ITypeInfo for the specified interface.
         using ComScope<ITypeLib> typelib = new(null);
-        Interop.LoadRegTypeLib(_typeLibrary, _majorVersion, _minorVersion, 0, typelib).ThrowOnFailure();
+        HRESULT hr = Interop.LoadRegTypeLib(_typeLibrary, _majorVersion, _minorVersion, 0, typelib);
+        hr.ThrowOnFailure();
 
         using ComScope<ITypeInfo> typeinfo = new(null);
         typelib.Value->GetTypeInfoOfGuid(_interfaceId, typeinfo);
@@ -94,6 +109,94 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IWrapperIni
         using var dispatch = Dispatch;
         dispatch.Value->Invoke(dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, pArgErr);
         return HRESULT.S_OK;
+    }
+
+    HRESULT IDispatchEx.Interface.GetDispID(BSTR bstrName, uint grfdex, int* pid)
+    => bstrName.IsNull || pid is null ? HRESULT.E_POINTER : GetDispID(bstrName, grfdex, pid);
+
+    protected virtual HRESULT GetDispID(BSTR bstrName, uint grfdex, int* pid) => HRESULT.E_NOTIMPL;
+
+    HRESULT IDispatchEx.Interface.GetMemberName(int id, BSTR* pbstrName)
+        => pbstrName is null ? HRESULT.E_POINTER : GetMemberName(id, pbstrName);
+
+    protected virtual HRESULT GetMemberName(int id, BSTR* pbstrName) => HRESULT.E_NOTIMPL;
+
+    HRESULT IDispatchEx.Interface.GetNextDispID(uint grfdex, int id, int* pid)
+    {
+        if (pid is null)
+        {
+            return HRESULT.E_POINTER;
+        }
+
+        *pid = Interop.DISPID_UNKNOWN;
+
+        return GetNextDispID(grfdex, id, pid);
+    }
+
+    protected virtual HRESULT GetNextDispID(uint grfdex, int id, int* pid) => HRESULT.E_NOTIMPL;
+
+    HRESULT IDispatchEx.Interface.InvokeEx(
+        int id,
+        uint lcid,
+        ushort wFlags,
+        DISPPARAMS* pdp,
+        VARIANT* pvarRes,
+        EXCEPINFO* pei,
+        IServiceProvider* pspCaller)
+        => pdp is null || pvarRes is null ? HRESULT.E_POINTER : InvokeEx(id, lcid, wFlags, pdp, pvarRes, pei, pspCaller);
+
+    protected virtual HRESULT InvokeEx(
+        int id,
+        uint lcid,
+        ushort wFlags,
+        DISPPARAMS* pdp,
+        VARIANT* pvarRes,
+        EXCEPINFO* pei,
+        IServiceProvider* pspCaller)
+        => ((IDispatch.Interface)this).Invoke(
+            id,
+            IID.Empty(),
+            lcid,
+            (DISPATCH_FLAGS)wFlags,
+            pdp,
+            pvarRes,
+            pei,
+            pArgErr: null);
+
+    HRESULT IDispatchEx.Interface.GetMemberProperties(int id, uint grfdexFetch, FDEX_PROP_FLAGS* pgrfdex)
+    {
+        if (pgrfdex is null)
+        {
+            return HRESULT.E_POINTER;
+        }
+
+        if (id == Interop.DISPID_UNKNOWN)
+        {
+            return HRESULT.E_INVALIDARG;
+        }
+
+        *pgrfdex = default;
+
+        return GetMemberProperties(id, grfdexFetch, pgrfdex);
+    }
+
+    protected virtual HRESULT GetMemberProperties(int id, uint grfdexFetch, FDEX_PROP_FLAGS* pgrfdex)
+        => HRESULT.E_NOTIMPL;
+
+    // .NET COM Interop returns E_NOTIMPL for these three.
+
+    HRESULT IDispatchEx.Interface.DeleteMemberByName(BSTR bstrName, uint grfdex) => HRESULT.E_NOTIMPL;
+    HRESULT IDispatchEx.Interface.DeleteMemberByDispID(int id) => HRESULT.E_NOTIMPL;
+
+    HRESULT IDispatchEx.Interface.GetNameSpaceParent(IUnknown** ppunk)
+    {
+        if (ppunk is null)
+        {
+            return HRESULT.E_POINTER;
+        }
+
+        *ppunk = null;
+        return HRESULT.E_NOTIMPL;
     }
 
     protected virtual void Dispose(bool disposing)

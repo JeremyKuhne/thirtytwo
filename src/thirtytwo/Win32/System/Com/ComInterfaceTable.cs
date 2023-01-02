@@ -9,7 +9,7 @@ namespace Windows.Win32.System.Com;
 /// <summary>
 ///  Wrapper struct for a <see cref="ComInterfaceEntry"/> table.
 /// </summary>
-internal unsafe readonly struct ComInterfaceTable
+internal readonly unsafe struct ComInterfaceTable
 {
     public ComInterfaceEntry* Entries { get; init; }
     public int Count { get; init; }

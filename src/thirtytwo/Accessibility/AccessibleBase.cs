@@ -22,6 +22,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
     // https://learn.microsoft.com/windows/win32/winauto/window
     // https://learn.microsoft.com/windows/win32/winauto/client-object
 
+    // The accessibility TypeLib- lives in oleacc.dll
     private static readonly Guid s_accessibilityTypeLib = new("1ea4dbf0-3c3b-11cf-810c-00aa00389b71");
 
     public static VARIANT Self { get; } = (VARIANT)(int)Interop.CHILDID_SELF;

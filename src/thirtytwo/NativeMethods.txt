@@ -38,6 +38,7 @@ DISPID_Name
 DISPID_Object
 DISPID_Parent
 DISPID_PROPERTYPUT
+DISPID_STARTENUM
 DISPID_UNKNOWN
 DPI_AWARENESS_CONTEXT_*
 DRAWITEMSTRUCT
@@ -53,6 +54,7 @@ EnumChildWindows
 EnumThreadWindows
 ES_*
 FACILITY_CODE
+fdex*
 FONT_CHARSET
 FONT_CLIP_PRECISION
 FONT_FAMILY
@@ -94,12 +96,14 @@ HRESULT
 IAccessible
 IAccessibleEx
 IAccIdentity
+IAgileObject
 IClassFactory2
 IConnectionPoint
 IConnectionPointContainer
 ICreateErrorInfo
 IDI_*
 IDispatch
+IDispatchEx
 IEnumVARIANT
 IErrorInfo
 IFileDialog
@@ -108,6 +112,7 @@ IFileDialogCustomize
 IFileDialogEvents
 IFileOpenDialog
 IGlobalInterfaceTable
+IMarshal
 IModalWindow
 InitCommonControlsEx
 InitVariantFromDoubleArray
@@ -128,6 +133,7 @@ IProvideMultipleClassInfo
 IRawElementProviderSimple
 IServiceProvider
 ISimpleFrameSite
+ISupportErrorInfo
 IsWindowEnabled
 IsWindowVisible
 IUIAutomationElement
@@ -187,6 +193,8 @@ SYS_COLOR_INDEX
 TaskDialog
 TD_*
 TranslateMessage
+TYPE_E_ELEMENTNOTFOUND
+TYPE_E_LIBNOTREGISTERED
 TYPEFLAGS
 UIA_PFIA_*
 UiaClientsAreListening

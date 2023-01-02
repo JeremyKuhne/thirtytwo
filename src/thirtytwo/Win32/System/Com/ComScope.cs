@@ -77,13 +77,18 @@ public readonly unsafe ref struct ComScope<T> where T : unmanaged, IComIID
     public static ComScope<T> TryQueryFrom<TFrom>(TFrom* from, out HRESULT result) where TFrom : unmanaged, IComIID
     {
         ComScope<T> scope = new(null);
-        result = ((IUnknown*)from)->QueryInterface(IID.Get<T>(), scope);
+        result = from is null ? HRESULT.E_POINTER : ((IUnknown*)from)->QueryInterface(IID.Get<T>(), scope);
         return scope;
     }
 
     public static ComScope<T> QueryFrom<TFrom>(TFrom* from) where TFrom : unmanaged, IComIID
     {
         ComScope<T> scope = new(null);
+        if (from is null)
+        {
+            HRESULT.E_POINTER.ThrowOnFailure();
+        }
+
         ((IUnknown*)from)->QueryInterface(IID.Get<T>(), scope).ThrowOnFailure();
         return scope;
     }

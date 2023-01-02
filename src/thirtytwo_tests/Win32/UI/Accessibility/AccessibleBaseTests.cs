@@ -47,7 +47,7 @@ public unsafe class AccessibleBaseTests
 
         dispatch->Invoke(
             result[0],
-            IID.NULL(),
+            IID.Empty(),
             0u,
             DISPATCH_FLAGS.DISPATCH_PROPERTYGET,
             &dispparams,

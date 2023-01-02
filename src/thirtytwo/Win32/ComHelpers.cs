@@ -35,7 +35,14 @@ internal static unsafe partial class ComHelpers
         if (ccw is null)
         {
             // Not handled, fall back to classic COM interop methods.
-            ccw = (IUnknown*)Marshal.GetIUnknownForObject(obj);
+            try
+            {
+                ccw = (IUnknown*)Marshal.GetIUnknownForObject(obj);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Did not find IUnknown for {obj.GetType().Name}. {ex.Message}");
+            }
         }
 
         if (ccw is null)

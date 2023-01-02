@@ -31,14 +31,22 @@ public unsafe class CreateStdAccessibleObjectTests
         //     IID.Get<IDispatch>(),
         //     accessible);
 
+        using ComScope<IAccessible> accessible = new(null);
         HRESULT hr = Interop.CreateStdAccessibleObject(
             window.Handle,
             (int)OBJECT_IDENTIFIER.OBJID_WINDOW,
-            IID.GetRef<IAccessible>(),
-            out void* ppvObject);
+            IID.Get<IAccessible>(),
+            (void**)accessible);
 
         hr.Succeeded.Should().BeTrue();
-        using ComScope<IAccessible> accessible = new(ppvObject);
+
+        // We can get IDispatch
+        using ComScope<IDispatch> dispatch = accessible.TryQueryInterface<IDispatch>(out hr);
+        hr.Succeeded.Should().BeTrue();
+
+        // We can't get IDispatchEx
+        using ComScope<IDispatchEx> dispatchEx = accessible.TryQueryInterface<IDispatchEx>(out hr);
+        hr.Succeeded.Should().BeFalse();
 
         // For OBJID_WINDOW the child count is always 7 (OBJID_SYSMENU through OBJID_SIZEGRIP)
         accessible.Value->get_accChildCount(out int childCount).Succeeded.Should().BeTrue();

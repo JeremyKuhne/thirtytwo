@@ -33,17 +33,22 @@ internal static unsafe class IID
     // We cast away the "readonly" here as there is no way to communicate that through a pointer and
     // Marshal APIs take the Guid as ref. Even though none of our usages actually change the state.
 
+    /// <summary>
+    ///  Gets a pointer to the IID <see cref="Guid"/> for the given <typeparamref name="T"/>.
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Guid* Get<T>() where T : unmanaged, IComIID
-    {
-        return (Guid*)Unsafe.AsPointer(ref Unsafe.AsRef(in T.Guid));
-    }
+        => (Guid*)Unsafe.AsPointer(ref Unsafe.AsRef(in T.Guid));
 
+    /// <summary>
+    ///  Gets a reference to the IID <see cref="Guid"/> for the given <typeparamref name="T"/>.
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref Guid GetRef<T>() where T : unmanaged, IComIID
-    {
-        return ref Unsafe.AsRef(in T.Guid);
-    }
+        => ref Unsafe.AsRef(in T.Guid);
 
-    public static Guid* NULL() => (Guid*)Unsafe.AsPointer(ref Unsafe.AsRef(in IID_NULL));
+    /// <summary>
+    ///  Empty <see cref="Guid"/>.
+    /// </summary>
+    public static Guid* Empty() => (Guid*)Unsafe.AsPointer(ref Unsafe.AsRef(in IID_NULL));
 }

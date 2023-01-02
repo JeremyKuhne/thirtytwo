@@ -20,7 +20,7 @@ public unsafe partial struct IDispatch
         int[] ids = new int[names.Length];
         fixed (int* i = ids)
         {
-            HRESULT hr = GetIDsOfNames(IID.NULL(), (PWSTR*)(char**)namesArg, (uint)names.Length, lcid: 0, i);
+            HRESULT hr = GetIDsOfNames(IID.Empty(), (PWSTR*)(char**)namesArg, (uint)names.Length, lcid: 0, i);
             if (hr.Failed && hr != HRESULT.DISP_E_UNKNOWNNAME)
             {
                 hr.ThrowOnFailure();
@@ -38,7 +38,7 @@ public unsafe partial struct IDispatch
         fixed (char* n = name)
         {
             PWSTR* p = (PWSTR*)n;
-            HRESULT hr = GetIDsOfNames(IID.NULL(), (PWSTR*)&p, 1, lcid: 0, &id);
+            HRESULT hr = GetIDsOfNames(IID.Empty(), (PWSTR*)&p, 1, lcid: 0, &id);
             if (hr.Failed && hr != HRESULT.DISP_E_UNKNOWNNAME)
             {
                 hr.ThrowOnFailure();
