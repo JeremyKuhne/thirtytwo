@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -10,6 +12,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
 using Windows.Win32.System.Com.Marshal;
 using Windows.Win32.System.Ole;
+using static Windows.Win32.System.Ole.FDEX_PROP_FLAGS;
 
 namespace Tests.Windows.Win32.System.Com;
 
@@ -300,16 +303,16 @@ public unsafe class IReflectTests
         ReflectSelf reflect = new();
 
         using ComScope<IUnknown> unknown = new((IUnknown*)Marshal.GetIUnknownForObject(reflect));
-        using ComScope<IDispatchEx> dispatch = unknown.QueryInterface<IDispatchEx>();
+        using ComScope<IDispatchEx> dispatchEx = unknown.QueryInterface<IDispatchEx>();
 
         // When Invoking via enumerated ids "ToString" is passed to IReflect.InvokeMember (as opposed to "[DISPID=]").
 
-        var dispatchIds = EnumerateDispatchIds(dispatch);
+        var dispatchIds = dispatchEx.Value->GetAllDispatchIds();
         dispatchIds.Keys.Should().BeEquivalentTo("GetType", "ToString", "Equals", "GetHashCode");
 
         using VARIANT result = default;
         DISPPARAMS dispparams = default;
-        HRESULT hr = dispatch.Value->InvokeEx(
+        HRESULT hr = dispatchEx.Value->InvokeEx(
             dispatchIds["ToString"],
             0,
             (ushort)DISPATCH_FLAGS.DISPATCH_METHOD,
@@ -322,6 +325,155 @@ public unsafe class IReflectTests
 
         result.vt.Should().Be(VARENUM.VT_BSTR);
         result.data.bstrVal.ToString().Should().Be("Tests.Windows.Win32.System.Com.IReflectTests+ReflectSelf");
+
+        result.Dispose();
+
+        // Invoke works as well.
+        hr = dispatchEx.Value->Invoke(
+            dispatchIds["ToString"],
+            IID.Empty(),
+            0,
+            DISPATCH_FLAGS.DISPATCH_METHOD,
+            &dispparams,
+            &result,
+            null,
+            null);
+
+        hr.Succeeded.Should().BeTrue();
+
+        result.vt.Should().Be(VARENUM.VT_BSTR);
+        result.data.bstrVal.ToString().Should().Be("Tests.Windows.Win32.System.Com.IReflectTests+ReflectSelf");
+
+        result.Dispose();
+
+        // Try again with QI'ed IDispatch
+        using ComScope<IDispatch> dispatch = unknown.QueryInterface<IDispatch>();
+
+        hr = dispatch.Value->Invoke(
+            dispatchIds["ToString"],
+            IID.Empty(),
+            0,
+            DISPATCH_FLAGS.DISPATCH_METHOD,
+            &dispparams,
+            &result,
+            null,
+            null);
+
+        hr.Succeeded.Should().BeTrue();
+
+        result.vt.Should().Be(VARENUM.VT_BSTR);
+        result.data.bstrVal.ToString().Should().Be("Tests.Windows.Win32.System.Com.IReflectTests+ReflectSelf");
+
+        // Can we get any more info off of IDispatch? Everything but GetDocumentation takes an index, not an id.
+        using ComScope<ITypeInfo> typeInfo = new(null);
+        dispatchEx.Value->GetTypeInfo(0, 0, typeInfo);
+
+        using BSTR name = default;
+        using BSTR doc = default;
+        using BSTR helpFile = default;
+        uint helpContext;
+        hr = typeInfo.Value->GetDocumentation(dispatchIds["ToString"], &name, &doc, &helpContext, &helpFile);
+        hr.Should().Be(HRESULT.TYPE_E_ELEMENTNOTFOUND);
+    }
+
+    public static TheoryData<object?, VARENUM> ObjectBehaviorTestData => new()
+    {
+        { null, VARENUM.VT_EMPTY },
+        { new object(), VARENUM.VT_DISPATCH },
+        { 42, VARENUM.VT_I4 },
+        // Structs aren't normally handled - returns COR_E_NOTSUPPORTED
+        { new Point(1, 2), VARENUM.VT_ILLEGAL },
+        // System.Drawing.Color has special handling
+        { Color.Blue, VARENUM.VT_UI4 },
+        { new int[] { 1, 2 }, VARENUM.VT_ARRAY | VARENUM.VT_I4 },
+    };
+
+    [Theory, MemberData(nameof(ObjectBehaviorTestData))]
+    public void IReflect_ObjectBehavior(object? obj, VARENUM expected)
+    {
+        ReflectObjectTypes reflect = new();
+
+        using ComScope<IUnknown> unknown = new((IUnknown*)Marshal.GetIUnknownForObject(reflect));
+        using ComScope<IDispatchEx> dispatch = unknown.QueryInterface<IDispatchEx>();
+
+        var dispatchIds = dispatch.Value->GetAllDispatchIds();
+
+        dispatch.Value->GetMemberProperties(dispatchIds["Object"], uint.MaxValue, out var flags);
+        flags.Should().Be(fdexPropCanGet | fdexPropCanPut | fdexPropCannotPutRef
+            | fdexPropCannotCall | fdexPropCannotConstruct | fdexPropCannotSourceEvents);
+
+        // Somewhat surprisingly fields do not come back as a System.Reflection.BindingFlags.GetField. They come
+        // back as GetProperty, which would require IReflect.Invoke to understand and handle appropriately.
+
+        reflect.Object = obj;
+        reflect.ObjectAsInterface = obj;
+
+        using VARIANT result = dispatch.Value->TryGetPropertyValue(dispatchIds["Object"], out HRESULT hr);
+        if (expected == VARENUM.VT_ILLEGAL)
+        {
+            hr.Succeeded.Should().BeFalse();
+        }
+        else
+        {
+            hr.Succeeded.Should().BeTrue();
+            result.vt.Should().Be(expected);
+        }
+
+        using VARIANT result2 = dispatch.Value->TryGetPropertyValue(dispatchIds["ObjectAsInterface"], out hr);
+        if (expected == VARENUM.VT_ILLEGAL)
+        {
+            hr.Succeeded.Should().BeFalse();
+        }
+        else
+        {
+            hr.Succeeded.Should().BeTrue();
+            result2.vt.Should().Be(expected);
+        }
+    }
+
+    [Fact]
+    public void IReflect_NonObjectBehavior()
+    {
+        ReflectNonObjectTypes reflect = new()
+        {
+            Color = Color.Blue
+        };
+
+        using ComScope<IUnknown> unknown = new((IUnknown*)Marshal.GetIUnknownForObject(reflect));
+        using ComScope<IDispatchEx> dispatch = unknown.QueryInterface<IDispatchEx>();
+
+        var dispatchIds = dispatch.Value->GetAllDispatchIds();
+
+        dispatchIds.Keys.Should().Contain("Location", "get_Location", "Color", "get_Color", "set_Color");
+
+        VARIANT result = dispatch.Value->TryGetPropertyValue(dispatchIds["Location"], out HRESULT hr);
+        hr.Should().Be(HRESULT.COR_E_NOTSUPPORTED);
+
+        VARIANT value = (VARIANT)42;
+        hr = dispatch.Value->TrySetPropertyValue(dispatchIds["Count"], value);
+        hr.Succeeded.Should().BeTrue();
+        reflect.Count.Should().Be(42);
+
+        result = dispatch.Value->TryGetPropertyValue(dispatchIds["Color"], out hr);
+        result.vt.Should().Be(VARENUM.VT_UI4);
+        ((uint)result).Should().Be(0x00FF0000);  // AABBGGRR OLECOLOR
+
+        // While we can *get* the color, we can't set it as there is no way (afaik) to match the passed in uint parameter.
+        value = (VARIANT)(uint)0x000000FF;
+        hr = dispatch.Value->TrySetPropertyValue(dispatchIds["Color"], value);
+        hr.Should().Be(HRESULT.DISP_E_MEMBERNOTFOUND);
+
+        dispatch.Value->GetMemberProperties(dispatchIds["Color"], uint.MaxValue, out var flags);
+        flags.Should().Be(fdexPropCanGet | fdexPropCanPut | fdexPropCannotPutRef
+            | fdexPropCannotCall | fdexPropCannotConstruct | fdexPropCannotSourceEvents);
+
+        dispatch.Value->GetMemberProperties(dispatchIds["get_Color"], uint.MaxValue, out flags);
+        flags.Should().Be(fdexPropCannotGet | fdexPropCannotPut | fdexPropCannotPutRef
+            | fdexPropCanCall | fdexPropCannotConstruct | fdexPropCannotSourceEvents);
+
+        dispatch.Value->GetMemberProperties(dispatchIds["set_Color"], uint.MaxValue, out flags);
+        flags.Should().Be(fdexPropCannotGet | fdexPropCannotPut | fdexPropCannotPutRef
+            | fdexPropCanCall | fdexPropCannotConstruct | fdexPropCannotSourceEvents);
     }
 
     public static TheoryData<object, IEnumerable<string>> EnumerateBehaviorTestData => new()
@@ -341,7 +493,7 @@ public unsafe class IReflectTests
 
         // Only explicitly provided member info in IReflect is exposed.
 
-        var dispatchIds = EnumerateDispatchIds(dispatch);
+        var dispatchIds = dispatch.Value->GetAllDispatchIds();
         dispatchIds.Keys.Should().BeEquivalentTo(names);
     }
 
@@ -531,6 +683,25 @@ public unsafe class IReflectTests
         void Click();
     }
 
+    private class ReflectNonObjectTypes : ReflectSelf
+    {
+        public Point Location { get; internal set; }
+        public Color Color { get; set; }
+        public int Count { get; set; }
+    }
+
+    private class ReflectObjectTypes : ReflectSelf
+    {
+        public object? ObjectAsInterface
+        {
+            [return: MarshalAs(UnmanagedType.Interface)]
+            get;
+            internal set;
+        }
+
+        public object? Object { get; internal set ; }
+    }
+
     [ComVisible(true)]
     [ComSourceInterfaces(typeof(IClickEvents))]
     private class ReflectSourcedEvent : ReflectSelf
@@ -550,32 +721,32 @@ public unsafe class IReflectTests
 
     private class ReflectSelf : ReflectClass
     {
-        protected override Type UnderlyingSystemType => typeof(ReflectSelf);
+        protected override Type UnderlyingSystemType => GetType();
 
         protected override FieldInfo? GetField(string name, BindingFlags bindingAttr)
         {
-            return typeof(ReflectSelf).GetField(name, bindingAttr);
+            return GetType().GetField(name, bindingAttr);
         }
 
         protected override FieldInfo[] GetFields(BindingFlags bindingAttr)
         {
-            FieldInfo[] fields = typeof(ReflectSelf).GetFields(bindingAttr);
+            FieldInfo[] fields = GetType().GetFields(bindingAttr);
             return fields;
         }
 
         protected override MemberInfo[] GetMember(string name, BindingFlags bindingAttr)
         {
-            return typeof(ReflectSelf).GetMember(name, bindingAttr);
+            return GetType().GetMember(name, bindingAttr);
         }
 
         protected override MemberInfo[] GetMembers(BindingFlags bindingAttr)
         {
-            return typeof(ReflectSelf).GetMembers(bindingAttr);
+            return GetType().GetMembers(bindingAttr);
         }
 
         protected override MethodInfo? GetMethod(string name, BindingFlags bindingAttr)
         {
-            return typeof(ReflectSelf).GetMethod(name, bindingAttr);
+            return GetType().GetMethod(name, bindingAttr);
         }
 
         protected override MethodInfo? GetMethod(
@@ -585,24 +756,24 @@ public unsafe class IReflectTests
             Type[] types,
             ParameterModifier[]? modifiers)
         {
-            return typeof(ReflectSelf).GetMethod(name, bindingAttr, binder, types, modifiers);
+            return GetType().GetMethod(name, bindingAttr, binder, types, modifiers);
         }
 
         protected override MethodInfo[] GetMethods(BindingFlags bindingAttr)
         {
-            MethodInfo[] methods = typeof(ReflectSelf).GetMethods(bindingAttr);
+            MethodInfo[] methods = GetType().GetMethods(bindingAttr);
             return methods;
         }
 
         protected override PropertyInfo[] GetProperties(BindingFlags bindingAttr)
         {
-            PropertyInfo[] properties = typeof(ReflectSelf).GetProperties(bindingAttr);
+            PropertyInfo[] properties = GetType().GetProperties(bindingAttr);
             return properties;
         }
 
         protected override PropertyInfo? GetProperty(string name, BindingFlags bindingAttr)
         {
-            return typeof(ReflectSelf).GetProperty(name, bindingAttr);
+            return GetType().GetProperty(name, bindingAttr);
         }
 
         protected override PropertyInfo? GetProperty(
@@ -613,7 +784,7 @@ public unsafe class IReflectTests
             Type[] types,
             ParameterModifier[]? modifiers)
         {
-            return typeof(ReflectSelf).GetProperty(name, bindingAttr, binder, returnType, types, modifiers);
+            return GetType().GetProperty(name, bindingAttr, binder, returnType, types, modifiers);
         }
 
         protected override object? InvokeMember(
@@ -626,7 +797,16 @@ public unsafe class IReflectTests
             CultureInfo? culture,
             string[]? namedParameters)
         {
-            return typeof(ReflectSelf).InvokeMember(name, invokeAttr, binder, target, args, modifiers, culture, namedParameters);
+            try
+            {
+                object? result = GetType().InvokeMember(name, invokeAttr, binder, target, args, modifiers, culture, namedParameters);
+                return result;
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                throw;
+            }
         }
     }
 
@@ -706,19 +886,5 @@ public unsafe class IReflectTests
             ParameterModifier[]? modifiers,
             CultureInfo? culture,
             string[]? namedParameters) => null;
-    }
-
-    private static IDictionary<string, int> EnumerateDispatchIds(IDispatchEx* dispatch)
-    {
-        Dictionary<string, int> dispatchIds = new();
-        int dispid = Interop.DISPID_STARTENUM;
-        while (dispatch->GetNextDispID(Interop.fdexEnumAll, dispid, &dispid) == HRESULT.S_OK)
-        {
-            BSTR name = default;
-            HRESULT hr = dispatch->GetMemberName(dispid, &name);
-            dispatchIds.Add(name.ToStringAndFree(), dispid);
-        }
-
-        return dispatchIds;
     }
 }

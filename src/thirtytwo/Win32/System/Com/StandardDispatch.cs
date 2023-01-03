@@ -70,6 +70,9 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
         _standardDispatch = new AgileComPointer<IDispatch>((IDispatch*)standard, takeOwnership: true);
     }
 
+    /// <summary>
+    ///  Get the standard dispatch interface.
+    /// </summary>
     private ComScope<IDispatch> Dispatch =>
         _standardDispatch is not { } standardDispatch
             ? throw new InvalidOperationException()
@@ -106,9 +109,25 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
         EXCEPINFO* pExcepInfo,
         uint* pArgErr)
     {
+        HRESULT hr = MapDotNetHRESULTs(Invoke(
+            dispIdMember,
+            lcid,
+            wFlags,
+            pDispParams,
+            pVarResult,
+            pExcepInfo,
+            serviceProvider: null,
+            pArgErr));
+
+        if (hr != HRESULT.DISP_E_MEMBERNOTFOUND)
+        {
+            return hr;
+        }
+
+        // The override couldn't find it, pass it along to the standard dispatch.
         using var dispatch = Dispatch;
-        dispatch.Value->Invoke(dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, pArgErr);
-        return HRESULT.S_OK;
+        hr = dispatch.Value->Invoke(dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, pArgErr);
+        return hr;
     }
 
     HRESULT IDispatchEx.Interface.GetDispID(BSTR bstrName, uint grfdex, int* pid)
@@ -143,25 +162,38 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
         VARIANT* pvarRes,
         EXCEPINFO* pei,
         IServiceProvider* pspCaller)
-        => pdp is null || pvarRes is null ? HRESULT.E_POINTER : InvokeEx(id, lcid, wFlags, pdp, pvarRes, pei, pspCaller);
-
-    protected virtual HRESULT InvokeEx(
-        int id,
-        uint lcid,
-        ushort wFlags,
-        DISPPARAMS* pdp,
-        VARIANT* pvarRes,
-        EXCEPINFO* pei,
-        IServiceProvider* pspCaller)
-        => ((IDispatch.Interface)this).Invoke(
+    {
+        HRESULT hr = MapDotNetHRESULTs(Invoke(
             id,
-            IID.Empty(),
             lcid,
             (DISPATCH_FLAGS)wFlags,
             pdp,
             pvarRes,
             pei,
-            pArgErr: null);
+            pspCaller,
+            argumentError: null));
+
+        if (hr != HRESULT.DISP_E_MEMBERNOTFOUND)
+        {
+            return hr;
+        }
+
+        // The override couldn't find it, pass it along to the standard dispatch.
+        using var dispatch = Dispatch;
+        hr = dispatch.Value->Invoke(id, IID.Empty(), lcid, (DISPATCH_FLAGS)wFlags, pdp, pvarRes, pei, puArgErr: null);
+        return hr;
+    }
+
+    protected virtual HRESULT Invoke(
+        int dispId,
+        uint lcid,
+        DISPATCH_FLAGS flags,
+        DISPPARAMS* parameters,
+        VARIANT* result,
+        EXCEPINFO* exceptionInfo,
+        IServiceProvider* serviceProvider,
+        uint* argumentError)
+        => HRESULT.DISP_E_MEMBERNOTFOUND;
 
     HRESULT IDispatchEx.Interface.GetMemberProperties(int id, uint grfdexFetch, FDEX_PROP_FLAGS* pgrfdex)
     {
@@ -177,11 +209,25 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
 
         *pgrfdex = default;
 
-        return GetMemberProperties(id, grfdexFetch, pgrfdex);
+        HRESULT hr = GetMemberProperties(id, out FDEX_PROP_FLAGS properties);
+        if (hr.Succeeded)
+        {
+            // Filter to the requested properties
+            *pgrfdex = properties & (FDEX_PROP_FLAGS)grfdexFetch;
+        }
+        else
+        {
+            *pgrfdex = default;
+        }
+
+        return hr;
     }
 
-    protected virtual HRESULT GetMemberProperties(int id, uint grfdexFetch, FDEX_PROP_FLAGS* pgrfdex)
-        => HRESULT.E_NOTIMPL;
+    protected virtual HRESULT GetMemberProperties(int dispId, out FDEX_PROP_FLAGS properties)
+    {
+        properties = default;
+        return HRESULT.E_NOTIMPL;
+    }
 
     // .NET COM Interop returns E_NOTIMPL for these three.
 
@@ -197,6 +243,39 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
 
         *ppunk = null;
         return HRESULT.E_NOTIMPL;
+    }
+
+    private static HRESULT MapDotNetHRESULTs(HRESULT hr)
+    {
+        if (hr == HRESULT.COR_E_OVERFLOW)
+        {
+            return HRESULT.DISP_E_OVERFLOW;
+        }
+        else if (hr == HRESULT.COR_E_INVALIDOLEVARIANTTYPE)
+        {
+            return HRESULT.DISP_E_BADVARTYPE;
+        }
+        else if (hr == HRESULT.COR_E_ARGUMENT)
+        {
+            return HRESULT.E_INVALIDARG;
+        }
+        else if (hr == HRESULT.COR_E_SAFEARRAYTYPEMISMATCH)
+        {
+            return HRESULT.DISP_E_TYPEMISMATCH;
+        }
+        else if (hr == HRESULT.COR_E_MISSINGMEMBER || hr == HRESULT.COR_E_MISSINGMETHOD)
+        {
+            return HRESULT.DISP_E_MEMBERNOTFOUND;
+        }
+
+        // .NET maps this, we would need to populate EXCEPINFO to do the same
+        //
+        // else if (hr == HRESULT.COR_E_TARGETINVOCATION)
+        // {
+        //     return HRESULT.DISP_E_EXCEPTION;
+        // }
+
+        return hr;
     }
 
     protected virtual void Dispose(bool disposing)

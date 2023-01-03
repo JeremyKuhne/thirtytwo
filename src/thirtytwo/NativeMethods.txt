@@ -30,6 +30,7 @@ DeactivateActCtx
 DefWindowProc
 DeleteDC
 DestroyWindow
+DISPATCH_CONSTRUCT
 DispatchMessage
 DISP_E_*
 DISPID_ACC_*
@@ -55,6 +56,7 @@ EnumThreadWindows
 ES_*
 FACILITY_CODE
 fdex*
+FILETIME
 FONT_CHARSET
 FONT_CLIP_PRECISION
 FONT_FAMILY
@@ -131,6 +133,7 @@ IPropertyNotifySink
 IProvideClassInfo
 IProvideMultipleClassInfo
 IRawElementProviderSimple
+IRecordInfo
 IServiceProvider
 ISimpleFrameSite
 ISupportErrorInfo
@@ -170,6 +173,10 @@ PropVariantClear
 RegisterClassEx
 ROLE_SYSTEM_*
 SAFEARRAY
+SafeArrayGetRecordInfo
+SafeArrayGetVartype
+SafeArrayLock
+SafeArrayUnlock
 S_FALSE
 S_OK
 ScreenToClient

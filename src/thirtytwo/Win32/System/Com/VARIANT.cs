@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.CompilerServices;
+using static Windows.Win32.System.Com.VARENUM;
 
 namespace Windows.Win32.System.Com;
 
@@ -9,7 +10,11 @@ public unsafe partial struct VARIANT : IDisposable
 {
     public static VARIANT Empty { get; } = default;
 
-    public bool IsEmpty => vt == VARENUM.VT_EMPTY && data.llVal == 0;
+    public bool IsEmpty => vt == VT_EMPTY && data.llVal == 0;
+
+    public VARENUM Type => vt & VT_TYPEMASK;
+
+    public bool Byref => vt.HasFlag(VT_BYREF);
 
     [UnscopedRef]
     public ref VARENUM vt => ref Anonymous.Anonymous.vt;
@@ -49,51 +54,64 @@ public unsafe partial struct VARIANT : IDisposable
             Interop.PropVariantClear((StructuredStorage.PROPVARIANT*)t);
         }
 
-        vt = VARENUM.VT_EMPTY;
+        vt = VT_EMPTY;
         data = default;
     }
 
+    public static explicit operator decimal(VARIANT value)
+    => value.vt == VT_DECIMAL ? value.Anonymous.decVal : ThrowInvalidCast<decimal>();
+
     public static explicit operator int(VARIANT value)
-        => value.vt == VARENUM.VT_I4 || value.vt == VARENUM.VT_INT ? value.data.intVal : ThrowInvalidCast<int>();
+        => value.vt == VT_I4 || value.vt == VT_INT ? value.data.intVal : ThrowInvalidCast<int>();
 
     public static explicit operator VARIANT(int value)
         => new()
         {
-            vt = VARENUM.VT_I4,
+            vt = VT_I4,
             data = new() { intVal = value }
         };
 
+    public static explicit operator uint(VARIANT value)
+        => value.vt == VT_UI4 || value.vt == VT_UINT ? value.data.uintVal : ThrowInvalidCast<uint>();
+
+    public static explicit operator VARIANT(uint value)
+        => new()
+        {
+            vt = VT_UI4,
+            data = new() { uintVal = value }
+        };
+
     public static explicit operator bool(VARIANT value)
-        => value.vt == VARENUM.VT_BOOL ? value.data.boolVal != VARIANT_BOOL.VARIANT_FALSE : ThrowInvalidCast<bool>();
+        => value.vt == VT_BOOL ? value.data.boolVal != VARIANT_BOOL.VARIANT_FALSE : ThrowInvalidCast<bool>();
 
     public static explicit operator VARIANT(bool value)
         => new()
         {
-            vt = VARENUM.VT_BOOL,
+            vt = VT_BOOL,
             data = new() { boolVal = value ? VARIANT_BOOL.VARIANT_TRUE : VARIANT_BOOL.VARIANT_FALSE }
         };
 
     public static explicit operator IDispatch*(VARIANT value)
-        => value.vt == VARENUM.VT_DISPATCH ? value.data.pdispVal : ThrowInvalidPointerCast<IDispatch>();
+        => value.vt == VT_DISPATCH ? value.data.pdispVal : ThrowInvalidPointerCast<IDispatch>();
 
     public static explicit operator VARIANT(IDispatch* value)
         => new()
         {
-            vt = VARENUM.VT_DISPATCH,
+            vt = VT_DISPATCH,
             data = new() { pdispVal = value }
         };
 
     public static explicit operator VARIANT(BSTR value)
         => new()
         {
-            vt = VARENUM.VT_BSTR,
+            vt = VT_BSTR,
             data = new() { bstrVal = value }
         };
 
     public static explicit operator string(VARIANT value) => value.vt switch
     {
-        VARENUM.VT_BSTR => value.data.bstrVal.ToString(),
-        VARENUM.VT_LPWSTR => new((char*)value.data.pcVal.Value),        // Technically a PROPVARIANT.pwszVal
+        VT_BSTR => value.data.bstrVal.ToString(),
+        VT_LPWSTR => new((char*)value.data.pcVal.Value),        // Technically a PROPVARIANT.pwszVal
         _ => ThrowInvalidCast<string>(),
     };
 
