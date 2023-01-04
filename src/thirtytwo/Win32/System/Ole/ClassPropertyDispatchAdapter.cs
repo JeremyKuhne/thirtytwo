@@ -3,10 +3,10 @@
 
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Windows.Win32.System.Ole;
+using Windows.Win32.System.Com;
 using InteropMarshal = System.Runtime.InteropServices.Marshal;
 
-namespace Windows.Win32.System.Com;
+namespace Windows.Win32.System.Ole;
 
 /// <summary>
 ///  Provides an <see cref="IDispatchEx"/> friendly view of a given class' public properties.
@@ -108,7 +108,7 @@ public unsafe class ClassPropertyDispatchAdapter
     /// </summary>
     /// <remarks>
     ///  <para>
-    ///   Matches up to <see cref="IDispatchEx.InvokeEx(IDispatchEx*, int, uint, ushort, DISPPARAMS*, VARIANT*, EXCEPINFO*, IServiceProvider*)"/>
+    ///   Matches up to <see cref="IDispatchEx.InvokeEx(IDispatchEx*, int, uint, ushort, DISPPARAMS*, VARIANT*, EXCEPINFO*, Com.IServiceProvider*)"/>
     ///  </para>
     /// </remarks>
     public HRESULT Invoke(
