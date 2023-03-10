@@ -97,7 +97,7 @@ public static unsafe class Application
             windowClass.Register();
         }
 
-        Window mainWindow = new(
+        using Window mainWindow = new(
             bounds,
             windowTitle,
             style,

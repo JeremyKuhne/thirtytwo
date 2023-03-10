@@ -13,6 +13,7 @@ CLEARTYPE_NATURAL_QUALITY
 ClientToScreen
 CoCreateInstance
 CoGetClassObject
+CombineRgn
 COMBOBOXINFO_BUTTON_STATE
 CoTaskMemFree
 CreateActCtx
@@ -20,6 +21,7 @@ CreateDispTypeInfo
 CreateErrorInfo
 CreateFont
 CreateFontIndirect
+CreateRectRgn
 CreateStdAccessibleObject
 CreateStdAccessibleProxy
 CreateStdDispatch
@@ -91,6 +93,7 @@ GetSysColorBrush
 GetThreadDpiAwarenessContext
 GetThreadLocale
 GetWindowRect
+GetWindowRgn
 GetWindowText
 GetWindowTextLength
 HFONT
@@ -141,6 +144,7 @@ IsWindowEnabled
 IsWindowVisible
 IUIAutomationElement
 IUnknown
+KF_*
 LIBFLAGS
 LoadCursor
 LoadIcon
@@ -172,13 +176,13 @@ PROPVARIANT
 PropVariantClear
 RegisterClassEx
 ROLE_SYSTEM_*
+S_FALSE
+S_OK
 SAFEARRAY
 SafeArrayGetRecordInfo
 SafeArrayGetVartype
 SafeArrayLock
 SafeArrayUnlock
-S_FALSE
-S_OK
 ScreenToClient
 SendMessage
 SELFLAG_*
@@ -186,9 +190,11 @@ SelectObject
 SetActiveWindow
 SetFocus
 SetGraphicsMode
+SetLayeredWindowAttributes
 SetMapMode
 SetThreadDpiAwarenessContext
 SetWindowLong
+SetWindowRgn
 SetWindowText
 SetWorldTransform
 SHCreateShellItem
@@ -196,6 +202,7 @@ SHParseDisplayName
 ShowWindow
 STATE_SYSTEM_*
 STATIC_STYLES
+SubtractRect
 SYS_COLOR_INDEX
 TaskDialog
 TD_*
@@ -211,5 +218,7 @@ UiaProviderForNonClient
 UiaProviderFromIAccessible
 UiaRect
 UiaReturnRawElementProvider
+UpdateLayeredWindow
 UpdateWindow
+VIRTUAL_KEY
 WINDOWPOS

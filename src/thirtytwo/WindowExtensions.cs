@@ -225,6 +225,19 @@ public static unsafe partial class WindowExtensions
         return result;
     }
 
+    /// <summary>
+    ///  Repositions the <paramref name="rectangle"/> location from client to screen coordinates.
+    /// </summary>
+    /// <inheritdoc cref="Interop.ClientToScreen(HWND, ref Point)"/>
+    public static unsafe bool ClientToScreen<T>(this T window, ref Rectangle rectangle) where T : IHandle<HWND>
+    {
+        Point location = rectangle.Location;
+        bool result = Interop.ClientToScreen(window.Handle, ref location);
+        rectangle.Location = location;
+        GC.KeepAlive(window.Wrapper);
+        return result;
+    }
+
     /// <returns/>
     /// <inheritdoc cref="Interop.GetClientRect(HWND, out RECT)"/>
     public static unsafe Rectangle GetClientRectangle<T>(this T window)
@@ -424,6 +437,42 @@ public static unsafe partial class WindowExtensions
         return result;
     }
 
+    /// <summary>
+    ///  Binds the given layout <paramref name="handler"/> to the window. This will call
+    ///  <see cref="ILayoutHandler.Layout(Rectangle)"/> with the window's client rectangle whenever the window's
+    ///  position or size changes.
+    /// </summary>
     public static LayoutBinder AddLayoutHandler(this Window window, ILayoutHandler handler)
         => new(window, handler);
+
+    /// <returns/>
+    /// <inheritdoc cref="Interop.GetWindowRgn(HWND, HRGN)"/>
+    public static HRGN GetWindowRegion<T>(this T window)
+        where T : IHandle<HWND>
+        => GetWindowRegion(window, out _);
+
+    /// <returns/>
+    /// <inheritdoc cref="Interop.GetWindowRgn(HWND, HRGN)"/>
+    public static HRGN GetWindowRegion<T>(this T window, out GDI_REGION_TYPE type)
+        where T : IHandle<HWND>
+    {
+        HRGN region = Interop.CreateRectRgn(0, 0, 0, 0);
+        type = Interop.GetWindowRgn(window.Handle, region);
+        GC.KeepAlive(window.Wrapper);
+        return region;
+    }
+
+    /// <summary>
+    ///  Set the window region. Windows takes ownership of the given <paramref name="region"/>, do not free it.
+    /// </summary>
+    public static void SetWindowRegion<T>(this T window, HRGN region, bool redraw = false)
+        where T : IHandle<HWND>
+    {
+        if (Interop.SetWindowRgn(window.Handle, region, redraw) == 0)
+        {
+            Error.ThrowLastError();
+        }
+
+        GC.KeepAlive(window.Wrapper);
+    }
 }

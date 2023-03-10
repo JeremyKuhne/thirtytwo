@@ -13,7 +13,7 @@ public unsafe partial class WindowClass : IDisposable
     private readonly string _className;
     private readonly WindowClassInfo? _windowClass;
     private bool _disposedValue;
-    private object _lock = new();
+    private readonly object _lock = new();
 
     public ATOM Atom { get; private set; }
     public HINSTANCE ModuleInstance { get; }
