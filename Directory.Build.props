@@ -26,7 +26,8 @@
 
   <!-- Set default Configuration and Platform -->
   <PropertyGroup>
-    <Platform Condition="'$(Platform)'==''">AnyCPU</Platform>
+    <Platforms Condition="'$(Platforms)'==''">x64</Platforms>
+    <Platform Condition="'$(Platform)'==''">x64</Platform>
     <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
   </PropertyGroup>
 
