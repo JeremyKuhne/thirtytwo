@@ -131,4 +131,22 @@ public static unsafe partial class DeviceContextExtensions
             return (result, dtp is null ? 0 : dtp->uiLengthDrawn, *bounds);
         }
     }
+
+    public static void DrawIcon<TDeviceContext, TIcon>(
+        this TDeviceContext deviceContext,
+        TIcon icon,
+        Point location,
+        Size size = default,
+        DI_FLAGS flags = DI_FLAGS.DI_NORMAL)
+            where TDeviceContext : IHandle<HDC>
+            where TIcon : IHandle<HICON>
+    {
+        if (!Interop.DrawIconEx(deviceContext.Handle, location.X, location.Y, icon.Handle, size.Width, size.Height, 0, default, flags))
+        {
+            Error.ThrowLastError();
+        }
+
+        GC.KeepAlive(deviceContext.Wrapper);
+        GC.KeepAlive(icon.Wrapper);
+    }
 }

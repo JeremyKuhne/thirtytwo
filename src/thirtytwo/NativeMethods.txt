@@ -4,6 +4,7 @@ AccessibleObjectFromWindow
 ACTCTX_FLAG_*
 ActivateActCtx
 BeginPaint
+BITMAP
 BOOLEAN
 BS_*
 CallWindowProc
@@ -15,6 +16,7 @@ CoCreateInstance
 CoGetClassObject
 CombineRgn
 COMBOBOXINFO_BUTTON_STATE
+CopyImage
 CoTaskMemFree
 CreateActCtx
 CreateDispTypeInfo
@@ -31,6 +33,7 @@ CW_USEDEFAULT
 DeactivateActCtx
 DefWindowProc
 DeleteDC
+DestroyIcon
 DestroyWindow
 DISPATCH_CONSTRUCT
 DispatchMessage
@@ -44,6 +47,7 @@ DISPID_PROPERTYPUT
 DISPID_STARTENUM
 DISPID_UNKNOWN
 DPI_AWARENESS_CONTEXT_*
+DrawIconEx
 DRAWITEMSTRUCT
 DrawTextEx
 E_FAIL
@@ -56,6 +60,7 @@ EndPaint
 EnumChildWindows
 EnumThreadWindows
 ES_*
+ExtractIconEx
 FACILITY_CODE
 fdex*
 FILETIME
@@ -81,6 +86,8 @@ GetDeviceCaps
 GetDpiForWindow
 GetFocus
 GetGraphicsMode
+GetIconInfo
+GetIconInfoEx
 GetMapMode
 GetMessage
 GetModuleHandleEx
@@ -198,6 +205,8 @@ SetWindowRgn
 SetWindowText
 SetWorldTransform
 SHCreateShellItem
+SHDefExtractIcon
+SHGetStockIconInfo
 SHParseDisplayName
 ShowWindow
 STATE_SYSTEM_*

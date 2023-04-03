@@ -10,7 +10,7 @@ namespace Windows;
 /// </summary>
 /// <remarks>
 ///  <para>
-///   This adds support for control-like semantics.
+///   This adds support for control-like semantics. Supports WM_GETFONT and WM_SETFONT.
 ///  </para>
 /// </remarks>
 public class Control : Window

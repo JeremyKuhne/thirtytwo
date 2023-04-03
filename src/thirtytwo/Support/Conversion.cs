@@ -18,4 +18,9 @@ public static class Conversion
 
         return new ReadOnlySpan<char>(buffer, (int)(end - buffer));
     }
+
+    public static ulong HighLowToLong(uint high, uint low) => ((ulong)high) << 32 | low;
+    public static long HighLowToLong(int high, int low) => (long)HighLowToLong((uint)high, (uint)low);
+    public static uint HighLowToInt(ushort high, ushort low) => ((uint)high) << 16 | low;
+    public static int HighLowToInt(short high, short low) => (int)HighLowToInt((ushort)high, (ushort)low);
 }
