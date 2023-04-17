@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
+using System.Runtime.CompilerServices;
 
 namespace Windows.Win32.Graphics.Gdi;
 
@@ -15,6 +16,8 @@ public unsafe partial struct HRGN : IDisposable
         {
             Interop.DeleteObject(this);
         }
+
+        Unsafe.AsRef(this) = default;
     }
 
     public static HRGN FromRectangle(Rectangle rectangle)
