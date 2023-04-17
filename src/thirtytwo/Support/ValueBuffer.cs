@@ -5,7 +5,7 @@ using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace WInterop.Support.Buffers;
+namespace Windows.Support;
 
 public delegate void BufferAction<T>(ref ValueBuffer<T> buffer)
     where T : unmanaged;
@@ -16,6 +16,9 @@ public delegate TResult BufferFunc<TBuffer, TResult>(ref ValueBuffer<TBuffer> bu
 /// <summary>
 ///  Growable Span(T) buffer wrapper.
 /// </summary>
+/// <devdoc>
+///  Experimental. <see cref="BufferScope{T}"/> is probably a better strategy.
+/// </devdoc>
 public ref struct ValueBuffer<T> where T : unmanaged
 {
     private byte[]? _buffer;

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Buffers;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -15,21 +14,17 @@ public static unsafe partial class WindowExtensions
     public static string GetWindowText<T>(this T window)
         where T : IHandle<HWND>
     {
-        char[]? buffer = null;
         int length = Interop.GetWindowTextLength(window.Handle);
         if (length == 0)
         {
             return string.Empty;
         }
 
+        using BufferScope<char> buffer = new(stackalloc char[128]);
+
         do
         {
-            if (buffer is not null)
-            {
-                ArrayPool<char>.Shared.Return(buffer);
-            }
-
-            buffer = ArrayPool<char>.Shared.Rent(length * 2);
+            buffer.EnsureCapacity(length);
 
             fixed (char* b = buffer)
             {
@@ -46,12 +41,8 @@ public static unsafe partial class WindowExtensions
                 continue;
             }
 
-            break;
+            return buffer[..length].ToString();
         } while (true);
-
-        string text = new(buffer, 0, length);
-        ArrayPool<char>.Shared.Return(buffer);
-        return text;
     }
 
     /// <returns/>

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Buffers;
 using System.Drawing;
 using System.Numerics;
 using Windows.Support;
@@ -116,8 +115,8 @@ public static unsafe partial class DeviceContextExtensions
             }
         }
 
-        char[] buffer = ArrayPool<char>.Shared.Rent(text.Length);
-        text.CopyTo(buffer.AsSpan());
+        using BufferScope<char> buffer = new(text.Length);
+        text.CopyTo(buffer);
         fixed (char* c = buffer)
         {
             int result = Interop.DrawTextEx(context.Handle, (PWSTR)c, text.Length, bounds, 0, dtp);
@@ -126,7 +125,6 @@ public static unsafe partial class DeviceContextExtensions
                 Error.ThrowLastError();
             }
 
-            ArrayPool<char>.Shared.Return(buffer);
             GC.KeepAlive(context.Wrapper);
             return (result, dtp is null ? 0 : dtp->uiLengthDrawn, *bounds);
         }

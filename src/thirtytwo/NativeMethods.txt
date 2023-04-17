@@ -55,6 +55,7 @@ E_INVALIDARG
 E_NOINTERFACE
 E_NOTIMPL
 E_POINTER
+EM_*
 EnableWindow
 EndPaint
 EnumChildWindows
@@ -155,6 +156,7 @@ KF_*
 LIBFLAGS
 LoadCursor
 LoadIcon
+LoadLibrary
 LoadRegTypeLib
 LocalFree
 LOGFONTW
