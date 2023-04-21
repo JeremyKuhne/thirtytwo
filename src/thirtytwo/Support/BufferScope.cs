@@ -63,7 +63,7 @@ public ref struct BufferScope<T>
     ///  Ensure that the buffer has enough space for <paramref name="capacity"/> number of elements.
     /// </summary>
     /// <remarks>
-    /// <para>
+    ///  <para>
     ///   Consider if creating new <see cref="BufferScope{T}"/> instances is possible and cleaner than using
     ///   this method.
     ///  </para>
