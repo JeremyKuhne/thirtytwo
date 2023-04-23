@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Windows.Win32.Foundation;
 
-public unsafe partial struct PCWSTR
+public unsafe partial struct PWSTR
 {
     public bool IsNull => Value is null;
 

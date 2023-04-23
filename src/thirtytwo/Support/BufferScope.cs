@@ -93,15 +93,15 @@ public ref struct BufferScope<T>
 
     public ref T this[int i] => ref _span[i];
 
-    public Span<T> this[Range range] => _span[range];
+    public readonly Span<T> this[Range range] => _span[range];
 
-    public Span<T> Slice(int start, int length) => _span.Slice(start, length);
+    public readonly Span<T> Slice(int start, int length) => _span.Slice(start, length);
 
-    public ref T GetPinnableReference() => ref MemoryMarshal.GetReference<T>(_span);
+    public readonly ref T GetPinnableReference() => ref MemoryMarshal.GetReference<T>(_span);
 
-    public int Length => _span.Length;
+    public readonly int Length => _span.Length;
 
-    public Span<T> AsSpan() => _span;
+    public readonly Span<T> AsSpan() => _span;
 
     public static implicit operator Span<T>(BufferScope<T> scope) => scope._span;
 
@@ -117,5 +117,5 @@ public ref struct BufferScope<T>
         _array = default;
     }
 
-    public override string ToString() => _span.ToString();
+    public override readonly string ToString() => _span.ToString();
 }

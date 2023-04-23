@@ -81,6 +81,7 @@ GetAncestor
 GetAwarenessFromDpiAwarenessContext
 GetClassLong
 GetClientRect
+GetCurrentThread
 GetCurrentThreadId
 GetDC
 GetDeviceCaps
@@ -160,6 +161,7 @@ LoadLibrary
 LoadRegTypeLib
 LocalFree
 LOGFONTW
+LsaNtStatusToWinError
 MapWindowPoints
 MEMBERID_NIL
 MessageBoxEx
@@ -169,6 +171,7 @@ MoveWindow
 MSGF_*
 MulDiv
 NAVDIR_*
+NtQuerySystemInformation
 NTSTATUS
 OLEIVERB*
 OLEIVERB_*
@@ -213,8 +216,11 @@ SHParseDisplayName
 ShowWindow
 STATE_SYSTEM_*
 STATIC_STYLES
+STATUS_INFO_LENGTH_MISMATCH
 SubtractRect
 SYS_COLOR_INDEX
+SYSTEM_PROCESS_INFORMATION
+SYSTEM_THREAD_INFORMATION
 TaskDialog
 TD_*
 TranslateMessage

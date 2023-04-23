@@ -22,7 +22,7 @@ public static unsafe class Error
     public static void ThrowLastError(string? path = null) => Throw(GetLastError(), path);
 
     /// <summary>
-    ///  Throw the last error code from windows if <paramref name="result"/> is false.
+    ///  Throw the last error code from Windows if <paramref name="result"/> is false.
     /// </summary>
     /// <param name="path">Optional path or other input detail.</param>
     internal static void ThrowLastErrorIfFalse(this bool result, string? path = null)
@@ -34,7 +34,7 @@ public static unsafe class Error
     }
 
     /// <summary>
-    ///  Throw the last error code from windows if <paramref name="result"/> is false.
+    ///  Throw the last error code from Windows if <paramref name="result"/> is false.
     /// </summary>
     /// <param name="path">Optional path or other input detail.</param>
     internal static void ThrowLastErrorIfFalse(this BOOL result, string? path = null)
@@ -45,6 +45,10 @@ public static unsafe class Error
         }
     }
 
+    /// <summary>
+    ///  Throw the last error code from Windows if it isn't <paramref name="error"/>.
+    /// </summary>
+    /// <param name="path">Optional path or other input detail.</param>
     public static void ThrowIfLastErrorNot(WIN32_ERROR error, string? path = null)
     {
         WIN32_ERROR lastError = GetLastError();
@@ -71,7 +75,7 @@ public static unsafe class Error
     {
         // http://referencesource.microsoft.com/#mscorlib/system/io/__error.cs,142
 
-        string message = path == null
+        string message = path is null
             ? $"{ErrorToString(error)}"
             : $"{ErrorToString(error)} '{path}'";
 
@@ -79,7 +83,7 @@ public static unsafe class Error
     }
 
     /// <summary>
-    ///  Try to get the error message for GetLastError result
+    ///  Create a descriptive string for the error.
     /// </summary>
     public static string ErrorToString(this WIN32_ERROR error)
     {
@@ -145,7 +149,9 @@ public static unsafe class Error
         HINSTANCE source = default,
         params string[] args)
     {
-        FORMAT_MESSAGE_OPTIONS flags = FORMAT_MESSAGE_OPTIONS.FORMAT_MESSAGE_ALLOCATE_BUFFER
+        FORMAT_MESSAGE_OPTIONS flags =
+            // Let the API allocate the buffer
+            FORMAT_MESSAGE_OPTIONS.FORMAT_MESSAGE_ALLOCATE_BUFFER
             | FORMAT_MESSAGE_OPTIONS.FORMAT_MESSAGE_FROM_SYSTEM;
 
         if (args == null || args.Length == 0)
@@ -177,31 +183,33 @@ public static unsafe class Error
             // Do the default language lookup
             dwLanguageId: 0,
             lpBuffer: (PWSTR)(void*)(&buffer),
-            nSize: (uint)buffer.Length,
+            nSize: 0,
             Arguments: sargs);
 
-        if (result == 0)
+        if (result == 0 || buffer.IsNull)
         {
-            // ERROR_MR_MID_NOT_FOUND
+            buffer.LocalFree();
+
             WIN32_ERROR error = GetLastError();
             if (error == WIN32_ERROR.ERROR_MR_MID_NOT_FOUND)
             {
                 HRESULT hr = (HRESULT)messageId;
                 if (hr.Failed && hr.Facility == FACILITY_CODE.FACILITY_URT)
                 {
+                    // .NET HRESULT, extract the message
                     string? dotNetMessage = Marshal.GetExceptionForHR((int)hr)?.Message;
                     if (dotNetMessage is not null)
                     {
                         return dotNetMessage;
                     }
                 }
-
-                return $"The message for id 0x{messageId:x8} was not found.";
             }
+
+            return $"The message for id 0x{messageId:x8} was not found.";
         }
 
         string message = new(buffer, 0, (int)result);
-        Interop.LocalFree((nint)(char*)buffer);
+        buffer.LocalFree();
         return message;
     }
 }
