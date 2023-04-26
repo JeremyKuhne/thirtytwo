@@ -6,7 +6,7 @@ using Windows.Win32.System.WindowsProgramming;
 
 namespace Windows.ProcessAndThreads;
 
-public unsafe sealed class ProcessInfo
+public sealed unsafe partial class ProcessInfo
 {
     private readonly byte[] _buffer;
     private readonly int _count;
@@ -58,44 +58,12 @@ public unsafe sealed class ProcessInfo
 
     public Enumerator GetEnumerator() => new(this);
 
-    public ref struct Enumerator
-    {
-        private readonly ProcessInfo _info;
-        private int _index;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal Enumerator(ProcessInfo info)
-        {
-            _info = info;
-            _index = -1;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext()
-        {
-            int index = _index + 1;
-            if (index < _info.Count)
-            {
-                _index = index;
-                return true;
-            }
-
-            return false;
-        }
-
-        public ref readonly SYSTEM_PROCESS_INFORMATION Current
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => ref _info[_index];
-        }
-    }
-
     private SYSTEM_PROCESS_INFORMATION* First
         => (SYSTEM_PROCESS_INFORMATION*)Unsafe.AsPointer(ref Unsafe.AsRef(_buffer[0]));
 
     public int Count => _count;
 
-    public ref SYSTEM_PROCESS_INFORMATION this[int i]
+    public ref readonly SYSTEM_PROCESS_INFORMATION this[int i]
     {
         get
         {

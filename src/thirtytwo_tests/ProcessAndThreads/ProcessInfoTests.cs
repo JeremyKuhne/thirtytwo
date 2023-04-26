@@ -22,4 +22,12 @@ public class ProcessInfoTests
             totalThreads += (int)process.NumberOfThreads;
         }
     }
+
+    private void CannotModify()
+    {
+        ProcessInfo info = new();
+
+        // This doesn't compile as it returns a ref readonly
+        // info[0].UniqueProcessId = default;
+    }
 }
