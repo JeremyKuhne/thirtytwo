@@ -105,6 +105,11 @@ public unsafe partial class WindowClass : IDisposable
     /// </summary>
     public unsafe WindowClass Register()
     {
+        if (_disposedValue)
+        {
+            throw new ObjectDisposedException(GetType().Name);
+        }
+
         if (_windowClass is not null && !IsRegistered)
         {
             lock (_lock)
@@ -138,6 +143,11 @@ public unsafe partial class WindowClass : IDisposable
         nint parameters = default,
         HMENU menuHandle = default)
     {
+        if (_disposedValue)
+        {
+            throw new ObjectDisposedException(GetType().Name);
+        }
+
         if (!IsRegistered)
             throw new InvalidOperationException("Window class must be registered before using.");
 
@@ -192,22 +202,36 @@ public unsafe partial class WindowClass : IDisposable
     {
     }
 
-    ~WindowClass()
+    private void InternalDispose(bool disposing)
     {
         if (!_disposedValue)
         {
             _disposedValue = true;
-            Dispose(disposing: false);
+
+            if (Atom.IsValid)
+            {
+                // Free the memory for the window class and prevent further callbacks.
+                // (Presuming that we don't have to set the default WNDPROC back via SetClassLong, if we do
+                //  we can follow along with what Window does.)
+                if (Interop.UnregisterClass((char*)Atom.Value, ModuleInstance))
+                {
+                    Atom = default;
+                }
+                else
+                {
+                    Error.ThrowLastError();
+                }
+            }
+
+            Dispose(disposing);
         }
     }
+
+    ~WindowClass() => InternalDispose(disposing: false);
 
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        if (!_disposedValue)
-        {
-            _disposedValue = true;
-            Dispose(disposing: true);
-        }
+        InternalDispose(disposing: true);
     }
 }

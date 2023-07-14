@@ -99,6 +99,7 @@ GetModuleHandleEx
 GetObject
 GetObjectType
 GetParent
+GetProcAddress
 GetProcessDpiAwareness
 GetRgnBox
 GetStockObject
@@ -242,6 +243,7 @@ UiaProviderForNonClient
 UiaProviderFromIAccessible
 UiaRect
 UiaReturnRawElementProvider
+UnregisterClass
 UpdateLayeredWindow
 UpdateWindow
 VARIANT_*
