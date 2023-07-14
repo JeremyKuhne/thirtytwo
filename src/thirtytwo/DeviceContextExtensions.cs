@@ -147,4 +147,30 @@ public static unsafe partial class DeviceContextExtensions
         GC.KeepAlive(deviceContext.Wrapper);
         GC.KeepAlive(icon.Wrapper);
     }
+
+    public static DeviceContext CreateCompatibleDeviceContext<TDeviceContext>(this TDeviceContext deviceContext)
+        where TDeviceContext : IHandle<HDC>
+    {
+        CreatedHDC hdc = Interop.CreateCompatibleDC(deviceContext.Handle);
+        if (hdc.IsNull)
+        {
+            Error.ThrowLastError();
+        }
+
+        GC.KeepAlive(deviceContext.Wrapper);
+        return DeviceContext.Create(hdc, ownsHandle: true);
+    }
+
+    public static Bitmap CreateCompatibleBitmap<TDeviceContext>(this TDeviceContext deviceContext, Size size)
+        where TDeviceContext : IHandle<HDC>
+    {
+        HBITMAP hbitmap = Interop.CreateCompatibleBitmap(deviceContext.Handle, size.Width, size.Height);
+        if (hbitmap.IsNull)
+        {
+            Error.ThrowLastError();
+        }
+
+        GC.KeepAlive(deviceContext.Wrapper);
+        return Bitmap.Create(hbitmap, ownsHandle: true);
+    }
 }

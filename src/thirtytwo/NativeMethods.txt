@@ -4,6 +4,7 @@ AccessibleObjectFromWindow
 ACTCTX_FLAG_*
 ActivateActCtx
 BeginPaint
+BitBlt
 BITMAP
 BOOLEAN
 BS_*
@@ -19,6 +20,8 @@ COMBOBOXINFO_BUTTON_STATE
 CopyImage
 CoTaskMemFree
 CreateActCtx
+CreateCompatibleBitmap
+CreateCompatibleDC
 CreateDispTypeInfo
 CreateErrorInfo
 CreateFont
@@ -97,10 +100,12 @@ GetObject
 GetObjectType
 GetParent
 GetProcessDpiAwareness
+GetRgnBox
 GetStockObject
 GetSysColorBrush
 GetThreadDpiAwarenessContext
 GetThreadLocale
+GetUpdateRgn
 GetWindowRect
 GetWindowRgn
 GetWindowText
