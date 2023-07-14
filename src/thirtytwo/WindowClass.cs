@@ -16,11 +16,11 @@ public unsafe partial class WindowClass : IDisposable
     private readonly object _lock = new();
 
     public ATOM Atom { get; private set; }
-    public HINSTANCE ModuleInstance { get; }
+    public HMODULE ModuleInstance { get; }
 
     public unsafe WindowClass(
         string? className = default,
-        HINSTANCE moduleInstance = default,
+        HMODULE moduleInstance = default,
         ClassStyle classStyle = ClassStyle.HorizontalRedraw | ClassStyle.VerticalRedraw,
         HBRUSH backgroundBrush = default,
         HICON icon = default,
@@ -63,7 +63,7 @@ public unsafe partial class WindowClass : IDisposable
 
         if (moduleInstance.IsNull)
         {
-            moduleInstance = HINSTANCE.GetLaunchingExecutable();
+            moduleInstance = HMODULE.GetLaunchingExecutable();
         }
 
         if (menuId != 0 && menuName is not null)
@@ -95,10 +95,10 @@ public unsafe partial class WindowClass : IDisposable
     {
         _windowProcedure = WindowProcedureInternal;
         _className = registeredClassName;
-        ModuleInstance = HINSTANCE.Null;
+        ModuleInstance = HMODULE.Null;
     }
 
-    public bool IsRegistered => Atom.IsValid || ModuleInstance == HINSTANCE.Null;
+    public bool IsRegistered => Atom.IsValid || ModuleInstance == HMODULE.Null;
 
     /// <summary>
     ///  Registers this <see cref="WindowClass"/> so that instances can be created.
@@ -163,7 +163,7 @@ public unsafe partial class WindowClass : IDisposable
                 bounds.Height,
                 parentWindow,
                 menuHandle,
-                HINSTANCE.Null,
+                HMODULE.Null,
                 (void*)parameters);
 
             if (hwnd.IsNull)

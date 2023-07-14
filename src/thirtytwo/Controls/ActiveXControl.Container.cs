@@ -38,7 +38,7 @@ public unsafe partial class ActiveXControl
             return HRESULT.E_NOTIMPL;
         }
 
-        HRESULT IOleContainer.Interface.EnumObjects(OLECONTF grfFlags, IEnumUnknown** ppenum)
+        HRESULT IOleContainer.Interface.EnumObjects(uint grfFlags, IEnumUnknown** ppenum)
         {
             if (ppenum is null)
             {
@@ -46,7 +46,7 @@ public unsafe partial class ActiveXControl
             }
 
             List<ActiveXControl>? activeXControls = null;
-            if (grfFlags.HasFlag(OLECONTF.OLECONTF_EMBEDDINGS) && Window is not null)
+            if (((OLECONTF)grfFlags).HasFlag(OLECONTF.OLECONTF_EMBEDDINGS) && Window is not null)
             {
                 activeXControls = new();
                 Window.EnumerateChildWindows((HWND child) =>

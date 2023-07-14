@@ -10,6 +10,8 @@ public partial struct HDC : IHandle<HDC>
     HDC IHandle<HDC>.Handle => this;
     object? IHandle<HDC>.Wrapper => null;
 
+    public bool IsNull => Value == 0;
+
     public static explicit operator HDC(HGDIOBJ handle)
     {
         Debug.Assert(handle.IsNull || (OBJ_TYPE)Interop.GetObjectType(handle) == OBJ_TYPE.OBJ_DC);

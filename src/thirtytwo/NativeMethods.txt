@@ -178,6 +178,7 @@ MulDiv
 NAVDIR_*
 NtQuerySystemInformation
 NTSTATUS
+OLECONTF
 OLEIVERB*
 OLEIVERB_*
 OBJ_TYPE
@@ -192,6 +193,7 @@ PostQuitMessage
 PROPVARIANT
 PropVariantClear
 RegisterClassEx
+ReleaseDC
 ROLE_SYSTEM_*
 S_FALSE
 S_OK
@@ -242,5 +244,7 @@ UiaRect
 UiaReturnRawElementProvider
 UpdateLayeredWindow
 UpdateWindow
+VARIANT_*
 VIRTUAL_KEY
 WINDOWPOS
+XFORMCOORDS

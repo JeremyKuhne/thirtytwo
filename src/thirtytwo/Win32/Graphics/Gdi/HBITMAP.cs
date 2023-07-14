@@ -9,6 +9,4 @@ public unsafe partial struct HBITMAP : IHandle<HBITMAP>
 {
     HBITMAP IHandle<HBITMAP>.Handle => this;
     object? IHandle<HBITMAP>.Wrapper => null;
-
-    public static implicit operator HGDIOBJ(HBITMAP handle) => new(handle.Value);
 }

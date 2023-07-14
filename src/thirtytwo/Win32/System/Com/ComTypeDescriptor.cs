@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using Windows.Win32.System.Ole;
+using Windows.Win32.System.Variant;
 
 namespace Windows.Win32.System.Com;
 

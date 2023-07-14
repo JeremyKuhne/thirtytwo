@@ -16,6 +16,4 @@ public unsafe partial struct HBRUSH
         Debug.Assert(handle.IsNull || (OBJ_TYPE)Interop.GetObjectType(handle) == OBJ_TYPE.OBJ_BRUSH);
         return new(handle.Value);
     }
-
-    public static implicit operator HGDIOBJ(HBRUSH handle) => new(handle.Value);
 }

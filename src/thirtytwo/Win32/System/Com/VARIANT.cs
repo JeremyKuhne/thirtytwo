@@ -2,9 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.CompilerServices;
-using static Windows.Win32.System.Com.VARENUM;
+using Windows.Win32.System.Com;
+using static Windows.Win32.System.Variant.VARENUM;
 
-namespace Windows.Win32.System.Com;
+namespace Windows.Win32.System.Variant;
 
 public unsafe partial struct VARIANT : IDisposable
 {
@@ -51,7 +52,7 @@ public unsafe partial struct VARIANT : IDisposable
 
         fixed (void* t = &this)
         {
-            Interop.PropVariantClear((StructuredStorage.PROPVARIANT*)t);
+            Interop.PropVariantClear((System.Com.StructuredStorage.PROPVARIANT*)t);
         }
 
         vt = VT_EMPTY;

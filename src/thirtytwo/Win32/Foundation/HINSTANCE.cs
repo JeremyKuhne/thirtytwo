@@ -5,13 +5,13 @@ using Windows.Support;
 
 namespace Windows.Win32.Foundation;
 
-public unsafe partial struct HINSTANCE : IHandle<HINSTANCE>
+public unsafe partial struct HMODULE : IHandle<HMODULE>
 {
-    HINSTANCE IHandle<HINSTANCE>.Handle => this;
-    object? IHandle<HINSTANCE>.Wrapper => null;
+    HMODULE IHandle<HMODULE>.Handle => this;
+    object? IHandle<HMODULE>.Wrapper => null;
 
     /// <inheritdoc cref="FromAddress(void*, bool)"/>
-    public static HINSTANCE FromAddress(nint address, bool incrementRefCount = false)
+    public static HMODULE FromAddress(nint address, bool incrementRefCount = false)
         => FromAddress((void*)address, incrementRefCount);
 
     /// <summary>
@@ -19,33 +19,33 @@ public unsafe partial struct HINSTANCE : IHandle<HINSTANCE>
     ///  <paramref name="incrementRefCount"/> is <see langword="true"/>.
     /// </summary>
     /// <returns>The found instance or <see cref="Null"/>.</returns>
-    /// <inheritdoc cref="Interop.GetModuleHandleEx(uint, PCWSTR, HINSTANCE*)"/>
-    public static HINSTANCE FromAddress(void* address, bool incrementRefCount = false)
+    /// <inheritdoc cref="Interop.GetModuleHandleEx(uint, PCWSTR, HMODULE*)"/>
+    public static HMODULE FromAddress(void* address, bool incrementRefCount = false)
     {
-        HINSTANCE instance;
+        HMODULE hmodule;
         Interop.GetModuleHandleEx(
             Interop.GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS
                 | (incrementRefCount ? 0 : Interop.GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT),
             (PCWSTR)address,
-            &instance);
+            &hmodule);
 
-        return instance;
+        return hmodule;
     }
 
     /// <summary>
     ///  Gets the module for the launching executable. Do not release this handle.
     /// </summary>
     /// <returns>The found instance or <see cref="Null"/>.</returns>
-    /// <inheritdoc cref="Interop.GetModuleHandleEx(uint, PCWSTR, HINSTANCE*)"/>
-    public static HINSTANCE GetLaunchingExecutable()
+    /// <inheritdoc cref="Interop.GetModuleHandleEx(uint, PCWSTR, HMODULE*)"/>
+    public static HMODULE GetLaunchingExecutable()
     {
-        HINSTANCE instance;
+        HMODULE hmodule;
         Interop.GetModuleHandleEx(
             Interop.GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
             (PCWSTR)null,
-            &instance);
+            &hmodule);
 
-        return instance;
+        return hmodule;
     }
 
     /// <summary>
@@ -53,19 +53,19 @@ public unsafe partial struct HINSTANCE : IHandle<HINSTANCE>
     ///  <paramref name="incrementRefCount"/> is <see langword="true"/>.
     /// </summary>
     /// <returns>The found instance or <see cref="Null"/>.</returns>
-    /// <inheritdoc cref="Interop.GetModuleHandleEx(uint, PCWSTR, HINSTANCE*)"/>
-    public static HINSTANCE FromName(string name, bool incrementRefCount = false)
+    /// <inheritdoc cref="Interop.GetModuleHandleEx(uint, PCWSTR, HMODULE*)"/>
+    public static HMODULE FromName(string name, bool incrementRefCount = false)
     {
         fixed (char* n = name)
         {
-            HINSTANCE instance;
+            HMODULE hmodule;
 
             Interop.GetModuleHandleEx(
                 incrementRefCount ? 0 : Interop.GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
                 (PCWSTR)n,
-                &instance);
+                &hmodule);
 
-            return instance;
+            return hmodule;
         }
     }
 }

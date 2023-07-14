@@ -13,13 +13,13 @@ public unsafe class IconIdTests
     {
         IconId.Application.Should().Be((IconId)(uint)Interop.IDI_APPLICATION.Value);
         IconId.Asterisk.Should().Be((IconId)(uint)Interop.IDI_ASTERISK.Value);
-        IconId.Error.Should().Be((IconId)Interop.IDI_ERROR);
+        IconId.Error.Should().Be((IconId)(uint)Interop.IDI_ERROR.Value);
         IconId.Exclamation.Should().Be((IconId)(uint)Interop.IDI_EXCLAMATION.Value);
         IconId.Hand.Should().Be((IconId)(uint)Interop.IDI_HAND.Value);
-        IconId.Information.Should().Be((IconId)Interop.IDI_INFORMATION);
+        IconId.Information.Should().Be((IconId)(uint)Interop.IDI_INFORMATION.Value);
         IconId.Question.Should().Be((IconId)(uint)Interop.IDI_QUESTION.Value);
         IconId.Shield.Should().Be((IconId)(uint)Interop.IDI_SHIELD.Value);
-        IconId.Warning.Should().Be((IconId)Interop.IDI_WARNING);
+        IconId.Warning.Should().Be((IconId)(uint)Interop.IDI_WARNING.Value);
         IconId.WindowsLogo.Should().Be((IconId)(uint)Interop.IDI_WINLOGO.Value);
     }
 }

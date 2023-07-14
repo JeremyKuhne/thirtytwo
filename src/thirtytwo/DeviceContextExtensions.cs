@@ -151,7 +151,7 @@ public static unsafe partial class DeviceContextExtensions
     public static DeviceContext CreateCompatibleDeviceContext<TDeviceContext>(this TDeviceContext deviceContext)
         where TDeviceContext : IHandle<HDC>
     {
-        CreatedHDC hdc = Interop.CreateCompatibleDC(deviceContext.Handle);
+        HDC hdc = Interop.CreateCompatibleDC(deviceContext.Handle);
         if (hdc.IsNull)
         {
             Error.ThrowLastError();
