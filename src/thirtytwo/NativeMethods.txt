@@ -3,6 +3,7 @@ AccessibleObjectFromPoint
 AccessibleObjectFromWindow
 ACTCTX_FLAG_*
 ActivateActCtx
+AddClipboardFormatListener
 BeginPaint
 BitBlt
 BITMAP
@@ -13,12 +14,15 @@ CHILDID_SELF
 CLASS_E_NOTLICENSED
 CLEARTYPE_NATURAL_QUALITY
 ClientToScreen
+CLIPBOARD_FORMAT
+CloseClipboard
 CoCreateInstance
 CoGetClassObject
 CombineRgn
 COMBOBOXINFO_BUTTON_STATE
 CopyImage
 CoTaskMemFree
+CountClipboardFormats
 CreateActCtx
 CreateCompatibleBitmap
 CreateCompatibleDC
@@ -59,6 +63,7 @@ E_NOINTERFACE
 E_NOTIMPL
 E_POINTER
 EM_*
+EmptyClipboard
 EnableWindow
 EndPaint
 EnumChildWindows
@@ -84,6 +89,9 @@ GetAncestor
 GetAwarenessFromDpiAwarenessContext
 GetClassLong
 GetClientRect
+GetClipboardData
+GetClipboardFormatName
+GetClipboardOwner
 GetCurrentThread
 GetCurrentThreadId
 GetDC
@@ -98,6 +106,7 @@ GetMessage
 GetModuleHandleEx
 GetObject
 GetObjectType
+GetOpenClipboardWindow
 GetParent
 GetProcAddress
 GetProcessDpiAwareness
@@ -106,11 +115,17 @@ GetStockObject
 GetSysColorBrush
 GetThreadDpiAwarenessContext
 GetThreadLocale
+GetUpdatedClipboardFormats
 GetUpdateRgn
 GetWindowRect
 GetWindowRgn
 GetWindowText
 GetWindowTextLength
+GlobalAlloc
+GlobalFree
+GlobalLock
+GlobalSize
+GlobalUnlock
 HFONT
 HRESULT
 IAccessible
@@ -155,6 +170,7 @@ IRecordInfo
 IServiceProvider
 ISimpleFrameSite
 ISupportErrorInfo
+IsClipboardFormatAvailable
 IsWindowEnabled
 IsWindowVisible
 IUIAutomationElement
@@ -184,6 +200,7 @@ OLEIVERB*
 OLEIVERB_*
 OBJ_TYPE
 OBJECT_IDENTIFIER
+OpenClipboard
 PARAMDATA
 WIN32_ERROR
 WM_*
@@ -194,6 +211,7 @@ PostQuitMessage
 PROPVARIANT
 PropVariantClear
 RegisterClassEx
+RegisterClipboardFormat
 ReleaseDC
 ROLE_SYSTEM_*
 S_FALSE
@@ -208,6 +226,7 @@ SendMessage
 SELFLAG_*
 SelectObject
 SetActiveWindow
+SetClipboardData
 SetFocus
 SetGraphicsMode
 SetLayeredWindowAttributes

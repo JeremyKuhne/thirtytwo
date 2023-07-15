@@ -369,9 +369,12 @@ dotnet_diagnostic.xUnit1004.severity = silent
 # IDE0005: Using directive is unnecessary.
 dotnet_diagnostic.IDE0005.severity = error
 
+# IDE0046: 'if' statement can be simplified.
+dotnet_diagnostic.IDE0046.severity = silent
+
 [*.{cs,vb}]
 dotnet_style_coalesce_expression = true:suggestion
-dotnet_style_null_propagation = true:suggestion
+dotnet_style_null_propagation = true:silent
 dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
 dotnet_style_prefer_auto_properties = true:silent
 dotnet_style_object_initializer = true:suggestion

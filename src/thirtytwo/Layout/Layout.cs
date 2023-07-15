@@ -7,6 +7,9 @@ namespace Windows;
 
 public static class Layout
 {
+    /// <summary>
+    ///  Uses a fixed percent of the available space, aligning within as specified.
+    /// </summary>
     public static ILayoutHandler FixedPercent(
         SizeF percent,
         ILayoutHandler handler,
@@ -14,6 +17,9 @@ public static class Layout
         HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center)
         => new FixedPercentLayout(handler, percent, verticalAlignment, horizontalAlignment);
 
+    /// <summary>
+    ///  Uses a fixed percent of the available space, aligning within as specified.
+    /// </summary>
     public static ILayoutHandler FixedPercent(
         float percent,
         ILayoutHandler handler,

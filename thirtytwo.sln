@@ -28,6 +28,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeyWatch", "src\samples\Key
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Transparency", "src\samples\Transparency\Transparency.csproj", "{4E2E6DCA-8E84-497B-937D-8F776B98E453}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClipboardViewer", "src\samples\ClipboardViewer\ClipboardViewer.csproj", "{3D0531EE-7ED0-42EC-8A4C-3D69F3CBF0F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -62,6 +64,10 @@ Global
 		{4E2E6DCA-8E84-497B-937D-8F776B98E453}.Debug|x64.Build.0 = Debug|x64
 		{4E2E6DCA-8E84-497B-937D-8F776B98E453}.Release|x64.ActiveCfg = Release|x64
 		{4E2E6DCA-8E84-497B-937D-8F776B98E453}.Release|x64.Build.0 = Release|x64
+		{3D0531EE-7ED0-42EC-8A4C-3D69F3CBF0F4}.Debug|x64.ActiveCfg = Debug|x64
+		{3D0531EE-7ED0-42EC-8A4C-3D69F3CBF0F4}.Debug|x64.Build.0 = Debug|x64
+		{3D0531EE-7ED0-42EC-8A4C-3D69F3CBF0F4}.Release|x64.ActiveCfg = Release|x64
+		{3D0531EE-7ED0-42EC-8A4C-3D69F3CBF0F4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -72,6 +78,7 @@ Global
 		{919DE42D-A835-4105-8C92-4A3EECC861CD} = {C059056C-D771-4CF5-A93F-AA7140FF7827}
 		{01DE5FF9-428C-49BA-8853-6DFCB62085B9} = {C059056C-D771-4CF5-A93F-AA7140FF7827}
 		{4E2E6DCA-8E84-497B-937D-8F776B98E453} = {C059056C-D771-4CF5-A93F-AA7140FF7827}
+		{3D0531EE-7ED0-42EC-8A4C-3D69F3CBF0F4} = {C059056C-D771-4CF5-A93F-AA7140FF7827}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3761BFC9-DBEF-4186-BB8B-BC0D84ED9AE5}

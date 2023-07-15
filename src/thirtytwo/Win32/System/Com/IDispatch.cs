@@ -84,7 +84,7 @@ public unsafe partial struct IDispatch
         DISPPARAMS dispParams = default;
         VARIANT value = default;
 
-        HRESULT hr = Invoke(
+        Invoke(
             dispatchId,
             &guid,
             Interop.GetThreadLocale(),
