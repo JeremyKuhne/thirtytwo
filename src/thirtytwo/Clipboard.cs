@@ -48,10 +48,20 @@ public unsafe class Clipboard
     /// <summary>
     ///  Returns true if the requested format is available.
     /// </summary>
-    public static bool IsClipboardFormatAvailable(uint format) => Interop.IsClipboardFormatAvailable(format);
+    public static bool IsClipboardFormatAvailable(uint format)
+    {
+        bool result = Interop.IsClipboardFormatAvailable(format);
+
+        if (!result)
+        {
+            Error.ThrowIfLastErrorNot(WIN32_ERROR.NO_ERROR);
+        }
+
+        return result;
+    }
 
     /// <summary>
-    ///  Returns true if there is text on the clipboard;
+    ///  Returns true if there is text on the clipboard.
     /// </summary>
     public static bool IsClipboardTextAvailable()
         => Interop.IsClipboardFormatAvailable((uint)CLIPBOARD_FORMAT.CF_UNICODETEXT);
@@ -122,6 +132,7 @@ public unsafe class Clipboard
     /// <summary>
     ///  Gets text from the clipboard if it is available.
     /// </summary>
+    /// <returns>Returns the clipboard text or <see langword="null"/> if text is not available.</returns>
     public static string? GetClipboardText()
     {
         if (!IsClipboardTextAvailable() || !OpenClipboard())

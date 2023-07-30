@@ -8,6 +8,7 @@ using Windows.Win32.System.Ole;
 
 namespace Tests.Windows;
 
+[Collection(nameof(ClipboardTestCollection))]
 public unsafe class ClipboardTests
 {
     [Fact]
@@ -149,5 +150,11 @@ public unsafe class ClipboardTests
         }
 
         Clipboard.GetClipboardText().Should().Be("Test string.");
+    }
+
+    [Fact]
+    public void Clipboard_IsClipboardFormatAvailable_No()
+    {
+        Clipboard.IsClipboardFormatAvailable(uint.MaxValue).Should().BeFalse();
     }
 }

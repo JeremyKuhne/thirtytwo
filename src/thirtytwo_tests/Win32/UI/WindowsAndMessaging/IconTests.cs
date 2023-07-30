@@ -50,7 +50,9 @@ public class IconTests
     {
         private readonly HICON _icon;
 
-        public IconTestWindow(HICON icon) : base(DefaultBounds, style: WindowStyles.OverlappedWindow) => _icon = icon;
+        public IconTestWindow(HICON icon)
+            : base(DefaultBounds, style: WindowStyles.OverlappedWindow, windowClass: new(backgroundBrush: SystemColor.Shadow3d))
+            => _icon = icon;
 
         protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
         {
