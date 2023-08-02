@@ -104,7 +104,7 @@ public static unsafe partial class DeviceContextExtensions
             // The string won't be changed, we can just pin
             fixed (char* c = text)
             {
-                int result = Interop.DrawTextEx(context.Handle, (PWSTR)c, text.Length, bounds, 0, dtp);
+                int result = Interop.DrawTextEx(context.Handle, (PWSTR)c, text.Length, bounds, (DRAW_TEXT_FORMAT)format, dtp);
                 if (result == 0)
                 {
                     Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_SUCCESS);
@@ -119,7 +119,7 @@ public static unsafe partial class DeviceContextExtensions
         text.CopyTo(buffer);
         fixed (char* c = buffer)
         {
-            int result = Interop.DrawTextEx(context.Handle, (PWSTR)c, text.Length, bounds, 0, dtp);
+            int result = Interop.DrawTextEx(context.Handle, (PWSTR)c, text.Length, bounds, (DRAW_TEXT_FORMAT)format, dtp);
             if (result == 0)
             {
                 Error.ThrowLastError();
