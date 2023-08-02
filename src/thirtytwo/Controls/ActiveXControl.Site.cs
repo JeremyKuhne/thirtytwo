@@ -31,7 +31,7 @@ public unsafe partial class ActiveXControl
 
         HRESULT IOleClientSite.Interface.SaveObject() => HRESULT.E_NOTIMPL;
 
-        HRESULT IOleClientSite.Interface.GetMoniker(OLEGETMONIKER dwAssign, OLEWHICHMK dwWhichMoniker, IMoniker** ppmk)
+        HRESULT IOleClientSite.Interface.GetMoniker(uint dwAssign, uint dwWhichMoniker, IMoniker** ppmk)
         {
             if (ppmk is null)
             {
@@ -221,18 +221,18 @@ public unsafe partial class ActiveXControl
         HRESULT IOleControlSite.Interface.LockInPlaceActive(BOOL fLock) => HRESULT.E_NOTIMPL;
         HRESULT IOleControlSite.Interface.GetExtendedControl(IDispatch** ppDisp) => HRESULT.E_NOTIMPL;
 
-        HRESULT IOleControlSite.Interface.TransformCoords(POINTL* pPtlHimetric, PointF* pPtfContainer, XFORMCOORDS dwFlags)
+        HRESULT IOleControlSite.Interface.TransformCoords(POINTL* pPtlHimetric, PointF* pPtfContainer, uint dwFlags)
         {
             if (pPtlHimetric is null || pPtfContainer is null)
             {
                 return HRESULT.E_POINTER;
             }
 
-            if (dwFlags.HasFlag(XFORMCOORDS.XFORMCOORDS_HIMETRICTOCONTAINER))
+            if (((XFORMCOORDS)dwFlags).HasFlag(XFORMCOORDS.XFORMCOORDS_HIMETRICTOCONTAINER))
             {
                 *pPtfContainer = new(_control.HiMetricToPixel(pPtlHimetric->x), _control.HiMetricToPixel(pPtlHimetric->y));
             }
-            else if (dwFlags.HasFlag(XFORMCOORDS.XFORMCOORDS_CONTAINERTOHIMETRIC))
+            else if (((XFORMCOORDS)dwFlags).HasFlag(XFORMCOORDS.XFORMCOORDS_CONTAINERTOHIMETRIC))
             {
                 *pPtlHimetric = new()
                 {

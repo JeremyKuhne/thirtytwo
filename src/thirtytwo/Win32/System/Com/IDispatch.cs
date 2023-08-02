@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Support;
+using Windows.Win32.System.Variant;
 
 namespace Windows.Win32.System.Com;
 
@@ -83,7 +84,7 @@ public unsafe partial struct IDispatch
         DISPPARAMS dispParams = default;
         VARIANT value = default;
 
-        HRESULT hr = Invoke(
+        Invoke(
             dispatchId,
             &guid,
             Interop.GetThreadLocale(),

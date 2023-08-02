@@ -17,25 +17,13 @@ public readonly struct DeviceContext : IDisposable, IHandle<HDC>
     private readonly CollectionType Type { get; init; }
 
     public static DeviceContext Create(
-        CreatedHDC hdc,
+        HDC hdc,
         bool ownsHandle = false)
     {
         DeviceContext context = new()
         {
             HWND = default,
             Type = ownsHandle ? CollectionType.Delete : CollectionType.None,
-            Handle = hdc
-        };
-
-        return context;
-    }
-
-    public static DeviceContext Create(HDC hdc)
-    {
-        DeviceContext context = new()
-        {
-            HWND = default,
-            Type = CollectionType.None,
             Handle = hdc
         };
 

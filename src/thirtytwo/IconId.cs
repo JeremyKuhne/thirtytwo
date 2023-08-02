@@ -45,15 +45,15 @@ public enum IconId : uint
     /// <summary>
     ///  Warning icon (exclamation point). (IDI_WARNING)
     /// </summary>
-    Warning = Interop.IDI_WARNING,
+    Warning = 32515,
 
     /// <summary>
     ///  Error icon (hand). (IDI_ERROR)
     /// </summary>
-    Error = Interop.IDI_ERROR,
+    Error = 32513,
 
     /// <summary>
     ///  Information icon (asterisk). (IDI_INFORMATION)
     /// </summary>
-    Information = Interop.IDI_INFORMATION
+    Information = 32516
 }

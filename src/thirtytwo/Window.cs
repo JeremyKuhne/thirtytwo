@@ -19,8 +19,11 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
     private readonly WNDPROC _priorWindowProcedure;
     private readonly WindowClass _windowClass;
     private static readonly object s_lock = new();
+    private readonly object _lock = new();
+    private bool _destroyed;
 
     private static readonly WindowClass s_defaultWindowClass = new(className: $"DefaultWindowClass_{Guid.NewGuid()}");
+    internal static WNDPROC DefaultWindowProcedure { get; } = GetDefaultWindowProcedure();
 
     private string? _text;
     private uint _lastDpi;
@@ -138,6 +141,19 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
                 {
                     return result.Value;
                 }
+            }
+        }
+
+        // What is the difference between WM_DESTROY and WM_NCDESTROY?
+        // https://devblogs.microsoft.com/oldnewthing/20050726-00/?p=34803
+
+        if ((MessageType)message == MessageType.NonClientDestroy)
+        {
+            lock (_lock)
+            {
+                // This should be the final message. Track that we've been destroyed so we know we don't have
+                // to manually clean up.
+                _destroyed = true;
             }
         }
 
@@ -268,13 +284,24 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
 
     protected override void Dispose(bool disposing)
     {
+        // We want to block at a WM_NCDESTROY message so that we know our handle is still valid for cleanup.
+        lock (_lock)
+        {
+            if (!_destroyed)
+            {
+                // We don't want any messages coming in anymore (as the Window will be collected eventually and
+                // our callback will no longer exist). Set the default window procedure to the window and post
+                // a close message so it will destroy the window on the correct thread.
+                Handle.SetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, (nint)(void*)DefaultWindowProcedure);
+                Handle.PostMessage(MessageType.Close);
+            }
+        }
+
         if (disposing)
         {
             bool success = s_windows.TryRemove(Handle, out _);
             Debug.Assert(success);
         }
-
-        this.SetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, (nint)(void*)_priorWindowProcedure.Value);
     }
 
     void ILayoutHandler.Layout(Rectangle bounds) => LayoutWindow(bounds);
@@ -303,4 +330,13 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
 
     public int HiMetricToPixel(int units)
         => (int)(((_lastDpi * units) + (HiMetricUnitsPerInch / 2)) / HiMetricUnitsPerInch);
+
+    private static WNDPROC GetDefaultWindowProcedure()
+    {
+        HMODULE module = Interop.LoadLibrary("user32.dll");
+        Debug.Assert(!module.IsNull);
+        FARPROC address = Interop.GetProcAddress(module, "DefWindowProcW");
+        Debug.Assert(!address.IsNull);
+        return (WNDPROC)(void*)address.Value;
+    }
 }

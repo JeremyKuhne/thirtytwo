@@ -8,7 +8,7 @@ using static System.Runtime.InteropServices.ComWrappers;
 
 namespace Windows.Win32;
 
-internal static unsafe partial class ComHelpers
+public static unsafe partial class ComHelpers
 {
     /// <summary>
     ///  Gets the specified <typeparamref name="T"/> interface for the given <paramref name="obj"/>.
@@ -155,7 +155,7 @@ internal static unsafe partial class ComHelpers
             {
                 using BSTR key = default;
                 factory.Value->RequestLicKey(0, &key);
-                factory.Value->CreateInstanceLic(null, null, IID.GetRef<IUnknown>(), key, out void* unknown);
+                factory.Value->CreateInstanceLic(null, IID.GetRef<IUnknown>(), key, out void* unknown);
                 return (IUnknown*)unknown;
             }
             else
@@ -166,17 +166,7 @@ internal static unsafe partial class ComHelpers
         }
     }
 
-    public static void PopulateIUnknown<TComInterface>(IUnknown.Vtbl* vtable)
-        where TComInterface : unmanaged, IComIID
-        => PopulateIUnknownImpl<TComInterface>(vtable);
-
-    static partial void PopulateIUnknownImpl<TComInterface>(IUnknown.Vtbl* vtable) where TComInterface : unmanaged, IComIID;
-}
-
-// This is temporary to illustrate the feature request in https://github.com/microsoft/CsWin32/issues/831
-internal static unsafe partial class ComHelpers
-{
-    static partial void PopulateIUnknownImpl<TComInterface>(IUnknown.Vtbl* vtable) where TComInterface : unmanaged, IComIID
+    static partial void PopulateIUnknownImpl<TComInterface>(IUnknown.Vtbl* vtable) where TComInterface : unmanaged
     {
         // Custom behavior for specific COM CCWs can be done by checking typeof(TComInterface) against a specific
         // interface, such as typeof(IAccessible).

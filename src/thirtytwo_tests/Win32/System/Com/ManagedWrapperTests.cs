@@ -71,7 +71,7 @@ public unsafe class ManagedWrapperTests
     private class OleContainerOne : IOleContainer.Interface, IManagedWrapper<IOleContainer>
     {
         unsafe HRESULT IOleContainer.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut) => throw new NotImplementedException();
-        unsafe HRESULT IOleContainer.Interface.EnumObjects(OLECONTF grfFlags, IEnumUnknown** ppenum) => throw new NotImplementedException();
+        unsafe HRESULT IOleContainer.Interface.EnumObjects(uint grfFlags, IEnumUnknown** ppenum) => throw new NotImplementedException();
         HRESULT IOleContainer.Interface.LockContainer(BOOL fLock) => throw new NotImplementedException();
         unsafe HRESULT IParseDisplayName.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut) => throw new NotImplementedException();
     }
@@ -79,7 +79,7 @@ public unsafe class ManagedWrapperTests
     private class OleContainerTwo : IOleContainer.Interface, IManagedWrapper<IOleContainer>
     {
         unsafe HRESULT IOleContainer.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut) => throw new NotImplementedException();
-        unsafe HRESULT IOleContainer.Interface.EnumObjects(OLECONTF grfFlags, IEnumUnknown** ppenum) => throw new NotImplementedException();
+        unsafe HRESULT IOleContainer.Interface.EnumObjects(uint grfFlags, IEnumUnknown** ppenum) => throw new NotImplementedException();
         HRESULT IOleContainer.Interface.LockContainer(BOOL fLock) => throw new NotImplementedException();
         unsafe HRESULT IParseDisplayName.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut) => throw new NotImplementedException();
     }
@@ -87,7 +87,7 @@ public unsafe class ManagedWrapperTests
     private class OleClientSite : IOleClientSite.Interface, IManagedWrapper<IOleClientSite>
     {
         HRESULT IOleClientSite.Interface.SaveObject() => throw new NotImplementedException();
-        HRESULT IOleClientSite.Interface.GetMoniker(OLEGETMONIKER dwAssign, OLEWHICHMK dwWhichMoniker, IMoniker** ppmk) => throw new NotImplementedException();
+        HRESULT IOleClientSite.Interface.GetMoniker(uint dwAssign, uint dwWhichMoniker, IMoniker** ppmk) => throw new NotImplementedException();
         HRESULT IOleClientSite.Interface.GetContainer(IOleContainer** ppContainer) => throw new NotImplementedException();
         HRESULT IOleClientSite.Interface.ShowObject() => throw new NotImplementedException();
         HRESULT IOleClientSite.Interface.OnShowWindow(BOOL fShow) => throw new NotImplementedException();
@@ -97,13 +97,13 @@ public unsafe class ManagedWrapperTests
     private class OleThing : IOleClientSite.Interface, IOleContainer.Interface, IManagedWrapper<IOleClientSite, IOleContainer>
     {
         HRESULT IOleClientSite.Interface.SaveObject() => throw new NotImplementedException();
-        HRESULT IOleClientSite.Interface.GetMoniker(OLEGETMONIKER dwAssign, OLEWHICHMK dwWhichMoniker, IMoniker** ppmk) => throw new NotImplementedException();
+        HRESULT IOleClientSite.Interface.GetMoniker(uint dwAssign, uint dwWhichMoniker, IMoniker** ppmk) => throw new NotImplementedException();
         HRESULT IOleClientSite.Interface.GetContainer(IOleContainer** ppContainer) => throw new NotImplementedException();
         HRESULT IOleClientSite.Interface.ShowObject() => throw new NotImplementedException();
         HRESULT IOleClientSite.Interface.OnShowWindow(BOOL fShow) => throw new NotImplementedException();
         HRESULT IOleClientSite.Interface.RequestNewObjectLayout() => throw new NotImplementedException();
         HRESULT IOleContainer.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut) => throw new NotImplementedException();
-        HRESULT IOleContainer.Interface.EnumObjects(OLECONTF grfFlags, IEnumUnknown** ppenum) => throw new NotImplementedException();
+        HRESULT IOleContainer.Interface.EnumObjects(uint grfFlags, IEnumUnknown** ppenum) => throw new NotImplementedException();
         HRESULT IOleContainer.Interface.LockContainer(BOOL fLock) => throw new NotImplementedException();
         HRESULT IParseDisplayName.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut) => throw new NotImplementedException();
     }

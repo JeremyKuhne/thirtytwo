@@ -14,5 +14,5 @@ public class ThirtyTwoException : Win32Exception
         : base(message, innerException) { HResult = (int)hresult; }
 
     public ThirtyTwoException(WIN32_ERROR error, string? message = null)
-        : base(error.ToHRESULT(), message ?? error.ErrorToString()) { }
+        : base(error.ToHRESULT(), message ?? error.ErrorToString()) { HResult = (int)error.ToHRESULT(); }
 }

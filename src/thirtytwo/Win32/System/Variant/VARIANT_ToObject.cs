@@ -11,14 +11,15 @@
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Windows.Win32.System.Com;
 using Windows.Win32.System.Com.StructuredStorage;
 using Windows.Win32.System.Ole;
-using static Windows.Win32.System.Com.VARENUM;
+using static Windows.Win32.System.Variant.VARENUM;
 using InteropMarshal = System.Runtime.InteropServices.Marshal;
 
-namespace Windows.Win32.System.Com;
+namespace Windows.Win32.System.Variant;
 
-public unsafe partial struct VARIANT : IDisposable
+public unsafe partial struct VARIANT
 {
     public object? ToObject()
     {

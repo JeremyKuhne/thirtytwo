@@ -13,7 +13,7 @@ public unsafe partial struct PCWSTR
     {
         if (Value is not null)
         {
-            Interop.LocalFree((nint)Value);
+            Interop.LocalFree((HLOCAL)(nint)Value);
             Unsafe.AsRef(this) = default;
         }
     }

@@ -3,6 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Windows.Win32.System.Variant;
 using static Windows.Win32.ComHelpers;
 
 namespace Windows.Win32.System.Com;

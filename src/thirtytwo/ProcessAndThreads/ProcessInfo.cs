@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.CompilerServices;
+using Windows.Wdk.System.SystemInformation;
 using Windows.Win32.System.WindowsProgramming;
 
 namespace Windows.ProcessAndThreads;
@@ -24,7 +25,7 @@ public sealed unsafe partial class ProcessInfo
         while (true)
         {
             uint length;
-            NTSTATUS status = Interop.NtQuerySystemInformation(
+            NTSTATUS status = Wdk.Interop.NtQuerySystemInformation(
                 SYSTEM_INFORMATION_CLASS.SystemProcessInformation,
                 First,
                 (uint)_buffer.Length,

@@ -8,8 +8,6 @@ namespace Windows.Win32.Graphics.Gdi;
 
 public unsafe partial struct HRGN : IDisposable
 {
-    public static implicit operator HGDIOBJ(HRGN handle) => new(handle.Value);
-
     public void Dispose()
     {
         if (!IsNull)

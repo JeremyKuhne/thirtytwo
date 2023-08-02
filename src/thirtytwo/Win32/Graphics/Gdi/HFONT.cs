@@ -19,8 +19,6 @@ public unsafe partial struct HFONT : IHandle<HFONT>, IDisposable
         return new(handle.Value);
     }
 
-    public static implicit operator HGDIOBJ(HFONT handle) => new(handle.Value);
-
     public static explicit operator HFONT(LRESULT result) => new(result.Value);
 
     /// <summary>

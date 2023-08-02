@@ -143,7 +143,6 @@ public static unsafe class Application
         if (message == MessageType.Destroy)
         {
             Interop.PostQuitMessage(0);
-            return (LRESULT)0;
         }
 
         return null;
