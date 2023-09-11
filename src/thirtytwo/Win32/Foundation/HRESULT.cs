@@ -45,6 +45,9 @@ public partial struct HRESULT
     public static readonly HRESULT COR_E_TARGETINVOCATION       = (HRESULT)unchecked((int)0x80131604);
     public static readonly HRESULT COR_E_OBJECTDISPOSED         = (HRESULT)unchecked((int)0x80131622);
 
+    // The .NET runtime host uses a FACILITY_NULL facility code when failing to launch (0x8000????).
+    // https://github.com/dotnet/runtime/blob/main/docs/design/features/host-error-codes.md
+
     public static implicit operator Exception(HRESULT result)
     {
         return Marshal.GetExceptionForHR(result) ?? new InvalidOperationException("Not a failing result.");

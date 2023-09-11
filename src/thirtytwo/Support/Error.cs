@@ -141,8 +141,10 @@ public static unsafe class Error
     }
 
     /// <remarks>
-    ///  .NET's Win32Exception impements the error code lookup on FormatMessage using FORMAT_MESSAGE_FROM_SYSTEM.
-    ///  It won't handle Network Errors (NERR_BASE..MAX_NERR), which come from NETMSG.DLL.
+    ///  <para>
+    ///   .NET's Win32Exception impements the error code lookup on FormatMessage using FORMAT_MESSAGE_FROM_SYSTEM.
+    ///   It won't handle Network Errors (NERR_BASE..MAX_NERR), which come from NETMSG.DLL.
+    ///  </para>
     /// </remarks>
     public static string FormatMessage(
         uint messageId,
