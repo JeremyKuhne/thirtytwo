@@ -11,6 +11,13 @@ namespace Windows.Win32;
 public static unsafe partial class ComHelpers
 {
     /// <summary>
+    ///  Returns <see langword="true"/> if built-in COM interop is supported. When using AOT or trimming this will
+    ///  return <see langword="false"/>.
+    /// </summary>
+    internal static bool BuiltInComSupported { get; }
+        = !AppContext.TryGetSwitch("System.Runtime.InteropServices.BuiltInComInterop.IsSupported", out bool supported) || supported;
+
+    /// <summary>
     ///  Gets the specified <typeparamref name="T"/> interface for the given <paramref name="obj"/>.
     /// </summary>
     internal static T* GetComPointer<T>(object? obj) where T : unmanaged, IComIID
