@@ -31,13 +31,13 @@ public unsafe partial class FileOpenDialog : FileDialog
     {
         using ComScope<IShellItemArray> items = new(null);
         using ComScope<IFileOpenDialog> dialog = Interface.GetInterface<IFileOpenDialog>();
-        dialog.Value->GetResults(items);
-        items.Value->GetCount(out uint count);
+        dialog.Value->GetResults(items).ThrowOnFailure();
+        items.Value->GetCount(out uint count).ThrowOnFailure();
         string[] paths = new string[(int)count];
         for (int i = 0; i < count; i++)
         {
             using ComScope<IShellItem> item = new(null);
-            items.Value->GetItemAt(0, item);
+            items.Value->GetItemAt(0, item).ThrowOnFailure();
             paths[i] = item.Value->GetFullPath();
         }
 

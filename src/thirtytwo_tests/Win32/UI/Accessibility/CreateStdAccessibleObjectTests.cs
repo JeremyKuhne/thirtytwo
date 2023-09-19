@@ -59,11 +59,13 @@ public unsafe class CreateStdAccessibleObjectTests
         description.ToStringAndFree().Should().Be("Contains commands to manipulate the window");
 
         // Navigating left from the system menu goes nowhere.
-        VARIANT result = accessible.Value->accNavigate((int)Interop.NAVDIR_LEFT, (VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU);
+        using VARIANT result = default;
+        hr = accessible.Value->accNavigate((int)Interop.NAVDIR_LEFT, (VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU, &result);
         result.vt.Should().Be(VARENUM.VT_EMPTY);
+        result.Dispose();
 
         // We get IDispatch for the title bar going right from the system menu
-        result = accessible.Value->accNavigate((int)Interop.NAVDIR_RIGHT, (VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU);
+        hr = accessible.Value->accNavigate((int)Interop.NAVDIR_RIGHT, (VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU, &result);
         using ComScope<IDispatch> right = new((IDispatch*)result);
 
         // Can't directly get IAccessibleEx / IRawElementProviderSimple

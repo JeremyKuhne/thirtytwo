@@ -16,8 +16,16 @@ public unsafe abstract class UiaBase :
     {
     }
 
-    ProviderOptions IRawElementProviderSimple.Interface.ProviderOptions
-        => ProviderOptions.ProviderOptions_ServerSideProvider;
+    HRESULT IRawElementProviderSimple.Interface.get_ProviderOptions(ProviderOptions* pRetVal)
+    {
+        if (pRetVal is null)
+        {
+            return HRESULT.E_POINTER;
+        }
+
+        *pRetVal = ProviderOptions.ProviderOptions_ServerSideProvider;
+        return HRESULT.S_OK;
+    }
 
     HRESULT IRawElementProviderSimple.Interface.GetPatternProvider(UIA_PATTERN_ID patternId, IUnknown** pRetVal)
     {
@@ -99,5 +107,14 @@ public unsafe abstract class UiaBase :
         };
     }
 
-    IRawElementProviderSimple* IRawElementProviderSimple.Interface.HostRawElementProvider => null;
+    HRESULT IRawElementProviderSimple.Interface.get_HostRawElementProvider(IRawElementProviderSimple** pRetVal)
+    {
+        if (pRetVal is null)
+        {
+            return HRESULT.E_POINTER;
+        }
+
+        *pRetVal = null;
+        return HRESULT.S_OK;
+    }
 }

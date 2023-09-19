@@ -310,7 +310,7 @@ public unsafe abstract class AccessibleBase : StandardDispatch, IAccessible.Inte
         return child.vt == VARENUM.VT_I4;
     }
 
-    /// <inheritdoc cref="IAccessible.accNavigate(int, VARIANT)"/>
+    /// <inheritdoc cref="IAccessible.accNavigate(int, VARIANT, out VARIANT)"/>
     HRESULT IAccessible.Interface.accNavigate(int navDir, VARIANT varStart, VARIANT* pvarEndUpAt)
     {
         if (pvarEndUpAt is null)

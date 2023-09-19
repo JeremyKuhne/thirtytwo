@@ -7,7 +7,7 @@ public unsafe partial struct IShellItem
 {
     public string GetFullPath()
     {
-        GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEEDITING, out PWSTR ppszName);
+        GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEEDITING, out PWSTR ppszName).ThrowOnFailure();
         string result = new(ppszName);
         Interop.CoTaskMemFree(ppszName);
         return result;
