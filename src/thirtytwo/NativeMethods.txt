@@ -118,6 +118,7 @@ GetThreadDpiAwarenessContext
 GetThreadLocale
 GetUpdatedClipboardFormats
 GetUpdateRgn
+GetUserDefaultLCID
 GetWindowRect
 GetWindowRgn
 GetWindowText
@@ -133,6 +134,7 @@ IAccessible
 IAccessibleEx
 IAccIdentity
 IAgileObject
+ICatInformation
 IClassFactory2
 IConnectionPoint
 IConnectionPointContainer

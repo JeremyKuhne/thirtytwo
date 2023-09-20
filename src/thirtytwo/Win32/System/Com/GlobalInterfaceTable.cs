@@ -20,11 +20,11 @@ internal static unsafe class GlobalInterfaceTable
 
     static GlobalInterfaceTable()
     {
+        Guid clsid = CLSID.StdGlobalInterfaceTable;
         fixed (IGlobalInterfaceTable** git = &s_globalInterfaceTable)
-        fixed (Guid* g = &CLSID.StdGlobalInterfaceTable)
         {
             Interop.CoCreateInstance(
-                g,
+                &clsid,
                 pUnkOuter: null,
                 CLSCTX.CLSCTX_INPROC_SERVER,
                 IID.Get<IGlobalInterfaceTable>(),

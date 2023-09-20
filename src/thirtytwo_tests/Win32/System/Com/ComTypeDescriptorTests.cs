@@ -9,12 +9,10 @@ namespace Tests.Windows.Win32.System.Com;
 
 public unsafe class ComTypeDescriptorTests
 {
-    private static readonly Guid s_mediaPlayerClassId = new("6BF52A52-394A-11d3-B153-00C04F79FAA6");
-
     [StaFact]
     public void ComTypeDescriptor_ClassName_MediaPlayer()
     {
-        using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(s_mediaPlayerClassId), takeOwnership: true);
+        using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer), takeOwnership: true);
         ComTypeDescriptor comDescriptor = new(unknown);
         ICustomTypeDescriptor descriptor = comDescriptor;
         string? className = descriptor.GetClassName();
@@ -24,7 +22,7 @@ public unsafe class ComTypeDescriptorTests
     [StaFact]
     public void ComTypeDescriptor_ComponentName_MediaPlayer()
     {
-        using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(s_mediaPlayerClassId), takeOwnership: true);
+        using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer), takeOwnership: true);
         ComTypeDescriptor comDescriptor = new(unknown);
         ICustomTypeDescriptor descriptor = comDescriptor;
         string? className = descriptor.GetComponentName();
@@ -34,7 +32,7 @@ public unsafe class ComTypeDescriptorTests
     [StaFact]
     public void ComTypeDescriptor_GetProperties_MediaPlayer()
     {
-        using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(s_mediaPlayerClassId), takeOwnership: true);
+        using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer), takeOwnership: true);
         ComTypeDescriptor comDescriptor = new(unknown);
         ICustomTypeDescriptor descriptor = comDescriptor;
         var properties = descriptor.GetProperties();

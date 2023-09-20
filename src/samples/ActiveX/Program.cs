@@ -3,6 +3,7 @@
 
 using System.Drawing;
 using Windows;
+using Windows.Win32.System.Com;
 
 namespace ActiveXSample;
 
@@ -44,10 +45,8 @@ internal class Program
 
     private class MediaPlayer : ActiveXControl
     {
-        private static readonly Guid s_mediaPlayerClassId = new("6BF52A52-394A-11d3-B153-00C04F79FAA6");
-
         public MediaPlayer(Rectangle bounds, Window parentWindow, nint parameters = 0)
-            : base(s_mediaPlayerClassId, bounds, parentWindow, parameters)
+            : base(CLSID.WindowsMediaPlayer, bounds, parentWindow, parameters)
         {
         }
 

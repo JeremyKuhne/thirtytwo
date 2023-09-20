@@ -10,12 +10,10 @@ namespace Tests.Windows.Win32;
 
 public unsafe class ComHelpersTests
 {
-    private static readonly Guid s_mediaPlayerClassId = new("6BF52A52-394A-11d3-B153-00C04F79FAA6");
-
     [StaFact]
     public void CreateComClass_MediaPlayer()
     {
-        using ComScope<IUnknown> mediaPlayer = new(ComHelpers.CreateComClass(s_mediaPlayerClassId));
+        using ComScope<IUnknown> mediaPlayer = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer));
 
         using ComScope<IDispatch> dispatch = mediaPlayer.TryQueryInterface<IDispatch>(out HRESULT hr);
         hr.Succeeded.Should().BeTrue();
