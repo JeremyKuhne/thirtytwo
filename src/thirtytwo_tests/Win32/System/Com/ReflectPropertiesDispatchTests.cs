@@ -3,14 +3,12 @@
 
 using System.Drawing;
 using System.Runtime.InteropServices;
-using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.System.Com;
 using Windows.Win32.System.Ole;
 using Windows.Win32.System.Variant;
 using static Windows.Win32.System.Ole.FDEX_PROP_FLAGS;
 
-namespace Tests.Windows.Win32.System.Com;
+namespace Windows.Win32.System.Com;
 
 public unsafe class ReflectPropertiesDispatchTests
 {

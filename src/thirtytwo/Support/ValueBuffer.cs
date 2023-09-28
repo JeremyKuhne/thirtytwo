@@ -44,7 +44,7 @@ public ref struct ValueBuffer<T> where T : unmanaged
 
     public Span<T> Span { get; private set; }
 
-    public int Length => Span.Length;
+    public readonly int Length => Span.Length;
 
     /// <summary>
     ///  Ensure that the buffer has enough space for <paramref name="capacity"/> number of elements.
@@ -101,9 +101,9 @@ public ref struct ValueBuffer<T> where T : unmanaged
         }
     }
 
-    public ref T this[int index] => ref Span[index];
+    public readonly ref T this[int index] => ref Span[index];
 
-    public ref T GetPinnableReference() => ref MemoryMarshal.GetReference(Span);
+    public readonly ref T GetPinnableReference() => ref MemoryMarshal.GetReference(Span);
 
     public string ToStringAndDispose(int length)
     {

@@ -7,7 +7,7 @@
 
     <IsPackable>false</IsPackable>
 
-    <RootNamespace>Tests.Windows</RootNamespace>
+    <RootNamespace>Windows</RootNamespace>
 
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>

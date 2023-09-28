@@ -2,10 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Dialogs;
-using Windows.Win32.System.Com;
 using Windows.Win32.UI.Shell;
 
-namespace Tests.Windows.Win32.System.Com;
+namespace Windows.Win32.System.Com;
 
 public unsafe class ComTests
 {

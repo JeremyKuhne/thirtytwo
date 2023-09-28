@@ -2,9 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Text;
-using Windows.ProcessAndThreads;
 
-namespace Tests.Windows.ProcessAndThreads;
+namespace Windows.ProcessAndThreads;
 
 public class ProcessInfoTests
 {

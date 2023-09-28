@@ -2,12 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
-using Windows;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
-using Windows.Win32.UI.WindowsAndMessaging;
 
-namespace Tests.Windows.Win32.UI.WindowsAndMessaging;
+namespace Windows.Win32.UI.WindowsAndMessaging;
 
 public class IconTests
 {

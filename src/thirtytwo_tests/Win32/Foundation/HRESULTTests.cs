@@ -2,9 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Support;
-using Windows.Win32.Foundation;
 
-namespace Tests.Windows.Win32.Foundation;
+namespace Windows.Win32.Foundation;
 
 public class HRESULTTests
 {

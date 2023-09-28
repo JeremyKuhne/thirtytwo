@@ -7,15 +7,14 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Windows.DotNet;
-using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.System.Com;
-using Windows.Win32.System.Com.Marshal;
 using Windows.Win32.System.Ole;
 using Windows.Win32.System.Variant;
 using static Windows.Win32.System.Ole.FDEX_PROP_FLAGS;
+using IMarshal = Windows.Win32.System.Com.Marshal.IMarshal;
+using InteropMarshal = System.Runtime.InteropServices.Marshal;
 
-namespace Tests.Windows.Win32.System.Com;
+namespace Windows.Win32.System.Com;
 
 public unsafe class IReflectTests
 {
@@ -27,7 +26,7 @@ public unsafe class IReflectTests
         PublicSimpleClass publicSimple = new();
 
         // Can get IUnknown for any class
-        nint unknown = Marshal.GetIUnknownForObject(publicSimple);
+        nint unknown = InteropMarshal.GetIUnknownForObject(publicSimple);
         unknown.Should().NotBe(0);
 
         // Can query it for IDispatch when it is public
@@ -41,7 +40,7 @@ public unsafe class IReflectTests
         hr = ((IUnknown*)unknown)->QueryInterface(IID.Get<IDispatchEx>(), (void**)&dispatchEx);
         hr.Should().Be(HRESULT.E_NOINTERFACE);
 
-        Marshal.Release(unknown);
+        InteropMarshal.Release(unknown);
     }
 
     [Fact]
@@ -49,7 +48,7 @@ public unsafe class IReflectTests
     {
         PublicSimpleClass publicSimple = new();
 
-        using ComScope<IDispatch> dispatch = new((IDispatch*)Marshal.GetIDispatchForObject(publicSimple));
+        using ComScope<IDispatch> dispatch = new((IDispatch*)InteropMarshal.GetIDispatchForObject(publicSimple));
         using ComScope<ITypeInfo> typeInfo = new(null);
         HRESULT hr = dispatch.Value->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
         hr.Should().Be(HRESULT.TLBX_E_LIBNOTREGISTERED);
@@ -61,7 +60,7 @@ public unsafe class IReflectTests
         PrivateSimpleClass privateSimple = new();
 
         // Can get IUnknown for any class
-        nint unknown = Marshal.GetIUnknownForObject(privateSimple);
+        nint unknown = InteropMarshal.GetIUnknownForObject(privateSimple);
         unknown.Should().NotBe(0);
 
         // Can not query it for IDispatch when it is private
@@ -74,14 +73,14 @@ public unsafe class IReflectTests
         hr = ((IUnknown*)unknown)->QueryInterface(IID.Get<IDispatchEx>(), (void**)&dispatchEx);
         hr.Should().Be(HRESULT.E_NOINTERFACE);
 
-        Marshal.Release(unknown);
+        InteropMarshal.Release(unknown);
     }
 
     [Fact]
     public void IReflect_GetDispatch()
     {
         ReflectClass reflect = new();
-        nint unknown = Marshal.GetIUnknownForObject(reflect);
+        nint unknown = InteropMarshal.GetIUnknownForObject(reflect);
         unknown.Should().NotBe(0);
 
         // Can query IReflect for IDispatch
@@ -96,7 +95,7 @@ public unsafe class IReflectTests
         hr.Should().Be(HRESULT.S_OK);
         dispatchEx->Release();
 
-        Marshal.Release(unknown);
+        InteropMarshal.Release(unknown);
 
         // IDispatchEx is generated for Type, EnumBuilder, TypeBuilder, and any class that derives from IReflect.
     }
@@ -105,7 +104,7 @@ public unsafe class IReflectTests
     public void IReflect_ISupportErrorInfo()
     {
         ReflectClass reflect = new();
-        using ComScope<IUnknown> unknown = new((IUnknown*)Marshal.GetIUnknownForObject(reflect));
+        using ComScope<IUnknown> unknown = new((IUnknown*)InteropMarshal.GetIUnknownForObject(reflect));
 
         ISupportErrorInfo* supportErrorInfo;
         HRESULT hr = ((IUnknown*)unknown)->QueryInterface(IID.Get<ISupportErrorInfo>(), (void**)&supportErrorInfo);
@@ -126,7 +125,7 @@ public unsafe class IReflectTests
     public void IReflect_IConnectionPointContainer_NoAttribute()
     {
         ReflectEvent reflect = new();
-        using ComScope<IUnknown> unknown = new((IUnknown*)Marshal.GetIUnknownForObject(reflect));
+        using ComScope<IUnknown> unknown = new((IUnknown*)InteropMarshal.GetIUnknownForObject(reflect));
 
         IConnectionPointContainer* container;
         HRESULT hr = ((IUnknown*)unknown)->QueryInterface(IID.Get<IConnectionPointContainer>(), (void**)&container);
@@ -155,7 +154,7 @@ public unsafe class IReflectTests
     public void IReflect_IConnectionPointContainer_Attributed()
     {
         ReflectSourcedEvent reflect = new();
-        using ComScope<IUnknown> unknown = new((IUnknown*)Marshal.GetIUnknownForObject(reflect));
+        using ComScope<IUnknown> unknown = new((IUnknown*)InteropMarshal.GetIUnknownForObject(reflect));
 
         IConnectionPointContainer* container;
         HRESULT hr = ((IUnknown*)unknown)->QueryInterface(IID.Get<IConnectionPointContainer>(), (void**)&container);
@@ -186,7 +185,7 @@ public unsafe class IReflectTests
     public void IReflect_IMarshal()
     {
         ReflectClass reflect = new();
-        using ComScope<IUnknown> unknown = new((IUnknown*)Marshal.GetIUnknownForObject(reflect));
+        using ComScope<IUnknown> unknown = new((IUnknown*)InteropMarshal.GetIUnknownForObject(reflect));
 
         // In Core, the implementation of IMarshal is simply delegated to CoCreateFreeThreadedMarshaler
         IMarshal* marshal;
@@ -199,7 +198,7 @@ public unsafe class IReflectTests
     public void IReflect_IAgileObject()
     {
         ReflectClass reflect = new();
-        using ComScope<IUnknown> unknown = new((IUnknown*)Marshal.GetIUnknownForObject(reflect));
+        using ComScope<IUnknown> unknown = new((IUnknown*)InteropMarshal.GetIUnknownForObject(reflect));
 
         // IAgileObject marks as the object as free-threaded, which will make the Global Interface Table skip
         // marshalling across apartments.
@@ -213,7 +212,7 @@ public unsafe class IReflectTests
     public void IReflect_IClassInfo()
     {
         ReflectClass reflect = new();
-        using ComScope<IUnknown> unknown = new((IUnknown*)Marshal.GetIUnknownForObject(reflect));
+        using ComScope<IUnknown> unknown = new((IUnknown*)InteropMarshal.GetIUnknownForObject(reflect));
 
         using ComScope<IProvideClassInfo> provideClassInfo = new(null);
         HRESULT hr = ((IUnknown*)unknown)->QueryInterface(IID.Get<IProvideClassInfo>(), provideClassInfo);
@@ -233,7 +232,7 @@ public unsafe class IReflectTests
     public void IReflect_IManagedObject()
     {
         ReflectClass reflect = new();
-        using ComScope<IUnknown> unknown = new((IUnknown*)Marshal.GetIUnknownForObject(reflect));
+        using ComScope<IUnknown> unknown = new((IUnknown*)InteropMarshal.GetIUnknownForObject(reflect));
 
         // IManagedObject is a .NET Framework only thing, it isn't used/implemented in .NET Core. Other interfaces that
         // don't exist in .NET Core: IObjectSafety, IWeakReferenceSource, ICustomPropertyProvider, ICCW, and IStringTable.
@@ -260,7 +259,7 @@ public unsafe class IReflectTests
     public void IReflect_InvokeMember()
     {
         InvokeMemberClass invoke = new();
-        using ComScope<IDispatch> dispatch = new((IDispatch*)Marshal.GetIDispatchForObject(invoke));
+        using ComScope<IDispatch> dispatch = new((IDispatch*)InteropMarshal.GetIDispatchForObject(invoke));
         using ComScope<IDispatchEx> dispatchEx = dispatch.TryQueryInterface<IDispatchEx>(out HRESULT hr);
 
         using ComScope<ITypeInfo> typeInfo = new(null);
@@ -303,7 +302,7 @@ public unsafe class IReflectTests
     {
         ReflectSelf reflect = new();
 
-        using ComScope<IUnknown> unknown = new((IUnknown*)Marshal.GetIUnknownForObject(reflect));
+        using ComScope<IUnknown> unknown = new((IUnknown*)InteropMarshal.GetIUnknownForObject(reflect));
         using ComScope<IDispatchEx> dispatchEx = unknown.QueryInterface<IDispatchEx>();
 
         // When Invoking via enumerated ids "ToString" is passed to IReflect.InvokeMember (as opposed to "[DISPID=]").
@@ -325,7 +324,7 @@ public unsafe class IReflectTests
         hr.Succeeded.Should().BeTrue();
 
         result.vt.Should().Be(VARENUM.VT_BSTR);
-        result.data.bstrVal.ToString().Should().Be("Tests.Windows.Win32.System.Com.IReflectTests+ReflectSelf");
+        result.data.bstrVal.ToString().Should().Be("Windows.Win32.System.Com.IReflectTests+ReflectSelf");
 
         result.Dispose();
 
@@ -343,7 +342,7 @@ public unsafe class IReflectTests
         hr.Succeeded.Should().BeTrue();
 
         result.vt.Should().Be(VARENUM.VT_BSTR);
-        result.data.bstrVal.ToString().Should().Be("Tests.Windows.Win32.System.Com.IReflectTests+ReflectSelf");
+        result.data.bstrVal.ToString().Should().Be("Windows.Win32.System.Com.IReflectTests+ReflectSelf");
 
         result.Dispose();
 
@@ -363,7 +362,7 @@ public unsafe class IReflectTests
         hr.Succeeded.Should().BeTrue();
 
         result.vt.Should().Be(VARENUM.VT_BSTR);
-        result.data.bstrVal.ToString().Should().Be("Tests.Windows.Win32.System.Com.IReflectTests+ReflectSelf");
+        result.data.bstrVal.ToString().Should().Be("Windows.Win32.System.Com.IReflectTests+ReflectSelf");
 
         // Can we get any more info off of IDispatch? Everything but GetDocumentation takes an index, not an id.
         using ComScope<ITypeInfo> typeInfo = new(null);
@@ -394,7 +393,7 @@ public unsafe class IReflectTests
     {
         ReflectObjectTypes reflect = new();
 
-        using ComScope<IUnknown> unknown = new((IUnknown*)Marshal.GetIUnknownForObject(reflect));
+        using ComScope<IUnknown> unknown = new((IUnknown*)InteropMarshal.GetIUnknownForObject(reflect));
         using ComScope<IDispatchEx> dispatch = unknown.QueryInterface<IDispatchEx>();
 
         var dispatchIds = dispatch.Value->GetAllDispatchIds();
@@ -440,7 +439,7 @@ public unsafe class IReflectTests
             Color = Color.Blue
         };
 
-        using ComScope<IUnknown> unknown = new((IUnknown*)Marshal.GetIUnknownForObject(reflect));
+        using ComScope<IUnknown> unknown = new((IUnknown*)InteropMarshal.GetIUnknownForObject(reflect));
         using ComScope<IDispatchEx> dispatch = unknown.QueryInterface<IDispatchEx>();
 
         var dispatchIds = dispatch.Value->GetAllDispatchIds();
@@ -489,7 +488,7 @@ public unsafe class IReflectTests
     [Theory, MemberData(nameof(EnumerateBehaviorTestData))]
     public void IReflect_IDispatchEx_Enumerate(object reflect, IEnumerable<string> names)
     {
-        using ComScope<IUnknown> unknown = new((IUnknown*)Marshal.GetIUnknownForObject(reflect));
+        using ComScope<IUnknown> unknown = new((IUnknown*)InteropMarshal.GetIUnknownForObject(reflect));
         using ComScope<IDispatchEx> dispatch = unknown.QueryInterface<IDispatchEx>();
 
         // Only explicitly provided member info in IReflect is exposed.
@@ -513,7 +512,7 @@ public unsafe class IReflectTests
         // All we ever see via IDispatch are the IUnknown methods.
 
         // Getting IDispatch calls IReflect.GetProperties, IReflect.GetFields, then IReflect.GetMethods
-        using ComScope<IDispatch> dispatch = new((IDispatch*)Marshal.GetIDispatchForObject(reflect));
+        using ComScope<IDispatch> dispatch = new((IDispatch*)InteropMarshal.GetIDispatchForObject(reflect));
         HRESULT hr = dispatch.Value->GetTypeInfoCount(out uint count);
         hr.Should().Be(HRESULT.S_OK);
         count.Should().Be(1);
@@ -642,11 +641,13 @@ public unsafe class IReflectTests
         [DispId(1776)]
         public bool Represent { get; } = true;
 
+#pragma warning disable CA1822 // Mark members as static
         [ComVisible(true)]
         public bool Foo() => true;
 
         [DispId(1066)]
         public bool Bar() => true;
+#pragma warning restore CA1822
 
         protected override object? InvokeMember(
             string name,

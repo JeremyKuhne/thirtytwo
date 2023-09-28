@@ -129,6 +129,7 @@ GlobalLock
 GlobalSize
 GlobalUnlock
 HFONT
+HKEY_*
 HRESULT
 IAccessible
 IAccessibleEx
@@ -178,6 +179,8 @@ IsWindowEnabled
 IsWindowVisible
 IUIAutomationElement
 IUnknown
+KEY_INFORMATION_CLASS
+KEY_NAME_INFORMATION
 KF_*
 LIBFLAGS
 LoadCursor
@@ -215,6 +218,11 @@ PROPVARIANT
 PropVariantClear
 RegisterClassEx
 RegisterClipboardFormat
+RegCloseKey
+RegEnumValue
+RegOpenKeyEx
+RegQueryInfoKey
+RegQueryValueEx
 ReleaseDC
 ROLE_SYSTEM_*
 S_FALSE
@@ -246,7 +254,10 @@ SHParseDisplayName
 ShowWindow
 STATE_SYSTEM_*
 STATIC_STYLES
+STATUS_BUFFER_OVERFLOW
+STATUS_BUFFER_TOO_SMALL
 STATUS_INFO_LENGTH_MISMATCH
+STATUS_SUCCESS
 SubtractRect
 SYS_COLOR_INDEX
 SYSTEM_PROCESS_INFORMATION

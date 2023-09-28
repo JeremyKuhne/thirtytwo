@@ -2,10 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.ComponentModel;
-using Windows.Win32;
-using Windows.Win32.System.Com;
 
-namespace Tests.Windows.Win32.System.Com;
+namespace Windows.Win32.System.Com;
 
 public unsafe class ComTypeDescriptorTests
 {

@@ -2,13 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Accessibility;
-using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
 using Windows.Win32.System.Variant;
-using Windows.Win32.UI.Accessibility;
 
-namespace Tests.Windows.Win32.UI.Accessibility;
+namespace Windows.Win32.UI.Accessibility;
 
 public unsafe class AccessibleBaseTests
 {

@@ -4,12 +4,11 @@
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.System.Com;
 using Windows.Win32.System.Variant;
+using InteropMarshal = System.Runtime.InteropServices.Marshal;
 
-namespace Tests.Windows.Win32.System.Com;
+namespace Windows.Win32.System.Com;
 
 public unsafe class VariantTests
 {
@@ -21,11 +20,11 @@ public unsafe class VariantTests
         Rectangle rectangle = new(1, 2, 3, 4);
         using VARIANT variant = default;
         nint address = (nint)(void*)&variant;
-        Assert.Throws<NotSupportedException>(() => Marshal.GetNativeVariantForObject(rectangle, address));
+        Assert.Throws<NotSupportedException>(() => InteropMarshal.GetNativeVariantForObject(rectangle, address));
 
         using TestVariant test = new();
         using ComScope<IUnknown> unknown = test.GetComCallableWrapper();
-        ITestVariantComInterop comInterop = (ITestVariantComInterop)Marshal.GetObjectForIUnknown(unknown);
+        ITestVariantComInterop comInterop = (ITestVariantComInterop)InteropMarshal.GetObjectForIUnknown(unknown);
         Assert.Throws<NotSupportedException>(() => comInterop.SetVariant(rectangle));
     }
 
@@ -52,7 +51,7 @@ public unsafe class VariantTests
         nint address = (nint)(void*)&variant;
 
         // Use Marshal to create the VARIANT directly
-        Marshal.GetNativeVariantForObject(array, address);
+        InteropMarshal.GetNativeVariantForObject(array, address);
         variant.vt.Should().Be(VARENUM.VT_ARRAY | VARENUM.VT_I4);
 
         SAFEARRAY* safeArray = variant.data.parray;
@@ -67,7 +66,7 @@ public unsafe class VariantTests
         using ComScope<IUnknown> unkown = test.GetComCallableWrapper();
 
         // Use legacy COM interop to create an RCW for the pointer and set through that projection.
-        ITestVariantComInterop comInterop = (ITestVariantComInterop)Marshal.GetObjectForIUnknown(unkown);
+        ITestVariantComInterop comInterop = (ITestVariantComInterop)InteropMarshal.GetObjectForIUnknown(unkown);
         comInterop.SetVariant(array);
 
         VARIANT setVariant = test.Variant;
@@ -90,7 +89,7 @@ public unsafe class VariantTests
             nint address = (nint)(void*)&variant;
 
             // Use Marshal to create the VARIANT directly
-            Marshal.GetNativeVariantForObject(array, address);
+            InteropMarshal.GetNativeVariantForObject(array, address);
             variant.vt.Should().Be(VARENUM.VT_ARRAY | VARENUM.VT_I4);
 
             safeArray = variant.data.parray;
@@ -101,7 +100,7 @@ public unsafe class VariantTests
             nint address = (nint)(void*)&variant;
 
             // Use Marshal to create the VARIANT directly
-            Marshal.GetNativeVariantForObject(array, address);
+            InteropMarshal.GetNativeVariantForObject(array, address);
             variant.vt.Should().Be(VARENUM.VT_ARRAY | VARENUM.VT_I4);
 
             SAFEARRAY* newSafeArray = variant.data.parray;

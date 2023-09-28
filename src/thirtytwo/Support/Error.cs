@@ -18,6 +18,14 @@ public static unsafe class Error
     [DoesNotReturn]
     public static void Throw(this WIN32_ERROR error, string? path = null) => throw error.GetException(path);
 
+    public static void ThrowIfFailed(this WIN32_ERROR error, string? path = null)
+    {
+        if (error != WIN32_ERROR.ERROR_SUCCESS)
+        {
+            error.Throw(path);
+        }
+    }
+
     [DoesNotReturn]
     public static void ThrowLastError(string? path = null) => Throw(GetLastError(), path);
 
