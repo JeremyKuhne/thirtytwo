@@ -41,24 +41,21 @@ public static unsafe partial class Registry
         }
 
         using BufferScope<char> buffer = new(stackalloc char[256]);
-        while (true)
+        while (true) fixed (char* b = buffer)
         {
-            fixed (char* b = buffer)
+            uint length;
+            NTSTATUS status = Wdk.Interop.NtQueryKey(key, KEY_INFORMATION_CLASS.KeyNameInformation, b, (uint)buffer.Length, &length);
+
+            if (status == NTSTATUS.STATUS_BUFFER_TOO_SMALL || status == NTSTATUS.STATUS_BUFFER_OVERFLOW)
             {
-                uint length;
-                NTSTATUS status = Wdk.Interop.NtQueryKey(key, KEY_INFORMATION_CLASS.KeyNameInformation, b, (uint)buffer.Length, &length);
-
-                if (status == NTSTATUS.STATUS_BUFFER_TOO_SMALL || status == NTSTATUS.STATUS_BUFFER_OVERFLOW)
-                {
-                    buffer.EnsureCapacity((int)length);
-                    continue;
-                }
-
-                status.ThrowIfFailed();
-
-                KEY_NAME_INFORMATION* nameInfo = (KEY_NAME_INFORMATION*)b;
-                return new ReadOnlySpan<char>(nameInfo->Name.Value, (int)nameInfo->NameLength / sizeof(char)).ToString();
+                buffer.EnsureCapacity((int)length);
+                continue;
             }
+
+            status.ThrowIfFailed();
+
+            KEY_NAME_INFORMATION* nameInfo = (KEY_NAME_INFORMATION*)b;
+            return new ReadOnlySpan<char>(nameInfo->Name.Value, (int)nameInfo->NameLength / sizeof(char)).ToString();
         }
     }
 
