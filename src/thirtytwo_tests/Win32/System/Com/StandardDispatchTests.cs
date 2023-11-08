@@ -54,7 +54,7 @@ public unsafe class StandardDispatchTests
     [Fact]
     public void StandardDispatch_IUnknown()
     {
-        UnknownDispatch unknownDispatch = new();
+        SimpleDispatch unknownDispatch = new();
         using ComScope<IDispatch> dispatch = new(ComHelpers.GetComPointer<IDispatch>(unknownDispatch));
         using ComScope<IDispatchEx> dispatchEx = dispatch.TryQueryInterface<IDispatchEx>(out HRESULT hr);
 
@@ -125,13 +125,7 @@ public unsafe class StandardDispatchTests
         name.ToStringAndFree().Should().Be("QueryInterface");
     }
 
-    private class UnknownDispatch : StandardDispatch, IManagedWrapper<IDispatch>
+    private class SimpleDispatch : UnknownDispatch, IManagedWrapper<IDispatch>
     {
-        // Comes from stdole32.tlb
-        private static readonly Guid s_stdole = new("00020430-0000-0000-C000-000000000046");
-
-        public UnknownDispatch() : base(s_stdole, 2, 0, IUnknown.IID_Guid)
-        {
-        }
     }
 }

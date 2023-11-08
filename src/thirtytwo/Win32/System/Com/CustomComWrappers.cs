@@ -59,11 +59,6 @@ internal sealed unsafe partial class CustomComWrappers : ComWrappers
             CreateComInterfaceFlags.None);
 #endif
 
-        if (obj is IWrapperInitialize initialize)
-        {
-            initialize.OnInitialized(result);
-        }
-
         return result;
     }
 

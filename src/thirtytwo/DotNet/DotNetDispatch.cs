@@ -10,7 +10,7 @@ namespace Windows.DotNet;
 ///  just documenting the .NET CCW behavior.
 /// </summary>
 public unsafe abstract class DotNetDispatch :
-    StandardDispatch,
+    UnknownDispatch,
     ISupportErrorInfo.Interface
 {
     // .NET CCWs always support IMarshal, ISupportErrorInfo, IDispatchEx, IProvideClassInfo, and

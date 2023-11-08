@@ -179,4 +179,31 @@ public static unsafe partial class ComHelpers
         // interface, such as typeof(IAccessible).
         CustomComWrappers.PopulateIUnknown(vtable);
     }
+
+    /// <summary>
+    ///  Find the given interface's <see cref="ITypeInfo"/> from the specified type library.
+    /// </summary>
+    public static ComScope<ITypeInfo> GetRegisteredTypeInfo(
+        Guid typeLibrary,
+        ushort majorVersion,
+        ushort minorVersion,
+        Guid interfaceId)
+    {
+        // Load the registered type library and get the relevant ITypeInfo for the specified interface.
+        //
+        // Note that the ITypeLib and ITypeInfo are free to be used on any thread. ITypeInfo add refs the
+        // ITypeLib and keeps a reference to it.
+        //
+        // While type library loading is cached, that is only while it is still referenced (directly or via
+        // an ITypeInfo reference) and there is still a fair amount of overhead to look up the right instance. The
+        // caching is by the type library path, so the guid needs looked up again in the registry to figure out the
+        // path again.
+        using ComScope<ITypeLib> typelib = new(null);
+        HRESULT hr = Interop.LoadRegTypeLib(typeLibrary, majorVersion, minorVersion, 0, typelib);
+        hr.ThrowOnFailure();
+
+        ComScope<ITypeInfo> typeInfo = new(null);
+        typelib.Value->GetTypeInfoOfGuid(interfaceId, typeInfo).ThrowOnFailure();
+        return typeInfo;
+    }
 }

@@ -9,7 +9,7 @@ namespace Windows.Win32.System.Com;
 /// <summary>
 ///  Base class that provides an <see cref="IDispatchEx"/> projection of all it's public properties.
 /// </summary>
-public unsafe abstract class ReflectPropertiesDispatch : StandardDispatch
+public unsafe abstract class ReflectPropertiesDispatch : UnknownDispatch
 {
     private readonly ClassPropertyDispatchAdapter _dispatchAdapter;
 
