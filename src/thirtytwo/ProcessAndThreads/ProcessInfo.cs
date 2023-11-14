@@ -60,7 +60,7 @@ public sealed unsafe partial class ProcessInfo
     public Enumerator GetEnumerator() => new(this);
 
     private SYSTEM_PROCESS_INFORMATION* First
-        => (SYSTEM_PROCESS_INFORMATION*)Unsafe.AsPointer(ref Unsafe.AsRef(_buffer[0]));
+        => (SYSTEM_PROCESS_INFORMATION*)Unsafe.AsPointer(ref Unsafe.AsRef(ref _buffer[0]));
 
     public int Count => _count;
 

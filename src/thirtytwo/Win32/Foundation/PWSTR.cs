@@ -14,7 +14,7 @@ public unsafe partial struct PWSTR
         if (Value is not null)
         {
             Interop.LocalFree((HLOCAL)(nint)Value);
-            Unsafe.AsRef(this) = default;
+            Unsafe.AsRef(in this) = default;
         }
     }
 }

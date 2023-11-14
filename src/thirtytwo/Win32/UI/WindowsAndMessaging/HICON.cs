@@ -72,6 +72,6 @@ public unsafe partial struct HICON : IHandle<HICON>, IDisposable
             Interop.DestroyIcon(this);
         }
 
-        Unsafe.AsRef(this) = default;
+        Unsafe.AsRef(in this) = default;
     }
 }

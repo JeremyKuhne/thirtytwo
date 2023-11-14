@@ -15,7 +15,7 @@ public readonly unsafe partial struct BSTR : IDisposable
     public void Dispose()
     {
         Marshal.FreeBSTR((nint)Value);
-        Unsafe.AsRef(this) = default;
+        Unsafe.AsRef(in this) = default;
     }
 
     public string ToStringAndFree()

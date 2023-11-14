@@ -32,11 +32,11 @@ public unsafe readonly ref struct StringParameterArray
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator char**(in StringParameterArray array)
-        => array._param is null ? null : (char**)Unsafe.AsPointer(ref Unsafe.AsRef(array._param[0]));
+        => array._param is null ? null : (char**)Unsafe.AsPointer(ref Unsafe.AsRef(ref array._param[0]));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator sbyte**(in StringParameterArray array)
-        => array._param is null ? null : (sbyte**)Unsafe.AsPointer(ref Unsafe.AsRef(array._param[0]));
+        => array._param is null ? null : (sbyte**)Unsafe.AsPointer(ref Unsafe.AsRef(ref array._param[0]));
 
     public void Dispose()
     {

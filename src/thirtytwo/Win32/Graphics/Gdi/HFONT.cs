@@ -104,6 +104,6 @@ public unsafe partial struct HFONT : IHandle<HFONT>, IDisposable
             Interop.DeleteObject(this);
         }
 
-        Unsafe.AsRef(this) = default;
+        Unsafe.AsRef(in this) = default;
     }
 }

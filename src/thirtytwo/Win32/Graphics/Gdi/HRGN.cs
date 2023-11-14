@@ -15,7 +15,7 @@ public unsafe partial struct HRGN : IDisposable
             Interop.DeleteObject(this);
         }
 
-        Unsafe.AsRef(this) = default;
+        Unsafe.AsRef(in this) = default;
     }
 
     public static HRGN FromRectangle(Rectangle rectangle)

@@ -15,6 +15,6 @@ public readonly partial struct HANDLE : IDisposable
             Interop.CloseHandle(this).ThrowLastErrorIfFalse();
         }
 
-        Unsafe.AsRef(this) = default;
+        Unsafe.AsRef(in this) = default;
     }
 }
