@@ -3,20 +3,12 @@
 
 namespace Windows;
 
-public readonly struct PaddingF
+public readonly struct PaddingF(float left, float top, float right, float bottom)
 {
-    public readonly float Left;
-    public readonly float Top;
-    public readonly float Right;
-    public readonly float Bottom;
-
-    public PaddingF(float left, float top, float right, float bottom)
-    {
-        Left = left;
-        Top = top;
-        Right = right;
-        Bottom = bottom;
-    }
+    public readonly float Left = left;
+    public readonly float Top = top;
+    public readonly float Right = right;
+    public readonly float Bottom = bottom;
 
     public static implicit operator PaddingF(float padding) => new(padding, padding, padding, padding);
     public static implicit operator PaddingF((float Left, float Top, float Right, float Bottom) padding)

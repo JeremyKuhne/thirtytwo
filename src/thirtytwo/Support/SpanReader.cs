@@ -8,12 +8,10 @@ namespace Windows.Support;
 /// <summary>
 ///  Simple span reader. Follows <see cref="SequenceReader{T}"/>.
 /// </summary>
-public ref struct SpanReader<T> where T : unmanaged, IEquatable<T>
+public ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged, IEquatable<T>
 {
-    public ReadOnlySpan<T> Span { get; }
+    public ReadOnlySpan<T> Span { get; } = span;
     public int Index { get; private set; }
-
-    public SpanReader(ReadOnlySpan<T> span) => Span = span;
 
     public readonly ReadOnlySpan<T> Remaining => Span[Index..];
 

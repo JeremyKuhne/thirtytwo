@@ -5,16 +5,10 @@ namespace Windows;
 
 public static partial class Message
 {
-    public readonly ref struct Size
+    public readonly ref struct Size(WPARAM wParam, LPARAM lParam)
     {
-        public System.Drawing.Size NewSize { get; }
-        public SizeType Type { get; }
-
-        public Size(WPARAM wParam, LPARAM lParam)
-        {
-            NewSize = new System.Drawing.Size(lParam.LOWORD, lParam.HIWORD);
-            Type = (SizeType)(int)wParam;
-        }
+        public System.Drawing.Size NewSize { get; } = new System.Drawing.Size(lParam.LOWORD, lParam.HIWORD);
+        public SizeType Type { get; } = (SizeType)(int)wParam;
 
         public enum SizeType
         {

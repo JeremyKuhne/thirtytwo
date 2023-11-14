@@ -16,7 +16,7 @@ internal readonly ref struct ThreadWindowEnumerator
         Interop.EnumThreadWindows(threadId, &CallBack, (nint)_callback);
     }
 
-    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
     private static BOOL CallBack(HWND hwnd, LPARAM lParam)
     {
         var callback = (Func<HWND, bool>)(GCHandle.FromIntPtr(lParam).Target!);

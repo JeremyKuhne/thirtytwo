@@ -158,7 +158,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
             return;
         }
 
-        _properties = new();
+        _properties = [];
 
         using var typeInfo = GetObjectTypeInfo(preferIProvideClassInfo: false);
         if (typeInfo.IsNull)
@@ -174,7 +174,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
 
         TYPEATTR typeAttributes = *ta;
         typeInfo.Value->ReleaseTypeAttr(ta);
-        Dictionary<int, PropertyInfo> propertyInfo = new();
+        Dictionary<int, PropertyInfo> propertyInfo = [];
 
         for (int i = 0; i < typeAttributes.cFuncs; i++)
         {

@@ -30,7 +30,7 @@ public static class SpanExtensions
     /// </summary>
     public static IEnumerable<string> Split(this ReadOnlySpan<char> span, char delimiter, bool includeEmptyStrings = false)
     {
-        List<string> strings = new();
+        List<string> strings = [];
         SpanReader<char> reader = new(span);
         while (reader.TryReadTo(out var next, delimiter))
         {

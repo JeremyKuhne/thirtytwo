@@ -5,15 +5,10 @@ namespace Windows;
 
 public static partial class Message
 {
-    public readonly ref struct PrintClient
+    public readonly ref struct PrintClient(WPARAM wParam)
     {
-        public HDC HDC { get; }
+        public HDC HDC { get; } = new((nint)wParam.Value);
 
         public DeviceContext DeviceContext => DeviceContext.Create(HDC);
-
-        public unsafe PrintClient(WPARAM wParam)
-        {
-            HDC = new((nint)wParam.Value);
-        }
     }
 }

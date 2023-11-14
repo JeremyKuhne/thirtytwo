@@ -17,8 +17,8 @@ namespace Windows.Support;
 internal readonly struct HandleRef<THandle> : IHandle<THandle>, IEquatable<HandleRef<THandle>>
     where THandle : unmanaged, IEquatable<THandle>
 {
-    required public object? Wrapper { get; init; }
-    required public THandle Handle { get; init; }
+    public required object? Wrapper { get; init; }
+    public required THandle Handle { get; init; }
 
     [SetsRequiredMembers]
     public HandleRef(object? wrapper, THandle handle)

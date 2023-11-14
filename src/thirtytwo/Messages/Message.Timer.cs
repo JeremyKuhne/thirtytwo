@@ -5,16 +5,10 @@ namespace Windows;
 
 public static partial class Message
 {
-    public readonly ref struct Timer
+    public readonly ref struct Timer(WPARAM wParam, LPARAM lParam)
     {
-        private readonly WPARAM _wParam;
-        private readonly LPARAM _lParam;
-
-        public Timer(WPARAM wParam, LPARAM lParam)
-        {
-            _wParam = wParam;
-            _lParam = lParam;
-        }
+        private readonly WPARAM _wParam = wParam;
+        private readonly LPARAM _lParam = lParam;
 
         public uint Id => (uint)_wParam;
 

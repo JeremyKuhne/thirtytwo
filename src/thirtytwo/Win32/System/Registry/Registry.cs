@@ -145,7 +145,7 @@ public static unsafe partial class Registry
         uint maxValueNameLength;
         Interop.RegQueryInfoKey(key, default, lpcValues: &valueCount, lpcbMaxValueNameLen: &maxValueNameLength).ThrowIfFailed();
 
-        List<string> names = new();
+        List<string> names = [];
 
         // Doesn't include the terminating null.
         maxValueNameLength += 1;

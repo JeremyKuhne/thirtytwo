@@ -7,14 +7,9 @@ namespace Windows;
 
 public static partial class Message
 {
-    public readonly unsafe ref struct DrawItem
+    public readonly unsafe ref struct DrawItem(LPARAM lParam)
     {
-        private readonly DRAWITEMSTRUCT* _drawItemStruct;
-
-        public DrawItem(LPARAM lParam)
-        {
-            _drawItemStruct = (DRAWITEMSTRUCT*)lParam;
-        }
+        private readonly DRAWITEMSTRUCT* _drawItemStruct = (DRAWITEMSTRUCT*)lParam;
 
         public ControlType Type => (ControlType)_drawItemStruct->CtlType;
         public uint ControlId => _drawItemStruct->CtlID;

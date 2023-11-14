@@ -89,23 +89,23 @@ public unsafe partial struct IManagedObject : IComIID, IVTable<IManagedObject, I
         vtable->GetObjectIdentity_5 = &GetObjectIdentity;
     }
 
-    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
     private static HRESULT QueryInterface(IManagedObject* @this, Guid* riid, void** ppvObject)
         => UnwrapAndInvoke<IManagedObject, Interface>(@this, o => o.QueryInterface(riid, ppvObject));
 
-    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
     private static uint AddRef(IManagedObject* @this)
         => UnwrapAndInvoke<IManagedObject, Interface, uint>(@this, o => o.AddRef());
 
-    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
     private static uint Release(IManagedObject* @this)
         => UnwrapAndInvoke<IManagedObject, Interface, uint>(@this, o => o.Release());
 
-    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
     private static HRESULT GetSerializedBuffer(IManagedObject* @this, BSTR* pBSTR)
         => UnwrapAndInvoke<IManagedObject, Interface>(@this, o => o.GetSerializedBuffer(pBSTR));
 
-    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
     private static HRESULT GetObjectIdentity(IManagedObject* @this, BSTR* pBSTRGUID, int* AppDomainID, int* pCCW)
         => UnwrapAndInvoke<IManagedObject, Interface>(@this, o => o.GetObjectIdentity(pBSTRGUID, AppDomainID, pCCW));
 

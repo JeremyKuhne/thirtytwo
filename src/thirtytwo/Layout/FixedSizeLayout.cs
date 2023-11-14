@@ -5,24 +5,16 @@ using System.Drawing;
 
 namespace Windows;
 
-public class FixedSizeLayout : ILayoutHandler
+public class FixedSizeLayout(
+    ILayoutHandler handler,
+    Size size,
+    VerticalAlignment verticalAlignment = VerticalAlignment.Center,
+    HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center) : ILayoutHandler
 {
-    private readonly ILayoutHandler _handler;
-    private readonly Size _size;
-    private readonly VerticalAlignment _verticalAlignment;
-    private readonly HorizontalAlignment _horizontalAlignment;
-
-    public FixedSizeLayout(
-        ILayoutHandler handler,
-        Size size,
-        VerticalAlignment verticalAlignment = VerticalAlignment.Center,
-        HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center)
-    {
-        _handler = handler;
-        _size = size;
-        _verticalAlignment = verticalAlignment;
-        _horizontalAlignment = horizontalAlignment;
-    }
+    private readonly ILayoutHandler _handler = handler;
+    private readonly Size _size = size;
+    private readonly VerticalAlignment _verticalAlignment = verticalAlignment;
+    private readonly HorizontalAlignment _horizontalAlignment = horizontalAlignment;
 
     public void Layout(Rectangle bounds)
     {

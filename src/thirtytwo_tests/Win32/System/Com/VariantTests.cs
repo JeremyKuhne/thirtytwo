@@ -46,7 +46,7 @@ public unsafe class VariantTests
     [Fact]
     public void MarshalArrayToVariant()
     {
-        int[] array = new[] { 1, 2, 3, 4 };
+        int[] array = [1, 2, 3, 4];
         using VARIANT variant = default;
         nint address = (nint)(void*)&variant;
 
@@ -81,7 +81,7 @@ public unsafe class VariantTests
     [Fact]
     public void ArrayToVariantAfterFreeIsSometimesNewObject()
     {
-        int[] array = new[] { 1, 2, 3, 4 };
+        int[] array = [1, 2, 3, 4];
         SAFEARRAY* safeArray;
 
         using (VARIANT variant = default)
@@ -193,15 +193,15 @@ public unsafe class VariantTests
             internal delegate* unmanaged[Stdcall]<ITestVariant*, VARIANT*, HRESULT> SetVariantByRef_6;
         }
 
-        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static HRESULT GetVariant(ITestVariant* @this, VARIANT* variant)
             => ComHelpers.UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.GetVariant(variant));
 
-        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static HRESULT SetVariant(ITestVariant* @this, VARIANT variant)
             => ComHelpers.UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.SetVariant(variant));
 
-        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static HRESULT SetVariantByRef(ITestVariant* @this, VARIANT* variant)
             => ComHelpers.UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.SetVariantByRef(variant));
 

@@ -7,13 +7,8 @@ namespace Windows;
 
 public static partial class Message
 {
-    public readonly ref struct SetText
+    public unsafe readonly ref struct SetText(LPARAM lParam)
     {
-        public ReadOnlySpan<char> Text { get; }
-
-        public unsafe SetText(LPARAM lParam)
-        {
-            Text = Conversion.NullTerminatedStringToSpan((char*)lParam);
-        }
+        public ReadOnlySpan<char> Text { get; } = Conversion.NullTerminatedStringToSpan((char*)lParam);
     }
 }

@@ -14,7 +14,7 @@ public readonly ref struct ThreadModalScope
         _focusedWindow = Interop.GetFocus();
         _activeWindow = Interop.GetActiveWindow();
 
-        List<HWND> windows = new();
+        List<HWND> windows = [];
 
         Application.EnumerateThreadWindows((HWND hwnd) =>
         {

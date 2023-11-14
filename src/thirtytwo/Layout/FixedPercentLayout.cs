@@ -5,24 +5,16 @@ using System.Drawing;
 
 namespace Windows;
 
-public class FixedPercentLayout : ILayoutHandler
+public class FixedPercentLayout(
+    ILayoutHandler handler,
+    SizeF percent,
+    VerticalAlignment verticalAlignment = VerticalAlignment.Center,
+    HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center) : ILayoutHandler
 {
-    private readonly ILayoutHandler _handler;
-    private readonly SizeF _percent;
-    private readonly VerticalAlignment _verticalAlignment;
-    private readonly HorizontalAlignment _horizontalAlignment;
-
-    public FixedPercentLayout(
-        ILayoutHandler handler,
-        SizeF percent,
-        VerticalAlignment verticalAlignment = VerticalAlignment.Center,
-        HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center)
-    {
-        _handler = handler;
-        _percent = percent;
-        _verticalAlignment = verticalAlignment;
-        _horizontalAlignment = horizontalAlignment;
-    }
+    private readonly ILayoutHandler _handler = handler;
+    private readonly SizeF _percent = percent;
+    private readonly VerticalAlignment _verticalAlignment = verticalAlignment;
+    private readonly HorizontalAlignment _horizontalAlignment = horizontalAlignment;
 
     public void Layout(Rectangle bounds)
     {

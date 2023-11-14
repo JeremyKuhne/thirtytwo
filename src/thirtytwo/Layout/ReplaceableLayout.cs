@@ -5,10 +5,10 @@ using System.Drawing;
 
 namespace Windows;
 
-public class ReplaceableLayout : ILayoutHandler
+public class ReplaceableLayout(ILayoutHandler handler) : ILayoutHandler
 {
     public Rectangle _lastBounds;
-    private ILayoutHandler _layoutHandler;
+    private ILayoutHandler _layoutHandler = handler;
 
     public ILayoutHandler Handler
     {
@@ -19,8 +19,6 @@ public class ReplaceableLayout : ILayoutHandler
             _layoutHandler.Layout(_lastBounds);
         }
     }
-
-    public ReplaceableLayout(ILayoutHandler handler) => _layoutHandler = handler;
 
     public void Layout(Rectangle bounds)
     {

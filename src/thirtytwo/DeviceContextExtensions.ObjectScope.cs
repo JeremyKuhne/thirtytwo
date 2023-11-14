@@ -10,21 +10,12 @@ public static unsafe partial class DeviceContextExtensions
     /// <summary>
     ///  Scope for putting back an object selected into a device context.
     /// </summary>
-    public readonly ref struct ObjectScope<T> where T : IHandle<HDC>
+    [method: SetsRequiredMembers]
+    public readonly ref struct ObjectScope<T>(HGDIOBJ priorObject, T deviceContext) where T : IHandle<HDC>
     {
-        required public HGDIOBJ PriorObject { get; init; }
-        required public T DeviceContext { get; init; }
+        public required HGDIOBJ PriorObject { get; init; } = priorObject;
+        public required T DeviceContext { get; init; } = deviceContext;
 
-        [SetsRequiredMembers]
-        public ObjectScope(HGDIOBJ priorObject, T deviceContext)
-        {
-            PriorObject = priorObject;
-            DeviceContext = deviceContext;
-        }
-
-        public void Dispose()
-        {
-            DeviceContext.SelectObject(PriorObject);
-        }
+        public void Dispose() => DeviceContext.SelectObject(PriorObject);
     }
 }

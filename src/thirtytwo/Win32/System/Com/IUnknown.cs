@@ -30,15 +30,15 @@ public unsafe partial struct IUnknown : IVTable<IUnknown, IUnknown.Vtbl>
         vtable->Release_3 = &Release;
     }
 
-    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
     private static HRESULT QueryInterface(IUnknown* @this, Guid* riid, void** ppvObject)
         => UnwrapAndInvoke<IUnknown, Interface>(@this, o => o.QueryInterface(riid, ppvObject));
 
-    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
     private static uint AddRef(IUnknown* @this)
         => UnwrapAndInvoke<IUnknown, Interface, uint>(@this, o => o.AddRef());
 
-    [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
     private static uint Release(IUnknown* @this)
         => UnwrapAndInvoke<IUnknown, Interface, uint>(@this, o => o.Release());
 

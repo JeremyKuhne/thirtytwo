@@ -3,11 +3,10 @@
 
 namespace Windows.Win32.UI.WindowsAndMessaging;
 
-public unsafe readonly struct WNDENUMPROC
+public unsafe readonly struct WNDENUMPROC(delegate* unmanaged[Stdcall]<HWND, LPARAM, BOOL> value)
 {
-    public readonly delegate* unmanaged[Stdcall]<HWND, LPARAM, BOOL> Value;
+    public readonly delegate* unmanaged[Stdcall]<HWND, LPARAM, BOOL> Value = value;
 
-    public WNDENUMPROC(delegate* unmanaged[Stdcall]<HWND, LPARAM, BOOL> value) => Value = value;
     public bool IsNull => Value is null;
 
     public static implicit operator WNDENUMPROC(delegate* unmanaged[Stdcall]<HWND, LPARAM, BOOL> value)

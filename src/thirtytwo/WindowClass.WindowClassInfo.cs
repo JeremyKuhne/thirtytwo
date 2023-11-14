@@ -7,11 +7,11 @@ using Windows.Support;
 namespace Windows;
 public partial class WindowClass
 {
-    private unsafe partial class WindowClassInfo
+    private unsafe partial class WindowClassInfo(WindowProcedure windowProcedure)
     {
         public uint Size;
         public ClassStyle Style;
-        public WindowProcedure WindowProcedure;
+        public WindowProcedure WindowProcedure = windowProcedure;
         public int ClassExtraBytes;
         public int WindowExtraBytes;
         public HINSTANCE Instance;
@@ -23,11 +23,6 @@ public partial class WindowClass
         public ATOM ClassAtom;
         public HICON SmallIcon;
         public HBRUSH Background;
-
-        public WindowClassInfo(WindowProcedure windowProcedure)
-        {
-            WindowProcedure = windowProcedure;
-        }
 
         public static implicit operator WindowClassInfo(WNDCLASSEXW nativeClass)
         {

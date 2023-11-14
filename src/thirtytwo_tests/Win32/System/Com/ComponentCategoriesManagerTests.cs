@@ -16,7 +16,7 @@ public unsafe class ComponentCategoriesManagerTests
         using ComScope<IEnumCATEGORYINFO> enumCategories = new(null);
         hr = categoriesInfo.Value->EnumCategories(Interop.GetUserDefaultLCID(), enumCategories);
 
-        Dictionary<Guid, string> categories = new();
+        Dictionary<Guid, string> categories = [];
         CATEGORYINFO categoryInfo = default;
         uint fetched = 0;
         while (enumCategories.Value->Next(1, &categoryInfo, &fetched).Succeeded && fetched == 1)
@@ -38,7 +38,7 @@ public unsafe class ComponentCategoriesManagerTests
         hr = categoriesInfo.Value->EnumClassesOfCategories(1, &control, 0, null, enumGuids);
         hr.Succeeded.Should().BeTrue();
 
-        List<Guid> classGuids = new();
+        List<Guid> classGuids = [];
         Guid guid = default;
         uint fetched = 0;
         while (enumGuids.Value->Next(1, &guid, &fetched).Succeeded && fetched == 1)

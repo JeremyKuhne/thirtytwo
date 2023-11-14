@@ -61,7 +61,7 @@ public unsafe partial struct IDispatchEx
 
     public IDictionary<string, int> GetAllDispatchIds()
     {
-        Dictionary<string, int> dispatchIds = new();
+        Dictionary<string, int> dispatchIds = [];
         int dispid = Interop.DISPID_STARTENUM;
         while (GetNextDispID(Interop.fdexEnumAll, dispid, &dispid) == HRESULT.S_OK)
         {

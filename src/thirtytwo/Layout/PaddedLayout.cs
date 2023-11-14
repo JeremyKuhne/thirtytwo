@@ -5,18 +5,12 @@ using System.Drawing;
 
 namespace Windows;
 
-public class PaddedLayout : ILayoutHandler
+public class PaddedLayout(
+    Padding margin,
+    ILayoutHandler handler) : ILayoutHandler
 {
-    private readonly ILayoutHandler _handler;
-    private readonly Padding _margin;
-
-    public PaddedLayout(
-        Padding margin,
-        ILayoutHandler handler)
-    {
-        _handler = handler;
-        _margin = margin;
-    }
+    private readonly ILayoutHandler _handler = handler;
+    private readonly Padding _margin = margin;
 
     public void Layout(Rectangle bounds)
     {

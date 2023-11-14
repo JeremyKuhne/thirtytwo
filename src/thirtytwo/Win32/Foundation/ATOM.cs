@@ -3,7 +3,7 @@
 
 namespace Windows.Win32.Foundation;
 
-public readonly struct ATOM
+public readonly struct ATOM(ushort atom)
 {
     // #define MAXINTATOM 0xC000
     // #define MAKEINTATOM(i)  (LPTSTR)((ULONG_PTR)((WORD)(i)))
@@ -12,9 +12,7 @@ public readonly struct ATOM
     // "Strange uses for window class atoms"
     // https://devblogs.microsoft.com/oldnewthing/20080501-00/?p=22503
 
-    public ushort Value { get; }
-
-    public ATOM(ushort atom) => Value = atom;
+    public ushort Value { get; } = atom;
 
     public static ATOM Null { get; } = new(0);
 

@@ -43,13 +43,9 @@ internal class Program
         }
     }
 
-    private class MediaPlayer : ActiveXControl
+    private class MediaPlayer(Rectangle bounds, Window parentWindow, nint parameters = 0)
+        : ActiveXControl(CLSID.WindowsMediaPlayer, bounds, parentWindow, parameters)
     {
-        public MediaPlayer(Rectangle bounds, Window parentWindow, nint parameters = 0)
-            : base(CLSID.WindowsMediaPlayer, bounds, parentWindow, parameters)
-        {
-        }
-
         public string? URL
         {
             get => (string?)GetComProperty("URL");
@@ -63,13 +59,9 @@ internal class Program
         }
     }
 
-    private class SystemMonitor : ActiveXControl
+    private class SystemMonitor(Rectangle bounds, Window parentWindow, nint parameters = 0)
+        : ActiveXControl(s_systemMonitorClassId, bounds, parentWindow, parameters)
     {
         private static readonly Guid s_systemMonitorClassId = new("C4D2D8E0-D1DD-11CE-940F-008029004347");
-
-        public SystemMonitor(Rectangle bounds, Window parentWindow, nint parameters = 0)
-            : base(s_systemMonitorClassId, bounds, parentWindow, parameters)
-        {
-        }
     }
 }

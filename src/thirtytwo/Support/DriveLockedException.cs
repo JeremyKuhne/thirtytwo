@@ -3,8 +3,6 @@
 
 namespace Windows.Support;
 
-public class DriveLockedException : ThirtyTwoIOException
+public class DriveLockedException(string? message = null) : ThirtyTwoIOException(HRESULT.FVE_E_LOCKED_VOLUME, message)
 {
-    public DriveLockedException(string? message = null)
-        : base(HRESULT.FVE_E_LOCKED_VOLUME, message) { }
 }

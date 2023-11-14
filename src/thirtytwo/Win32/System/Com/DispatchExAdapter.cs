@@ -15,11 +15,9 @@ namespace Windows.Win32.System.Com;
 ///   yet that validates that everything in <see cref="IDispatch"/> should be available in <see cref="IDispatchEx"/>.
 ///  </para>
 /// </devdoc>
-public unsafe class DispatchExAdapter : IDispatchEx.Interface
+public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchEx.Interface
 {
-    private readonly IDispatch.Interface _dispatch;
-
-    public DispatchExAdapter(IDispatch.Interface dispatch) => _dispatch = dispatch;
+    private readonly IDispatch.Interface _dispatch = dispatch;
 
     public virtual HRESULT GetDispID(BSTR bstrName, uint grfdex, int* pid)
     {

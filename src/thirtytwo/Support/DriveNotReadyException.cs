@@ -3,8 +3,6 @@
 
 namespace Windows.Support;
 
-public class DriveNotReadyException : ThirtyTwoIOException
+public class DriveNotReadyException(string? message = null) : ThirtyTwoIOException(WIN32_ERROR.ERROR_NOT_READY, message)
 {
-    public DriveNotReadyException(string? message = null)
-        : base(WIN32_ERROR.ERROR_NOT_READY, message) { }
 }

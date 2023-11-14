@@ -5,11 +5,9 @@ using System.Drawing;
 
 namespace Windows;
 
-public class FillLayout : ILayoutHandler
+public class FillLayout(ILayoutHandler handler) : ILayoutHandler
 {
-    private readonly ILayoutHandler _handler;
-
-    public FillLayout(ILayoutHandler handler) => _handler = handler;
+    private readonly ILayoutHandler _handler = handler;
 
     public void Layout(Rectangle bounds) => _handler.Layout(bounds);
 }

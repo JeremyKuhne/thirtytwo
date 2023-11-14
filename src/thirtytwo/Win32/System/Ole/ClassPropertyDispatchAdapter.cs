@@ -20,7 +20,7 @@ public unsafe class ClassPropertyDispatchAdapter
     private readonly WeakReference<object> _instance;
     private readonly Type _type;
 
-    private readonly Dictionary<int, DispatchEntry> _members = new();
+    private readonly Dictionary<int, DispatchEntry> _members = [];
     private readonly Dictionary<string, int> _reverseLookup = new(StringComparer.OrdinalIgnoreCase);
 
     public ClassPropertyDispatchAdapter(object instance)
@@ -148,7 +148,7 @@ public unsafe class ClassPropertyDispatchAdapter
                     bindingFlags,
                     binder: null,
                     target,
-                    new object?[] { value });
+                    [value]);
             }
             catch (Exception ex)
             {

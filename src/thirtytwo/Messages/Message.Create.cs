@@ -8,14 +8,9 @@ namespace Windows;
 
 public static partial class Message
 {
-    public readonly unsafe ref struct Create
+    public readonly unsafe ref struct Create(LPARAM lParam)
     {
-        private readonly CREATESTRUCTW* _createStruct;
-
-        public Create(LPARAM lParam)
-        {
-            _createStruct = (CREATESTRUCTW*)(nint)lParam;
-        }
+        private readonly CREATESTRUCTW* _createStruct = (CREATESTRUCTW*)(nint)lParam;
 
         public HINSTANCE Instance => _createStruct->hInstance;
         public HMENU MenuHandle => _createStruct->hMenu;

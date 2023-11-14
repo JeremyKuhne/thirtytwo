@@ -3,8 +3,6 @@
 
 namespace Windows.Support;
 
-public class FileExistsException : ThirtyTwoIOException
+public class FileExistsException(WIN32_ERROR error, string? message = null) : ThirtyTwoIOException(error, message)
 {
-    public FileExistsException(WIN32_ERROR error, string? message = null)
-        : base(error, message) { }
 }

@@ -9,15 +9,9 @@ public unsafe partial class ActiveXControl
 {
     internal sealed unsafe partial class Container
     {
-        private class ActiveXControlEnum : EnumUnknown
+        private class ActiveXControlEnum(IReadOnlyList<ActiveXControl>? controls) : EnumUnknown(controls?.Count ?? 0)
         {
-            private readonly IReadOnlyList<ActiveXControl>? _controls;
-
-            public ActiveXControlEnum(IReadOnlyList<ActiveXControl>? controls)
-                : base(controls?.Count ?? 0)
-            {
-                _controls = controls;
-            }
+            private readonly IReadOnlyList<ActiveXControl>? _controls = controls;
 
             protected override EnumUnknown Clone() => new ActiveXControlEnum(_controls);
 
