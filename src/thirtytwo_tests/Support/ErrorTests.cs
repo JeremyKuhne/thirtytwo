@@ -5,6 +5,7 @@ using Windows.Win32.Foundation;
 
 namespace Windows.Support;
 
+[Collection(nameof(ErrorTestCollection))]
 public class ErrorTests
 {
     [Fact]
