@@ -12,11 +12,12 @@ public unsafe partial class WindowClass : IDisposable
     private readonly WindowProcedure _windowProcedure;
     private readonly string _className;
     private readonly WindowClassInfo? _windowClass;
-    private bool _disposedValue;
+    private int _disposedValue;
     private readonly object _lock = new();
 
     public ATOM Atom { get; private set; }
     public HMODULE ModuleInstance { get; }
+    private bool Disposed => _disposedValue != 0;
 
     public unsafe WindowClass(
         string? className = default,
@@ -105,10 +106,7 @@ public unsafe partial class WindowClass : IDisposable
     /// </summary>
     public unsafe WindowClass Register()
     {
-        if (_disposedValue)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
+        ObjectDisposedException.ThrowIf(Disposed, this);
 
         if (_windowClass is not null && !IsRegistered)
         {
@@ -143,10 +141,7 @@ public unsafe partial class WindowClass : IDisposable
         nint parameters = default,
         HMENU menuHandle = default)
     {
-        if (_disposedValue)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
+        ObjectDisposedException.ThrowIf(Disposed, this);
 
         if (!IsRegistered)
             throw new InvalidOperationException("Window class must be registered before using.");
@@ -191,12 +186,22 @@ public unsafe partial class WindowClass : IDisposable
     }
 
     private LRESULT WindowProcedureInternal(HWND window, uint message, WPARAM wParam, LPARAM lParam)
-        => WindowProcedure(window, (MessageType)message, wParam, lParam);
-
-    protected virtual LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
     {
-        return Interop.DefWindowProc(window, (uint)message, wParam, lParam);
+        if (Disposed)
+        {
+            // In the middle of disposing, we've flipped the flag, but haven't unregistered the class yet.
+            return Interop.DefWindowProc(window, message, wParam, lParam);
+        }
+
+        LRESULT result = WindowProcedure(window, (MessageType)message, wParam, lParam);
+
+        // We don't want to be finalized while we're responding to a message.
+        GC.KeepAlive(this);
+        return result;
     }
+
+    protected virtual LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam) =>
+        Interop.DefWindowProc(window, (uint)message, wParam, lParam);
 
     protected virtual void Dispose(bool disposing)
     {
@@ -204,27 +209,37 @@ public unsafe partial class WindowClass : IDisposable
 
     private void InternalDispose(bool disposing)
     {
-        if (!_disposedValue)
+        if (Interlocked.Exchange(ref _disposedValue, 1) == 1)
         {
-            _disposedValue = true;
+            Debug.Fail("Double disposing");
+            return;
+        }
 
-            if (Atom.IsValid)
+        if (Atom.IsValid)
+        {
+            // Free the memory for the window class and prevent further callbacks.
+            // (Presuming that we don't have to set the default WNDPROC back via SetClassLong, if we do
+            //  we can follow along with what Window does.)
+            if (Interop.UnregisterClass((char*)Atom.Value, ModuleInstance))
             {
-                // Free the memory for the window class and prevent further callbacks.
-                // (Presuming that we don't have to set the default WNDPROC back via SetClassLong, if we do
-                //  we can follow along with what Window does.)
-                if (Interop.UnregisterClass((char*)Atom.Value, ModuleInstance))
+                Atom = default;
+            }
+            else
+            {
+                WIN32_ERROR error = Error.GetLastError();
+                if (disposing)
                 {
-                    Atom = default;
+                    error.Throw();
                 }
                 else
                 {
-                    Error.ThrowLastError();
+                    // Don't want to throw on the finalizer thread.
+                    Debug.Fail($"Failed to unregister window class: {error}");
                 }
             }
-
-            Dispose(disposing);
         }
+
+        Dispose(disposing);
     }
 
     ~WindowClass() => InternalDispose(disposing: false);

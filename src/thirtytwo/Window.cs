@@ -136,7 +136,7 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
         {
             foreach (var handler in handlers.GetInvocationList().OfType<WindowsMessageEvent>())
             {
-                var result = handler(this, window, (MessageType)message, wParam, lParam);
+                LRESULT? result = handler(this, window, (MessageType)message, wParam, lParam);
                 if (result.HasValue)
                 {
                     return result.Value;
@@ -157,7 +157,11 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
             }
         }
 
-        return WindowProcedure(window, (MessageType)message, wParam, lParam);
+        LRESULT windProcResult = WindowProcedure(window, (MessageType)message, wParam, lParam);
+
+        // Ensure we're not collected while we're processing a message.
+        GC.KeepAlive(this);
+        return windProcResult;
     }
 
     protected virtual LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
