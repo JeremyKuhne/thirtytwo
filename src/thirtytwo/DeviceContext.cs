@@ -8,6 +8,10 @@ namespace Windows;
 /// <summary>
 ///  DeviceContext handle (HDC)
 /// </summary>
+/// <devdoc>
+///  <see href="https://devblogs.microsoft.com/oldnewthing/20060601-06/?p=31003">What does the CS_OWNDC class style do?</see>
+///  <see href="https://devblogs.microsoft.com/oldnewthing/20060602-00/?p=30993">What does the CS_CLASSDC class style do?</see>
+/// </devdoc>
 public readonly struct DeviceContext : IDisposable, IHandle<HDC>
 {
     public HDC Handle { get; private init; }
@@ -15,6 +19,16 @@ public readonly struct DeviceContext : IDisposable, IHandle<HDC>
 
     private readonly HWND HWND { get; init; }
     private readonly CollectionType Type { get; init; }
+
+    /// <summary>
+    ///  Creates a screen device context.
+    /// </summary>
+    public static DeviceContext Create() => new()
+    {
+        HWND = default,
+        Type = CollectionType.Release,
+        Handle = Interop.GetDC(HWND.Null)
+    };
 
     public static DeviceContext Create(
         HDC hdc,
@@ -47,7 +61,7 @@ public readonly struct DeviceContext : IDisposable, IHandle<HDC>
     }
 
     public static DeviceContext Create<THwnd>(
-        ref PAINTSTRUCT paintStruct,
+        ref readonly PAINTSTRUCT paintStruct,
         THwnd hwnd)
         where THwnd : IHandle<HWND>
     {

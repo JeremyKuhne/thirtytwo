@@ -405,7 +405,7 @@ public static unsafe partial class WindowExtensions
     {
         PAINTSTRUCT paintStruct = default;
         Interop.BeginPaint(window.Handle, &paintStruct);
-        DeviceContext context = DeviceContext.Create(ref paintStruct, window);
+        DeviceContext context = DeviceContext.Create(in paintStruct, window);
         paintBounds = paintStruct.rcPaint;
         GC.KeepAlive(window.Wrapper);
         return context;

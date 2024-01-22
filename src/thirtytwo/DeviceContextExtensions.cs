@@ -27,6 +27,18 @@ public static unsafe partial class DeviceContextExtensions
         return mode;
     }
 
+    /// <inheritdoc cref="Interop.GetWorldTransform(HDC, XFORM*)"/>
+    public static unsafe bool GetWorldTransform<T>(this T deviceContext, ref Matrix3x2 transform)
+        where T : IHandle<HDC>
+    {
+        fixed (Matrix3x2* t = &transform)
+        {
+            bool result = Interop.GetWorldTransform(deviceContext.Handle, (XFORM*)t);
+            GC.KeepAlive(deviceContext.Wrapper);
+            return result;
+        }
+    }
+
     /// <inheritdoc cref="Interop.SetWorldTransform(HDC, XFORM*)"/>
     public static unsafe bool SetWorldTransform<T>(this T deviceContext, ref Matrix3x2 transform)
         where T : IHandle<HDC>
@@ -37,6 +49,15 @@ public static unsafe partial class DeviceContextExtensions
             GC.KeepAlive(deviceContext.Wrapper);
             return result;
         }
+    }
+
+    /// <inheritdoc cref="Interop.GetDeviceCaps(HDC, GET_DEVICE_CAPS_INDEX)"/>
+    public static int GetDeviceCaps<T>(this T deviceContext, GET_DEVICE_CAPS_INDEX index)
+       where T : IHandle<HDC>
+    {
+        int result = Interop.GetDeviceCaps(deviceContext.Handle, index);
+        GC.KeepAlive(deviceContext.Wrapper);
+        return result;
     }
 
     /// <summary>
