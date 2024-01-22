@@ -12,11 +12,17 @@ namespace Windows.Support;
 /// </summary>
 /// <remarks>
 ///  <para>
+///   Care must be used when reading struct values that depend on a specific field state for members to work
+///   correctly. For example, <see cref="DateTime"/> has a very specific set of valid values for its packed
+///   <see langword="ulong"/> field.
+///  </para>
+///  <para>
 ///   Inspired by <see cref="SequenceReader{T}"/> patterns.
 ///  </para>
 /// </remarks>
 public unsafe ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged, IEquatable<T>
 {
+    // Deliberately not an auto property for performance.
     private ReadOnlySpan<T> _unread = span;
     public ReadOnlySpan<T> Span { get; } = span;
 
@@ -61,8 +67,7 @@ public unsafe ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged
                     index++;
                 }
 
-                // Advance unread
-                UncheckedSlice(ref _unread, index, _unread.Length - index);
+                UnsafeAdvance(index);
             }
         }
 
