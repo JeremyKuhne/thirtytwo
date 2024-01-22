@@ -32,7 +32,7 @@ public static class SpanExtensions
     {
         List<string> strings = [];
         SpanReader<char> reader = new(span);
-        while (reader.TryReadTo(out var next, delimiter))
+        while (reader.TryReadTo(delimiter, out var next))
         {
             if (includeEmptyStrings || !next.IsEmpty)
             {
