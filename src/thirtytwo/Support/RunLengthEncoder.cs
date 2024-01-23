@@ -11,7 +11,7 @@ namespace Windows.Support;
 ///   Format used is a byte for the count, followed by a byte for the value.
 ///  </para>
 /// </remarks>
-internal static class RunLengthEncoder
+public static class RunLengthEncoder
 {
     /// <summary>
     ///  Get the encoded length, in bytes, of the given data.

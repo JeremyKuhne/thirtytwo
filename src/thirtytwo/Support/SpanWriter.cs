@@ -9,7 +9,7 @@ namespace Windows.Support;
 /// <summary>
 ///  Fast stack based <see cref="Span{T}"/> writer.
 /// </summary>
-internal unsafe ref struct SpanWriter<T>(Span<T> span) where T : unmanaged, IEquatable<T>
+public unsafe ref struct SpanWriter<T>(Span<T> span) where T : unmanaged, IEquatable<T>
 {
     private Span<T> _unwritten = span;
     public Span<T> Span { get; } = span;
