@@ -19,7 +19,14 @@ public unsafe ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged
 {
     private ReadOnlySpan<T> _unread = span;
     public ReadOnlySpan<T> Span { get; } = span;
-    public readonly ReadOnlySpan<T> UnreadSpan => _unread;
+
+    public int Position
+    {
+        readonly get => Span.Length - _unread.Length;
+        set => _unread = Span[value..];
+    }
+
+    public readonly int Length => Span.Length;
 
     /// <summary>
     ///  Try to read everything up to the given <paramref name="delimiter"/>. Advances the reader past the
@@ -54,6 +61,7 @@ public unsafe ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged
                     index++;
                 }
 
+                // Advance unread
                 UncheckedSlice(ref _unread, index, _unread.Length - index);
             }
         }
@@ -174,6 +182,47 @@ public unsafe ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged
         }
 
         return success;
+    }
+
+    /// <summary>
+    ///  Advance the reader if the given <paramref name="next"/> values are next.
+    /// </summary>
+    /// <param name="next">The span to compare the next items to.</param>
+    /// <returns><see langword="true"/> if the values were found and the reader advanced.</returns>
+    public bool TryAdvancePast(ReadOnlySpan<T> next)
+    {
+        bool success = false;
+        if (_unread.StartsWith(next))
+        {
+            UnsafeAdvance(next.Length);
+            success = true;
+        }
+
+        return success;
+    }
+
+    /// <summary>
+    ///  Advance the reader past consecutive instances of the given <paramref name="value"/>.
+    /// </summary>
+    /// <returns>How many positions the reader has been advanced</returns>
+    public int AdvancePast(T value)
+    {
+        int count = 0;
+
+        int index = _unread.IndexOfAnyExcept(value);
+        if (index == -1)
+        {
+            // Everything left is the value
+            count = _unread.Length;
+            _unread = default;
+        }
+        else if (index != 0)
+        {
+            count = index;
+            UnsafeAdvance(index);
+        }
+
+        return count;
     }
 
     /// <summary>
