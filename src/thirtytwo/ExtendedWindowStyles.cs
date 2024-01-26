@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Windows;
-#pragma warning disable CA1069 // Enums values should not be duplicated
 
 [Flags]
 public enum ExtendedWindowStyles : uint
@@ -137,5 +136,3 @@ public enum ExtendedWindowStyles : uint
     /// </summary>
     NoActivate = WINDOW_EX_STYLE.WS_EX_NOACTIVATE
 }
-
-#pragma warning restore CA1069 // Enums values should not be duplicated

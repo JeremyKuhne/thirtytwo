@@ -1,6 +1,13 @@
 # Remove the line below if you want to inherit .editorconfig settings from higher directories
 root = true
 
+# Test .cs files
+[**/*Tests.cs]
+
+# This doesn't work well with TheoryData
+# CA1861: Avoid constant arrays as arguments
+dotnet_diagnostic.CA1861.severity = none
+
 # Native .cs files
 [**/Win32/**/*.cs]
 
@@ -22,8 +29,12 @@ dotnet_diagnostic.SA1313.severity = none
 # IDE1006: Naming Styles
 dotnet_diagnostic.IDE1006.severity = none
 
-# CS0649: 
+# CS0649:
 dotnet_diagnostic.CS0649.severity = none
+
+[**/Interop.**.cs]
+# SA1313: Parameter names should begin with lower-case letter
+dotnet_diagnostic.SA1313.severity = none
 
 # C# files
 [*.cs]
@@ -387,6 +398,9 @@ csharp_style_allow_embedded_statements_on_same_line_experimental = true:silent
 csharp_style_prefer_pattern_matching = true:silent
 csharp_style_prefer_extended_property_pattern = true:suggestion
 csharp_style_prefer_not_pattern = true:suggestion
+
+# SYSLIB1096: Convert to 'GeneratedComInterface'
+dotnet_diagnostic.SYSLIB1096.severity = none
 
 [*.{cs,vb}]
 dotnet_style_coalesce_expression = true:suggestion

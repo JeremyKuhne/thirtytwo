@@ -62,7 +62,7 @@ public unsafe partial struct VARIANT
         }
     }
 
-    private static object? ToArray(SAFEARRAY* psa, VARENUM vt)
+    private static Array? ToArray(SAFEARRAY* psa, VARENUM vt)
     {
         if (psa is null)
         {

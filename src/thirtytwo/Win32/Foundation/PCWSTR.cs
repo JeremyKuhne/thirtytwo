@@ -5,9 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Windows.Win32.Foundation;
 
-#pragma warning disable CA2231 // Overload operator equals on overriding value type Equals
 public unsafe partial struct PCWSTR
-#pragma warning restore CA2231
 {
     public bool IsNull => Value is null;
 

@@ -7,11 +7,9 @@ public static partial class Message
 {
     public readonly ref struct Timer(WPARAM wParam, LPARAM lParam)
     {
-        private readonly WPARAM _wParam = wParam;
-        private readonly LPARAM _lParam = lParam;
+        public uint Id => (uint)wParam;
 
-        public uint Id => (uint)_wParam;
-
+        public nint Procedure => lParam;
         // public TimerProcedure? Procedure
         //    => _lParam.IsNull ? null : Marshal.GetDelegateForFunctionPointer<TimerProcedure>(_lParam);
     }

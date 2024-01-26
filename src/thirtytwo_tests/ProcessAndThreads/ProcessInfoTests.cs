@@ -22,11 +22,13 @@ public class ProcessInfoTests
         }
     }
 
+    /*
     private void CannotModify()
     {
         ProcessInfo info = new();
 
         // This doesn't compile as it returns a ref readonly
-        // info[0].UniqueProcessId = default;
+        info[0].UniqueProcessId = default;
     }
+    */
 }

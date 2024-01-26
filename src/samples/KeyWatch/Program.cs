@@ -42,7 +42,7 @@ internal class Program
             switch (message)
             {
                 case MessageType.KeyUp:
-                    Message.KeyUpDown key = new(wParam, lParam);
+                    Message.KeyUpDown key = new(wParam);
                     Debug.WriteLine($"KeyUp: {key.Key}");
                     break;
                 case MessageType.KeyDown:

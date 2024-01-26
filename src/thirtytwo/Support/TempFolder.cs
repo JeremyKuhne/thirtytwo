@@ -5,7 +5,7 @@ using IO = System.IO;
 
 namespace Windows.Support;
 
-public class TempFolder : IDisposable
+public sealed class TempFolder : IDisposable
 {
     public string Path { get; } = IO.Path.Join(IO.Path.GetTempPath(), IO.Path.GetRandomFileName());
 

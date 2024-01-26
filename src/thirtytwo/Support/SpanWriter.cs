@@ -96,12 +96,14 @@ public unsafe ref struct SpanWriter<T>(Span<T> span) where T : unmanaged, IEquat
         UncheckedSlice(ref _unwritten, count, _unwritten.Length - count);
     }
 
+    /*
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void UncheckedSliceTo(ref Span<T> span, int length)
     {
         Debug.Assert((uint)length <= (uint)span.Length);
         span = MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(span), length);
     }
+    */
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void UncheckedSlice(ref Span<T> span, int start, int length)

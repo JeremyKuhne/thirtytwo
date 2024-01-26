@@ -7,8 +7,6 @@ using Windows.Win32.System.Registry;
 
 namespace Windows.Wdk;
 
-#pragma warning disable SA1313 // Parameter names should begin with lower-case letter
-
 public static partial class Interop
 {
     /// <summary>
@@ -35,5 +33,3 @@ public static partial class Interop
         uint Length,
         uint* ResultLength);
 }
-
-#pragma warning restore SA1313 // Parameter names should begin with lower-case letter

@@ -3,8 +3,6 @@
 
 namespace Windows;
 
-#pragma warning disable CA1069 // Enums values should not be duplicated
-
 [Flags]
 public enum DrawTextFormat : uint
 {
@@ -33,5 +31,3 @@ public enum DrawTextFormat : uint
     HidePrefix = DRAW_TEXT_FORMAT.DT_HIDEPREFIX,
     PrefixOnly = DRAW_TEXT_FORMAT.DT_PREFIXONLY
 }
-
-#pragma warning restore CA1069 // Enums values should not be duplicated

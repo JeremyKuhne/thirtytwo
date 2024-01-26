@@ -144,5 +144,3 @@ public enum WindowStyles : uint
     /// </summary>
     ChildWindow = WINDOW_STYLE.WS_CHILDWINDOW
 }
-
-#pragma warning restore CA1069 // Enums values should not be duplicated

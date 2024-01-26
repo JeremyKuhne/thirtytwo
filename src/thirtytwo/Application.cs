@@ -75,8 +75,7 @@ public static unsafe class Application
         string? windowTitle = null,
         WindowStyles style = WindowStyles.OverlappedWindow,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
-        HMENU menuHandle = default)
-        => Run(
+        HMENU menuHandle = default) => Run(
             windowClass,
             Window.DefaultBounds,
             windowTitle,

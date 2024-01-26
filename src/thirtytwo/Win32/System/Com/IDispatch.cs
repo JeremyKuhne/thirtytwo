@@ -14,7 +14,7 @@ public unsafe partial struct IDispatch
 
         if (names.Length == 0)
         {
-            return Array.Empty<int>();
+            return [];
         }
 
         using StringParameterArray namesArg = new(names);

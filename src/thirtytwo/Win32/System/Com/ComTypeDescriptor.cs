@@ -93,7 +93,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
     PropertyDescriptorCollection ICustomTypeDescriptor.GetProperties()
     {
         InitializePropertyDescriptors();
-        return new(_properties.ToArray());
+        return new([.. _properties]);
     }
 
     PropertyDescriptorCollection ICustomTypeDescriptor.GetProperties(Attribute[]? attributes) => throw new NotImplementedException();

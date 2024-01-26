@@ -27,7 +27,7 @@ public unsafe class Clipboard
         uint count = (uint)Interop.CountClipboardFormats();
         if (count == 0)
         {
-            return Array.Empty<uint>();
+            return [];
         }
 
         using BufferScope<uint> buffer = new(stackalloc uint[(int)count]);
@@ -42,7 +42,7 @@ public unsafe class Clipboard
             buffer.EnsureCapacity((int)count);
         } while (true);
 
-        return count == 0 ? Array.Empty<uint>() : buffer[..(int)count].ToArray();
+        return count == 0 ? [] : buffer[..(int)count].ToArray();
     }
 
     /// <summary>

@@ -11,9 +11,7 @@ public enum StockBrush : uint
     DarkGray = GET_STOCK_OBJECT_FLAGS.DKGRAY_BRUSH,
     Black = GET_STOCK_OBJECT_FLAGS.BLACK_BRUSH,
     Hollow = GET_STOCK_OBJECT_FLAGS.HOLLOW_BRUSH,
-#pragma warning disable CA1069 // Enums values should not be duplicated
     Null = GET_STOCK_OBJECT_FLAGS.NULL_BRUSH,
-#pragma warning restore CA1069
 
     /// <summary>
     ///  Device context brush. Color is changed via Get/SetDeviceContextBrushColor.

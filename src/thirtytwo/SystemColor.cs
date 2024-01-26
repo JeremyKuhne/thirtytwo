@@ -71,7 +71,6 @@ public enum SystemColor : int
 
     MenuBar = SYS_COLOR_INDEX.COLOR_MENUBAR,
 
-#pragma warning disable CA1069 // Enums values should not be duplicated
     Desktop = SYS_COLOR_INDEX.COLOR_DESKTOP,
 
     Face3d = SYS_COLOR_INDEX.COLOR_3DFACE,
@@ -79,5 +78,4 @@ public enum SystemColor : int
     Shadow3d = SYS_COLOR_INDEX.COLOR_3DSHADOW,
 
     Highlight3d = SYS_COLOR_INDEX.COLOR_3DHIGHLIGHT
-#pragma warning restore CA1069 // Enums values should not be duplicated
 }

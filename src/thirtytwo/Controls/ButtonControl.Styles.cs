@@ -94,14 +94,18 @@ public partial class ButtonControl
 
         /// <summary>
         ///  Draw text to the left of radio buttons and checkboxes.
-        ///  Same as RightButton.
         /// </summary>
+        /// <remarks>
+        ///  <para>Same as <see cref="RightButton"/>.</para>
+        /// </remarks>
         LeftText = Interop.BS_LEFTTEXT,
 
         /// <summary>
         ///  Draw text to the left of radio buttons and checkboxes.
-        ///  Same as LeftText
         /// </summary>
+        /// <remarks>
+        ///  <para>Same as <see cref="LeftText"/>.</para>
+        /// </remarks>
         RightButton = Interop.BS_RIGHTBUTTON,
 
         // This is the default state- buttons have text

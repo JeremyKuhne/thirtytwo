@@ -13,15 +13,8 @@ public unsafe abstract class EnumVARIANT : IEnumVARIANT.Interface, IManagedWrapp
 
     public EnumVARIANT(int count, int index = 0)
     {
-        if (count < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count));
-        }
-
-        if (index < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
 
         _count = count;
         _index = index;
