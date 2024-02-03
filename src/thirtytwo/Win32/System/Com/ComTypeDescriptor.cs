@@ -12,6 +12,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
     private string? _className;
     private readonly IComPointer _comObject;
     private List<PropertyDescriptor>? _properties;
+    private List<EventDescriptor>? _events;
 
     public ComTypeDescriptor(IComPointer comObject)
     {
@@ -87,7 +88,112 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
     EventDescriptor? ICustomTypeDescriptor.GetDefaultEvent() => throw new NotImplementedException();
     PropertyDescriptor? ICustomTypeDescriptor.GetDefaultProperty() => throw new NotImplementedException();
     object? ICustomTypeDescriptor.GetEditor(Type editorBaseType) => null;
-    EventDescriptorCollection ICustomTypeDescriptor.GetEvents() => throw new NotImplementedException();
+
+    EventDescriptorCollection ICustomTypeDescriptor.GetEvents()
+    {
+        InitializeEventDescriptors();
+        return new([.. _events]);
+    }
+
+    [MemberNotNull(nameof(_events))]
+    private void InitializeEventDescriptors()
+    {
+        if (_events is not null)
+        {
+            return;
+        }
+
+        _events = [];
+
+        using var typeInfo = GetObjectTypeInfo();
+        if (typeInfo.IsNull)
+        {
+            return;
+        }
+
+        using ComScope<ITypeLib> typeLib = new(null);
+        uint typeIndex;
+        HRESULT hr = typeInfo.Value->GetContainingTypeLib(typeLib, &typeIndex);
+        if (hr.Failed)
+        {
+            return;
+        }
+
+        using var container = _comObject.TryGetInterface<IConnectionPointContainer>(out hr);
+        if (hr.Failed)
+        {
+            return;
+        }
+
+        using ComScope<IEnumConnectionPoints> enumerator = new(null);
+        container.Value->EnumConnectionPoints(enumerator);
+        if (hr.Failed)
+        {
+            return;
+        }
+
+        uint count;
+        IConnectionPoint* connectionPoint = null;
+        while (enumerator.Value->Next(1u, &connectionPoint, &count).Succeeded && count == 1)
+        {
+            using ComScope<IConnectionPoint> scope = new(connectionPoint);
+            Guid connectionId;
+            hr = connectionPoint->GetConnectionInterface(&connectionId);
+            if (hr.Failed)
+            {
+                continue;
+            }
+
+            using ComScope<ITypeInfo> eventTypeInfo = new(null);
+            hr = typeLib.Value->GetTypeInfoOfGuid(connectionId, eventTypeInfo);
+            if (hr.Failed)
+            {
+                continue;
+            }
+
+            using var typeAttr = eventTypeInfo.Value->GetTypeAttr(out hr);
+            if (hr.Failed
+                || typeAttr.Value->typekind != TYPEKIND.TKIND_DISPATCH
+                || ((TYPEFLAGS)typeAttr.Value->wTypeFlags).HasFlag(TYPEFLAGS.TYPEFLAG_FDUAL))
+            {
+                // We only handle IDispatch interfaces
+                continue;
+            }
+
+            using BSTR name = default;
+            hr = typeInfo.Value->GetDocumentation(Interop.MEMBERID_NIL, &name, null, null, null);
+            if (hr.Failed)
+            {
+                continue;
+            }
+
+            string interfaceName = name.ToString();
+            Guid interfaceGuid = connectionId;
+
+            EnumerateFunctionDescriptions(eventTypeInfo, HandleFunction);
+
+            void HandleFunction(ITypeInfo* typeInfo, FUNCDESC* description, ReadOnlySpan<BSTR> names)
+            {
+                if (ComEventDescriptor.GetDelegateType(typeInfo, description) is not Type delegateType)
+                {
+                    return;
+                }
+
+                using BSTR documentation = default;
+                HRESULT hr = typeInfo->GetDocumentation(description->memid, null, &documentation, out _, null);
+
+                _events.Add(new ComEventDescriptor(
+                    names[0].ToString(),
+                    description->memid,
+                    interfaceGuid,
+                    documentation.ToString(),
+                    names[1..].ToStringArray(),
+                    delegateType,
+                    attrs: null));
+            }
+        }
+    }
+
     EventDescriptorCollection ICustomTypeDescriptor.GetEvents(Attribute[]? attributes) => throw new NotImplementedException();
 
     PropertyDescriptorCollection ICustomTypeDescriptor.GetProperties()
@@ -96,11 +202,12 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
         return new([.. _properties]);
     }
 
-    PropertyDescriptorCollection ICustomTypeDescriptor.GetProperties(Attribute[]? attributes) => throw new NotImplementedException();
+    PropertyDescriptorCollection ICustomTypeDescriptor.GetProperties(Attribute[]? attributes) =>
+        ((ICustomTypeDescriptor)this).GetProperties();
 
     object? ICustomTypeDescriptor.GetPropertyOwner(PropertyDescriptor? pd) => _comObject;
 
-    private ComScope<ITypeInfo> GetObjectTypeInfo(bool preferIProvideClassInfo)
+    private ComScope<ITypeInfo> GetObjectTypeInfo(bool preferIProvideClassInfo = false)
     {
         if (preferIProvideClassInfo)
         {
@@ -150,6 +257,52 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
         }
     }
 
+    private delegate void EnumerateFunctionDescriptionDelegate(ITypeInfo* typeInfo, FUNCDESC* function, ReadOnlySpan<BSTR> names);
+
+    private void EnumerateFunctionDescriptions(ITypeInfo* typeInfo, EnumerateFunctionDescriptionDelegate func)
+    {
+        if (typeInfo == null)
+        {
+            return;
+        }
+
+        TYPEATTR* ta;
+        if (typeInfo->GetTypeAttr(&ta).Failed)
+        {
+            return;
+        }
+
+        TYPEATTR typeAttributes = *ta;
+        typeInfo->ReleaseTypeAttr(ta);
+
+        for (int i = 0; i < typeAttributes.cFuncs; i++)
+        {
+            FUNCDESC* function;
+            HRESULT hr = typeInfo->GetFuncDesc((uint)i, &function);
+            if (hr.Failed)
+            {
+                continue;
+            }
+
+            try
+            {
+                uint count = (uint)function->cParams + 1u;
+                using BstrBuffer names = new((int)count);
+                hr = typeInfo->GetNames(function->memid, names, count, &count);
+                if (hr.Failed)
+                {
+                    return;
+                }
+
+                func(typeInfo, function, names[..(int)count]);
+            }
+            finally
+            {
+                typeInfo->ReleaseFuncDesc(function);
+            }
+        }
+    }
+
     [MemberNotNull(nameof(_properties))]
     private void InitializePropertyDescriptors()
     {
@@ -160,43 +313,14 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
 
         _properties = [];
 
-        using var typeInfo = GetObjectTypeInfo(preferIProvideClassInfo: false);
+        using var typeInfo = GetObjectTypeInfo();
         if (typeInfo.IsNull)
         {
             return;
         }
 
-        TYPEATTR* ta;
-        if (typeInfo.Value->GetTypeAttr(&ta).Failed)
-        {
-            return;
-        }
-
-        TYPEATTR typeAttributes = *ta;
-        typeInfo.Value->ReleaseTypeAttr(ta);
         Dictionary<int, PropertyInfo> propertyInfo = [];
-
-        for (int i = 0; i < typeAttributes.cFuncs; i++)
-        {
-            FUNCDESC* function;
-            HRESULT hr = typeInfo.Value->GetFuncDesc((uint)i, &function);
-            if (hr.Failed)
-            {
-                continue;
-            }
-
-            try
-            {
-                using BSTR name = default;
-                uint count;
-                hr = typeInfo.Value->GetNames(function->memid, &name, 1u, &count);
-                ProcessFunction(function, name);
-            }
-            finally
-            {
-                typeInfo.Value->ReleaseFuncDesc(function);
-            }
-        }
+        EnumerateFunctionDescriptions(typeInfo, ProcessFunction);
 
         foreach (PropertyInfo property in propertyInfo.Values)
         {
@@ -208,7 +332,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
                 attrs: null));
         }
 
-        void ProcessFunction(FUNCDESC* function, BSTR name)
+        void ProcessFunction(ITypeInfo* typeInfo, FUNCDESC* function, ReadOnlySpan<BSTR> names)
         {
             propertyInfo.TryGetValue(function->memid, out PropertyInfo info);
             VARENUM type = VARENUM.VT_EMPTY;
@@ -241,9 +365,9 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
             info.Type = type;
             if (info.Name is null)
             {
-                info.Name = name.ToString();
+                info.Name = names[0].ToString();
             }
-            else if (!name.AsSpan().SequenceEqual(info.Name))
+            else if (!names[0].AsSpan().SequenceEqual(info.Name))
             {
                 throw new NotSupportedException("Mismatched put/get type.");
             }

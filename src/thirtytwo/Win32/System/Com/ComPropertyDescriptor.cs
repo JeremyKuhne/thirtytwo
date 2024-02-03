@@ -6,6 +6,9 @@ using Windows.Win32.System.Variant;
 
 namespace Windows.Win32.System.Com;
 
+/// <summary>
+///  Maps a COM property to a managed property.
+/// </summary>
 internal unsafe class ComPropertyDescriptor : PropertyDescriptor
 {
     private readonly bool _readOnly;
@@ -31,12 +34,16 @@ internal unsafe class ComPropertyDescriptor : PropertyDescriptor
         _variantType = variantType;
     }
 
+    /// <summary>
+    ///  Returns true if the given type is supported by this descriptor.
+    /// </summary>
     internal static bool IsSupportedType(VARENUM type) => GetManagedType(type) is not null;
 
     private static Type? GetManagedType(VARENUM type) => type switch
     {
         VARENUM.VT_BSTR => typeof(string),
         VARENUM.VT_BOOL => typeof(bool),
+        VARENUM.VT_INT or VARENUM.VT_I4 => typeof(int),
         _ => null,
     };
 

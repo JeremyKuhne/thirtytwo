@@ -39,4 +39,19 @@ public unsafe class ComTypeDescriptorTests
         urlDescriptor.Should().NotBeNull();
         urlDescriptor!.IsReadOnly.Should().BeFalse();
     }
+
+    [StaFact]
+    public void ComTypeDescriptor_GetEvents_MediaPlayer()
+    {
+        using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer), takeOwnership: true);
+        ComTypeDescriptor comDescriptor = new(unknown);
+        ICustomTypeDescriptor descriptor = comDescriptor;
+        var events = descriptor.GetEvents();
+        events.Count.Should().Be(39);
+        ComEventDescriptor playStateChange = (ComEventDescriptor)events["PlayStateChange"]!;
+        playStateChange.Attributes.Count.Should().Be(0);
+        playStateChange.EventType.Should().Be(typeof(Action<int>));
+        playStateChange.Description.Should().Be("Sent when the control changes PlayState");
+        playStateChange.DispatchId.Should().Be(5101);
+    }
 }
