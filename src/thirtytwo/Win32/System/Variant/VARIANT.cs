@@ -121,4 +121,107 @@ public unsafe partial struct VARIANT : IDisposable
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static T* ThrowInvalidPointerCast<T>() where T : unmanaged => throw new InvalidCastException();
+
+    /// <summary>
+    ///  Returns the managed type returned from <see cref="ToObject()"/>.
+    /// </summary>
+    public Type? GetManagedType()
+    {
+        if (IsEmpty)
+        {
+            return null;
+        }
+
+        return GetManagedType(vt);
+    }
+
+    /// <summary>
+    ///  Returns the managed type returned from <see cref="ToObject()"/> for the given <paramref name="type"/>.
+    /// </summary>
+    public static Type? GetManagedType(VARENUM type)
+    {
+        return type switch
+        {
+            VT_I1 => typeof(sbyte),
+            VT_UI1 => typeof(byte),
+            VT_I2 => typeof(short),
+            VT_UI2 => typeof(ushort),
+            VT_I4 => typeof(int),
+            VT_UI4 => typeof(uint),
+            VT_I8 => typeof(long),
+            VT_UI8 => typeof(ulong),
+            VT_INT => typeof(int),
+            VT_UINT => typeof(uint),
+            VT_R4 => typeof(float),
+            VT_R8 => typeof(double),
+            VT_BOOL => typeof(bool),
+            VT_ERROR => typeof(int),
+            VT_CY => typeof(decimal),
+            VT_DATE => typeof(DateTime),
+            VT_FILETIME => typeof(DateTime),
+            VT_BSTR => typeof(string),
+            VT_LPSTR => typeof(string),
+            VT_LPWSTR => typeof(string),
+            VT_DECIMAL => typeof(decimal),
+            VT_VARIANT => typeof(VARIANT),
+            VT_CLSID => typeof(Guid),
+            VT_BLOB => typeof(byte[]),
+            VT_STREAM => typeof(Stream),
+            VT_UNKNOWN => null,
+            VT_DISPATCH => null,
+            VT_CF => null,
+            VT_STREAMED_OBJECT => null,
+            VT_STORAGE => null,
+            VT_STORED_OBJECT => null,
+            VT_VERSIONED_STREAM => null,
+            _ => GetArrayType(type),
+        };
+
+        static Type? GetArrayType(VARENUM type)
+        {
+            if (!type.HasFlag(VT_ARRAY) && !type.HasFlag(VT_VECTOR))
+            {
+                return null;
+            }
+
+            type &= VT_TYPEMASK;
+
+            return type switch
+            {
+                VT_I1 => typeof(sbyte[]),
+                VT_UI1 => typeof(byte[]),
+                VT_I2 => typeof(short[]),
+                VT_UI2 => typeof(ushort[]),
+                VT_I4 => typeof(int[]),
+                VT_UI4 => typeof(uint[]),
+                VT_I8 => typeof(long[]),
+                VT_UI8 => typeof(ulong[]),
+                VT_INT => typeof(int[]),
+                VT_UINT => typeof(uint[]),
+                VT_R4 => typeof(float[]),
+                VT_R8 => typeof(double[]),
+                VT_BOOL => typeof(bool[]),
+                VT_ERROR => typeof(int[]),
+                VT_CY => typeof(decimal[]),
+                VT_DATE => typeof(DateTime[]),
+                VT_FILETIME => typeof(DateTime[]),
+                VT_BSTR => typeof(string[]),
+                VT_LPSTR => typeof(string[]),
+                VT_LPWSTR => typeof(string[]),
+                VT_DECIMAL => typeof(decimal[]),
+                VT_VARIANT => typeof(VARIANT[]),
+                VT_CLSID => typeof(Guid[]),
+                VT_STREAM => typeof(Stream[]),
+                VT_BLOB => null,
+                VT_UNKNOWN => null,
+                VT_DISPATCH => null,
+                VT_CF => null,
+                VT_STREAMED_OBJECT => null,
+                VT_STORAGE => null,
+                VT_STORED_OBJECT => null,
+                VT_VERSIONED_STREAM => null,
+                _ => null,
+            };
+        }
+    }
 }
