@@ -18,7 +18,6 @@ CLIPBOARD_FORMAT
 CloseClipboard
 CoCreateInstance
 CoGetClassObject
-CombineRegion
 CombineRgn
 COMBOBOXINFO_BUTTON_STATE
 CopyImage
