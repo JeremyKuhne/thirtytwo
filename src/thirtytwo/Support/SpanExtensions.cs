@@ -42,4 +42,23 @@ public static class SpanExtensions
 
         return strings;
     }
+
+    /// <summary>
+    ///  Converts a span of <see cref="BSTR"/>s to an array of <see langword="string"/>;
+    /// </summary>
+    public static string[] ToStringArray(this ReadOnlySpan<BSTR> bstrs)
+    {
+        if (bstrs.IsEmpty)
+        {
+            return [];
+        }
+
+        string[] strings = new string[bstrs.Length];
+        for (int i = 0; i < bstrs.Length; i++)
+        {
+            strings[i] = bstrs[i].ToString();
+        }
+
+        return strings;
+    }
 }

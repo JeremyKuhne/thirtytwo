@@ -107,6 +107,8 @@ public ref struct BufferScope<T>
 
     public static implicit operator ReadOnlySpan<T>(BufferScope<T> scope) => scope._span;
 
+    public readonly Span<T>.Enumerator GetEnumerator() => _span.GetEnumerator();
+
     public void Dispose()
     {
         if (_array is not null)
