@@ -7,18 +7,16 @@ using Windows.Win32.System.Variant;
 namespace Windows.Win32.System.Com;
 
 /// <summary>
-///  Base class for providing <see cref="IDispatch"/> services through a standard dispatch implementation
-///  generated from a type library.
+///  Base class for providing <see cref="IDispatch"/> services around an existing <see cref="ITypeInfo"/>.
 /// </summary>
-public unsafe abstract class StandardDispatch<T> : IDispatch.Interface, IDispatchEx.Interface, IDisposable
-    where T : unmanaged, IComIID
+public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx.Interface, IDisposable
 {
     private ITypeInfo* _typeInfo;
 
     /// <summary>
     ///  Construct a new instance with the specified backing <see cref="ITypeInfo"/>.
     /// </summary>
-    public StandardDispatch(ITypeInfo* typeInfo)
+    public StandardDispatch(ITypeInfo* typeInfo, Guid interfaceGuid)
     {
         if (typeInfo is null)
         {
@@ -29,7 +27,7 @@ public unsafe abstract class StandardDispatch<T> : IDispatch.Interface, IDispatc
         typeInfo->GetTypeAttr(out TYPEATTR* typeAttributes).ThrowOnFailure();
         try
         {
-            if (typeAttributes->guid != T.Guid)
+            if (typeAttributes->guid != interfaceGuid)
             {
                 throw new ArgumentException("Interface guid doesn't match type info", nameof(typeInfo));
             }
@@ -116,19 +114,56 @@ public unsafe abstract class StandardDispatch<T> : IDispatch.Interface, IDispatc
         }
 
         // The override couldn't find it, pass it along via the ITypeInfo.
-        using ComScope<T> @interface = new(ComHelpers.GetComPointer<T>(this));
-        return _typeInfo->Invoke(@interface, dispIdMember, wFlags, pDispParams, pVarResult, pExcepInfo, pArgErr);
+        using ComScope @interface = GetComCallableWrapper();
+        return @interface.IsNull
+            ? hr
+            : _typeInfo->Invoke(@interface, dispIdMember, wFlags, pDispParams, pVarResult, pExcepInfo, pArgErr);
     }
 
-    HRESULT IDispatchEx.Interface.GetDispID(BSTR bstrName, uint grfdex, int* pid)
-        => bstrName.IsNull || pid is null ? HRESULT.E_POINTER : GetDispID(bstrName, grfdex, pid);
+    /// <summary>
+    ///  If applicable, the pointer to our interface so the ITypeInfo implementation can call back via the interface.
+    /// </summary>
+    protected virtual ComScope GetComCallableWrapper() => default;
 
-    protected virtual HRESULT GetDispID(BSTR bstrName, uint grfdex, int* pid) => HRESULT.E_NOTIMPL;
+    HRESULT IDispatchEx.Interface.GetDispID(BSTR bstrName, uint grfdex, int* pid)
+    {
+        if (pid is null)
+        {
+            return HRESULT.E_POINTER;
+        }
+
+        *pid = Interop.DISPID_UNKNOWN;
+        return bstrName.IsNull ? HRESULT.E_POINTER : GetDispID(bstrName, grfdex, pid);
+    }
+
+    /// <summary>
+    ///  Override to provide a dispatch id for the given name. Return <see cref="HRESULT.DISP_E_UNKNOWNNAME"/>
+    ///  if the name isn't supported.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   <see href="https://learn.microsoft.com/previous-versions/windows/internet-explorer/ie-developer/windows-scripting/reference/idispatchex-getdispid">
+    ///    Official documentation.
+    ///   </see>
+    ///  </para>
+    /// </remarks>
+    protected virtual HRESULT GetDispID(BSTR bstrName, uint grfdex, int* pid) => HRESULT.DISP_E_UNKNOWNNAME;
 
     HRESULT IDispatchEx.Interface.GetMemberName(int id, BSTR* pbstrName)
         => pbstrName is null ? HRESULT.E_POINTER : GetMemberName(id, pbstrName);
 
-    protected virtual HRESULT GetMemberName(int id, BSTR* pbstrName) => HRESULT.E_NOTIMPL;
+    /// <summary>
+    ///  Override to provide the name for a given dispatch id. Return <see cref="HRESULT.DISP_E_UNKNOWNNAME"/> if the
+    ///  name isn't known.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   <see href="https://learn.microsoft.com/previous-versions/windows/internet-explorer/ie-developer/windows-scripting/reference/idispatchex-getmembername">
+    ///    Official documentation.
+    ///   </see>
+    ///  </para>
+    /// </remarks>
+    protected virtual HRESULT GetMemberName(int id, BSTR* pbstrName) => HRESULT.DISP_E_UNKNOWNNAME;
 
     HRESULT IDispatchEx.Interface.GetNextDispID(uint grfdex, int id, int* pid)
     {
@@ -142,7 +177,13 @@ public unsafe abstract class StandardDispatch<T> : IDispatch.Interface, IDispatc
         return GetNextDispID(grfdex, id, pid);
     }
 
-    protected virtual HRESULT GetNextDispID(uint grfdex, int id, int* pid) => HRESULT.E_NOTIMPL;
+    /// <param name="id">
+    ///  <see cref="Interop.DISPID_STARTENUM"/> to start enumeration, or the last id returned by a previous call to
+    ///  <see cref="GetNextDispID(uint, int, int*)"/>.
+    /// </param>
+    /// <param name="pid">The next dispatch id.</param>
+    /// <returns>The next dispatch id, or <see cref="HRESULT.S_FALSE"/> if there are no more.</returns>
+    protected virtual HRESULT GetNextDispID(uint grfdex, int id, int* pid) => HRESULT.S_FALSE;
 
     HRESULT IDispatchEx.Interface.InvokeEx(
         int id,
@@ -168,9 +209,9 @@ public unsafe abstract class StandardDispatch<T> : IDispatch.Interface, IDispatc
             return hr;
         }
 
-        // The override couldn't find it, pass it along via the ITypeInfo.
-        using ComScope<T> @interface = new(ComHelpers.GetComPointer<T>(this));
-        return _typeInfo->Invoke(@interface, id, (DISPATCH_FLAGS)wFlags, pdp, pvarRes, pei, puArgErr: null);
+        // The override couldn't find it, pass our own interface along so it can be dispatche
+        using ComScope @interface = GetComCallableWrapper();
+        return @interface.IsNull ? hr : _typeInfo->Invoke(@interface, id, (DISPATCH_FLAGS)wFlags, pdp, pvarRes, pei, puArgErr: null);
     }
 
     protected virtual HRESULT Invoke(
