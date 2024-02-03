@@ -18,6 +18,7 @@ CLIPBOARD_FORMAT
 CloseClipboard
 CoCreateInstance
 CoGetClassObject
+CombineRegion
 CombineRgn
 COMBOBOXINFO_BUTTON_STATE
 CopyImage
@@ -27,6 +28,7 @@ CreateActCtx
 CreateCompatibleBitmap
 CreateCompatibleDC
 CreateDispTypeInfo
+CreateEllipticRgn
 CreateErrorInfo
 CreateFont
 CreateFontIndirect
@@ -93,6 +95,7 @@ GetClientRect
 GetClipboardData
 GetClipboardFormatName
 GetClipboardOwner
+GetClipRgn
 GetCurrentThread
 GetCurrentThreadId
 GetDC
@@ -119,6 +122,7 @@ GetThreadLocale
 GetUpdatedClipboardFormats
 GetUpdateRgn
 GetUserDefaultLCID
+GetViewportOrgEx
 GetWindowRect
 GetWindowRgn
 GetWindowText
@@ -141,6 +145,7 @@ IClassFactory2
 IConnectionPoint
 IConnectionPointContainer
 ICreateErrorInfo
+IDC_*
 IDI_*
 IDispatch
 IDispatchEx
@@ -184,6 +189,7 @@ KEY_INFORMATION_CLASS
 KEY_NAME_INFORMATION
 KF_*
 LIBFLAGS
+LineTo
 LoadCursor
 LoadIcon
 LoadLibrary
@@ -197,6 +203,7 @@ MEMBERID_NIL
 MessageBoxEx
 METHODDATA
 MODIFIERKEYS_FLAGS
+MoveToEx
 MoveWindow
 MSGF_*
 MulDiv
@@ -212,6 +219,7 @@ OpenClipboard
 PARAMDATA
 PeekMessage
 POINTS
+Polygon
 PostMessage
 PostQuitMessage
 PROPVARIANT
@@ -233,16 +241,20 @@ SafeArrayGetVartype
 SafeArrayLock
 SafeArrayUnlock
 ScreenToClient
+SelectClipRgn
 SelectObject
 SELFLAG_*
 SendMessage
 SetActiveWindow
 SetClipboardData
+SetCursor
 SetFocus
 SetGraphicsMode
 SetLayeredWindowAttributes
 SetMapMode
+SetPolyFillMode
 SetThreadDpiAwarenessContext
+SetViewportOrgEx
 SetWindowLong
 SetWindowRgn
 SetWindowText
@@ -250,6 +262,7 @@ SetWorldTransform
 SHCreateShellItem
 SHDefExtractIcon
 SHGetStockIconInfo
+ShowCursor
 ShowWindow
 SHParseDisplayName
 STATE_SYSTEM_*
@@ -286,5 +299,3 @@ WIN32_ERROR
 WINDOWPOS
 WM_*
 XFORMCOORDS
-SetPolyFillMode
-Polygon

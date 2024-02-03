@@ -204,8 +204,8 @@ public static unsafe partial class DeviceContextExtensions
         return DeviceContext.Create(hdc, ownsHandle: true);
     }
 
-    public static Bitmap CreateCompatibleBitmap<TDeviceContext>(this TDeviceContext context, Size size)
-        where TDeviceContext : IHandle<HDC>
+    public static Bitmap CreateCompatibleBitmap<T>(this T context, Size size)
+        where T : IHandle<HDC>
     {
         HBITMAP hbitmap = Interop.CreateCompatibleBitmap(context.Handle, size.Width, size.Height);
         if (hbitmap.IsNull)
@@ -215,5 +215,54 @@ public static unsafe partial class DeviceContextExtensions
 
         GC.KeepAlive(context.Wrapper);
         return Bitmap.Create(hbitmap, ownsHandle: true);
+    }
+
+    public static unsafe Point GetViewportOrigin<T>(this T context, out bool success)
+        where T : IHandle<HDC>
+    {
+        Point point;
+        success = Interop.GetViewportOrgEx(context.Handle, &point);
+        GC.KeepAlive(context.Wrapper);
+        return point;
+    }
+
+    public static unsafe bool SetViewportOrigin<T>(this T context, Point point)
+        where T : IHandle<HDC>
+    {
+        bool result = Interop.SetViewportOrgEx(context.Handle, point.X, point.Y, null);
+        GC.KeepAlive(context.Wrapper);
+        return result;
+    }
+
+    public static RegionType SelectClippingRegion<T>(this T context, HRGN region)
+        where T : IHandle<HDC>
+    {
+        RegionType type = (RegionType)Interop.SelectClipRgn(context.Handle, region);
+        GC.KeepAlive(context.Wrapper);
+        return type;
+    }
+
+    public static bool MoveTo<T>(this T context, Point point)
+        where T : IHandle<HDC>
+        => context.MoveTo(point.X, point.Y);
+
+    public static bool MoveTo<T>(this T context, int x, int y)
+        where T : IHandle<HDC>
+    {
+        bool result = Interop.MoveToEx(context.Handle, x, y, null);
+        GC.KeepAlive(context.Wrapper);
+        return result;
+    }
+
+    public static bool LineTo<T>(this T context, Point point)
+        where T : IHandle<HDC>
+        => context.LineTo(point.X, point.Y);
+
+    public static bool LineTo<T>(this T context, int x, int y)
+        where T : IHandle<HDC>
+    {
+        bool success = Interop.LineTo(context.Handle, x, y);
+        GC.KeepAlive(context.Wrapper);
+        return success;
     }
 }

@@ -5,6 +5,8 @@ namespace Windows;
 
 public enum CursorId : uint
 {
+    // Can't use CsWin32 values here as they aren't constant
+
     /// <summary>
     ///  Arrow cursor. (IDC_ARROW)
     /// </summary>
