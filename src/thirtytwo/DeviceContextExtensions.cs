@@ -10,69 +10,69 @@ namespace Windows;
 public static unsafe partial class DeviceContextExtensions
 {
     /// <inheritdoc cref="Interop.GetGraphicsMode(HDC)"/>
-    public static GRAPHICS_MODE GetGraphicsMode<T>(this T deviceContext)
+    public static GRAPHICS_MODE GetGraphicsMode<T>(this T context)
         where T : IHandle<HDC>
     {
-        GRAPHICS_MODE mode = (GRAPHICS_MODE)Interop.GetGraphicsMode(deviceContext.Handle);
-        GC.KeepAlive(deviceContext.Wrapper);
+        GRAPHICS_MODE mode = (GRAPHICS_MODE)Interop.GetGraphicsMode(context.Handle);
+        GC.KeepAlive(context.Wrapper);
         return mode;
     }
 
     /// <inheritdoc cref="Interop.SetGraphicsMode(HDC, GRAPHICS_MODE)"/>
-    public static GRAPHICS_MODE SetGraphicsMode<T>(this T deviceContext, GRAPHICS_MODE mode)
+    public static GRAPHICS_MODE SetGraphicsMode<T>(this T context, GRAPHICS_MODE mode)
         where T : IHandle<HDC>
     {
-        mode = (GRAPHICS_MODE)Interop.SetGraphicsMode(deviceContext.Handle, mode);
-        GC.KeepAlive(deviceContext.Wrapper);
+        mode = (GRAPHICS_MODE)Interop.SetGraphicsMode(context.Handle, mode);
+        GC.KeepAlive(context.Wrapper);
         return mode;
     }
 
     /// <inheritdoc cref="Interop.GetWorldTransform(HDC, XFORM*)"/>
-    public static unsafe bool GetWorldTransform<T>(this T deviceContext, ref Matrix3x2 transform)
+    public static unsafe bool GetWorldTransform<T>(this T context, ref Matrix3x2 transform)
         where T : IHandle<HDC>
     {
         fixed (Matrix3x2* t = &transform)
         {
-            bool result = Interop.GetWorldTransform(deviceContext.Handle, (XFORM*)t);
-            GC.KeepAlive(deviceContext.Wrapper);
+            bool result = Interop.GetWorldTransform(context.Handle, (XFORM*)t);
+            GC.KeepAlive(context.Wrapper);
             return result;
         }
     }
 
     /// <inheritdoc cref="Interop.SetWorldTransform(HDC, XFORM*)"/>
-    public static unsafe bool SetWorldTransform<T>(this T deviceContext, ref Matrix3x2 transform)
+    public static unsafe bool SetWorldTransform<T>(this T context, ref Matrix3x2 transform)
         where T : IHandle<HDC>
     {
         fixed (Matrix3x2* t = &transform)
         {
-            bool result = Interop.SetWorldTransform(deviceContext.Handle, (XFORM*)t);
-            GC.KeepAlive(deviceContext.Wrapper);
+            bool result = Interop.SetWorldTransform(context.Handle, (XFORM*)t);
+            GC.KeepAlive(context.Wrapper);
             return result;
         }
     }
 
     /// <inheritdoc cref="Interop.GetDeviceCaps(HDC, GET_DEVICE_CAPS_INDEX)"/>
-    public static int GetDeviceCaps<T>(this T deviceContext, GET_DEVICE_CAPS_INDEX index)
+    public static int GetDeviceCaps<T>(this T context, GET_DEVICE_CAPS_INDEX index)
        where T : IHandle<HDC>
     {
-        int result = Interop.GetDeviceCaps(deviceContext.Handle, index);
-        GC.KeepAlive(deviceContext.Wrapper);
+        int result = Interop.GetDeviceCaps(context.Handle, index);
+        GC.KeepAlive(context.Wrapper);
         return result;
     }
 
     /// <summary>
     ///  Converts the requested point size to height based on the DPI of the given device context.
     /// </summary>
-    public static int FontPointSizeToHeight<T>(this T deviceContext, int pointSize)
+    public static int FontPointSizeToHeight<T>(this T context, int pointSize)
         where T : IHandle<HDC>
     {
         Application.EnsureDpiAwareness();
         int result = Interop.MulDiv(
            pointSize,
-           Interop.GetDeviceCaps(deviceContext.Handle, GET_DEVICE_CAPS_INDEX.LOGPIXELSY),
+           Interop.GetDeviceCaps(context.Handle, GET_DEVICE_CAPS_INDEX.LOGPIXELSY),
            72);
 
-        GC.KeepAlive(deviceContext.Wrapper);
+        GC.KeepAlive(context.Wrapper);
         return result;
     }
 
@@ -87,6 +87,28 @@ public static unsafe partial class DeviceContextExtensions
 
         OBJ_TYPE type = (OBJ_TYPE)Interop.GetObjectType(@object);
         return type == OBJ_TYPE.OBJ_REGION ? default : new(handle, context);
+    }
+
+    public static PolyFillMode SetPolyFillMode<T>(this T context, PolyFillMode mode)
+        where T : IHandle<HDC>
+    {
+        PolyFillMode result = (PolyFillMode)Interop.SetPolyFillMode(context.Handle, (CREATE_POLYGON_RGN_MODE)mode);
+        GC.KeepAlive(context.Wrapper);
+        return result;
+    }
+
+    public static bool Polygon<T>(this T context, params Point[] points)
+        where T: IHandle<HDC> => Polygon(context, points.AsSpan());
+
+    public static bool Polygon<T>(this T context, ReadOnlySpan<Point> points)
+        where T : IHandle<HDC>
+    {
+        fixed (Point* p = points)
+        {
+            bool result = Interop.Polygon(context.Handle, p, points.Length);
+            GC.KeepAlive(context.Wrapper);
+            return result;
+        }
     }
 
     public static unsafe (int Height, uint LengthDrawn, Rectangle Bounds) DrawText<T>(
@@ -152,7 +174,7 @@ public static unsafe partial class DeviceContextExtensions
     }
 
     public static void DrawIcon<TDeviceContext, TIcon>(
-        this TDeviceContext deviceContext,
+        this TDeviceContext context,
         TIcon icon,
         Point location,
         Size size = default,
@@ -160,38 +182,38 @@ public static unsafe partial class DeviceContextExtensions
             where TDeviceContext : IHandle<HDC>
             where TIcon : IHandle<HICON>
     {
-        if (!Interop.DrawIconEx(deviceContext.Handle, location.X, location.Y, icon.Handle, size.Width, size.Height, 0, default, flags))
+        if (!Interop.DrawIconEx(context.Handle, location.X, location.Y, icon.Handle, size.Width, size.Height, 0, default, flags))
         {
             Error.ThrowLastError();
         }
 
-        GC.KeepAlive(deviceContext.Wrapper);
+        GC.KeepAlive(context.Wrapper);
         GC.KeepAlive(icon.Wrapper);
     }
 
-    public static DeviceContext CreateCompatibleDeviceContext<TDeviceContext>(this TDeviceContext deviceContext)
+    public static DeviceContext CreateCompatibleDeviceContext<TDeviceContext>(this TDeviceContext context)
         where TDeviceContext : IHandle<HDC>
     {
-        HDC hdc = Interop.CreateCompatibleDC(deviceContext.Handle);
+        HDC hdc = Interop.CreateCompatibleDC(context.Handle);
         if (hdc.IsNull)
         {
             Error.ThrowLastError();
         }
 
-        GC.KeepAlive(deviceContext.Wrapper);
+        GC.KeepAlive(context.Wrapper);
         return DeviceContext.Create(hdc, ownsHandle: true);
     }
 
-    public static Bitmap CreateCompatibleBitmap<TDeviceContext>(this TDeviceContext deviceContext, Size size)
+    public static Bitmap CreateCompatibleBitmap<TDeviceContext>(this TDeviceContext context, Size size)
         where TDeviceContext : IHandle<HDC>
     {
-        HBITMAP hbitmap = Interop.CreateCompatibleBitmap(deviceContext.Handle, size.Width, size.Height);
+        HBITMAP hbitmap = Interop.CreateCompatibleBitmap(context.Handle, size.Width, size.Height);
         if (hbitmap.IsNull)
         {
             Error.ThrowLastError();
         }
 
-        GC.KeepAlive(deviceContext.Wrapper);
+        GC.KeepAlive(context.Wrapper);
         return Bitmap.Create(hbitmap, ownsHandle: true);
     }
 }
