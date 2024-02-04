@@ -32,6 +32,7 @@ CreateErrorInfo
 CreateFont
 CreateFontIndirect
 CreateRectRgn
+CreateSolidBrush
 CreateStdAccessibleObject
 CreateStdAccessibleProxy
 CreateStdDispatch
@@ -64,6 +65,7 @@ E_INVALIDARG
 E_NOINTERFACE
 E_NOTIMPL
 E_POINTER
+Ellipse
 EM_*
 EmptyClipboard
 EnableWindow
@@ -84,6 +86,7 @@ FONT_PITCH
 FONT_QUALITY
 FONT_WEIGHT
 FormatMessage
+FrameRect
 FVE_E_LOCKED_VOLUME
 GET_MODULE_HANDLE_EX_FLAG*
 GET_STOCK_OBJECT_FLAGS
@@ -115,6 +118,7 @@ GetParent
 GetProcAddress
 GetProcessDpiAwareness
 GetRgnBox
+GetROP2
 GetStockObject
 GetSysColorBrush
 GetThreadDpiAwarenessContext
@@ -188,6 +192,7 @@ IUnknown
 KEY_INFORMATION_CLASS
 KEY_NAME_INFORMATION
 KF_*
+KillTimer
 LIBFLAGS
 LineTo
 LoadCursor
@@ -200,6 +205,7 @@ LPtoDP
 LsaNtStatusToWinError
 MapWindowPoints
 MEMBERID_NIL
+MessageBeep
 MessageBoxEx
 METHODDATA
 MODIFIERKEYS_FLAGS
@@ -220,11 +226,13 @@ PARAMDATA
 PeekMessage
 PlaySound
 POINTS
+PolyBezier
 Polygon
 PostMessage
 PostQuitMessage
 PROPVARIANT
 PropVariantClear
+Rectangle
 RegCloseKey
 RegEnumValue
 RegisterClassEx
@@ -232,9 +240,11 @@ RegisterClipboardFormat
 RegOpenKeyEx
 RegQueryInfoKey
 RegQueryValueEx
+ReleaseCapture
 ReleaseDC
 RemoveClipboardFormatListener
 ROLE_SYSTEM_*
+RoundRect
 S_FALSE
 S_OK
 SAFEARRAY
@@ -248,13 +258,16 @@ SelectObject
 SELFLAG_*
 SendMessage
 SetActiveWindow
+SetCapture
 SetClipboardData
+SetCoalescableTimer
 SetCursor
 SetFocus
 SetGraphicsMode
 SetLayeredWindowAttributes
 SetMapMode
 SetPolyFillMode
+SetROP2
 SetThreadDpiAwarenessContext
 SetViewportOrgEx
 SetWindowLong
@@ -301,11 +314,3 @@ WIN32_ERROR
 WINDOWPOS
 WM_*
 XFORMCOORDS
-FrameRect
-Rectangle
-Ellipse
-RoundRect
-MessageBeep
-CreateSolidBrush
-SetCoalescableTimer
-KillTimer

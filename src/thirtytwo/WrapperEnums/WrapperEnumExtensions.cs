@@ -6,4 +6,5 @@ namespace Windows;
 public static class WrapperEnumExtensions
 {
     public static HCURSOR.SetScope SetCursorScope(this CursorId cursor) => ((HCURSOR)cursor).SetCursorScope();
+    public static HCURSOR SetCursor(this CursorId cursor) => ((HCURSOR)cursor).SetCursor();
 }

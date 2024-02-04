@@ -306,6 +306,19 @@ public static unsafe partial class DeviceContextExtensions
         return success;
     }
 
+    public static unsafe bool PolyBezier<T>(this T context, params Point[] points) where T : IHandle<HDC> =>
+        PolyBezier(context, points.AsSpan());
+
+    public static unsafe bool PolyBezier<T>(this T context, ReadOnlySpan<Point> points) where T : IHandle<HDC>
+    {
+        fixed (Point* p = points)
+        {
+            bool success = Interop.PolyBezier(context.Handle, p, (uint)points.Length);
+            GC.KeepAlive(context.Wrapper);
+            return success;
+        }
+    }
+
     public static bool FillRectangle<T>(this T context, Rectangle rectangle, HBRUSH hbrush)
         where T : IHandle<HDC>
     {
@@ -313,5 +326,20 @@ public static unsafe partial class DeviceContextExtensions
         bool success = (BOOL)Interop.FillRect(context.Handle, &rect, hbrush);
         GC.KeepAlive(context.Wrapper);
         return success;
+    }
+
+    public static PenMixMode SetRasterOperation<T>(this T context, PenMixMode foregroundMixMode)
+        where T : IHandle<HDC>
+    {
+        PenMixMode result = (PenMixMode)Interop.SetROP2(context.Handle, (R2_MODE)foregroundMixMode);
+        GC.KeepAlive(context.Wrapper);
+        return result;
+    }
+
+    public static PenMixMode GetRasterOperation<T>(this T context) where T : IHandle<HDC>
+    {
+        PenMixMode result = (PenMixMode)Interop.GetROP2(context.Handle);
+        GC.KeepAlive(context.Wrapper);
+        return result;
     }
 }

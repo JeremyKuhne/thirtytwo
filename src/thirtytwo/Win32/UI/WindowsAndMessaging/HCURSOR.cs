@@ -12,6 +12,7 @@ public unsafe partial struct HCURSOR : IDisposable
     public static implicit operator HCURSOR(CursorId id) => Interop.LoadCursor(default, (PCWSTR)(char*)(uint)id);
 
     public SetScope SetCursorScope() => new(this);
+    public HCURSOR SetCursor() => Interop.SetCursor(this);
 
     public void Dispose()
     {
