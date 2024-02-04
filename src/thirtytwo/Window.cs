@@ -21,6 +21,7 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
     private static readonly object s_lock = new();
     private readonly object _lock = new();
     private bool _destroyed;
+    private HWND _handle;
 
     // When I send a WM_GETFONT message to a window, why don't I get a font?
     // https://devblogs.microsoft.com/oldnewthing/20140724-00/?p=413
@@ -50,7 +51,7 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
     /// <summary>
     ///  The window handle. This will be <see cref="HWND.Null"/> after the window is destroyed.
     /// </summary>
-    public HWND Handle { get; private set; }
+    public HWND Handle => _handle;
 
     public event WindowsMessageEvent? MessageHandler;
 
@@ -72,21 +73,30 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
             bounds = DefaultBounds;
         }
 
+        _text = text;
+
+        try
+        {
+            _handle = _windowClass.CreateWindow(
+                bounds,
+                text,
+                style,
+                extendedStyle,
+                parentWindow?.Handle ?? default,
+                parameters,
+                menuHandle,
+                InitializationWindowProcedure);
+        }
+        catch
+        {
+            // Make sure we don't leave a window handle around if we fail to create the window.
+            _handle = default;
+            throw;
+        }
+
         // Need to set our Window Procedure to get messages before we set
         // the font (which sends a message to do so).
         _windowProcedure = WindowProcedureInternal;
-
-        _text = text;
-
-        Handle = _windowClass.CreateWindow(
-            bounds,
-            text,
-            style,
-            extendedStyle,
-            parentWindow?.Handle ?? default,
-            parameters,
-            menuHandle,
-            _windowProcedure);
 
         _backgroundBrush = backgroundBrush;
 
@@ -150,6 +160,19 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
         this.SetFontHandle(_lastCreatedFont);
     }
 
+    private LRESULT InitializationWindowProcedure(HWND window, uint message, WPARAM wParam, LPARAM lParam)
+    {
+        if (Handle.IsNull)
+        {
+            // In the middle of CreateWindow, set our handle so that the "this" pointer is valid for use.
+            // This enables things such as parenting children during WM_CREATE.
+
+            _handle = window;
+        }
+
+        return WindowProcedureInternal(window, message, wParam, lParam);
+    }
+
     private LRESULT WindowProcedureInternal(HWND window, uint message, WPARAM wParam, LPARAM lParam)
     {
         if (MessageHandler is { } handlers)
@@ -176,7 +199,7 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
 
                 bool success = s_windows.TryRemove(Handle, out _);
                 Debug.Assert(success);
-                Handle = default;
+                _handle = default;
                 _destroyed = true;
             }
         }

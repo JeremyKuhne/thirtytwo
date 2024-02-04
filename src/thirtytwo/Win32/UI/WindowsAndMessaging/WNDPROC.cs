@@ -16,4 +16,6 @@ public unsafe readonly struct WNDPROC(delegate* unmanaged[Stdcall]<HWND, uint, W
 
     public static explicit operator WNDPROC(nint value)
         => new((delegate* unmanaged[Stdcall]<HWND, uint, WPARAM, LPARAM, LRESULT>)value);
+    public static explicit operator WNDPROC(nuint value)
+        => new((delegate* unmanaged[Stdcall]<HWND, uint, WPARAM, LPARAM, LRESULT>)value);
 }

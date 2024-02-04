@@ -15,6 +15,7 @@ public partial class ButtonControl : Window
         Styles buttonStyle = Styles.PushButton,
         WindowStyles style = WindowStyles.Overlapped | WindowStyles.Child | WindowStyles.Visible,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
+        int buttonId = default,
         Window? parentWindow = default,
         nint parameters = default) : base(
             bounds,
@@ -23,7 +24,8 @@ public partial class ButtonControl : Window
             extendedStyle,
             parentWindow,
             s_buttonClass,
-            parameters)
+            parameters,
+            (HMENU)buttonId)
     {
     }
 }

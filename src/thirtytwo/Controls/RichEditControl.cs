@@ -8,7 +8,7 @@ namespace Windows;
 
 public partial class RichEditControl : EditBase
 {
-    private static readonly WindowClass s_richEditClass = new("RICHEDIT50W");
+    private static readonly WindowClass s_richEditClass;
 
     static RichEditControl()
     {
@@ -17,6 +17,8 @@ public partial class RichEditControl : EditBase
         {
             Error.ThrowLastError();
         }
+
+        s_richEditClass = new("RICHEDIT50W");
     }
 
     public RichEditControl(

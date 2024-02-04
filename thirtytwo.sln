@@ -49,6 +49,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bezier", "src\samples\Petzo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blokout2", "src\samples\Petzold\5th\Blokout2\Blokout2.csproj", "{F52C0159-AFFE-431D-BC46-1AA6C8381400}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BtnLook", "src\samples\Petzold\5th\BtnLook\BtnLook.csproj", "{22E8534C-628A-4A9C-9EDB-7BE4DAC12544}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -119,6 +121,10 @@ Global
 		{F52C0159-AFFE-431D-BC46-1AA6C8381400}.Debug|x64.Build.0 = Debug|x64
 		{F52C0159-AFFE-431D-BC46-1AA6C8381400}.Release|x64.ActiveCfg = Release|x64
 		{F52C0159-AFFE-431D-BC46-1AA6C8381400}.Release|x64.Build.0 = Release|x64
+		{22E8534C-628A-4A9C-9EDB-7BE4DAC12544}.Debug|x64.ActiveCfg = Debug|x64
+		{22E8534C-628A-4A9C-9EDB-7BE4DAC12544}.Debug|x64.Build.0 = Debug|x64
+		{22E8534C-628A-4A9C-9EDB-7BE4DAC12544}.Release|x64.ActiveCfg = Release|x64
+		{22E8534C-628A-4A9C-9EDB-7BE4DAC12544}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -139,6 +145,7 @@ Global
 		{1EABEAF9-CEE7-4415-98B9-466982727848} = {13110246-EBE1-441B-B721-B0614D62B13B}
 		{751D8704-4AF9-46E4-AD24-B43DD011ED11} = {13110246-EBE1-441B-B721-B0614D62B13B}
 		{F52C0159-AFFE-431D-BC46-1AA6C8381400} = {13110246-EBE1-441B-B721-B0614D62B13B}
+		{22E8534C-628A-4A9C-9EDB-7BE4DAC12544} = {13110246-EBE1-441B-B721-B0614D62B13B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3761BFC9-DBEF-4186-BB8B-BC0D84ED9AE5}

@@ -137,6 +137,21 @@ public static unsafe partial class WindowExtensions
         return result;
     }
 
+    /// <inheritdoc cref="Interop.SetClassLong(HWND, GET_CLASS_LONG_INDEX, int)"/>
+    public static nuint SetClassLong<T>(this T window, GET_CLASS_LONG_INDEX index, nint value) where T : IHandle<HWND>
+    {
+        nuint result = Environment.Is64BitProcess
+            ? Interop.SetClassLongPtr(window.Handle, index, value)
+            : Interop.SetClassLong(window.Handle, index, (int)value);
+
+        if (result == 0)
+        {
+            Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_SUCCESS);
+        }
+
+        return result;
+    }
+
     /// <inheritdoc cref="Interop.SetWindowLong(HWND, WINDOW_LONG_PTR_INDEX, int)" />
     public static nint SetWindowLong<T>(this T window, WINDOW_LONG_PTR_INDEX index, nint value)
         where T : IHandle<HWND>

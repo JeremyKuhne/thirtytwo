@@ -2,12 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
+using System.Runtime.InteropServices;
 using Windows.Support;
 
 namespace Windows;
 
 public unsafe partial class WindowClass : DisposableBase.Finalizable
 {
+    private readonly WNDPROC _priorClassProcedure;
     // Stash the delegate to keep it from being collected
     private readonly WindowProcedure _windowProcedure;
     private readonly string _className;
@@ -144,6 +146,18 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
         _windowProcedure = WindowProcedureInternal;
         _className = registeredClassName;
         ModuleInstance = HMODULE.Null;
+
+        // We need to subclass the preexisting window class to get class messages first and during construction.
+        HWND window = CreateWindow();
+        try
+        {
+            _priorClassProcedure = (WNDPROC)window.GetClassLong(GET_CLASS_LONG_INDEX.GCL_WNDPROC);
+            window.SetClassLong(GET_CLASS_LONG_INDEX.GCL_WNDPROC, Marshal.GetFunctionPointerForDelegate(_windowProcedure));
+        }
+        finally
+        {
+            Interop.DestroyWindow(window);
+        }
     }
 
     public bool IsRegistered => Atom.IsValid || ModuleInstance == HMODULE.Null;
@@ -286,7 +300,9 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
     }
 
     protected virtual LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam) =>
-        Interop.DefWindowProc(window, (uint)message, wParam, lParam);
+        _priorClassProcedure.IsNull
+            ? Interop.DefWindowProc(window, (uint)message, wParam, lParam)
+            : Interop.CallWindowProc(_priorClassProcedure, window, (uint)message, wParam, lParam);
 
     protected override void Dispose(bool disposing)
     {

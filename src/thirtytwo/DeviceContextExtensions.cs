@@ -274,6 +274,29 @@ public static unsafe partial class DeviceContextExtensions
         return success;
     }
 
+    public static bool Ellipse<T>(this T context, Rectangle rectangle) where T : IHandle<HDC> =>
+        context.Ellipse(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
+
+    public static bool Ellipse<T>(this T context, int left, int top, int right, int bottom) where T : IHandle<HDC>
+    {
+        bool success = Interop.Ellipse(context.Handle, left, top, right, bottom);
+        GC.KeepAlive(context.Wrapper);
+        return success;
+    }
+
+    public static bool PolyBezier<T>(this T context, params Point[] points) where T : IHandle<HDC> =>
+        PolyBezier(context, points.AsSpan());
+
+    public static bool PolyBezier<T>(this T context, ReadOnlySpan<Point> points) where T : IHandle<HDC>
+    {
+        fixed (Point* p = points)
+        {
+            bool success = Interop.PolyBezier(context.Handle, p, (uint)points.Length);
+            GC.KeepAlive(context.Wrapper);
+            return success;
+        }
+    }
+
     public static bool Rectangle<T>(this T context, Rectangle rectangle) where T : IHandle<HDC> =>
         context.Rectangle(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
 
@@ -296,34 +319,34 @@ public static unsafe partial class DeviceContextExtensions
         return success;
     }
 
-    public static bool Ellipse<T>(this T context, Rectangle rectangle) where T : IHandle<HDC> =>
-        context.Ellipse(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
-
-    public static bool Ellipse<T>(this T context, int left, int top, int right, int bottom) where T : IHandle<HDC>
+    public static bool FillRectangle<T>(this T context, Rectangle rectangle, HBRUSH hbrush) where T : IHandle<HDC>
     {
-        bool success = Interop.Ellipse(context.Handle, left, top, right, bottom);
+        RECT rect = rectangle;
+        bool success = (BOOL)Interop.FillRect(context.Handle, &rect, hbrush);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
 
-    public static unsafe bool PolyBezier<T>(this T context, params Point[] points) where T : IHandle<HDC> =>
-        PolyBezier(context, points.AsSpan());
-
-    public static unsafe bool PolyBezier<T>(this T context, ReadOnlySpan<Point> points) where T : IHandle<HDC>
-    {
-        fixed (Point* p = points)
-        {
-            bool success = Interop.PolyBezier(context.Handle, p, (uint)points.Length);
-            GC.KeepAlive(context.Wrapper);
-            return success;
-        }
-    }
-
-    public static bool FillRectangle<T>(this T context, Rectangle rectangle, HBRUSH hbrush)
-        where T : IHandle<HDC>
+    public static bool FrameRectangle<T>(this T context, Rectangle rectangle, HBRUSH brush) where T : IHandle<HDC>
     {
         RECT rect = rectangle;
-        bool success = (BOOL)Interop.FillRect(context.Handle, &rect, hbrush);
+        bool success = (BOOL)Interop.FrameRect(context.Handle, &rect, brush);
+        GC.KeepAlive(context.Wrapper);
+        return success;
+    }
+
+    public static bool InvertRectangle<T>(this T context, Rectangle rectangle) where T : IHandle<HDC>
+    {
+        RECT rect = rectangle;
+        bool success = Interop.InvertRect(context.Handle, &rect);
+        GC.KeepAlive(context.Wrapper);
+        return success;
+    }
+
+    public static bool DrawFocusRectangle<T>(this T context, Rectangle rectangle) where T : IHandle<HDC>
+    {
+        RECT rect = rectangle;
+        bool success = Interop.DrawFocusRect(context.Handle, &rect);
         GC.KeepAlive(context.Wrapper);
         return success;
     }

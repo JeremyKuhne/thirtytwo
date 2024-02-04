@@ -56,6 +56,7 @@ DISPID_PROPERTYPUT
 DISPID_STARTENUM
 DISPID_UNKNOWN
 DPI_AWARENESS_CONTEXT_*
+DrawFocusRect
 DrawIconEx
 DRAWITEMSTRUCT
 DrawTextEx
@@ -103,6 +104,8 @@ GetCurrentThread
 GetCurrentThreadId
 GetDC
 GetDeviceCaps
+GetDialogBaseUnits
+GetDialogBaseUnits
 GetDpiForWindow
 GetFocus
 GetGraphicsMode
@@ -168,6 +171,7 @@ InitVariantFromDoubleArray
 INTERFACEDATA
 INVALID_HANDLE_VALUE
 InvalidateRect
+InvertRect
 IOleClientSite
 IOleContainer
 IOleControlSite
@@ -203,6 +207,7 @@ LocalFree
 LOGFONTW
 LPtoDP
 LsaNtStatusToWinError
+MapDialogRect
 MapWindowPoints
 MEMBERID_NIL
 MessageBeep
@@ -259,6 +264,8 @@ SELFLAG_*
 SendMessage
 SetActiveWindow
 SetCapture
+SetClassLong
+SetClassLongPtr
 SetClipboardData
 SetCoalescableTimer
 SetCursor
