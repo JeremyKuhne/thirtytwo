@@ -53,6 +53,8 @@ public class RetryTestCase : XunitTestCase
             }
 
             diagnosticMessageSink.OnMessage(new DiagnosticMessage($"Execution of '{DisplayName}' failed (attempt #{runCount}), retrying..."));
+
+            Thread.Sleep(50);  // Just to space things out a bit
         }
     }
 
