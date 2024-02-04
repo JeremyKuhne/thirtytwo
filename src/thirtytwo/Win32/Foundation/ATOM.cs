@@ -3,7 +3,7 @@
 
 namespace Windows.Win32.Foundation;
 
-public readonly struct ATOM(ushort atom)
+public unsafe readonly struct ATOM(ushort atom)
 {
     // #define MAXINTATOM 0xC000
     // #define MAKEINTATOM(i)  (LPTSTR)((ULONG_PTR)((WORD)(i)))
@@ -31,4 +31,5 @@ public readonly struct ATOM(ushort atom)
     public static implicit operator nint(ATOM atom) => atom.Value;
     public static implicit operator ATOM(ushort atom) => new(atom);
     public static implicit operator ushort(ATOM atom) => atom.Value;
+    public static implicit operator PCWSTR(ATOM atom) => (PCWSTR)(char*)atom.Value;
 }

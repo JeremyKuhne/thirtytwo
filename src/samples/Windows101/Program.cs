@@ -42,8 +42,7 @@ internal class Program
 
         // The simplest way, however, is to derive from "Window", which wraps up the registration of a window class
         // and the creation of a window instance, with the ability to set other appearance properties.
-        using HelloWindow helloWindow = new();
-        Application.Run(helloWindow);
+        Application.Run(new HelloWindow());
     }
 
     private class HelloWindowClass : WindowClass
@@ -67,9 +66,9 @@ internal class Program
         }
     }
 
-    private class HelloWindow : Window
+    private class HelloWindow : MainWindow
     {
-        public HelloWindow() : base(DefaultBounds, text: "HelloWindow", style: WindowStyles.OverlappedWindow)
+        public HelloWindow() : base("HelloWindow")
         {
         }
 

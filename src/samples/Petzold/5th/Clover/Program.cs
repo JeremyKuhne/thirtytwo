@@ -15,16 +15,16 @@ namespace Clover;
 internal static class Program
 {
     [STAThread]
-    private static void Main() => Application.Run(new Clover(), "Draw a Clover");
+    private static void Main() => Application.Run(new Clover());
 }
 
-internal class Clover : WindowClass
+internal class Clover : MainWindow
 {
     private int _cxClient, _cyClient;
     private HRGN _hrgnClip;
     private const double TWO_PI = Math.PI * 2;
 
-    public Clover() : base(backgroundBrush: StockBrush.White) { }
+    public Clover() : base(text: "Draw a Clover", backgroundBrush: StockBrush.White) { }
 
     protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
     {

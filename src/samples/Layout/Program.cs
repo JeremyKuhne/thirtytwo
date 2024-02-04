@@ -10,12 +10,9 @@ namespace LayoutSample;
 internal class Program
 {
     [STAThread]
-    private static void Main()
-    {
-        Application.Run(new MainWindow("Layout Demo"));
-    }
+    private static void Main() => Application.Run(new LayoutWindow("Layout Demo"));
 
-    private class MainWindow : Window
+    private class LayoutWindow : MainWindow
     {
         private readonly ReplaceableLayout _replaceableLayout;
 
@@ -24,14 +21,10 @@ internal class Program
         private readonly StaticControl _staticControl;
         private readonly TextLabelControl _textLabel;
 
-        public MainWindow(string title) : base(
-            DefaultBounds,
-            text: title,
-            style: WindowStyles.OverlappedWindow)
+        public LayoutWindow(string title) : base(title)
         {
             _editControl = new EditControl(
-                DefaultBounds,
-                "Type text here...",
+                text: "Type text here...",
                 editStyle: EditControl.Styles.Multiline | EditControl.Styles.Left
                     | EditControl.Styles.AutoHorizontalScroll | EditControl.Styles.AutoVerticalScroll,
                 style: WindowStyles.Child | WindowStyles.Visible | WindowStyles.HorizontalScroll
@@ -41,22 +34,18 @@ internal class Program
             _editControl.SetFont("Times New Roman", 24);
 
             _buttonControl = new ButtonControl(
-                DefaultBounds,
                 text: "Push Me",
-                style: WindowStyles.Child | WindowStyles.Visible,
                 parentWindow: this);
 
             _staticControl = new StaticControl(
-                DefaultBounds,
                 text: "You pushed it!",
-                style: WindowStyles.Child | WindowStyles.Visible,
                 parentWindow: this);
 
             _textLabel = new TextLabelControl(
-                DefaultBounds,
                 text: "Text Label Control",
-                style: WindowStyles.Child | WindowStyles.Visible,
                 parentWindow: this);
+
+            _textLabel.SetFont("Segoe Print", 20);
 
             var font = _buttonControl.GetFontHandle();
             _staticControl.SetWindowText($"{font.GetFaceName()} {font.GetQuality()}");

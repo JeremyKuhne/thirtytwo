@@ -47,6 +47,8 @@ public class IconTests
     public void ExtractIcon_Draw()
     {
         using HICON icon = HICON.ExtractIcon(SHSTOCKICONID.SIID_DEVICECAMERA, size: 256);
+
+        // Application.Run will also dispose, this is guarded and should not fail.
         using IconTestWindow window = new(icon);
         Application.Run(window);
     }

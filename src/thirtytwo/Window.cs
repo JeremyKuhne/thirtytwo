@@ -22,6 +22,16 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
     private readonly object _lock = new();
     private bool _destroyed;
 
+    // When I send a WM_GETFONT message to a window, why don't I get a font?
+    // https://devblogs.microsoft.com/oldnewthing/20140724-00/?p=413
+
+    // Who is responsible for destroying the font passed in the WM_SETFONT message?
+    // https://devblogs.microsoft.com/oldnewthing/20080912-00/?p=20893
+
+    private HFONT _font;
+
+    private readonly HBRUSH _backgroundBrush;
+
     private static readonly WindowClass s_defaultWindowClass = new(className: $"DefaultWindowClass_{Guid.NewGuid()}");
     internal static WNDPROC DefaultWindowProcedure { get; } = GetDefaultWindowProcedure();
 
@@ -37,27 +47,37 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
     public static Rectangle DefaultBounds { get; }
         = new(Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT);
 
-    public HWND Handle { get; }
+    /// <summary>
+    ///  The window handle. This will be <see cref="HWND.Null"/> after the window is destroyed.
+    /// </summary>
+    public HWND Handle { get; private set; }
 
     public event WindowsMessageEvent? MessageHandler;
 
     public Window(
-        Rectangle bounds,
+        Rectangle bounds = default,
         string? text = default,
         WindowStyles style = WindowStyles.Overlapped,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
         Window? parentWindow = default,
         WindowClass? windowClass = default,
         nint parameters = default,
-        HMENU menuHandle = default)
+        HMENU menuHandle = default,
+        HBRUSH backgroundBrush = default)
     {
         _windowClass = windowClass ?? s_defaultWindowClass;
-        if (!_windowClass.IsRegistered)
+
+        if (bounds.IsEmpty)
         {
-            _windowClass.Register();
+            bounds = DefaultBounds;
         }
 
+        // Need to set our Window Procedure to get messages before we set
+        // the font (which sends a message to do so).
+        _windowProcedure = WindowProcedureInternal;
+
         _text = text;
+
         Handle = _windowClass.CreateWindow(
             bounds,
             text,
@@ -65,7 +85,10 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
             extendedStyle,
             parentWindow?.Handle ?? default,
             parameters,
-            menuHandle);
+            menuHandle,
+            _windowProcedure);
+
+        _backgroundBrush = backgroundBrush;
 
         s_windows[Handle] = new(this);
 
@@ -79,9 +102,6 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
             deviceContext.SetWorldTransform(ref transform);
         }
 
-        // Need to set our Window Procedure to get messages before we set
-        // the font (which sends a message to do so).
-        _windowProcedure = WindowProcedureInternal;
         _priorWindowProcedure = this.SetWindowProcedure(_windowProcedure);
 
         _lastDpi = this.GetDpi();
@@ -153,6 +173,10 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
             {
                 // This should be the final message. Track that we've been destroyed so we know we don't have
                 // to manually clean up.
+
+                bool success = s_windows.TryRemove(Handle, out _);
+                Debug.Assert(success);
+                Handle = default;
                 _destroyed = true;
             }
         }
@@ -164,10 +188,52 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
         return windProcResult;
     }
 
+    /// <summary>
+    ///  Override to handle window messages. Call base to allow default handling.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   Note that some messages will be sent before the class constructor has fully run. These messages are
+    ///   <see cref="MessageType.GetMinMaxInfo"/>, <see cref="MessageType.NonClientCreate"/>,
+    ///   <see cref="MessageType.NonClientCalculateSize"/> and <see cref="MessageType.Create"/>. Do not access
+    ///  </para>
+    /// </remarks>
     protected virtual LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
     {
         switch (message)
         {
+            case MessageType.EraseBackground:
+                if (!_backgroundBrush.IsNull)
+                {
+                    ((HDC)wParam).FillRectangle(this.GetClientRectangle(), _backgroundBrush);
+                    return (LRESULT)1;
+                }
+
+                break;
+
+            case MessageType.GetFont:
+                // We only want to handle fonts if we're not an externally registered class.
+                if (!_windowClass.ModuleInstance.IsNull)
+                {
+                    return (LRESULT)_font.Value;
+                }
+
+                break;
+
+            case MessageType.SetFont:
+                if (!_windowClass.ModuleInstance.IsNull)
+                {
+                    _font = (HFONT)(nint)wParam.Value;
+                    if ((BOOL)lParam.LOWORD)
+                    {
+                        this.Invalidate();
+                    }
+
+                    return (LRESULT)0;
+                }
+
+                break;
+
             case MessageType.SetText:
                 // Update our cached text if necessary
 
@@ -195,7 +261,10 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
                 }
         }
 
-        return Interop.CallWindowProc(_priorWindowProcedure, window, (uint)message, wParam, lParam);
+        return _priorWindowProcedure.IsNull
+            // Still creating the window.
+            ? (LRESULT)(-1)
+            : Interop.CallWindowProc(_priorWindowProcedure, window, (uint)message, wParam, lParam);
     }
 
     private void HandleDpiChanged(Message.DpiChanged dpiChanged)
@@ -286,6 +355,12 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
         return hwnd.IsNull ? null : FromHandle(hwnd, walkParents: true);
     }
 
+    /// <remarks>
+    ///  <para>
+    ///   Note that 
+    ///  </para>
+    /// </remarks>
+    /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
         // We want to block at a WM_NCDESTROY message so that we know our handle is still valid for cleanup.
@@ -298,13 +373,13 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
                 // a close message so it will destroy the window on the correct thread.
                 Handle.SetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, (nint)(void*)DefaultWindowProcedure);
                 Handle.PostMessage(MessageType.Close);
-            }
-        }
 
-        if (disposing)
-        {
-            bool success = s_windows.TryRemove(Handle, out _);
-            Debug.Assert(success);
+                if (disposing)
+                {
+                    bool success = s_windows.TryRemove(Handle, out _);
+                    Debug.Assert(success);
+                }
+            }
         }
     }
 

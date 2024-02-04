@@ -98,7 +98,7 @@ public static unsafe partial class DeviceContextExtensions
     }
 
     public static bool Polygon<T>(this T context, params Point[] points)
-        where T: IHandle<HDC> => Polygon(context, points.AsSpan());
+        where T : IHandle<HDC> => Polygon(context, points.AsSpan());
 
     public static bool Polygon<T>(this T context, ReadOnlySpan<Point> points)
         where T : IHandle<HDC>
@@ -262,6 +262,15 @@ public static unsafe partial class DeviceContextExtensions
         where T : IHandle<HDC>
     {
         bool success = Interop.LineTo(context.Handle, x, y);
+        GC.KeepAlive(context.Wrapper);
+        return success;
+    }
+
+    public static bool FillRectangle<T>(this T context, Rectangle rectangle, HBRUSH hbrush)
+        where T : IHandle<HDC>
+    {
+        RECT rect = rectangle;
+        bool success = (BOOL)Interop.FillRect(context.Handle, &rect, hbrush);
         GC.KeepAlive(context.Wrapper);
         return success;
     }

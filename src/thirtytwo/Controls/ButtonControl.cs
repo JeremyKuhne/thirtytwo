@@ -10,10 +10,10 @@ public partial class ButtonControl : Window
     private static readonly WindowClass s_buttonClass = new("Button");
 
     public ButtonControl(
-        Rectangle bounds,
+        Rectangle bounds = default,
         string? text = default,
         Styles buttonStyle = Styles.PushButton,
-        WindowStyles style = WindowStyles.Overlapped,
+        WindowStyles style = WindowStyles.Overlapped | WindowStyles.Child | WindowStyles.Visible,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
         Window? parentWindow = default,
         nint parameters = default) : base(

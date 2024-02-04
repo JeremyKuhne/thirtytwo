@@ -7,7 +7,7 @@ namespace Windows;
 public enum WindowStyles : uint
 {
     /// <summary>
-    ///  Overlapped window with a title bar and border.
+    ///  Overlapped window.
     /// </summary>
     Overlapped = WINDOW_STYLE.WS_OVERLAPPED,
 
@@ -130,7 +130,7 @@ public enum WindowStyles : uint
     TiledWindow = WINDOW_STYLE.WS_TILEDWINDOW,
 
     /// <summary>
-    ///  Standard overlapped window style.
+    ///  Standard overlapped window style with title bar and close buttons.
     /// </summary>
     OverlappedWindow = WINDOW_STYLE.WS_OVERLAPPEDWINDOW,
 

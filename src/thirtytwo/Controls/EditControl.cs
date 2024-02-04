@@ -10,7 +10,7 @@ public partial class EditControl : EditBase
     private static readonly WindowClass s_editClass = new("Edit");
 
     public EditControl(
-        Rectangle bounds,
+        Rectangle bounds = default,
         string? text = default,
         Styles editStyle = Styles.Left,
         WindowStyles style = WindowStyles.Overlapped,

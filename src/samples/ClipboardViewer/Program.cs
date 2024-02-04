@@ -9,23 +9,16 @@ namespace LayoutSample;
 internal class Program
 {
     [STAThread]
-    private static void Main()
-    {
-        Application.Run(new MainWindow("Clipboard Viewer Demo"));
-    }
+    private static void Main() => Application.Run(new ClipboardViewer("Clipboard Viewer Demo"));
 
-    private class MainWindow : Window
+    private class ClipboardViewer : MainWindow
     {
         private readonly EditControl _editControl;
         private readonly TextLabelControl _textLabel;
 
-        public MainWindow(string title) : base(
-            DefaultBounds,
-            text: title,
-            style: WindowStyles.OverlappedWindow)
+        public ClipboardViewer(string title) : base(text: title)
         {
             _editControl = new EditControl(
-                DefaultBounds,
                 editStyle: EditControl.Styles.Multiline | EditControl.Styles.Left
                     | EditControl.Styles.AutoHorizontalScroll | EditControl.Styles.AutoVerticalScroll,
                 style: WindowStyles.Child | WindowStyles.Visible | WindowStyles.HorizontalScroll
@@ -35,9 +28,7 @@ internal class Program
             _editControl.SetFont("Consolas", 14);
 
             _textLabel = new TextLabelControl(
-                DefaultBounds,
                 text: "Recent clipboard text:",
-                style: WindowStyles.Child | WindowStyles.Visible,
                 parentWindow: this);
 
             this.AddLayoutHandler(Layout.Horizontal(
@@ -61,10 +52,23 @@ internal class Program
                             _editControl.Invalidate();
                         }
                     }
+
                     return (LRESULT)0;
             }
 
             return base.WindowProcedure(window, message, wParam, lParam);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!Handle.IsNull)
+            {
+                Clipboard.RemoveClipboardFormatListener(this);
+            }
+
+            base.Dispose(disposing);
+            _editControl.Dispose();
+            _textLabel.Dispose();
         }
     }
 }

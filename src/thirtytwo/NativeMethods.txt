@@ -75,6 +75,7 @@ ExtractIconEx
 FACILITY_CODE
 fdex*
 FILETIME
+FillRect
 FONT_CHARSET
 FONT_CLIP_PRECISION
 FONT_FAMILY
@@ -217,6 +218,7 @@ OLEIVERB_*
 OpenClipboard
 PARAMDATA
 PeekMessage
+PlaySound
 POINTS
 Polygon
 PostMessage
@@ -231,6 +233,7 @@ RegOpenKeyEx
 RegQueryInfoKey
 RegQueryValueEx
 ReleaseDC
+RemoveClipboardFormatListener
 ROLE_SYSTEM_*
 S_FALSE
 S_OK

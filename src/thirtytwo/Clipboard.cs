@@ -260,4 +260,13 @@ public unsafe class Clipboard
         Interop.AddClipboardFormatListener(window.Handle).ThrowLastErrorIfFalse();
         GC.KeepAlive(window.Wrapper);
     }
+
+    /// <summary>
+    ///  Unregisters the given window from getting <see cref="MessageType.ClipboardUpdate"/> messages.
+    /// </summary>
+    public static void RemoveClipboardFormatListener<T>(T window) where T : IHandle<HWND>
+    {
+        Interop.RemoveClipboardFormatListener(window.Handle).ThrowLastErrorIfFalse();
+        GC.KeepAlive(window.Wrapper);
+    }
 }

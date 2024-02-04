@@ -89,25 +89,15 @@ public static unsafe class Application
         string? windowTitle = null,
         WindowStyles style = WindowStyles.OverlappedWindow,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
-        HMENU menuHandle = default)
-    {
-        if (!windowClass.IsRegistered)
-        {
-            windowClass.Register();
-        }
-
-        using Window mainWindow = new(
+        HMENU menuHandle = default) => Run(new Window(
             bounds,
             windowTitle,
             style,
             extendedStyle,
             windowClass: windowClass,
-            menuHandle: menuHandle);
+            menuHandle: menuHandle));
 
-        Run(mainWindow);
-    }
-
-    public static void Run(Window window)
+    public static void Run(Window window, bool disposeWindow = true)
     {
         try
         {
@@ -134,6 +124,13 @@ public static unsafe class Application
         {
             Interop.DestroyWindow(window);
             throw;
+        }
+        finally
+        {
+            if (disposeWindow)
+            {
+                window.Dispose();
+            }
         }
     }
 

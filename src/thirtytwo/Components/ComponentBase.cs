@@ -9,42 +9,35 @@ namespace Windows.Components;
 ///  Lighter weight replacement for <see cref="Component"/>.
 /// </summary>
 [DesignerCategory("Component")]
-public class ComponentBase : IComponent
+public class ComponentBase : DisposableBase.Finalizable, IComponent
 {
-    private bool _disposedValue;
-    private event EventHandler? Disposed;
+    private event EventHandler? DisposedHandler;
     private readonly object _lock = new();
 
     ISite? IComponent.Site { get; set; }
 
     event EventHandler? IComponent.Disposed
     {
-        add => Disposed += value;
-        remove => Disposed -= value;
+        add => DisposedHandler += value;
+        remove => DisposedHandler -= value;
     }
 
-    protected virtual void Dispose(bool disposing)
+    /// <summary>
+    ///  Called when the component is being disposed or finalized.
+    /// </summary>
+    /// <param name="disposing">
+    ///  <see langword="false"/> if called via a destructor on the finalizer queue. Do not access object fields
+    ///  unless <see langword="true"/>.
+    /// </param>
+    protected override void Dispose(bool disposing)
     {
-        if (_disposedValue)
-        {
-            return;
-        }
-
         if (disposing)
         {
             lock (_lock)
             {
                 ((IComponent)this).Site?.Container?.Remove(this);
-                Disposed?.Invoke(this, EventArgs.Empty);
+                DisposedHandler?.Invoke(this, EventArgs.Empty);
             }
         }
-
-        _disposedValue = true;
-    }
-
-    public void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 }

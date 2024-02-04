@@ -6,19 +6,66 @@ using Windows.Support;
 
 namespace Windows;
 
-public unsafe partial class WindowClass : IDisposable
+public unsafe partial class WindowClass : DisposableBase.Finalizable
 {
     // Stash the delegate to keep it from being collected
     private readonly WindowProcedure _windowProcedure;
     private readonly string _className;
     private readonly WindowClassInfo? _windowClass;
-    private int _disposedValue;
     private readonly object _lock = new();
 
-    public ATOM Atom { get; private set; }
-    public HMODULE ModuleInstance { get; }
-    private bool Disposed => _disposedValue != 0;
+    [ThreadStatic]
+    private static WindowProcedure? t_initializeProcedure;
 
+    /// <summary>
+    ///  The atom for the class if <see cref="WindowClass"/> did the class registration.
+    /// </summary>
+    public ATOM Atom { get; private set; }
+
+    /// <summary>
+    ///  The module instance that this class is registered with. This will be null when this class wraps an
+    ///  existing registered class (such as common control classes).
+    /// </summary>
+    public HMODULE ModuleInstance { get; }
+
+    /// <summary>
+    ///  Construct a new <see cref="WindowClass"/>.
+    /// </summary>
+    /// <param name="className">
+    ///  The name of the class. If not provided a new GUID will be used.
+    /// </param>
+    /// <param name="moduleInstance">
+    ///  The module instance to register the class with. If not provided the module instance
+    ///  of the launching executable will be used.
+    /// </param>
+    /// <param name="backgroundBrush">
+    ///  The background brush for the window. If not provided the system window color will be used. To have no
+    ///  background brush, pass <see cref="HBRUSH.Invalid"/>.
+    /// </param>
+    /// <param name="icon">
+    ///  The icon for the window. If not provided the application icon will be used.
+    /// </param>
+    /// <param name="smallIcon">
+    ///  The small icon for the window. If not provided the application icon will be used.
+    /// </param>
+    /// <param name="cursor">
+    ///  The default cursor to use. If not provided the arrow cursor will be used.
+    /// </param>
+    /// <param name="menuName">
+    ///  The name of the menu to be used, if any. Cannot also specify <paramref name="menuId"/>
+    /// </param>
+    /// <param name="menuId">
+    ///  The id of the menu to be used, if any. Cannot also specify <paramref name="menuName"/>
+    /// </param>
+    /// <param name="classExtraBytes">
+    ///  The number of extra bytes to be allocated for the class, if any.
+    /// </param>
+    /// <param name="windowExtraBytes">
+    ///  The number of extra bytes to be allocated for the window, if any.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    ///  <paramref name="menuName"/> and <paramref name="menuId"/> were both specified.
+    /// </exception>
     public unsafe WindowClass(
         string? className = default,
         HMODULE moduleInstance = default,
@@ -35,7 +82,7 @@ public unsafe partial class WindowClass : IDisposable
         // Handle default values
         className ??= Guid.NewGuid().ToString();
 
-        if (backgroundBrush.Value == default)
+        if (backgroundBrush.IsNull)
         {
             backgroundBrush = SystemColor.Window;
         }
@@ -104,7 +151,7 @@ public unsafe partial class WindowClass : IDisposable
     /// <summary>
     ///  Registers this <see cref="WindowClass"/> so that instances can be created.
     /// </summary>
-    public unsafe WindowClass Register()
+    public WindowClass Register()
     {
         ObjectDisposedException.ThrowIf(Disposed, this);
 
@@ -132,19 +179,26 @@ public unsafe partial class WindowClass : IDisposable
     ///  The text for the title bar when using <see cref="WindowStyles.Caption"/> or <see cref="WindowStyles.Overlapped"/>.
     ///  For buttons, checkboxes, and other static controls this is the text of the control or a resource reference.
     /// </param>
+    /// <param name="windowProcedure">
+    ///  Optional window procedure to send messages to while attempting to construct the window. Allows for
+    ///  <see cref="MessageType.Create"/> to be handled.
+    /// </param>
     public virtual HWND CreateWindow(
-        Rectangle bounds,
+        Rectangle bounds = default,
         string? windowName = null,
         WindowStyles style = WindowStyles.Overlapped,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
         HWND parentWindow = default,
         nint parameters = default,
-        HMENU menuHandle = default)
+        HMENU menuHandle = default,
+        WindowProcedure? windowProcedure = default)
     {
         ObjectDisposedException.ThrowIf(Disposed, this);
 
         if (!IsRegistered)
-            throw new InvalidOperationException("Window class must be registered before using.");
+        {
+           Register();
+        }
 
         if (bounds == default)
         {
@@ -157,31 +211,40 @@ public unsafe partial class WindowClass : IDisposable
             using var themeScope = Application.ThemingScope;
             Application.EnsureDpiAwareness();
 
-            HWND hwnd = Interop.CreateWindowEx(
-                (WINDOW_EX_STYLE)extendedStyle,
-                Atom.IsValid ? (char*)Atom.Value : cn,
-                wn,
-                (WINDOW_STYLE)style,
-                bounds.X,
-                bounds.Y,
-                bounds.Width,
-                bounds.Height,
-                parentWindow,
-                menuHandle,
-                HMODULE.Null,
-                (void*)parameters);
-
-            if (hwnd.IsNull)
+            try
             {
-                Error.ThrowLastError();
-            }
+                t_initializeProcedure = windowProcedure;
 
-            if (!Atom.IsValid)
+                HWND hwnd = Interop.CreateWindowEx(
+                    (WINDOW_EX_STYLE)extendedStyle,
+                    Atom.IsValid ? (char*)Atom.Value : cn,
+                    wn,
+                    (WINDOW_STYLE)style,
+                    bounds.X,
+                    bounds.Y,
+                    bounds.Width,
+                    bounds.Height,
+                    parentWindow,
+                    menuHandle,
+                    HMODULE.Null,
+                    (void*)parameters);
+
+                if (hwnd.IsNull)
+                {
+                    Error.ThrowLastError();
+                }
+
+                if (!Atom.IsValid)
+                {
+                    Atom = (ushort)hwnd.GetClassLong(GET_CLASS_LONG_INDEX.GCW_ATOM);
+                }
+
+                return hwnd;
+            }
+            finally
             {
-                Atom = (ushort)hwnd.GetClassLong(GET_CLASS_LONG_INDEX.GCW_ATOM);
+                t_initializeProcedure = null;
             }
-
-            return hwnd;
         }
     }
 
@@ -191,6 +254,28 @@ public unsafe partial class WindowClass : IDisposable
         {
             // In the middle of disposing, we've flipped the flag, but haven't unregistered the class yet.
             return Interop.DefWindowProc(window, message, wParam, lParam);
+        }
+
+        if (t_initializeProcedure is not null
+            && (MessageType)message is MessageType.GetMinMaxInfo
+                or MessageType.NonClientCreate
+                or MessageType.NonClientCalculateSize
+                or MessageType.Create)
+        {
+            // Give the Window a chance to handle the message before it's HWND is fully initialized.
+            LRESULT initResult = t_initializeProcedure(window, message, wParam, lParam);
+
+            // These are the observed messages (in order) seen while calling CreateWindow
+            //
+            //   - WM_GETMINMAXINFO
+            //   - WM_NCCREATE
+            //   - WM_NCCALCSIZE
+            //   - WM_CREATE
+
+            if (initResult != -1)
+            {
+                return initResult;
+            }
         }
 
         LRESULT result = WindowProcedure(window, (MessageType)message, wParam, lParam);
@@ -203,18 +288,8 @@ public unsafe partial class WindowClass : IDisposable
     protected virtual LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam) =>
         Interop.DefWindowProc(window, (uint)message, wParam, lParam);
 
-    protected virtual void Dispose(bool disposing)
+    protected override void Dispose(bool disposing)
     {
-    }
-
-    private void InternalDispose(bool disposing)
-    {
-        if (Interlocked.Exchange(ref _disposedValue, 1) == 1)
-        {
-            Debug.Fail("Double disposing");
-            return;
-        }
-
         if (Atom.IsValid)
         {
             // Free the memory for the window class and prevent further callbacks.
@@ -238,15 +313,5 @@ public unsafe partial class WindowClass : IDisposable
                 }
             }
         }
-
-        Dispose(disposing);
-    }
-
-    ~WindowClass() => InternalDispose(disposing: false);
-
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
-        InternalDispose(disposing: true);
     }
 }

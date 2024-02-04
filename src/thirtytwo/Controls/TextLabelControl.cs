@@ -12,10 +12,10 @@ public class TextLabelControl : Control
     private DrawTextFormat _textFormat;
 
     public TextLabelControl(
-        Rectangle bounds,
+        Rectangle bounds = default,
         DrawTextFormat textFormat = DrawTextFormat.Center | DrawTextFormat.VerticallyCenter,
         string? text = default,
-        WindowStyles style = default,
+        WindowStyles style = WindowStyles.Overlapped | WindowStyles.Visible | WindowStyles.Child,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
         Window? parentWindow = default,
         nint parameters = default) : base(

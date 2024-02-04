@@ -10,10 +10,10 @@ public partial class StaticControl : Window
     private static readonly WindowClass s_buttonClass = new("Static");
 
     public StaticControl(
-        Rectangle bounds,
+        Rectangle bounds = default,
         string? text = default,
         Styles staticStyle = Styles.Center | Styles.EditControl,
-        WindowStyles style = WindowStyles.Overlapped,
+        WindowStyles style = WindowStyles.Overlapped | WindowStyles.Child | WindowStyles.Visible,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
         Window? parentWindow = default,
         nint parameters = default) : base(
