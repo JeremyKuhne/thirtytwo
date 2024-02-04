@@ -11,7 +11,7 @@ namespace Windows;
 public class MainWindow : Window
 {
     public MainWindow(
-        string? text = default,
+        string? title = default,
         WindowStyles style = WindowStyles.OverlappedWindow,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
         WindowClass? windowClass = default,
@@ -19,7 +19,7 @@ public class MainWindow : Window
         HMENU menuHandle = default,
         HBRUSH backgroundBrush = default) : this(
             DefaultBounds,
-            text,
+            title,
             style,
             extendedStyle,
             windowClass,

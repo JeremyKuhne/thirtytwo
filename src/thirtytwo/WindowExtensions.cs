@@ -152,6 +152,26 @@ public static unsafe partial class WindowExtensions
         return result;
     }
 
+    /// <inheritdoc cref="GetWindowLong{T}(T, WINDOW_LONG_PTR_INDEX)"/>
+    public static nint GetWindowLong<T>(this T window, int index) where T : IHandle<HWND> =>
+        GetWindowLong(window, (WINDOW_LONG_PTR_INDEX)index);
+
+    /// <inheritdoc cref="Interop.GetWindowLong(HWND, WINDOW_LONG_PTR_INDEX)" />
+    public static nint GetWindowLong<T>(this T window, WINDOW_LONG_PTR_INDEX index)
+        where T : IHandle<HWND>
+    {
+        nint result = Environment.Is64BitProcess
+            ? Interop.GetWindowLongPtr(window.Handle, index)
+            : Interop.GetWindowLong(window.Handle, index);
+
+        if (result == 0)
+        {
+            Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_SUCCESS);
+        }
+
+        return result;
+    }
+
     /// <inheritdoc cref="Interop.SetWindowLong(HWND, WINDOW_LONG_PTR_INDEX, int)" />
     public static nint SetWindowLong<T>(this T window, WINDOW_LONG_PTR_INDEX index, nint value)
         where T : IHandle<HWND>
@@ -508,6 +528,7 @@ public static unsafe partial class WindowExtensions
             Error.ThrowLastError();
         }
 
+        GC.KeepAlive(window.Wrapper);
         return result;
     }
 
@@ -518,7 +539,67 @@ public static unsafe partial class WindowExtensions
         {
             Error.ThrowIfLastErrorNot(WIN32_ERROR.NO_ERROR);
         }
+
+        GC.KeepAlive(window.Wrapper);
     }
+
+    public static HWND SetFocus<T>(this T window) where T : IHandle<HWND>
+    {
+        HWND prior = Interop.SetFocus(window.Handle);
+        if (prior.IsNull)
+        {
+            Error.ThrowIfLastErrorNot(WIN32_ERROR.NO_ERROR);
+        }
+
+        GC.KeepAlive(window.Wrapper);
+        return prior;
+    }
+
+    public static HWND GetDialogItem<T>(this T window, int id) where T : IHandle<HWND>
+    {
+        HWND control = Interop.GetDlgItem(window.Handle, id);
+        if (control.IsNull)
+        {
+            Error.ThrowLastError();
+        }
+
+        return control;
+    }
+
+    public static int GetDialogControlId<T>(this T window) where T : IHandle<HWND>
+    {
+        // GWLP_ID is the control ID or the handle to the menu, depending on whether the window has the WS_CHILD style.
+        // Using this API you'll only get the control ID or 0 if it is not a child control (as of 20H2).
+        int id = Interop.GetDlgCtrlID(window.Handle);
+        if (id == 0)
+        {
+            Error.ThrowLastError();
+        }
+
+        GC.KeepAlive(window.Wrapper);
+        return id;
+    }
+
+    public static int SetDialogControlId<T>(this T window, int id) where T : IHandle<HWND>
+    {
+        if (!window.IsChildWindow())
+        {
+            throw new InvalidOperationException("Cannot set the control ID on a top level window.");
+        }
+
+        int result = (int)window.SetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_ID, id);
+        GC.KeepAlive(window.Wrapper);
+        return result;
+    }
+
+    public static bool IsChildWindow<T>(this T window) where T : IHandle<HWND> =>
+        window.GetWindowStyle().HasFlag(WindowStyles.Child);
+
+    public static WindowStyles GetWindowStyle<T>(this T window) where T : IHandle<HWND> =>
+        (WindowStyles)window.GetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_STYLE);
+
+    public static ExtendedWindowStyles GetExtendedWindowStyle<T>(this T window) where T : IHandle<HWND> =>
+        (ExtendedWindowStyles)window.GetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_STYLE);
 }
 
 /// <docs>https://learn.microsoft.com/windows/win32/api/winuser/nc-winuser-timerproc</docs>

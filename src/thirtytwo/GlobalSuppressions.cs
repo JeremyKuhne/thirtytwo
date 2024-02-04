@@ -11,5 +11,6 @@
 [assembly: SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "Matches Windows", Scope = "type", Target = "~T:Windows.IconId")]
 [assembly: SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "Matches Windows", Scope = "type", Target = "~T:Windows.MessageBoxStyles")]
 [assembly: SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "Matches Windows", Scope = "type", Target = "~T:Windows.WindowStyles")]
+[assembly: SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "Matches Windows", Scope = "type", Target = "~T:Windows.VirtualKey")]
 [assembly: SuppressMessage("Usage", "CA2231:Overload operator equals on overriding value type Equals", Justification = "CsWin32", Scope = "type", Target = "~T:Windows.Win32.Foundation.PCWSTR")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Thread Local", Scope = "member", Target = "~F:Windows.WindowClass.t_initializeProcedure")]
