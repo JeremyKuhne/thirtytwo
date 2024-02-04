@@ -402,6 +402,9 @@ csharp_style_prefer_not_pattern = true:suggestion
 # SYSLIB1096: Convert to 'GeneratedComInterface'
 dotnet_diagnostic.SYSLIB1096.severity = none
 
+# SA1117: Parameters should be on same line or separate lines
+dotnet_diagnostic.SA1117.severity = silent
+
 [*.{cs,vb}]
 dotnet_style_coalesce_expression = true:suggestion
 dotnet_style_null_propagation = true:silent

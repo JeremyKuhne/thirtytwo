@@ -11,8 +11,7 @@ namespace Windows;
 public static unsafe partial class WindowExtensions
 {
     /// <inheritdoc cref="Interop.GetWindowText(HWND, PWSTR, int)"/>
-    public static string GetWindowText<T>(this T window)
-        where T : IHandle<HWND>
+    public static string GetWindowText<T>(this T window) where T : IHandle<HWND>
     {
         int length = Interop.GetWindowTextLength(window.Handle);
         if (length == 0)
@@ -102,8 +101,7 @@ public static unsafe partial class WindowExtensions
     /// <summary>
     ///  Gets the font currently set for the window, if any.
     /// </summary>
-    public static HFONT GetFontHandle<T>(this T window)
-        where T : IHandle<HWND>
+    public static HFONT GetFontHandle<T>(this T window) where T : IHandle<HWND>
     {
         HFONT font = new(window.SendMessage(MessageType.GetFont));
         GC.KeepAlive(window.Wrapper);
@@ -178,7 +176,7 @@ public static unsafe partial class WindowExtensions
     /// <summary>
     ///  Set the specified font for the window.
     /// </summary>
-    public static unsafe LRESULT SetFontHandle<T>(this T window, HFONT font)
+    public static LRESULT SetFontHandle<T>(this T window, HFONT font)
         where T : IHandle<HWND>
     {
         return window.SendMessage(
@@ -188,7 +186,7 @@ public static unsafe partial class WindowExtensions
     }
 
     /// <inheritdoc cref="Interop.ScreenToClient(HWND, ref Point)"/>
-    public static unsafe bool ScreenToClient<T>(this T window, ref Point point) where T : IHandle<HWND>
+    public static bool ScreenToClient<T>(this T window, ref Point point) where T : IHandle<HWND>
     {
         bool result = Interop.ScreenToClient(window.Handle, ref point);
         GC.KeepAlive(window.Wrapper);
@@ -199,7 +197,7 @@ public static unsafe partial class WindowExtensions
     ///  Repositions the <paramref name="rectangle"/> location from screen to client coordinates.
     /// </summary>
     /// <inheritdoc cref="Interop.ScreenToClient(HWND, ref Point)"/>
-    public static unsafe bool ScreenToClient<T>(this T window, ref Rectangle rectangle) where T : IHandle<HWND>
+    public static bool ScreenToClient<T>(this T window, ref Rectangle rectangle) where T : IHandle<HWND>
     {
         Point location = rectangle.Location;
         bool result = Interop.ScreenToClient(window.Handle, &location);
@@ -209,7 +207,7 @@ public static unsafe partial class WindowExtensions
     }
 
     /// <inheritdoc cref="Interop.ClientToScreen(HWND, ref Point)"/>
-    public static unsafe bool ClientToScreen<T>(this T window, ref Point point) where T : IHandle<HWND>
+    public static bool ClientToScreen<T>(this T window, ref Point point) where T : IHandle<HWND>
     {
         bool result = Interop.ClientToScreen(window.Handle, ref point);
         GC.KeepAlive(window.Wrapper);
@@ -220,7 +218,7 @@ public static unsafe partial class WindowExtensions
     ///  Repositions the <paramref name="rectangle"/> location from client to screen coordinates.
     /// </summary>
     /// <inheritdoc cref="Interop.ClientToScreen(HWND, ref Point)"/>
-    public static unsafe bool ClientToScreen<T>(this T window, ref Rectangle rectangle) where T : IHandle<HWND>
+    public static bool ClientToScreen<T>(this T window, ref Rectangle rectangle) where T : IHandle<HWND>
     {
         Point location = rectangle.Location;
         bool result = Interop.ClientToScreen(window.Handle, ref location);
@@ -231,7 +229,7 @@ public static unsafe partial class WindowExtensions
 
     /// <returns/>
     /// <inheritdoc cref="Interop.GetClientRect(HWND, out RECT)"/>
-    public static unsafe Rectangle GetClientRectangle<T>(this T window)
+    public static Rectangle GetClientRectangle<T>(this T window)
         where T : IHandle<HWND>
     {
         Unsafe.SkipInit(out RECT rect);
@@ -244,7 +242,7 @@ public static unsafe partial class WindowExtensions
     ///  Dimensions of the bounding rectangle of the specified <paramref name="window"/>
     ///  in screen coordinates relative to the upper-left corner.
     /// </summary>
-    public static unsafe Rectangle GetWindowRectangle<T>(this T window) where T : IHandle<HWND>
+    public static Rectangle GetWindowRectangle<T>(this T window) where T : IHandle<HWND>
     {
         Unsafe.SkipInit(out RECT rect);
         Error.ThrowLastErrorIfFalse(Interop.GetWindowRect(window.Handle, &rect));
@@ -256,7 +254,7 @@ public static unsafe partial class WindowExtensions
     ///  Converts (maps) a set of points from a coordinate space relative to one window to a coordinate space
     ///  relative to another window.
     /// </summary>
-    public static unsafe Rectangle MapTo<TFrom, TTo>(this TFrom from, TTo to, Rectangle rectangle)
+    public static Rectangle MapTo<TFrom, TTo>(this TFrom from, TTo to, Rectangle rectangle)
         where TFrom : IHandle<HWND> where TTo : IHandle<HWND>
     {
         RECT rect = rectangle;
@@ -270,7 +268,7 @@ public static unsafe partial class WindowExtensions
     ///  Converts (maps) a set of points from a coordinate space relative to one window to a coordinate space
     ///  relative to another window.
     /// </summary>
-    public static unsafe Rectangle MapFrom<TFrom, TTo>(this TTo to, TFrom from, Rectangle rectangle)
+    public static Rectangle MapFrom<TFrom, TTo>(this TTo to, TFrom from, Rectangle rectangle)
         where TFrom : IHandle<HWND> where TTo : IHandle<HWND>
     {
         RECT rect = rectangle;
@@ -340,7 +338,7 @@ public static unsafe partial class WindowExtensions
         | MessageBoxStyles.IconInformation
         | MessageBoxStyles.IconError;
 
-    public static unsafe DialogResult TaskDialog<T>(
+    public static DialogResult TaskDialog<T>(
         this T owner,
         string? mainInstruction = null,
         string? content = null,
@@ -370,7 +368,7 @@ public static unsafe partial class WindowExtensions
         }
     }
 
-    public static unsafe DialogResult MessageBox<T>(
+    public static DialogResult MessageBox<T>(
         this T owner,
         string text,
         string caption,
@@ -396,11 +394,11 @@ public static unsafe partial class WindowExtensions
         return result;
     }
 
-    public static unsafe DeviceContext BeginPaint<T>(this T window)
+    public static DeviceContext BeginPaint<T>(this T window)
         where T : IHandle<HWND>
         => window.BeginPaint(out _);
 
-    public static unsafe DeviceContext BeginPaint<T>(this T window, out Rectangle paintBounds)
+    public static DeviceContext BeginPaint<T>(this T window, out Rectangle paintBounds)
         where T : IHandle<HWND>
     {
         PAINTSTRUCT paintStruct = default;
@@ -411,7 +409,7 @@ public static unsafe partial class WindowExtensions
         return context;
     }
 
-    public static unsafe bool InvalidateRectangle<T>(this T window, Rectangle rectangle, bool erase)
+    public static bool InvalidateRectangle<T>(this T window, Rectangle rectangle, bool erase)
         where T : IHandle<HWND>
     {
         RECT rect = rectangle;
@@ -420,7 +418,7 @@ public static unsafe partial class WindowExtensions
         return result;
     }
 
-    public static unsafe bool Invalidate<T>(this T window, bool erase = true)
+    public static bool Invalidate<T>(this T window, bool erase = true)
         where T : IHandle<HWND>
     {
         bool result = Interop.InvalidateRect(window.Handle, (RECT*)null, erase);
@@ -466,4 +464,51 @@ public static unsafe partial class WindowExtensions
 
         GC.KeepAlive(window.Wrapper);
     }
+
+    /// <summary>
+    ///  Creates a timer.
+    /// </summary>
+    /// <param name="window">Optional window to be associated with the timer.</param>
+    /// <param name="id">Existing timer id to set a new timeout.</param>
+    /// <param name="interval">Interval in milliseconds.</param>
+    /// <param name="callback">Optional callback. Ensure the callback stays rooted while the timer is active.</param>
+    /// <param name="delayTolerance">Delay tolerance in milliseconds (to improve power consumption).</param>
+    public static nuint SetTimer<T>(
+        this T window,
+        uint interval,
+        nuint id = 0,
+        TimerProcedure? callback = null,
+        uint delayTolerance = 0) where T : IHandle<HWND>
+    {
+        void* cb = callback is null ? null : (void*)Marshal.GetFunctionPointerForDelegate(callback);
+        nuint result = Interop.SetCoalescableTimer(
+            window.Handle,
+            id,
+            interval,
+            (delegate* unmanaged[Stdcall]<HWND, uint, nuint, uint, void>)cb,
+            delayTolerance);
+
+        if (result == 0)
+        {
+            Error.ThrowLastError();
+        }
+
+        return result;
+    }
+
+    public static void KillTimer<T>(this T window, nuint id) where T : IHandle<HWND>
+    {
+        bool success = Interop.KillTimer(window.Handle, id);
+        if (!success)
+        {
+            Error.ThrowIfLastErrorNot(WIN32_ERROR.NO_ERROR);
+        }
+    }
 }
+
+/// <docs>https://learn.microsoft.com/windows/win32/api/winuser/nc-winuser-timerproc</docs>
+public delegate void TimerProcedure(
+    HWND hwnd,
+    MessageType uMsg,
+    nuint idEvent,
+    uint dwTime);

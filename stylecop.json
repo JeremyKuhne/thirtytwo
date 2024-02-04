@@ -9,7 +9,7 @@
       "copyrightText": "Copyright (c) Jeremy W. Kuhne. All rights reserved.\nLicensed under the MIT license. See LICENSE file in the project root for full license information."
     },
     "namingRules": {
-      "allowedHungarianPrefixes": [ "_", "s_", "t_" ]
+        "allowedHungarianPrefixes": [ "_", "s_", "t_" ]
     }
   }
 }

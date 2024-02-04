@@ -301,3 +301,11 @@ WIN32_ERROR
 WINDOWPOS
 WM_*
 XFORMCOORDS
+FrameRect
+Rectangle
+Ellipse
+RoundRect
+MessageBeep
+CreateSolidBrush
+SetCoalescableTimer
+KillTimer

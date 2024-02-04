@@ -10,8 +10,7 @@ namespace Windows;
 public static unsafe partial class DeviceContextExtensions
 {
     /// <inheritdoc cref="Interop.GetGraphicsMode(HDC)"/>
-    public static GRAPHICS_MODE GetGraphicsMode<T>(this T context)
-        where T : IHandle<HDC>
+    public static GRAPHICS_MODE GetGraphicsMode<T>(this T context) where T : IHandle<HDC>
     {
         GRAPHICS_MODE mode = (GRAPHICS_MODE)Interop.GetGraphicsMode(context.Handle);
         GC.KeepAlive(context.Wrapper);
@@ -97,8 +96,8 @@ public static unsafe partial class DeviceContextExtensions
         return result;
     }
 
-    public static bool Polygon<T>(this T context, params Point[] points)
-        where T : IHandle<HDC> => Polygon(context, points.AsSpan());
+    public static bool Polygon<T>(this T context, params Point[] points) where T : IHandle<HDC> =>
+        Polygon(context, points.AsSpan());
 
     public static bool Polygon<T>(this T context, ReadOnlySpan<Point> points)
         where T : IHandle<HDC>
@@ -147,7 +146,14 @@ public static unsafe partial class DeviceContextExtensions
             // The string won't be changed, we can just pin
             fixed (char* c = text)
             {
-                int result = Interop.DrawTextEx(context.Handle, (PWSTR)c, text.Length, bounds, (DRAW_TEXT_FORMAT)format, dtp);
+                int result = Interop.DrawTextEx(
+                    context.Handle,
+                    (PWSTR)c,
+                    text.Length,
+                    bounds,
+                    (DRAW_TEXT_FORMAT)format,
+                    dtp);
+
                 if (result == 0)
                 {
                     Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_SUCCESS);
@@ -182,7 +188,14 @@ public static unsafe partial class DeviceContextExtensions
             where TDeviceContext : IHandle<HDC>
             where TIcon : IHandle<HICON>
     {
-        if (!Interop.DrawIconEx(context.Handle, location.X, location.Y, icon.Handle, size.Width, size.Height, 0, default, flags))
+        if (!Interop.DrawIconEx(
+            context.Handle,
+            location.X, location.Y,
+            icon.Handle,
+            size.Width, size.Height,
+            0,
+            HBRUSH.Null,
+            flags))
         {
             Error.ThrowLastError();
         }
@@ -204,8 +217,7 @@ public static unsafe partial class DeviceContextExtensions
         return DeviceContext.Create(hdc, ownsHandle: true);
     }
 
-    public static Bitmap CreateCompatibleBitmap<T>(this T context, Size size)
-        where T : IHandle<HDC>
+    public static Bitmap CreateCompatibleBitmap<T>(this T context, Size size) where T : IHandle<HDC>
     {
         HBITMAP hbitmap = Interop.CreateCompatibleBitmap(context.Handle, size.Width, size.Height);
         if (hbitmap.IsNull)
@@ -242,26 +254,54 @@ public static unsafe partial class DeviceContextExtensions
         return type;
     }
 
-    public static bool MoveTo<T>(this T context, Point point)
-        where T : IHandle<HDC>
-        => context.MoveTo(point.X, point.Y);
+    public static bool MoveTo<T>(this T context, Point point) where T : IHandle<HDC> =>
+        context.MoveTo(point.X, point.Y);
 
-    public static bool MoveTo<T>(this T context, int x, int y)
-        where T : IHandle<HDC>
+    public static bool MoveTo<T>(this T context, int x, int y) where T : IHandle<HDC>
     {
         bool result = Interop.MoveToEx(context.Handle, x, y, null);
         GC.KeepAlive(context.Wrapper);
         return result;
     }
 
-    public static bool LineTo<T>(this T context, Point point)
-        where T : IHandle<HDC>
-        => context.LineTo(point.X, point.Y);
+    public static bool LineTo<T>(this T context, Point point) where T : IHandle<HDC> =>
+        context.LineTo(point.X, point.Y);
 
-    public static bool LineTo<T>(this T context, int x, int y)
-        where T : IHandle<HDC>
+    public static bool LineTo<T>(this T context, int x, int y) where T : IHandle<HDC>
     {
         bool success = Interop.LineTo(context.Handle, x, y);
+        GC.KeepAlive(context.Wrapper);
+        return success;
+    }
+
+    public static bool Rectangle<T>(this T context, Rectangle rectangle) where T : IHandle<HDC> =>
+        context.Rectangle(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
+
+    public static bool Rectangle<T>(this T context, int left, int top, int right, int bottom)
+        where T : IHandle<HDC>
+    {
+        bool success = Interop.Rectangle(context.Handle, left, top, right, bottom);
+        GC.KeepAlive(context.Wrapper);
+        return success;
+    }
+
+    public static bool RoundRectangle<T>(this T context, Rectangle rectangle, Size corner) where T : IHandle<HDC> =>
+        context.RoundRectangle(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom, corner.Width, corner.Height);
+
+    public static bool RoundRectangle<T>(this T context, int left, int top, int right, int bottom, int width, int height)
+        where T : IHandle<HDC>
+    {
+        bool success = Interop.RoundRect(context.Handle, left, top, right, bottom, width, height);
+        GC.KeepAlive(context.Wrapper);
+        return success;
+    }
+
+    public static bool Ellipse<T>(this T context, Rectangle rectangle) where T : IHandle<HDC> =>
+        context.Ellipse(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
+
+    public static bool Ellipse<T>(this T context, int left, int top, int right, int bottom) where T : IHandle<HDC>
+    {
+        bool success = Interop.Ellipse(context.Handle, left, top, right, bottom);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
