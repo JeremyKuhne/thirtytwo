@@ -357,7 +357,8 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
 
     /// <remarks>
     ///  <para>
-    ///   Note that 
+    ///   Note that the <see cref="Handle"/> may be <see cref="HWND.Null"/> when this method is called. When the
+    ///   underlying <see cref="HWND"/> is destroyed, the handle is no longer valid and will be set to null.
     ///  </para>
     /// </remarks>
     /// <inheritdoc/>

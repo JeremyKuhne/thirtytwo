@@ -8,16 +8,23 @@ namespace Windows.Support;
 [Collection(nameof(ErrorTestCollection))]
 public class ErrorTests
 {
+    [RetryFact(MaxRetries = 5)]
+    public void Error_FormatMessage_RuntimeError()
+    {
+        // The Marshal.GetExceptionForHR method is not thread safe for CLR (COR_E*) HRESULTs.
+        // We don't control all threads in the process, so we have to retry a few times.
+
+        // .NET exception messages aren't localized. (Only .NET Framework)
+        string message = Error.FormatMessage(HRESULT.COR_E_OBJECTDISPOSED);
+        message.Should().Be("Cannot access a disposed object.");
+    }
+
     [Fact]
     public void Error_FormatMesage()
     {
         // Check an HRESULT with a product string that hopefully isn't localized.
         string message = Error.FormatMessage(HRESULT.FVE_E_LOCKED_VOLUME);
         message.Should().Contain("BitLocker");
-
-        // .NET exception messages aren't localized. (Only .NET Framework)
-        message = Error.FormatMessage(HRESULT.COR_E_OBJECTDISPOSED);
-        message.Should().Be("Cannot access a disposed object.");
 
         message = Error.FormatMessage((uint)WIN32_ERROR.ERROR_ACCESS_DENIED);
 
