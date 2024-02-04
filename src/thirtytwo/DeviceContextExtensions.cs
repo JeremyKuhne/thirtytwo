@@ -110,6 +110,20 @@ public static unsafe partial class DeviceContextExtensions
         }
     }
 
+    public static bool Polyline<T>(this T context, params Point[] points) where T : IHandle<HDC> =>
+        Polyline(context, points.AsSpan());
+
+    public static bool Polyline<T>(this T context, ReadOnlySpan<Point> points)
+        where T : IHandle<HDC>
+    {
+        fixed (Point* p = points)
+        {
+            bool result = Interop.Polyline(context.Handle, p, points.Length);
+            GC.KeepAlive(context.Wrapper);
+            return result;
+        }
+    }
+
     public static unsafe (int Height, uint LengthDrawn, Rectangle Bounds) DrawText<T>(
         this T context,
         ReadOnlySpan<char> text,
@@ -227,6 +241,71 @@ public static unsafe partial class DeviceContextExtensions
 
         GC.KeepAlive(context.Wrapper);
         return Bitmap.Create(hbitmap, ownsHandle: true);
+    }
+
+    public static unsafe bool OffsetWindowOrigin<T>(this T context, int x, int y) where T : IHandle<HDC>
+    {
+        bool success = Interop.OffsetWindowOrgEx(context.Handle, x, y, null);
+        GC.KeepAlive(context.Wrapper);
+        return success;
+    }
+
+    public static unsafe bool OffsetViewportOrigin<T>(this T context, int x, int y) where T : IHandle<HDC>
+    {
+        bool success = Interop.OffsetViewportOrgEx(context.Handle, x, y, null);
+        GC.KeepAlive(context.Wrapper);
+        return success;
+    }
+
+    public static unsafe bool GetWindowExtents<T>(this T context, out Size size) where T : IHandle<HDC>
+    {
+        fixed (Size* s = &size)
+        {
+            bool success = Interop.GetWindowExtEx(context.Handle, (SIZE*)s);
+            GC.KeepAlive(context.Wrapper);
+            return success;
+        }
+    }
+
+    /// <summary>
+    ///  Sets the logical ("window") dimensions of the device context.
+    /// </summary>
+    public static unsafe bool SetWindowExtents<T>(this T context, Size size) where T : IHandle<HDC>
+    {
+        bool success = Interop.SetWindowExtEx(context.Handle, size.Width, size.Height, null);
+        GC.KeepAlive(context.Wrapper);
+        return success;
+    }
+
+    public static unsafe bool GetViewportExtents<T>(this T context, out Size size) where T : IHandle<HDC>
+    {
+        fixed (Size* s = &size)
+        {
+            bool success = Interop.GetViewportExtEx(context.Handle, (SIZE*)s);
+            GC.KeepAlive(context.Wrapper);
+            return success;
+        }
+    }
+
+    public static unsafe bool SetViewportExtents<T>(this T context, Size size) where T : IHandle<HDC>
+    {
+        bool success = Interop.SetViewportExtEx(context.Handle, size.Width, size.Height, null);
+        GC.KeepAlive(context.Wrapper);
+        return success;
+    }
+
+    public static MappingMode GetMappingMode<T>(this T context) where T : IHandle<HDC>
+    {
+        MappingMode result = (MappingMode)Interop.GetMapMode(context.Handle);
+        GC.KeepAlive(context.Wrapper);
+        return result;
+    }
+
+    public static MappingMode SetMappingMode<T>(this T context, MappingMode mapMode) where T : IHandle<HDC>
+    {
+        MappingMode result = (MappingMode)Interop.SetMapMode(context.Handle, (HDC_MAP_MODE)mapMode);
+        GC.KeepAlive(context.Wrapper);
+        return result;
     }
 
     public static unsafe Point GetViewportOrigin<T>(this T context, out bool success)
