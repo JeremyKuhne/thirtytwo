@@ -39,7 +39,7 @@ internal class Clock : MainWindow
     private readonly GdiPlusBrush _whiteBrush = new SolidBrush(Color.White);
 #endif
 
-    public Clock(string title) : base(title) { }
+    public Clock(string title) : base(title: title) { }
 
     private void SetIsotropic(DeviceContext hdc)
     {

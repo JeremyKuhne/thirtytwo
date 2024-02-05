@@ -16,7 +16,7 @@ internal class Checker3 : MainWindow
     private int _cxBlock, _cyBlock;
     private readonly Checker3Child _childClass = (Checker3Child)(new Checker3Child().Register());
 
-    public Checker3(string title) : base(title)
+    public Checker3(string title) : base(title: title)
     {
     }
 

@@ -24,7 +24,7 @@ internal class Clover : MainWindow
     private HRGN _hrgnClip;
     private const double TWO_PI = Math.PI * 2;
 
-    public Clover() : base(text: "Draw a Clover", backgroundBrush: StockBrush.White) { }
+    public Clover() : base(title: "Draw a Clover", backgroundBrush: StockBrush.White) { }
 
     protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
     {

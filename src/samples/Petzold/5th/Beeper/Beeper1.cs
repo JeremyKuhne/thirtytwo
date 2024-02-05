@@ -15,7 +15,7 @@ internal class Beeper1 : MainWindow
     private bool _flipFlop = false;
     private nuint _timerId;
 
-    public Beeper1(string title) : base(title) { }
+    public Beeper1(string title) : base(title: title) { }
 
     protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
     {

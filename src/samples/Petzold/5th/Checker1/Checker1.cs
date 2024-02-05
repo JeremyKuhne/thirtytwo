@@ -14,7 +14,7 @@ public class Checker1 : MainWindow
     private readonly bool[,] _fState = new bool[DIVISIONS, DIVISIONS];
     private int _cxBlock, _cyBlock;
 
-    public Checker1(string title) : base(title)
+    public Checker1(string title) : base(title: title)
     {
     }
 

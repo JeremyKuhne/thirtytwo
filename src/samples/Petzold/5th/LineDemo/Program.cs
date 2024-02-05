@@ -21,7 +21,7 @@ internal static class Program
     {
         private static int s_cxClient, s_cyClient;
 
-        public LineDemo(string title) : base(title) { }
+        public LineDemo(string title) : base(title: title) { }
 
         protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
         {

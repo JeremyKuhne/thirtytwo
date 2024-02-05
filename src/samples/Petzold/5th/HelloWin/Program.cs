@@ -121,7 +121,7 @@ internal unsafe static class Program
 
     private class HelloWindow : MainWindow
     {
-        public HelloWindow(string text) : base(text, backgroundBrush: StockBrush.White)
+        public HelloWindow(string title) : base(title: title, backgroundBrush: StockBrush.White)
         {
         }
 

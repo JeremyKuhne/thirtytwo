@@ -27,7 +27,7 @@ internal static class Program
         private const int ID_SMALLER = 1;
         private const int ID_LARGER = 2;
 
-        public OwnerDraw(string title) : base(title)
+        public OwnerDraw(string title) : base(title: title)
         {
         }
 

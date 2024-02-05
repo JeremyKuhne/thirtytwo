@@ -16,7 +16,7 @@ internal class Beeper2 : MainWindow
     private nuint _timerId;
     private TimerProcedure? _timerCallback;
 
-    public Beeper2(string title) : base(title) { }
+    public Beeper2(string title) : base(title: title) { }
 
     protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
     {

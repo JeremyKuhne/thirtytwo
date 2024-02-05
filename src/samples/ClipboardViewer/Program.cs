@@ -16,7 +16,7 @@ internal class Program
         private readonly EditControl _editControl;
         private readonly TextLabelControl _textLabel;
 
-        public ClipboardViewer(string title) : base(text: title)
+        public ClipboardViewer(string title) : base(title: title)
         {
             _editControl = new EditControl(
                 editStyle: EditControl.Styles.Multiline | EditControl.Styles.Left

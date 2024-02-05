@@ -21,7 +21,7 @@ internal class Program
         private readonly StaticControl _staticControl;
         private readonly TextLabelControl _textLabel;
 
-        public LayoutWindow(string title) : base(title)
+        public LayoutWindow(string title) : base(title: title)
         {
             _editControl = new EditControl(
                 text: "Type text here...",

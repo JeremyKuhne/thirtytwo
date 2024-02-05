@@ -24,7 +24,7 @@ internal class Blockout2 : MainWindow
     private bool _fBlocking, _fValidBox;
     private Point _ptBeg, _ptEnd, _ptBoxBeg, _ptBoxEnd;
 
-    public Blockout2(string title) : base(title)
+    public Blockout2(string title) : base(title: title)
     {
     }
 

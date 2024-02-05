@@ -22,7 +22,7 @@ internal class Bezier : MainWindow
 {
     private readonly Point[] _apt = new Point[4];
 
-    public Bezier(string title) : base(title)
+    public Bezier(string title) : base(title: title)
     {
     }
 

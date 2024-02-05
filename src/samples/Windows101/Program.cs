@@ -68,7 +68,7 @@ internal class Program
 
     private class HelloWindow : MainWindow
     {
-        public HelloWindow() : base("HelloWindow")
+        public HelloWindow() : base(title: "HelloWindow")
         {
         }
 
