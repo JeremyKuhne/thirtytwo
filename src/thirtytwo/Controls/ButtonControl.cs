@@ -5,7 +5,7 @@ using System.Drawing;
 
 namespace Windows;
 
-public partial class ButtonControl : Window
+public partial class ButtonControl : Control
 {
     private static readonly WindowClass s_buttonClass = new("Button");
 

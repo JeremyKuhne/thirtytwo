@@ -55,7 +55,7 @@ public static unsafe partial class Registry
             status.ThrowIfFailed();
 
             KEY_NAME_INFORMATION* nameInfo = (KEY_NAME_INFORMATION*)b;
-            return new ReadOnlySpan<char>(nameInfo->Name.Value, (int)nameInfo->NameLength / sizeof(char)).ToString();
+            return nameInfo->Name.AsSpan((int)nameInfo->NameLength / sizeof(char)).ToString();
         }
     }
 
