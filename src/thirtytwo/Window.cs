@@ -6,20 +6,32 @@ using System.Drawing;
 using System.Numerics;
 using Windows.Components;
 using Windows.Support;
+using Windows.Win32.Graphics.Direct2D;
 
 namespace Windows;
 
 public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
 {
+    private static readonly object s_lock = new();
+    private static readonly ConcurrentDictionary<HWND, WeakReference<Window>> s_windows = new();
+    private static readonly WindowClass s_defaultWindowClass = new(className: $"DefaultWindowClass_{Guid.NewGuid()}");
+    protected static Factory? Direct2dFactory { get; private set; }
+    public static Rectangle DefaultBounds { get; }
+        = new(Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT);
+
+    // Default fonts for each DPI
+    private static readonly ConcurrentDictionary<int, HFONT> s_defaultFonts = new();
+    internal static WNDPROC DefaultWindowProcedure { get; } = GetDefaultWindowProcedure();
+
     // High precision metric units are .01mm each
     private const int HiMetricUnitsPerInch = 2540;
+
+    private readonly object _lock = new();
 
     // Stash the delegate to keep it from being collected
     private readonly WindowProcedure _windowProcedure;
     private readonly WNDPROC _priorWindowProcedure;
     private readonly WindowClass _windowClass;
-    private static readonly object s_lock = new();
-    private readonly object _lock = new();
     private bool _destroyed;
     private HWND _handle;
 
@@ -30,28 +42,40 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
     // https://devblogs.microsoft.com/oldnewthing/20080912-00/?p=20893
 
     private HFONT _font;
+    private HFONT _lastCreatedFont;
 
     private readonly HBRUSH _backgroundBrush;
 
-    private static readonly WindowClass s_defaultWindowClass = new(className: $"DefaultWindowClass_{Guid.NewGuid()}");
-    internal static WNDPROC DefaultWindowProcedure { get; } = GetDefaultWindowProcedure();
+    protected HwndRenderTarget? Direct2dRenderTarget { get; private set; }
 
     private string? _text;
     private uint _lastDpi;
 
-    private static readonly ConcurrentDictionary<HWND, WeakReference<Window>> s_windows = new();
-    private HFONT _lastCreatedFont;
+    private readonly Features _features;
 
-    // Default fonts for each DPI
-    private static readonly ConcurrentDictionary<int, HFONT> s_defaultFonts = new();
+    [MemberNotNullWhen(true, nameof(Direct2dRenderTarget))]
+    protected bool IsDirect2dEnabled()
+    {
+        bool enabled = _features.AreFlagsSet(Features.EnableDirect2d);
+        if (enabled && Direct2dRenderTarget is null)
+        {
+            UpdateRenderTarget(Handle, this.GetClientRectangle().Size);
+        }
 
-    public static Rectangle DefaultBounds { get; }
-        = new(Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT);
+        return enabled;
+    }
 
-    /// <summary>
-    ///  The window handle. This will be <see cref="HWND.Null"/> after the window is destroyed.
-    /// </summary>
-    public HWND Handle => _handle;
+    [MemberNotNullWhen(true, nameof(Direct2dRenderTarget))]
+    protected bool IsDirect2dEnabled([NotNullWhen(true)] out HwndRenderTarget? renderTarget)
+    {
+        renderTarget = Direct2dRenderTarget;
+        return IsDirect2dEnabled();
+    }
+
+/// <summary>
+///  The window handle. This will be <see cref="HWND.Null"/> after the window is destroyed.
+/// </summary>
+public HWND Handle => _handle;
 
     public event WindowsMessageEvent? MessageHandler;
 
@@ -64,7 +88,8 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
         WindowClass? windowClass = default,
         nint parameters = default,
         HMENU menuHandle = default,
-        HBRUSH backgroundBrush = default)
+        HBRUSH backgroundBrush = default,
+        Features features = default)
     {
         _windowClass = windowClass ?? s_defaultWindowClass;
 
@@ -74,6 +99,12 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
         }
 
         _text = text;
+        _features = features;
+
+        if (_features.AreFlagsSet(Features.EnableDirect2d))
+        {
+            Direct2dFactory ??= new();
+        }
 
         try
         {
@@ -160,6 +191,32 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
         this.SetFontHandle(_lastCreatedFont);
     }
 
+    [MemberNotNull(nameof(Direct2dRenderTarget))]
+    private void UpdateRenderTarget(HWND window, Size size)
+    {
+        if (Direct2dFactory is null)
+        {
+            throw new InvalidOperationException("Should never call UpdateRenderTarget without a factory.");
+        }
+
+        if (Direct2dRenderTarget is null)
+        {
+            Direct2dRenderTarget = HwndRenderTarget.CreateForWindow(Direct2dFactory, window, size);
+            RenderTargetCreated(Direct2dRenderTarget);
+        }
+        else
+        {
+            Direct2dRenderTarget.Resize(size);
+        }
+    }
+
+    /// <summary>
+    ///  Called whenever the Direct2D render target has been created or recreated.
+    /// </summary>
+    protected virtual void RenderTargetCreated(HwndRenderTarget renderTarget)
+    {
+    }
+
     private LRESULT InitializationWindowProcedure(HWND window, uint message, WPARAM wParam, LPARAM lParam)
     {
         if (Handle.IsNull)
@@ -175,6 +232,43 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
 
     private LRESULT WindowProcedureInternal(HWND window, uint message, WPARAM wParam, LPARAM lParam)
     {
+        // What is the difference between WM_DESTROY and WM_NCDESTROY?
+        // https://devblogs.microsoft.com/oldnewthing/20050726-00/?p=34803
+
+        switch (message)
+        {
+            case Interop.WM_NCDESTROY:
+                lock (_lock)
+                {
+                    // This should be the final message. Track that we've been destroyed so we know we don't have
+                    // to manually clean up.
+
+                    bool success = s_windows.TryRemove(Handle, out _);
+                    Debug.Assert(success);
+                    _handle = default;
+                    _destroyed = true;
+                }
+
+                break;
+
+            case Interop.WM_SIZE:
+                // Check the flag directly here so we don't create then resize.
+                if (_features.AreFlagsSet(Features.EnableDirect2d))
+                {
+                    UpdateRenderTarget(window, new Size(lParam.LOWORD, lParam.HIWORD));
+                }
+
+                break;
+
+            case Interop.WM_PAINT:
+                if (IsDirect2dEnabled(out var renderTarget))
+                {
+                    renderTarget.BeginDraw();
+                }
+
+                break;
+        }
+
         if (MessageHandler is { } handlers)
         {
             foreach (var handler in handlers.GetInvocationList().OfType<WindowsMessageEvent>())
@@ -187,24 +281,18 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
             }
         }
 
-        // What is the difference between WM_DESTROY and WM_NCDESTROY?
-        // https://devblogs.microsoft.com/oldnewthing/20050726-00/?p=34803
+        LRESULT windProcResult = WindowProcedure(window, (MessageType)message, wParam, lParam);
 
-        if ((MessageType)message == MessageType.NonClientDestroy)
+        if (message == Interop.WM_PAINT && IsDirect2dEnabled())
         {
-            lock (_lock)
+            Direct2dRenderTarget.EndDraw(out bool recreateTarget);
+            if (recreateTarget)
             {
-                // This should be the final message. Track that we've been destroyed so we know we don't have
-                // to manually clean up.
-
-                bool success = s_windows.TryRemove(Handle, out _);
-                Debug.Assert(success);
-                _handle = default;
-                _destroyed = true;
+                Direct2dRenderTarget.Dispose();
+                Direct2dRenderTarget = null;
+                UpdateRenderTarget(window, this.GetClientRectangle().Size);
             }
         }
-
-        LRESULT windProcResult = WindowProcedure(window, (MessageType)message, wParam, lParam);
 
         // Ensure we're not collected while we're processing a message.
         GC.KeepAlive(this);
@@ -229,6 +317,12 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
                 if (!_backgroundBrush.IsNull)
                 {
                     ((HDC)wParam).FillRectangle(this.GetClientRectangle(), _backgroundBrush);
+                    return (LRESULT)1;
+                }
+
+                if (IsDirect2dEnabled())
+                {
+                    // Having the HDC erased will cause flicker, so say we handled it.
                     return (LRESULT)1;
                 }
 
@@ -441,5 +535,14 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
         FARPROC address = Interop.GetProcAddress(module, "DefWindowProcW");
         Debug.Assert(!address.IsNull);
         return (WNDPROC)(void*)address.Value;
+    }
+
+    [Flags]
+    public enum Features
+    {
+        /// <summary>
+        ///  Set this flag to enable Direct2D rendering.
+        /// </summary>
+        EnableDirect2d          = 0b0000_0000_0000_0000_0000_0000_0000_0001,
     }
 }

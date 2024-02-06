@@ -18,7 +18,8 @@ public class MainWindow : Window
         WindowClass? windowClass = default,
         nint parameters = default,
         HMENU menuHandle = default,
-        HBRUSH backgroundBrush = default) : base(
+        HBRUSH backgroundBrush = default,
+        Features features = default) : base(
             bounds,
             title,
             style,
@@ -27,6 +28,7 @@ public class MainWindow : Window
             windowClass,
             parameters,
             menuHandle,
-            backgroundBrush)
+            backgroundBrush,
+            features)
     { }
 }
