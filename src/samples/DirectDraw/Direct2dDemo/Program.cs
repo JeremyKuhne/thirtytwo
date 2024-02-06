@@ -75,6 +75,7 @@ internal class Program
                         renderTarget.FillRectangle(rectangle1, _lightSlateGrayBrush!);
                         renderTarget.DrawRectangle(rectangle2, _cornflowerBlueBrush!);
                     }
+
                     return (LRESULT)0;
             }
 

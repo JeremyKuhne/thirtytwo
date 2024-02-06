@@ -4,12 +4,15 @@
 using System.Drawing;
 using System.Runtime.InteropServices;
 using Windows.Support;
+using Windows.Win32.Graphics.Direct2D;
 
 namespace Windows;
 
 public static unsafe class Application
 {
     private static ActivationContext? s_visualStylesContext;
+    private static Factory? s_direct2dFactory;
+
     internal static ActivationScope ThemingScope => new(GetStylesContext());
 
     internal static void EnsureDpiAwareness()
@@ -203,4 +206,6 @@ public static unsafe class Application
     {
         using var enumerator = new ThreadWindowEnumerator(threadId, callback);
     }
+
+    public static Factory Direct2dFactory => s_direct2dFactory ??= new();
 }

@@ -10,7 +10,6 @@ public unsafe partial struct ID2D1RenderTarget
 {
     public D2D_SIZE_F GetSizeHack()
     {
-        D2D_SIZE_F result;
-        return *((delegate* unmanaged<ID2D1RenderTarget*, D2D_SIZE_F*, D2D_SIZE_F*>)lpVtbl[53])((ID2D1RenderTarget*)Unsafe.AsPointer(ref this), &result);
+        return ((delegate* unmanaged[Stdcall, MemberFunction]<ID2D1RenderTarget*, D2D_SIZE_F>)lpVtbl[53])((ID2D1RenderTarget*)Unsafe.AsPointer(ref this));
     }
 }

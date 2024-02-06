@@ -15,7 +15,7 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
     private static readonly object s_lock = new();
     private static readonly ConcurrentDictionary<HWND, WeakReference<Window>> s_windows = new();
     private static readonly WindowClass s_defaultWindowClass = new(className: $"DefaultWindowClass_{Guid.NewGuid()}");
-    protected static Factory? Direct2dFactory { get; private set; }
+
     public static Rectangle DefaultBounds { get; }
         = new(Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT);
 
@@ -72,10 +72,10 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
         return IsDirect2dEnabled();
     }
 
-/// <summary>
-///  The window handle. This will be <see cref="HWND.Null"/> after the window is destroyed.
-/// </summary>
-public HWND Handle => _handle;
+    /// <summary>
+    ///  The window handle. This will be <see cref="HWND.Null"/> after the window is destroyed.
+    /// </summary>
+    public HWND Handle => _handle;
 
     public event WindowsMessageEvent? MessageHandler;
 
@@ -100,11 +100,6 @@ public HWND Handle => _handle;
 
         _text = text;
         _features = features;
-
-        if (_features.AreFlagsSet(Features.EnableDirect2d))
-        {
-            Direct2dFactory ??= new();
-        }
 
         try
         {
@@ -194,14 +189,9 @@ public HWND Handle => _handle;
     [MemberNotNull(nameof(Direct2dRenderTarget))]
     private void UpdateRenderTarget(HWND window, Size size)
     {
-        if (Direct2dFactory is null)
-        {
-            throw new InvalidOperationException("Should never call UpdateRenderTarget without a factory.");
-        }
-
         if (Direct2dRenderTarget is null)
         {
-            Direct2dRenderTarget = HwndRenderTarget.CreateForWindow(Direct2dFactory, window, size);
+            Direct2dRenderTarget = HwndRenderTarget.CreateForWindow(Application.Direct2dFactory, window, size);
             RenderTargetCreated(Direct2dRenderTarget);
         }
         else
