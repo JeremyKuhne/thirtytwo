@@ -351,3 +351,5 @@ XFORMCOORDS
 ID2D1Factory
 D2D1CreateFactory
 D2DERR_RECREATE_TARGET
+DWriteCreateFactory
+IDWriteFactory

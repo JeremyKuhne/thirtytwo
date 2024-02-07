@@ -6,13 +6,13 @@ using Windows.Win32.System.Com;
 
 namespace Windows.Win32.Graphics.Direct2D;
 
-public unsafe class Factory : DisposableBase.Finalizable, IPointer<ID2D1Factory>
+public unsafe class Direct2dFactory : DisposableBase.Finalizable, IPointer<ID2D1Factory>
 {
     private readonly AgileComPointer<ID2D1Factory> _factory;
 
     public unsafe ID2D1Factory* Pointer { get; private set; }
 
-    public Factory(
+    public Direct2dFactory(
         D2D1_FACTORY_TYPE factoryType = D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED,
         D2D1_DEBUG_LEVEL factoryOptions = D2D1_DEBUG_LEVEL.D2D1_DEBUG_LEVEL_NONE)
     {

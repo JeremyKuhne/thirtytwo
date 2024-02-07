@@ -4,7 +4,6 @@
 using System.Drawing;
 using System.Numerics;
 using Windows;
-using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Direct2D;
 
 namespace Direct2dDemo;
@@ -23,63 +22,63 @@ internal class Program
         {
         }
 
-        protected override void RenderTargetCreated(HwndRenderTarget renderTarget)
+        protected override void RenderTargetCreated()
         {
             _lightSlateGrayBrush?.Dispose();
             _cornflowerBlueBrush?.Dispose();
-            _lightSlateGrayBrush = renderTarget.CreateSolidColorBrush(Color.LightSlateGray);
-            _cornflowerBlueBrush = renderTarget.CreateSolidColorBrush(Color.CornflowerBlue);
-            base.RenderTargetCreated(renderTarget);
+            _lightSlateGrayBrush = RenderTarget.CreateSolidColorBrush(Color.LightSlateGray);
+            _cornflowerBlueBrush = RenderTarget.CreateSolidColorBrush(Color.CornflowerBlue);
+            base.RenderTargetCreated();
         }
 
-        protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
+        protected override void OnPaint()
         {
-            switch (message)
+            RenderTarget.SetTransform(Matrix3x2.Identity);
+            RenderTarget.Clear(Color.White);
+
+            SizeF size = RenderTarget.Size();
+
+            for (int x = 0; x < size.Width; x += 10)
             {
-                case MessageType.Paint:
-                    if (IsDirect2dEnabled(out var renderTarget))
-                    {
-                        renderTarget.SetTransform(Matrix3x2.Identity);
-                        renderTarget.Clear(Color.White);
-
-                        SizeF size = renderTarget.Size();
-
-                        for (int x = 0; x < size.Width; x += 10)
-                        {
-                            renderTarget.DrawLine(
-                                new(x, 0), new(x, size.Height),
-                                _lightSlateGrayBrush!,
-                                0.5f);
-                        }
-
-                        for (int y = 0; y < size.Height; y += 10)
-                        {
-                            renderTarget.DrawLine(
-                                new(0, y), new(size.Width, y),
-                                _lightSlateGrayBrush!,
-                                0.5f);
-                        }
-
-                        RectangleF rectangle1 = RectangleF.FromLTRB(
-                            size.Width / 2 - 50,
-                            size.Height / 2 - 50,
-                            size.Width / 2 + 50,
-                            size.Height / 2 + 50);
-
-                        RectangleF rectangle2 = RectangleF.FromLTRB(
-                            size.Width / 2 - 100,
-                            size.Height / 2 - 100,
-                            size.Width / 2 + 100,
-                            size.Height / 2 + 100);
-
-                        renderTarget.FillRectangle(rectangle1, _lightSlateGrayBrush!);
-                        renderTarget.DrawRectangle(rectangle2, _cornflowerBlueBrush!);
-                    }
-
-                    return (LRESULT)0;
+                RenderTarget.DrawLine(
+                    new(x, 0), new(x, size.Height),
+                    _lightSlateGrayBrush!,
+                    0.5f);
             }
 
-            return base.WindowProcedure(window, message, wParam, lParam);
+            for (int y = 0; y < size.Height; y += 10)
+            {
+                RenderTarget.DrawLine(
+                    new(0, y), new(size.Width, y),
+                    _lightSlateGrayBrush!,
+                    0.5f);
+            }
+
+            RectangleF rectangle1 = RectangleF.FromLTRB(
+                size.Width / 2 - 50,
+                size.Height / 2 - 50,
+                size.Width / 2 + 50,
+                size.Height / 2 + 50);
+
+            RectangleF rectangle2 = RectangleF.FromLTRB(
+                size.Width / 2 - 100,
+                size.Height / 2 - 100,
+                size.Width / 2 + 100,
+                size.Height / 2 + 100);
+
+            RenderTarget.FillRectangle(rectangle1, _lightSlateGrayBrush!);
+            RenderTarget.DrawRectangle(rectangle2, _cornflowerBlueBrush!);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _lightSlateGrayBrush?.Dispose();
+                _cornflowerBlueBrush?.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

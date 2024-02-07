@@ -10,7 +10,7 @@ using Windows.Win32.Graphics.Direct2D;
 
 namespace Windows;
 
-public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
+public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
 {
     private static readonly object s_lock = new();
     private static readonly ConcurrentDictionary<HWND, WeakReference<Window>> s_windows = new();
@@ -46,30 +46,25 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
 
     private readonly HBRUSH _backgroundBrush;
 
-    protected HwndRenderTarget? Direct2dRenderTarget { get; private set; }
+    private HwndRenderTarget? _renderTarget;
+
+    protected HwndRenderTarget RenderTarget => _renderTarget ?? throw new InvalidOperationException();
 
     private string? _text;
     private uint _lastDpi;
 
     private readonly Features _features;
 
-    [MemberNotNullWhen(true, nameof(Direct2dRenderTarget))]
+    [MemberNotNullWhen(true, nameof(_renderTarget))]
     protected bool IsDirect2dEnabled()
     {
         bool enabled = _features.AreFlagsSet(Features.EnableDirect2d);
-        if (enabled && Direct2dRenderTarget is null)
+        if (enabled && _renderTarget is null)
         {
             UpdateRenderTarget(Handle, this.GetClientRectangle().Size);
         }
 
         return enabled;
-    }
-
-    [MemberNotNullWhen(true, nameof(Direct2dRenderTarget))]
-    protected bool IsDirect2dEnabled([NotNullWhen(true)] out HwndRenderTarget? renderTarget)
-    {
-        renderTarget = Direct2dRenderTarget;
-        return IsDirect2dEnabled();
     }
 
     /// <summary>
@@ -186,24 +181,31 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
         this.SetFontHandle(_lastCreatedFont);
     }
 
-    [MemberNotNull(nameof(Direct2dRenderTarget))]
     private void UpdateRenderTarget(HWND window, Size size)
     {
-        if (Direct2dRenderTarget is null)
+        if (_renderTarget is null)
         {
-            Direct2dRenderTarget = HwndRenderTarget.CreateForWindow(Application.Direct2dFactory, window, size);
-            RenderTargetCreated(Direct2dRenderTarget);
+            _renderTarget = HwndRenderTarget.CreateForWindow(Application.Direct2dFactory, window, size);
+            RenderTargetCreated();
         }
         else
         {
-            Direct2dRenderTarget.Resize(size);
+            _renderTarget.Resize(size);
         }
     }
 
     /// <summary>
     ///  Called whenever the Direct2D render target has been created or recreated.
     /// </summary>
-    protected virtual void RenderTargetCreated(HwndRenderTarget renderTarget)
+    protected virtual void RenderTargetCreated()
+    {
+    }
+
+    protected virtual void OnPaint()
+    {
+    }
+
+    protected virtual void OnSize(Size size)
     {
     }
 
@@ -242,19 +244,25 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
                 break;
 
             case Interop.WM_SIZE:
+                Size size = new(lParam.LOWORD, lParam.HIWORD);
+
                 // Check the flag directly here so we don't create then resize.
                 if (_features.AreFlagsSet(Features.EnableDirect2d))
                 {
-                    UpdateRenderTarget(window, new Size(lParam.LOWORD, lParam.HIWORD));
+                    UpdateRenderTarget(window, size);
                 }
+
+                OnSize(size);
 
                 break;
 
             case Interop.WM_PAINT:
-                if (IsDirect2dEnabled(out var renderTarget))
+                if (IsDirect2dEnabled())
                 {
-                    renderTarget.BeginDraw();
+                    _renderTarget.BeginDraw();
                 }
+
+                OnPaint();
 
                 break;
         }
@@ -275,11 +283,11 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
 
         if (message == Interop.WM_PAINT && IsDirect2dEnabled())
         {
-            Direct2dRenderTarget.EndDraw(out bool recreateTarget);
+            _renderTarget.EndDraw(out bool recreateTarget);
             if (recreateTarget)
             {
-                Direct2dRenderTarget.Dispose();
-                Direct2dRenderTarget = null;
+                _renderTarget.Dispose();
+                _renderTarget = null;
                 UpdateRenderTarget(window, this.GetClientRectangle().Size);
             }
         }
@@ -525,14 +533,5 @@ public unsafe class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
         FARPROC address = Interop.GetProcAddress(module, "DefWindowProcW");
         Debug.Assert(!address.IsNull);
         return (WNDPROC)(void*)address.Value;
-    }
-
-    [Flags]
-    public enum Features
-    {
-        /// <summary>
-        ///  Set this flag to enable Direct2D rendering.
-        /// </summary>
-        EnableDirect2d          = 0b0000_0000_0000_0000_0000_0000_0000_0001,
     }
 }

@@ -5,13 +5,15 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using Windows.Support;
 using Windows.Win32.Graphics.Direct2D;
+using Windows.Win32.Graphics.DirectWrite;
 
 namespace Windows;
 
 public static unsafe class Application
 {
     private static ActivationContext? s_visualStylesContext;
-    private static Factory? s_direct2dFactory;
+    private static Direct2dFactory? s_direct2dFactory;
+    private static DirectWriteFactory? s_directWriteFactory;
 
     internal static ActivationScope ThemingScope => new(GetStylesContext());
 
@@ -207,5 +209,6 @@ public static unsafe class Application
         using var enumerator = new ThreadWindowEnumerator(threadId, callback);
     }
 
-    public static Factory Direct2dFactory => s_direct2dFactory ??= new();
+    public static Direct2dFactory Direct2dFactory => s_direct2dFactory ??= new();
+    public static DirectWriteFactory DirectWriteFactory => s_directWriteFactory ??= new();
 }

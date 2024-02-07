@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Numerics;
 using Windows.Support;
 using Windows.Win32.Graphics.Direct2D.Common;
+using Windows.Win32.Graphics.DirectWrite;
 
 namespace Windows.Win32.Graphics.Direct2D;
 
@@ -91,5 +92,26 @@ public static unsafe class RenderTargetExtensions
         D2D_SIZE_F size = target.Pointer->GetSizeHack();
         GC.KeepAlive(target);
         return *(SizeF*)&size;
+    }
+
+    public static void DrawTextLayout<TTarget, TLayout, TBrush>(
+        this TTarget target,
+        PointF origin,
+        TLayout textLayout,
+        TBrush defaultFillBrush,
+        DrawTextOptions options = DrawTextOptions.None)
+        where TTarget : IPointer<ID2D1RenderTarget>
+        where TLayout : IPointer<IDWriteTextLayout>
+        where TBrush : IPointer<ID2D1Brush>
+    {
+        target.Pointer->DrawTextLayout(
+            origin,
+            textLayout.Pointer,
+            defaultFillBrush.Pointer,
+            (D2D1_DRAW_TEXT_OPTIONS)options);
+
+        GC.KeepAlive(target);
+        GC.KeepAlive(textLayout);
+        GC.KeepAlive(defaultFillBrush);
     }
 }
