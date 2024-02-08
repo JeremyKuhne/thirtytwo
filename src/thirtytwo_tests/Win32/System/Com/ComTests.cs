@@ -15,7 +15,7 @@ public unsafe class ComTests
         using ComScope<IUnknown> unknown1 = events.GetComCallableWrapper();
         using ComScope<IUnknown> unknown2 = events.GetComCallableWrapper();
 
-        Assert.True(unknown1.Value == unknown2.Value);
+        Assert.True(unknown1.Pointer == unknown2.Pointer);
     }
 
     [Fact]
@@ -25,6 +25,6 @@ public unsafe class ComTests
         using ComScope<IFileDialogEvents> iEvents1 = events.GetComCallableWrapper<IFileDialogEvents>();
         using ComScope<IFileDialogEvents> iEvents2 = events.GetComCallableWrapper<IFileDialogEvents>();
 
-        Assert.True(iEvents1.Value == iEvents2.Value);
+        Assert.True(iEvents1.Pointer == iEvents2.Pointer);
     }
 }

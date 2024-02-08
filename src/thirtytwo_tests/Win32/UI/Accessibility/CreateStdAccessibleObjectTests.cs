@@ -47,22 +47,22 @@ public unsafe class CreateStdAccessibleObjectTests
         hr.Succeeded.Should().BeFalse();
 
         // For OBJID_WINDOW the child count is always 7 (OBJID_SYSMENU through OBJID_SIZEGRIP)
-        accessible.Value->get_accChildCount(out int childCount).Succeeded.Should().BeTrue();
+        accessible.Pointer->get_accChildCount(out int childCount).Succeeded.Should().BeTrue();
         childCount.Should().Be(7);
 
         using BSTR description = default;
-        accessible.Value->get_accDescription((VARIANT)(int)Interop.CHILDID_SELF, &description).Should().Be(HRESULT.S_FALSE);
-        accessible.Value->get_accDescription((VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU, &description).Succeeded.Should().BeTrue();
+        accessible.Pointer->get_accDescription((VARIANT)(int)Interop.CHILDID_SELF, &description).Should().Be(HRESULT.S_FALSE);
+        accessible.Pointer->get_accDescription((VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU, &description).Succeeded.Should().BeTrue();
         description.ToStringAndFree().Should().Be("Contains commands to manipulate the window");
 
         // Navigating left from the system menu goes nowhere.
         using VARIANT result = default;
-        hr = accessible.Value->accNavigate((int)Interop.NAVDIR_LEFT, (VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU, &result);
+        hr = accessible.Pointer->accNavigate((int)Interop.NAVDIR_LEFT, (VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU, &result);
         result.vt.Should().Be(VARENUM.VT_EMPTY);
         result.Dispose();
 
         // We get IDispatch for the title bar going right from the system menu
-        hr = accessible.Value->accNavigate((int)Interop.NAVDIR_RIGHT, (VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU, &result);
+        hr = accessible.Pointer->accNavigate((int)Interop.NAVDIR_RIGHT, (VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU, &result);
         using ComScope<IDispatch> right = new((IDispatch*)result);
 
         // Can't directly get IAccessibleEx / IRawElementProviderSimple
@@ -73,11 +73,11 @@ public unsafe class CreateStdAccessibleObjectTests
         {
             rightService.IsNull.Should().BeFalse();
             using ComScope<IRawElementProviderSimple> provider = new(null);
-            rightService.Value->QueryService(IID.Get<IAccessibleEx>(), IID.Get<IRawElementProviderSimple>(), provider);
+            rightService.Pointer->QueryService(IID.Get<IAccessibleEx>(), IID.Get<IRawElementProviderSimple>(), provider);
             provider.IsNull.Should().BeFalse();
-            provider.Value->GetPropertyValue(UIA_PROPERTY_ID.UIA_IsContentElementPropertyId, out VARIANT property).Succeeded.Should().BeTrue();
+            provider.Pointer->GetPropertyValue(UIA_PROPERTY_ID.UIA_IsContentElementPropertyId, out VARIANT property).Succeeded.Should().BeTrue();
             ((bool)property).Should().BeFalse();
-            provider.Value->GetPropertyValue(UIA_PROPERTY_ID.UIA_AutomationIdPropertyId, out property).Succeeded.Should().BeTrue();
+            provider.Pointer->GetPropertyValue(UIA_PROPERTY_ID.UIA_AutomationIdPropertyId, out property).Succeeded.Should().BeTrue();
             property.IsEmpty.Should().BeTrue();
         }
 
@@ -86,7 +86,7 @@ public unsafe class CreateStdAccessibleObjectTests
 
         using ComScope<IOleWindow> oleWindow = accessible.TryQueryInterface<IOleWindow>(out hr);
         hr.Succeeded.Should().BeTrue();
-        oleWindow.Value->GetWindow(out HWND hwnd);
+        oleWindow.Pointer->GetWindow(out HWND hwnd);
 
         hwnd.Should().Be(window.Handle);
 
@@ -98,7 +98,7 @@ public unsafe class CreateStdAccessibleObjectTests
 
         byte* id = default;
         uint length;
-        identity.Value->GetIdentityString(Interop.CHILDID_SELF, &id, &length);
+        identity.Pointer->GetIdentityString(Interop.CHILDID_SELF, &id, &length);
         Span<byte> idSpan = new(id, (int)length);
         idSpan.IsEmpty.Should().BeFalse();
         Interop.CoTaskMemFree(id);

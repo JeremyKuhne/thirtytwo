@@ -34,11 +34,11 @@ public unsafe class ReflectPropertiesDispatchTests
 
         using ComScope<IDispatchEx> dispatch = new(ComHelpers.GetComPointer<IDispatchEx>(reflect));
 
-        var dispatchIds = dispatch.Value->GetAllDispatchIds();
+        var dispatchIds = dispatch.Pointer->GetAllDispatchIds();
 
         dispatchIds.Keys.Should().Contain("ObjectAsInterface", "Object");
 
-        dispatch.Value->GetMemberProperties(dispatchIds["Object"], uint.MaxValue, out var flags);
+        dispatch.Pointer->GetMemberProperties(dispatchIds["Object"], uint.MaxValue, out var flags);
         flags.Should().Be(fdexPropCanGet | fdexPropCanPut | fdexPropCannotPutRef
             | fdexPropCannotCall | fdexPropCannotConstruct | fdexPropCannotSourceEvents);
 
@@ -48,7 +48,7 @@ public unsafe class ReflectPropertiesDispatchTests
         reflect.Object = obj;
         reflect.ObjectAsInterface = obj;
 
-        using VARIANT result = dispatch.Value->TryGetPropertyValue(dispatchIds["Object"], out HRESULT hr);
+        using VARIANT result = dispatch.Pointer->TryGetPropertyValue(dispatchIds["Object"], out HRESULT hr);
         if (expected == VARENUM.VT_ILLEGAL)
         {
             hr.Succeeded.Should().BeFalse();
@@ -59,7 +59,7 @@ public unsafe class ReflectPropertiesDispatchTests
             result.vt.Should().Be(expected);
         }
 
-        using VARIANT result2 = dispatch.Value->TryGetPropertyValue(dispatchIds["ObjectAsInterface"], out hr);
+        using VARIANT result2 = dispatch.Pointer->TryGetPropertyValue(dispatchIds["ObjectAsInterface"], out hr);
         if (expected == VARENUM.VT_ILLEGAL)
         {
             hr.Succeeded.Should().BeFalse();
@@ -84,27 +84,27 @@ public unsafe class ReflectPropertiesDispatchTests
 
         using ComScope<IDispatchEx> dispatch = new(ComHelpers.GetComPointer<IDispatchEx>(reflect));
 
-        var dispatchIds = dispatch.Value->GetAllDispatchIds();
+        var dispatchIds = dispatch.Pointer->GetAllDispatchIds();
 
         dispatchIds.Keys.Should().Contain("Location", "Color", "Count");
 
-        VARIANT result = dispatch.Value->TryGetPropertyValue(dispatchIds["Location"], out HRESULT hr);
+        VARIANT result = dispatch.Pointer->TryGetPropertyValue(dispatchIds["Location"], out HRESULT hr);
         hr.Should().Be(HRESULT.COR_E_NOTSUPPORTED);
 
         VARIANT value = (VARIANT)42;
-        hr = dispatch.Value->TrySetPropertyValue(dispatchIds["Count"], value);
+        hr = dispatch.Pointer->TrySetPropertyValue(dispatchIds["Count"], value);
         hr.Succeeded.Should().BeTrue();
         reflect.Count.Should().Be(42);
 
-        result = dispatch.Value->TryGetPropertyValue(dispatchIds["Color"], out hr);
+        result = dispatch.Pointer->TryGetPropertyValue(dispatchIds["Color"], out hr);
         result.vt.Should().Be(VARENUM.VT_UI4);
         ((uint)result).Should().Be(0x00FF0000);  // AABBGGRR OLECOLOR
 
         value = (VARIANT)(uint)0x000000FF;
-        hr = dispatch.Value->TrySetPropertyValue(dispatchIds["Color"], value);
+        hr = dispatch.Pointer->TrySetPropertyValue(dispatchIds["Color"], value);
         hr.Should().Be(HRESULT.DISP_E_MEMBERNOTFOUND);
 
-        dispatch.Value->GetMemberProperties(dispatchIds["Color"], uint.MaxValue, out var flags);
+        dispatch.Pointer->GetMemberProperties(dispatchIds["Color"], uint.MaxValue, out var flags);
         flags.Should().Be(fdexPropCanGet | fdexPropCanPut | fdexPropCannotPutRef
             | fdexPropCannotCall | fdexPropCannotConstruct | fdexPropCannotSourceEvents);
     }

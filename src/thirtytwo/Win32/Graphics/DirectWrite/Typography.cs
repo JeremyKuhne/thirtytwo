@@ -2,24 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.CompilerServices;
-using Windows.Support;
-using Windows.Win32.System.Com;
 
 namespace Windows.Win32.Graphics.DirectWrite;
 
-public unsafe class Typography : DisposableBase.Finalizable, IPointer<IDWriteTypography>
+public unsafe class Typography : DirectDrawBase<IDWriteTypography>
 {
-    private readonly AgileComPointer<IDWriteTypography> _typography;
-
-    public unsafe IDWriteTypography* Pointer { get; private set; }
-
-    public Typography(IDWriteTypography* typography)
+    public Typography(IDWriteTypography* typography) : base(typography)
     {
-        Pointer = typography;
-
-        // Ensure that this can be disposed on the finalizer thread by giving the "last" ref count
-        // to an agile pointer.
-        _typography = new AgileComPointer<IDWriteTypography>(typography, takeOwnership: true);
     }
 
     public Typography() : this(Create())
@@ -58,16 +47,6 @@ public unsafe class Typography : DisposableBase.Finalizable, IPointer<IDWriteTyp
             uint result = Pointer->GetFontFeatureCount();
             GC.KeepAlive(this);
             return result;
-        }
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        Pointer = null;
-
-        if (disposing)
-        {
-            _typography.Dispose();
         }
     }
 }

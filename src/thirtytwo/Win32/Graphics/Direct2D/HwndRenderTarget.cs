@@ -9,12 +9,11 @@ namespace Windows.Win32.Graphics.Direct2D;
 
 public unsafe class HwndRenderTarget : RenderTarget, IPointer<ID2D1HwndRenderTarget>
 {
-    public new ID2D1HwndRenderTarget* Pointer { get; private set; }
+    public new ID2D1HwndRenderTarget* Pointer => (ID2D1HwndRenderTarget*)base.Pointer;
 
     public HwndRenderTarget(ID2D1HwndRenderTarget* renderTarget)
         : base((ID2D1RenderTarget*)renderTarget)
     {
-        Pointer = renderTarget;
     }
 
     public static HwndRenderTarget CreateForWindow<TFactory, TWindow>(
@@ -54,9 +53,5 @@ public unsafe class HwndRenderTarget : RenderTarget, IPointer<ID2D1HwndRenderTar
         return new HwndRenderTarget(renderTarget);
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        Pointer = null;
-        base.Dispose(disposing);
-    }
+    public static implicit operator ID2D1HwndRenderTarget*(HwndRenderTarget target) => target.Pointer;
 }

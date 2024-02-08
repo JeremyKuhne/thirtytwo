@@ -3,37 +3,22 @@
 
 using System.Drawing;
 using Windows.Support;
-using Windows.Win32.System.Com;
 
 namespace Windows.Win32.Graphics.DirectWrite;
 
-public unsafe class TextLayout : DisposableBase.Finalizable, IPointer<IDWriteTextLayout>
+public unsafe class TextLayout : DirectDrawBase<IDWriteTextLayout>
 {
-    private readonly AgileComPointer<IDWriteTextLayout> _layout;
-
-    public unsafe IDWriteTextLayout* Pointer { get; private set; }
-
-    public TextLayout(IDWriteTextLayout* layout)
-    {
-        Pointer = layout;
-
-        // Ensure that this can be disposed on the finalizer thread by giving the "last" ref count
-        // to an agile pointer.
-        _layout = new AgileComPointer<IDWriteTextLayout>(layout, takeOwnership: true);
-    }
-
-    public TextLayout(
-        string text,
-        TextFormat format,
-        SizeF maxSize) : this(Create(text, format, maxSize.Width, maxSize.Height))
+    public TextLayout(IDWriteTextLayout* layout) : base(layout)
     {
     }
 
-    public TextLayout(
-        string text,
-        TextFormat format,
-        float maxWidth,
-        float maxHeight) : this(Create(text, format, maxWidth, maxHeight))
+    public TextLayout(string text, TextFormat format, SizeF maxSize)
+        : this(Create(text, format, maxSize.Width, maxSize.Height))
+    {
+    }
+
+    public TextLayout(string text, TextFormat format, float maxWidth, float maxHeight)
+        : this(Create(text, format, maxWidth, maxHeight))
     {
     }
 
@@ -142,15 +127,5 @@ public unsafe class TextLayout : DisposableBase.Finalizable, IPointer<IDWriteTex
     {
         Pointer->SetFontWeight((DWRITE_FONT_WEIGHT)fontWeight, textRange);
         GC.KeepAlive(this);
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        Pointer = null;
-
-        if (disposing)
-        {
-            _layout.Dispose();
-        }
     }
 }

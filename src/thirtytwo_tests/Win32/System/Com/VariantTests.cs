@@ -39,7 +39,7 @@ public unsafe class VariantTests
 
         // Getting the variant from the native pointer gives the NotSupported HRESULT
         VARIANT variant = default;
-        testVariant.Value->GetVariant(&variant).Should().Be(HRESULT.COR_E_NOTSUPPORTED);
+        testVariant.Pointer->GetVariant(&variant).Should().Be(HRESULT.COR_E_NOTSUPPORTED);
         variant.IsEmpty.Should().BeTrue();
     }
 

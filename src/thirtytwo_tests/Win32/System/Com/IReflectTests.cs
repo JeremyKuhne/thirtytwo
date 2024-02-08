@@ -50,7 +50,7 @@ public unsafe class IReflectTests
 
         using ComScope<IDispatch> dispatch = new((IDispatch*)InteropMarshal.GetIDispatchForObject(publicSimple));
         using ComScope<ITypeInfo> typeInfo = new(null);
-        HRESULT hr = dispatch.Value->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
+        HRESULT hr = dispatch.Pointer->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
         hr.Should().Be(HRESULT.TLBX_E_LIBNOTREGISTERED);
     }
 
@@ -139,7 +139,7 @@ public unsafe class IReflectTests
             hr = container->EnumConnectionPoints(enumPoints);
             hr.Should().Be(HRESULT.S_OK);
             IConnectionPoint* connection;
-            while (enumPoints.Value->Next(1, &connection, out uint fetched) == HRESULT.S_OK)
+            while (enumPoints.Pointer->Next(1, &connection, out uint fetched) == HRESULT.S_OK)
             {
                 connection->Release();
                 Assert.Fail("Shouldn't get any connection points.");
@@ -167,7 +167,7 @@ public unsafe class IReflectTests
         {
             container->EnumConnectionPoints(enumPoints).Succeeded.Should().BeTrue();
             IConnectionPoint* connection;
-            while (enumPoints.Value->Next(1, &connection, out uint fetched) == HRESULT.S_OK)
+            while (enumPoints.Pointer->Next(1, &connection, out uint fetched) == HRESULT.S_OK)
             {
                 connection->GetConnectionInterface(out Guid riid).Succeeded.Should().BeTrue();
                 IConnectionPoint* foundConnection;
@@ -224,7 +224,7 @@ public unsafe class IReflectTests
 
         // The Assembly needs to have a registered TypeLib to get anything.
         ITypeInfo* typeInfo;
-        hr = provideClassInfo.Value->GetClassInfo(&typeInfo);
+        hr = provideClassInfo.Pointer->GetClassInfo(&typeInfo);
         hr.Should().Be(HRESULT.TLBX_E_LIBNOTREGISTERED);
     }
 
@@ -263,21 +263,21 @@ public unsafe class IReflectTests
         using ComScope<IDispatchEx> dispatchEx = dispatch.TryQueryInterface<IDispatchEx>(out HRESULT hr);
 
         using ComScope<ITypeInfo> typeInfo = new(null);
-        hr = dispatchEx.Value->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
+        hr = dispatchEx.Pointer->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
         hr.Succeeded.Should().Be(true);
 
         using BSTR findName = new("Foo");
-        hr = dispatchEx.Value->GetDispID(findName, default, out int pid);
+        hr = dispatchEx.Pointer->GetDispID(findName, default, out int pid);
 
         TYPEATTR* attr;
-        hr = typeInfo.Value->GetTypeAttr(&attr);
+        hr = typeInfo.Pointer->GetTypeAttr(&attr);
         hr.Succeeded.Should().Be(true);
         TYPEATTR attrCopy = *attr;
-        typeInfo.Value->ReleaseTypeAttr(attr);
+        typeInfo.Pointer->ReleaseTypeAttr(attr);
 
         VARIANT result;
         DISPPARAMS dispparams = default;
-        hr = dispatchEx.Value->Invoke(
+        hr = dispatchEx.Pointer->Invoke(
             1776,
             IID.Empty(),
             0,
@@ -287,7 +287,7 @@ public unsafe class IReflectTests
             null,
             null);
 
-        hr = dispatchEx.Value->InvokeEx(
+        hr = dispatchEx.Pointer->InvokeEx(
             1776,
             0,
             (ushort)DISPATCH_FLAGS.DISPATCH_PROPERTYGET,
@@ -307,12 +307,12 @@ public unsafe class IReflectTests
 
         // When Invoking via enumerated ids "ToString" is passed to IReflect.InvokeMember (as opposed to "[DISPID=]").
 
-        var dispatchIds = dispatchEx.Value->GetAllDispatchIds();
+        var dispatchIds = dispatchEx.Pointer->GetAllDispatchIds();
         dispatchIds.Keys.Should().BeEquivalentTo("GetType", "ToString", "Equals", "GetHashCode");
 
         using VARIANT result = default;
         DISPPARAMS dispparams = default;
-        HRESULT hr = dispatchEx.Value->InvokeEx(
+        HRESULT hr = dispatchEx.Pointer->InvokeEx(
             dispatchIds["ToString"],
             0,
             (ushort)DISPATCH_FLAGS.DISPATCH_METHOD,
@@ -329,7 +329,7 @@ public unsafe class IReflectTests
         result.Dispose();
 
         // Invoke works as well.
-        hr = dispatchEx.Value->Invoke(
+        hr = dispatchEx.Pointer->Invoke(
             dispatchIds["ToString"],
             IID.Empty(),
             0,
@@ -349,7 +349,7 @@ public unsafe class IReflectTests
         // Try again with QI'ed IDispatch
         using ComScope<IDispatch> dispatch = unknown.QueryInterface<IDispatch>();
 
-        hr = dispatch.Value->Invoke(
+        hr = dispatch.Pointer->Invoke(
             dispatchIds["ToString"],
             IID.Empty(),
             0,
@@ -366,13 +366,13 @@ public unsafe class IReflectTests
 
         // Can we get any more info off of IDispatch? Everything but GetDocumentation takes an index, not an id.
         using ComScope<ITypeInfo> typeInfo = new(null);
-        dispatchEx.Value->GetTypeInfo(0, 0, typeInfo);
+        dispatchEx.Pointer->GetTypeInfo(0, 0, typeInfo);
 
         using BSTR name = default;
         using BSTR doc = default;
         using BSTR helpFile = default;
         uint helpContext;
-        hr = typeInfo.Value->GetDocumentation(dispatchIds["ToString"], &name, &doc, &helpContext, &helpFile);
+        hr = typeInfo.Pointer->GetDocumentation(dispatchIds["ToString"], &name, &doc, &helpContext, &helpFile);
         hr.Should().Be(HRESULT.TYPE_E_ELEMENTNOTFOUND);
     }
 
@@ -396,9 +396,9 @@ public unsafe class IReflectTests
         using ComScope<IUnknown> unknown = new((IUnknown*)InteropMarshal.GetIUnknownForObject(reflect));
         using ComScope<IDispatchEx> dispatch = unknown.QueryInterface<IDispatchEx>();
 
-        var dispatchIds = dispatch.Value->GetAllDispatchIds();
+        var dispatchIds = dispatch.Pointer->GetAllDispatchIds();
 
-        dispatch.Value->GetMemberProperties(dispatchIds["Object"], uint.MaxValue, out var flags);
+        dispatch.Pointer->GetMemberProperties(dispatchIds["Object"], uint.MaxValue, out var flags);
         flags.Should().Be(fdexPropCanGet | fdexPropCanPut | fdexPropCannotPutRef
             | fdexPropCannotCall | fdexPropCannotConstruct | fdexPropCannotSourceEvents);
 
@@ -408,7 +408,7 @@ public unsafe class IReflectTests
         reflect.Object = obj;
         reflect.ObjectAsInterface = obj;
 
-        using VARIANT result = dispatch.Value->TryGetPropertyValue(dispatchIds["Object"], out HRESULT hr);
+        using VARIANT result = dispatch.Pointer->TryGetPropertyValue(dispatchIds["Object"], out HRESULT hr);
         if (expected == VARENUM.VT_ILLEGAL)
         {
             hr.Succeeded.Should().BeFalse();
@@ -419,7 +419,7 @@ public unsafe class IReflectTests
             result.vt.Should().Be(expected);
         }
 
-        using VARIANT result2 = dispatch.Value->TryGetPropertyValue(dispatchIds["ObjectAsInterface"], out hr);
+        using VARIANT result2 = dispatch.Pointer->TryGetPropertyValue(dispatchIds["ObjectAsInterface"], out hr);
         if (expected == VARENUM.VT_ILLEGAL)
         {
             hr.Succeeded.Should().BeFalse();
@@ -442,36 +442,36 @@ public unsafe class IReflectTests
         using ComScope<IUnknown> unknown = new((IUnknown*)InteropMarshal.GetIUnknownForObject(reflect));
         using ComScope<IDispatchEx> dispatch = unknown.QueryInterface<IDispatchEx>();
 
-        var dispatchIds = dispatch.Value->GetAllDispatchIds();
+        var dispatchIds = dispatch.Pointer->GetAllDispatchIds();
 
         dispatchIds.Keys.Should().Contain("Location", "get_Location", "Color", "get_Color", "set_Color");
 
-        VARIANT result = dispatch.Value->TryGetPropertyValue(dispatchIds["Location"], out HRESULT hr);
+        VARIANT result = dispatch.Pointer->TryGetPropertyValue(dispatchIds["Location"], out HRESULT hr);
         hr.Should().Be(HRESULT.COR_E_NOTSUPPORTED);
 
         VARIANT value = (VARIANT)42;
-        hr = dispatch.Value->TrySetPropertyValue(dispatchIds["Count"], value);
+        hr = dispatch.Pointer->TrySetPropertyValue(dispatchIds["Count"], value);
         hr.Succeeded.Should().BeTrue();
         reflect.Count.Should().Be(42);
 
-        result = dispatch.Value->TryGetPropertyValue(dispatchIds["Color"], out hr);
+        result = dispatch.Pointer->TryGetPropertyValue(dispatchIds["Color"], out hr);
         result.vt.Should().Be(VARENUM.VT_UI4);
         ((uint)result).Should().Be(0x00FF0000);  // AABBGGRR OLECOLOR
 
         // While we can *get* the color, we can't set it as there is no way (afaik) to match the passed in uint parameter.
         value = (VARIANT)(uint)0x000000FF;
-        hr = dispatch.Value->TrySetPropertyValue(dispatchIds["Color"], value);
+        hr = dispatch.Pointer->TrySetPropertyValue(dispatchIds["Color"], value);
         hr.Should().Be(HRESULT.DISP_E_MEMBERNOTFOUND);
 
-        dispatch.Value->GetMemberProperties(dispatchIds["Color"], uint.MaxValue, out var flags);
+        dispatch.Pointer->GetMemberProperties(dispatchIds["Color"], uint.MaxValue, out var flags);
         flags.Should().Be(fdexPropCanGet | fdexPropCanPut | fdexPropCannotPutRef
             | fdexPropCannotCall | fdexPropCannotConstruct | fdexPropCannotSourceEvents);
 
-        dispatch.Value->GetMemberProperties(dispatchIds["get_Color"], uint.MaxValue, out flags);
+        dispatch.Pointer->GetMemberProperties(dispatchIds["get_Color"], uint.MaxValue, out flags);
         flags.Should().Be(fdexPropCannotGet | fdexPropCannotPut | fdexPropCannotPutRef
             | fdexPropCanCall | fdexPropCannotConstruct | fdexPropCannotSourceEvents);
 
-        dispatch.Value->GetMemberProperties(dispatchIds["set_Color"], uint.MaxValue, out flags);
+        dispatch.Pointer->GetMemberProperties(dispatchIds["set_Color"], uint.MaxValue, out flags);
         flags.Should().Be(fdexPropCannotGet | fdexPropCannotPut | fdexPropCannotPutRef
             | fdexPropCanCall | fdexPropCannotConstruct | fdexPropCannotSourceEvents);
     }
@@ -493,7 +493,7 @@ public unsafe class IReflectTests
 
         // Only explicitly provided member info in IReflect is exposed.
 
-        var dispatchIds = dispatch.Value->GetAllDispatchIds();
+        var dispatchIds = dispatch.Pointer->GetAllDispatchIds();
         dispatchIds.Keys.Should().BeEquivalentTo(names);
     }
 
@@ -513,19 +513,19 @@ public unsafe class IReflectTests
 
         // Getting IDispatch calls IReflect.GetProperties, IReflect.GetFields, then IReflect.GetMethods
         using ComScope<IDispatch> dispatch = new((IDispatch*)InteropMarshal.GetIDispatchForObject(reflect));
-        HRESULT hr = dispatch.Value->GetTypeInfoCount(out uint count);
+        HRESULT hr = dispatch.Pointer->GetTypeInfoCount(out uint count);
         hr.Should().Be(HRESULT.S_OK);
         count.Should().Be(1);
 
         using ComScope<ITypeInfo> typeInfo = new(null);
-        hr = dispatch.Value->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
+        hr = dispatch.Pointer->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
         hr.Should().Be(HRESULT.S_OK);
 
         TYPEATTR* attr;
-        hr = typeInfo.Value->GetTypeAttr(&attr);
+        hr = typeInfo.Pointer->GetTypeAttr(&attr);
         hr.Succeeded.Should().Be(true);
         TYPEATTR attrCopy = *attr;
-        typeInfo.Value->ReleaseTypeAttr(attr);
+        typeInfo.Pointer->ReleaseTypeAttr(attr);
 
         attrCopy.cFuncs.Should().Be(3);
         attrCopy.cImplTypes.Should().Be(0);
@@ -542,15 +542,15 @@ public unsafe class IReflectTests
         attrCopy.wTypeFlags.Should().Be((ushort)TYPEFLAGS.TYPEFLAG_FHIDDEN);
 
         using ComScope<ITypeComp> typeComp = new(null);
-        hr = typeInfo.Value->GetTypeComp(typeComp);
+        hr = typeInfo.Pointer->GetTypeComp(typeComp);
         hr.Succeeded.Should().BeTrue();
 
         VARDESC* vardesc;
-        hr = typeInfo.Value->GetVarDesc(1, &vardesc);
+        hr = typeInfo.Pointer->GetVarDesc(1, &vardesc);
         hr.Should().Be(HRESULT.TYPE_E_ELEMENTNOTFOUND);
 
         FUNCDESC* funcdesc;
-        hr = typeInfo.Value->GetFuncDesc(0, &funcdesc);
+        hr = typeInfo.Pointer->GetFuncDesc(0, &funcdesc);
         hr.Succeeded.Should().BeTrue();
         funcdesc->cParams.Should().Be(2);
         funcdesc->memid.Should().Be(0x60000000);
@@ -571,20 +571,20 @@ public unsafe class IReflectTests
         funcdesc->lprgelemdescParam[1].tdesc.Anonymous.lptdesc->vt.Should().Be(VARENUM.VT_PTR);
         funcdesc->lprgelemdescParam[1].tdesc.Anonymous.lptdesc->Anonymous.lptdesc->vt.Should().Be(VARENUM.VT_VOID);
 
-        typeInfo.Value->ReleaseFuncDesc(funcdesc);
+        typeInfo.Pointer->ReleaseFuncDesc(funcdesc);
 
         using BSTR name = default;
         using BSTR doc = default;
         using BSTR helpFile = default;
         uint helpContext;
 
-        hr = typeInfo.Value->GetDocumentation(0x60000000, &name, &doc, &helpContext, &helpFile);
+        hr = typeInfo.Pointer->GetDocumentation(0x60000000, &name, &doc, &helpContext, &helpFile);
         name.ToStringAndFree().Should().Be("QueryInterface");
 
         // This will call IReflect.InvokeMember with a name of "[DISPID=0]" (the member dispid)
         VARIANT result;
         DISPPARAMS dispparams = default;
-        hr = dispatch.Value->Invoke(0, IID.Empty(), 0, DISPATCH_FLAGS.DISPATCH_METHOD, &dispparams, &result, null, null);
+        hr = dispatch.Pointer->Invoke(0, IID.Empty(), 0, DISPATCH_FLAGS.DISPATCH_METHOD, &dispparams, &result, null, null);
     }
 
     public class PublicSimpleClass

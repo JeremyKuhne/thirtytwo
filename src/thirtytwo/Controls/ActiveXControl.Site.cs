@@ -189,7 +189,7 @@ public unsafe partial class ActiveXControl
         HRESULT IOleInPlaceSite.Interface.DeactivateAndUndo()
         {
             using var inPlace = _control._instance.GetInterface<IOleInPlaceObject>();
-            return inPlace.Value->UIDeactivate();
+            return inPlace.Pointer->UIDeactivate();
         }
 
         HRESULT IOleInPlaceSite.Interface.OnPosRectChange(RECT* lprcPosRect)
@@ -201,7 +201,7 @@ public unsafe partial class ActiveXControl
 
             using var inPlace = _control._instance.GetInterface<IOleInPlaceObject>();
             RECT clipRect = new(int.MinValue, int.MinValue, int.MaxValue, int.MaxValue);
-            HRESULT hr = inPlace.Value->SetObjectRects(lprcPosRect, &clipRect);
+            HRESULT hr = inPlace.Pointer->SetObjectRects(lprcPosRect, &clipRect);
             return HRESULT.S_OK;
         }
 

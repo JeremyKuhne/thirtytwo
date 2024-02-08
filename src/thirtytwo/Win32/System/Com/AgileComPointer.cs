@@ -32,6 +32,12 @@ public unsafe class AgileComPointer<TInterface> : IComPointer
         }
     }
 
+    /// <summary>
+    ///  Gets the default interface.
+    /// </summary>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="InvalidCastException"/>
+    /// <exception cref="NullReferenceException"/>
     public ComScope<TInterface> GetInterface()
     {
         var scope = GlobalInterfaceTable.GetInterface<TInterface>(_cookie, out HRESULT hr);

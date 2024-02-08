@@ -37,7 +37,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
         }
 
         using BSTR name = default;
-        HRESULT hr = typeInfo.Value->GetDocumentation(
+        HRESULT hr = typeInfo.Pointer->GetDocumentation(
             Interop.MEMBERID_NIL,
             &name,
             null,
@@ -57,7 +57,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
             return string.Empty;
         }
 
-        using (VARIANT value = dispatch.Value->GetPropertyValue("__id"))
+        using (VARIANT value = dispatch.Pointer->GetPropertyValue("__id"))
         {
             if (value.vt == VARENUM.VT_BSTR)
             {
@@ -65,7 +65,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
             }
         }
 
-        using (VARIANT value = dispatch.Value->GetPropertyValue(Interop.DISPID_Name))
+        using (VARIANT value = dispatch.Pointer->GetPropertyValue(Interop.DISPID_Name))
         {
             if (value.vt == VARENUM.VT_BSTR)
             {
@@ -73,7 +73,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
             }
         }
 
-        using (VARIANT value = dispatch.Value->GetPropertyValue("Name"))
+        using (VARIANT value = dispatch.Pointer->GetPropertyValue("Name"))
         {
             if (value.vt == VARENUM.VT_BSTR)
             {
@@ -113,7 +113,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
 
         using ComScope<ITypeLib> typeLib = new(null);
         uint typeIndex;
-        HRESULT hr = typeInfo.Value->GetContainingTypeLib(typeLib, &typeIndex);
+        HRESULT hr = typeInfo.Pointer->GetContainingTypeLib(typeLib, &typeIndex);
         if (hr.Failed)
         {
             return;
@@ -126,7 +126,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
         }
 
         using ComScope<IEnumConnectionPoints> enumerator = new(null);
-        container.Value->EnumConnectionPoints(enumerator);
+        container.Pointer->EnumConnectionPoints(enumerator);
         if (hr.Failed)
         {
             return;
@@ -134,7 +134,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
 
         uint count;
         IConnectionPoint* connectionPoint = null;
-        while (enumerator.Value->Next(1u, &connectionPoint, &count).Succeeded && count == 1)
+        while (enumerator.Pointer->Next(1u, &connectionPoint, &count).Succeeded && count == 1)
         {
             using ComScope<IConnectionPoint> scope = new(connectionPoint);
             Guid connectionId;
@@ -145,13 +145,13 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
             }
 
             using ComScope<ITypeInfo> eventTypeInfo = new(null);
-            hr = typeLib.Value->GetTypeInfoOfGuid(connectionId, eventTypeInfo);
+            hr = typeLib.Pointer->GetTypeInfoOfGuid(connectionId, eventTypeInfo);
             if (hr.Failed)
             {
                 continue;
             }
 
-            using var typeAttr = eventTypeInfo.Value->GetTypeAttr(out hr);
+            using var typeAttr = eventTypeInfo.Pointer->GetTypeAttr(out hr);
             if (hr.Failed
                 || typeAttr.Value->typekind != TYPEKIND.TKIND_DISPATCH
                 || ((TYPEFLAGS)typeAttr.Value->wTypeFlags).HasFlag(TYPEFLAGS.TYPEFLAG_FDUAL))
@@ -161,7 +161,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
             }
 
             using BSTR name = default;
-            hr = typeInfo.Value->GetDocumentation(Interop.MEMBERID_NIL, &name, null, null, null);
+            hr = typeInfo.Pointer->GetDocumentation(Interop.MEMBERID_NIL, &name, null, null, null);
             if (hr.Failed)
             {
                 continue;
@@ -239,7 +239,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
             }
 
             ComScope<ITypeInfo> typeInfo = new(null);
-            hr = dispatch.Value->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
+            hr = dispatch.Pointer->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
             return typeInfo;
         }
 
@@ -252,7 +252,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
             }
 
             ComScope<ITypeInfo> typeInfo = new(null);
-            hr = classInfo.Value->GetClassInfo(typeInfo);
+            hr = classInfo.Pointer->GetClassInfo(typeInfo);
             return typeInfo;
         }
     }

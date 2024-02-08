@@ -157,17 +157,17 @@ public static unsafe partial class ComHelpers
                 cbLicInfo = sizeof(LICINFO)
             };
 
-            factory.Value->GetLicInfo(&info);
+            factory.Pointer->GetLicInfo(&info);
             if (info.fRuntimeKeyAvail)
             {
                 using BSTR key = default;
-                factory.Value->RequestLicKey(0, &key);
-                factory.Value->CreateInstanceLic(null, IID.GetRef<IUnknown>(), key, out void* unknown);
+                factory.Pointer->RequestLicKey(0, &key);
+                factory.Pointer->CreateInstanceLic(null, IID.GetRef<IUnknown>(), key, out void* unknown);
                 return (IUnknown*)unknown;
             }
             else
             {
-                factory.Value->CreateInstance(null, IID.GetRef<IUnknown>(), out void* unknown);
+                factory.Pointer->CreateInstance(null, IID.GetRef<IUnknown>(), out void* unknown);
                 return (IUnknown*)unknown;
             }
         }
@@ -203,7 +203,7 @@ public static unsafe partial class ComHelpers
         hr.ThrowOnFailure();
 
         ComScope<ITypeInfo> typeInfo = new(null);
-        typelib.Value->GetTypeInfoOfGuid(interfaceId, typeInfo).ThrowOnFailure();
+        typelib.Pointer->GetTypeInfoOfGuid(interfaceId, typeInfo).ThrowOnFailure();
         return typeInfo;
     }
 }

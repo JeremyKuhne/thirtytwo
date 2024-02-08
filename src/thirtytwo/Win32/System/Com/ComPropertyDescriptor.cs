@@ -67,7 +67,7 @@ internal unsafe class ComPropertyDescriptor : PropertyDescriptor
             return null;
         }
 
-        using VARIANT value = dispatch.Value->GetPropertyValue(_dispatchId);
+        using VARIANT value = dispatch.Pointer->GetPropertyValue(_dispatchId);
         if (value.IsEmpty)
         {
             return null;
@@ -127,6 +127,6 @@ internal unsafe class ComPropertyDescriptor : PropertyDescriptor
             variant.data.boolVal = (bool)value! ? VARIANT_BOOL.VARIANT_TRUE : VARIANT_BOOL.VARIANT_FALSE;
         }
 
-        dispatch.Value->SetPropertyValue(_dispatchId, variant).ThrowOnFailure();
+        dispatch.Pointer->SetPropertyValue(_dispatchId, variant).ThrowOnFailure();
     }
 }

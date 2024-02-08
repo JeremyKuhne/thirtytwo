@@ -19,7 +19,7 @@ public unsafe class LoadRegTypeLibTests
         typelib.IsNull.Should().BeFalse();
 
         using ComScope<ITypeInfo> typeinfo = new(null);
-        typelib.Value->GetTypeInfoOfGuid(IID.Get<IAccessible>(), typeinfo);
+        typelib.Pointer->GetTypeInfoOfGuid(IID.Get<IAccessible>(), typeinfo);
         typeinfo.IsNull.Should().BeFalse();
     }
 }

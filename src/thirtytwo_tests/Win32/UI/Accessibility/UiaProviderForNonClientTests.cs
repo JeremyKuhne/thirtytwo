@@ -25,7 +25,7 @@ public unsafe class UiaProviderForNonClientTests
         hr.Succeeded.Should().BeTrue();
 
         VARIANT variant = default;
-        hr = provider.Value->GetPropertyValue(UIA_PROPERTY_ID.UIA_BoundingRectanglePropertyId, &variant);
+        hr = provider.Pointer->GetPropertyValue(UIA_PROPERTY_ID.UIA_BoundingRectanglePropertyId, &variant);
         hr.Succeeded.Should().BeTrue();
 
         // Not sure why we get no bounding rect.

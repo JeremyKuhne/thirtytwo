@@ -14,12 +14,12 @@ public unsafe class ComponentCategoriesManagerTests
         using var categoriesInfo = unknown.TryGetInterface<ICatInformation>(out HRESULT hr);
 
         using ComScope<IEnumCATEGORYINFO> enumCategories = new(null);
-        hr = categoriesInfo.Value->EnumCategories(Interop.GetUserDefaultLCID(), enumCategories);
+        hr = categoriesInfo.Pointer->EnumCategories(Interop.GetUserDefaultLCID(), enumCategories);
 
         Dictionary<Guid, string> categories = [];
         CATEGORYINFO categoryInfo = default;
         uint fetched = 0;
-        while (enumCategories.Value->Next(1, &categoryInfo, &fetched).Succeeded && fetched == 1)
+        while (enumCategories.Pointer->Next(1, &categoryInfo, &fetched).Succeeded && fetched == 1)
         {
             categories.Add(categoryInfo.catid, categoryInfo.szDescription.ToString());
         }
@@ -35,13 +35,13 @@ public unsafe class ComponentCategoriesManagerTests
 
         using ComScope<IEnumGUID> enumGuids = new(null);
         Guid control = CATID.Control;
-        hr = categoriesInfo.Value->EnumClassesOfCategories(1, &control, 0, null, enumGuids);
+        hr = categoriesInfo.Pointer->EnumClassesOfCategories(1, &control, 0, null, enumGuids);
         hr.Succeeded.Should().BeTrue();
 
         List<Guid> classGuids = [];
         Guid guid = default;
         uint fetched = 0;
-        while (enumGuids.Value->Next(1, &guid, &fetched).Succeeded && fetched == 1)
+        while (enumGuids.Pointer->Next(1, &guid, &fetched).Succeeded && fetched == 1)
         {
             classGuids.Add(guid);
         }

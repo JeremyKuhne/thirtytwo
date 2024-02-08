@@ -21,7 +21,7 @@ public unsafe partial class ActiveXControl
             }
 
             IConnectionPoint* connectionPoint;
-            if (container.Value->FindConnectionPoint(IID.Get<TSink>(), &connectionPoint).Failed)
+            if (container.Pointer->FindConnectionPoint(IID.Get<TSink>(), &connectionPoint).Failed)
             {
                 return;
             }
@@ -60,7 +60,7 @@ public unsafe partial class ActiveXControl
                     using var connectionPoint = TryGetInterface(out HRESULT hr);
                     if (hr.Succeeded)
                     {
-                        hr = connectionPoint.Value->Unadvise(_cookie);
+                        hr = connectionPoint.Pointer->Unadvise(_cookie);
                     }
                 }
 

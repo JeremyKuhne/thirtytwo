@@ -37,7 +37,7 @@ public readonly unsafe ref struct ComScope<T> where T : unmanaged, IComIID
 {
     // Keeping internal as nint allows us to use Unsafe methods to get significantly better generated code.
     private readonly nint _value;
-    public T* Value => (T*)_value;
+    public T* Pointer => (T*)_value;
 
     public ComScope(T* value) => _value = (nint)value;
 
@@ -60,7 +60,7 @@ public readonly unsafe ref struct ComScope<T> where T : unmanaged, IComIID
     public ComScope<TInterface> QueryInterface<TInterface>() where TInterface : unmanaged, IComIID
     {
         ComScope<TInterface> scope = new(null);
-        ((IUnknown*)Value)->QueryInterface(IID.Get<TInterface>(), scope).ThrowOnFailure();
+        ((IUnknown*)Pointer)->QueryInterface(IID.Get<TInterface>(), scope).ThrowOnFailure();
         return scope;
     }
 
@@ -70,7 +70,7 @@ public readonly unsafe ref struct ComScope<T> where T : unmanaged, IComIID
     public ComScope<TInterface> TryQueryInterface<TInterface>(out HRESULT result) where TInterface : unmanaged, IComIID
     {
         ComScope<TInterface> scope = new(null);
-        result = ((IUnknown*)Value)->QueryInterface(IID.Get<TInterface>(), scope);
+        result = ((IUnknown*)Pointer)->QueryInterface(IID.Get<TInterface>(), scope);
         return scope;
     }
 

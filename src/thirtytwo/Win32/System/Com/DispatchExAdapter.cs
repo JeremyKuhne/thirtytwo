@@ -75,7 +75,7 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
             return hr;
         }
 
-        hr = typeInfo.Value->GetTypeAttr(out TYPEATTR* typeAttr);
+        hr = typeInfo.Pointer->GetTypeAttr(out TYPEATTR* typeAttr);
         if (hr.Failed)
         {
             return hr;
@@ -93,7 +93,7 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
         FUNCDESC* funcdesc;
         for (uint i = 0; result == HRESULT.DISP_E_UNKNOWNNAME && i < functionCount; i++)
         {
-            hr = typeInfo.Value->GetFuncDesc(i, &funcdesc);
+            hr = typeInfo.Pointer->GetFuncDesc(i, &funcdesc);
             if (hr.Failed)
             {
                 return hr;
@@ -106,7 +106,7 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
                 result = HRESULT.S_OK;
             }
 
-            typeInfo.Value->ReleaseFuncDesc(funcdesc);
+            typeInfo.Pointer->ReleaseFuncDesc(funcdesc);
         }
 
         return result;
@@ -126,7 +126,7 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
             return hr;
         }
 
-        hr = typeInfo.Value->GetNames(id, pbstrName, 1, out uint count);
+        hr = typeInfo.Pointer->GetNames(id, pbstrName, 1, out uint count);
         return hr;
     }
 
@@ -152,7 +152,7 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
             return hr;
         }
 
-        hr = typeInfo.Value->GetTypeAttr(out TYPEATTR* typeAttr);
+        hr = typeInfo.Pointer->GetTypeAttr(out TYPEATTR* typeAttr);
         if (hr.Failed)
         {
             return hr;
@@ -170,7 +170,7 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
         FUNCDESC* funcdesc;
         for (uint i = 0; i < functionCount; i++)
         {
-            hr = typeInfo.Value->GetFuncDesc(i, &funcdesc);
+            hr = typeInfo.Pointer->GetFuncDesc(i, &funcdesc);
             if (hr.Failed)
             {
                 return hr;
@@ -178,7 +178,7 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
 
             int currentId = funcdesc->memid;
 
-            typeInfo.Value->ReleaseFuncDesc(funcdesc);
+            typeInfo.Pointer->ReleaseFuncDesc(funcdesc);
 
             if (next)
             {

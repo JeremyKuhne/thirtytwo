@@ -7,13 +7,11 @@ namespace Windows.Win32.Graphics.Direct2D;
 
 public unsafe class SolidColorBrush : Brush, IPointer<ID2D1SolidColorBrush>
 {
-    public unsafe new ID2D1SolidColorBrush* Pointer { get; private set; }
+    public unsafe new ID2D1SolidColorBrush* Pointer => (ID2D1SolidColorBrush*)base.Pointer;
 
-    public SolidColorBrush(ID2D1SolidColorBrush* brush) : base((ID2D1Brush*)brush) => Pointer = brush;
-
-    protected override void Dispose(bool disposing)
+    public SolidColorBrush(ID2D1SolidColorBrush* brush) : base((ID2D1Brush*)brush)
     {
-        Pointer = null;
-        base.Dispose(disposing);
     }
+
+    public static implicit operator ID2D1SolidColorBrush*(SolidColorBrush brush) => brush.Pointer;
 }

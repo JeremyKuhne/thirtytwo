@@ -14,6 +14,7 @@ public static unsafe class Application
     private static ActivationContext? s_visualStylesContext;
     private static Direct2dFactory? s_direct2dFactory;
     private static DirectWriteFactory? s_directWriteFactory;
+    private static DirectWriteGdiInterop? s_directWriteGdiInterop;
 
     internal static ActivationScope ThemingScope => new(GetStylesContext());
 
@@ -211,4 +212,5 @@ public static unsafe class Application
 
     public static Direct2dFactory Direct2dFactory => s_direct2dFactory ??= new();
     public static DirectWriteFactory DirectWriteFactory => s_directWriteFactory ??= new();
+    public static DirectWriteGdiInterop DirectWriteGdiInterop => s_directWriteGdiInterop ??= new();
 }

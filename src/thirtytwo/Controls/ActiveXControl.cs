@@ -43,7 +43,7 @@ public unsafe partial class ActiveXControl : Control
         _instanceAsActiveObject = unknown->QueryAgileInterface<IOleInPlaceActiveObject>();
 
         using ComScope<IOleObject> oleObject = ComScope<IOleObject>.QueryFrom(unknown);
-        if (oleObject.Value->GetMiscStatus(DVASPECT.DVASPECT_CONTENT, out OLEMISC status).Succeeded)
+        if (oleObject.Pointer->GetMiscStatus(DVASPECT.DVASPECT_CONTENT, out OLEMISC status).Succeeded)
         {
             _status = status;
         }
@@ -53,7 +53,7 @@ public unsafe partial class ActiveXControl : Control
         _site = new Site(this);
 
         IOleClientSite* site = ComHelpers.GetComPointer<IOleClientSite>(_site);
-        HRESULT hr = oleObject.Value->SetClientSite(site);
+        HRESULT hr = oleObject.Pointer->SetClientSite(site);
 
         _typeDescriptor = new ComTypeDescriptor(_instance);
     }
@@ -70,7 +70,7 @@ public unsafe partial class ActiveXControl : Control
         using var scope = activeObject.GetInterface();
         fixed (MSG* msg = &message)
         {
-            if (scope.Value->TranslateAccelerator(msg) == HRESULT.S_OK)
+            if (scope.Pointer->TranslateAccelerator(msg) == HRESULT.S_OK)
             {
                 return true;
             }
@@ -94,7 +94,7 @@ public unsafe partial class ActiveXControl : Control
         RECT rect = bounds;
         IOleClientSite* clientSite = ComHelpers.GetComPointer<IOleClientSite>(_site);
 
-        HRESULT hr = oleObject.Value->DoVerb(
+        HRESULT hr = oleObject.Pointer->DoVerb(
             iVerb: (int)verb,
             lpmsg: (MSG*)null,
             pActiveSite: clientSite,
@@ -147,7 +147,7 @@ public unsafe partial class ActiveXControl : Control
                 {
                     // Not specifically called out in the SetExtent docs, but OLE defaults are HIMETRic
                     Size size = PixelToHiMetric(this.GetClientRectangle().Size);
-                    oleObject.Value->SetExtent(DVASPECT.DVASPECT_CONTENT, (SIZE*)&size);
+                    oleObject.Pointer->SetExtent(DVASPECT.DVASPECT_CONTENT, (SIZE*)&size);
                 }
             }
 
@@ -157,7 +157,7 @@ public unsafe partial class ActiveXControl : Control
                 if (hr.Succeeded)
                 {
                     RECT rect = boundsInParent;
-                    inPlaceObject.Value->SetObjectRects(&rect, &rect);
+                    inPlaceObject.Pointer->SetObjectRects(&rect, &rect);
                 }
             }
 

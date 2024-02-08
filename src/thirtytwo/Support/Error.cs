@@ -206,8 +206,8 @@ public static unsafe class Error
                 HRESULT hr = (HRESULT)messageId;
                 if (hr.Failed && hr.Facility == FACILITY_CODE.FACILITY_URT)
                 {
-                    // .NET HRESULT, extract the message
-                    string? dotNetMessage = Marshal.GetExceptionForHR((int)hr)?.Message;
+                    // .NET HRESULT, extract the message (pass -1 to ignore whatever random IErrorInfo is on the thread)
+                    string? dotNetMessage = Marshal.GetExceptionForHR((int)hr, -1)?.Message;
                     if (dotNetMessage is not null)
                     {
                         return dotNetMessage;

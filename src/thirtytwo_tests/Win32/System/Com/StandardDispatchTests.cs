@@ -24,7 +24,7 @@ public unsafe class StandardDispatchTests
         hr.ThrowOnFailure();
 
         using ComScope<ITypeInfo> typeinfo = new(null);
-        typelib.Value->GetTypeInfoOfGuid(IUnknown.IID_Guid, typeinfo);
+        typelib.Pointer->GetTypeInfoOfGuid(IUnknown.IID_Guid, typeinfo);
 
         IUnknown* unknown = ComHelpers.GetComPointer<IUnknown>(new OleWindow());
 
@@ -34,7 +34,7 @@ public unsafe class StandardDispatchTests
         Interop.CreateStdDispatch(
             unknown,
             instance,
-            typeinfo.Value,
+            typeinfo.Pointer,
             &standard).ThrowOnFailure();
 
         // StdDispatch does not provide an implementation of IDispatchEx.
@@ -59,16 +59,16 @@ public unsafe class StandardDispatchTests
         using ComScope<IDispatchEx> dispatchEx = dispatch.TryQueryInterface<IDispatchEx>(out HRESULT hr);
 
         using ComScope<ITypeInfo> typeInfo = new(null);
-        hr = dispatch.Value->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
+        hr = dispatch.Pointer->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
         hr.Should().Be(HRESULT.S_OK);
 
         // This all matches what we get off of an IReflect dispatch through COM interop
 
         TYPEATTR* attr;
-        hr = typeInfo.Value->GetTypeAttr(&attr);
+        hr = typeInfo.Pointer->GetTypeAttr(&attr);
         hr.Succeeded.Should().Be(true);
         TYPEATTR attrCopy = *attr;
-        typeInfo.Value->ReleaseTypeAttr(attr);
+        typeInfo.Pointer->ReleaseTypeAttr(attr);
 
         attrCopy.cFuncs.Should().Be(3);
         attrCopy.cImplTypes.Should().Be(0);
@@ -85,15 +85,15 @@ public unsafe class StandardDispatchTests
         attrCopy.wTypeFlags.Should().Be((ushort)TYPEFLAGS.TYPEFLAG_FHIDDEN);
 
         using ComScope<ITypeComp> typeComp = new(null);
-        hr = typeInfo.Value->GetTypeComp(typeComp);
+        hr = typeInfo.Pointer->GetTypeComp(typeComp);
         hr.Succeeded.Should().BeTrue();
 
         VARDESC* vardesc;
-        hr = typeInfo.Value->GetVarDesc(1, &vardesc);
+        hr = typeInfo.Pointer->GetVarDesc(1, &vardesc);
         hr.Should().Be(HRESULT.TYPE_E_ELEMENTNOTFOUND);
 
         FUNCDESC* funcdesc;
-        hr = typeInfo.Value->GetFuncDesc(0, &funcdesc);
+        hr = typeInfo.Pointer->GetFuncDesc(0, &funcdesc);
         hr.Succeeded.Should().BeTrue();
         funcdesc->cParams.Should().Be(2);
         funcdesc->memid.Should().Be(0x60000000);
@@ -114,14 +114,14 @@ public unsafe class StandardDispatchTests
         funcdesc->lprgelemdescParam[1].tdesc.Anonymous.lptdesc->vt.Should().Be(VARENUM.VT_PTR);
         funcdesc->lprgelemdescParam[1].tdesc.Anonymous.lptdesc->Anonymous.lptdesc->vt.Should().Be(VARENUM.VT_VOID);
 
-        typeInfo.Value->ReleaseFuncDesc(funcdesc);
+        typeInfo.Pointer->ReleaseFuncDesc(funcdesc);
 
         using BSTR name = default;
         using BSTR doc = default;
         using BSTR helpFile = default;
         uint helpContext;
 
-        hr = typeInfo.Value->GetDocumentation(0x60000000, &name, &doc, &helpContext, &helpFile);
+        hr = typeInfo.Pointer->GetDocumentation(0x60000000, &name, &doc, &helpContext, &helpFile);
         name.ToStringAndFree().Should().Be("QueryInterface");
     }
 

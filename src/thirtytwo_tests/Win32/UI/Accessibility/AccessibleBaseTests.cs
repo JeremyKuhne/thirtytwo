@@ -15,7 +15,7 @@ public unsafe class AccessibleBaseTests
     {
         AccessibleCallback callback = new();
         using ComScope<IAccessible> accessible = callback.GetComCallableWrapper<IAccessible>();
-        IDispatch* dispatch = (IDispatch*)accessible.Value;
+        IDispatch* dispatch = (IDispatch*)accessible.Pointer;
         int[] result = dispatch->GetIdsOfNames("accHitTest", "xLeft", "yTop", "pvarChild");
         result.Should().HaveCount(4);
         result[0].Should().Be(Interop.DISPID_ACC_HITTEST);

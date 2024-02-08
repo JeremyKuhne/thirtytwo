@@ -100,7 +100,7 @@ public unsafe class CreateStdAccessibleProxyTests
         dispatch->GetTypeInfo(0, 0, typeInfo);
         typeInfo.IsNull.Should().BeFalse();
 
-        typeInfo.Value->GetTypeAttr(out TYPEATTR* pTypeAttr);
+        typeInfo.Pointer->GetTypeAttr(out TYPEATTR* pTypeAttr);
         try
         {
             pTypeAttr->cFuncs.Should().Be(28);
@@ -112,12 +112,12 @@ public unsafe class CreateStdAccessibleProxyTests
         }
         finally
         {
-            typeInfo.Value->ReleaseTypeAttr(pTypeAttr);
+            typeInfo.Pointer->ReleaseTypeAttr(pTypeAttr);
         }
 
         using ComScope<ITypeLib> typelib = new(null);
-        typeInfo.Value->GetContainingTypeLib(typelib, out uint index);
-        typelib.Value->GetLibAttr(out TLIBATTR* pLibAttr);
+        typeInfo.Pointer->GetContainingTypeLib(typelib, out uint index);
+        typelib.Pointer->GetLibAttr(out TLIBATTR* pLibAttr);
         try
         {
             // This is the Accessibility type library
@@ -129,7 +129,7 @@ public unsafe class CreateStdAccessibleProxyTests
         }
         finally
         {
-            typelib.Value->ReleaseTLibAttr(pLibAttr);
+            typelib.Pointer->ReleaseTLibAttr(pLibAttr);
         }
     }
 }

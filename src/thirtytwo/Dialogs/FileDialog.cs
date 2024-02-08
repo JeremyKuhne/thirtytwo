@@ -37,7 +37,7 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
             if (_hwnd.IsNull)
             {
                 using var scope = Interface.GetInterface<IOleWindow>();
-                scope.Value->GetWindow(out _hwnd);
+                scope.Pointer->GetWindow(out _hwnd);
             }
 
             return _hwnd;
@@ -52,7 +52,7 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
     {
         using var modalScope = Application.EnterThreadModalScope();
         using var fileDialog = Interface.GetInterface();
-        HRESULT result = fileDialog.Value->Show(Owner?.Handle ?? default);
+        HRESULT result = fileDialog.Pointer->Show(Owner?.Handle ?? default);
         return result.Succeeded || (result == WIN32_ERROR.ERROR_CANCELLED.ToHRESULT() ? false : throw result);
     }
 
@@ -61,13 +61,13 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         get
         {
             using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
-            dialog.Value->GetOptions(out var options);
+            dialog.Pointer->GetOptions(out var options);
             return (Options)options;
         }
         set
         {
             using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
-            dialog.Value->SetOptions((FILEOPENDIALOGOPTIONS)value);
+            dialog.Pointer->SetOptions((FILEOPENDIALOGOPTIONS)value);
         }
     }
 
@@ -79,7 +79,7 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         get
         {
             using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
-            dialog.Value->GetFileName(out PWSTR pszName);
+            dialog.Pointer->GetFileName(out PWSTR pszName);
             string result = new(pszName);
             Interop.CoTaskMemFree(pszName);
             return result;
@@ -87,7 +87,7 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         set
         {
             using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
-            dialog.Value->SetFileName(value);
+            dialog.Pointer->SetFileName(value);
         }
     }
 
@@ -99,7 +99,7 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         set
         {
             using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
-            dialog.Value->SetFileNameLabel(value);
+            dialog.Pointer->SetFileNameLabel(value);
         }
     }
 
@@ -111,7 +111,7 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         set
         {
             using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
-            dialog.Value->SetOkButtonLabel(value);
+            dialog.Pointer->SetOkButtonLabel(value);
         }
     }
 
@@ -121,7 +121,7 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         {
             using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
             using ComScope<IShellItem> item = Interop.SHCreateShellItem(value);
-            dialog.Value->SetDefaultFolder(item);
+            dialog.Pointer->SetDefaultFolder(item);
         }
     }
 
@@ -131,7 +131,7 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         {
             using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
             using ComScope<IShellItem> item = Interop.SHCreateShellItem(value);
-            dialog.Value->SetFolder(item);
+            dialog.Pointer->SetFolder(item);
         }
     }
 
@@ -141,8 +141,8 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         {
             using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
             using ComScope<IShellItem> item = new(null);
-            HRESULT result = dialog.Value->GetCurrentSelection(item);
-            return result.Failed ? null : item.Value->GetFullPath();
+            HRESULT result = dialog.Pointer->GetCurrentSelection(item);
+            return result.Failed ? null : item.Pointer->GetFullPath();
         }
     }
 
@@ -155,7 +155,7 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         set
         {
             using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
-            dialog.Value->SetClientGuid(value);
+            dialog.Pointer->SetClientGuid(value);
         }
     }
 
@@ -165,13 +165,13 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
     public void ClearClientData()
     {
         using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
-        dialog.Value->ClearClientData();
+        dialog.Pointer->ClearClientData();
     }
 
     public void Close()
     {
         using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
-        dialog.Value->Close(WIN32_ERROR.ERROR_CANCELLED.ToHRESULT());
+        dialog.Pointer->Close(WIN32_ERROR.ERROR_CANCELLED.ToHRESULT());
     }
 
     protected override void Dispose(bool disposing)
