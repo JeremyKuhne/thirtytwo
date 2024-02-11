@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using Windows.Support;
 using Windows.Win32.Graphics.Direct2D;
 using Windows.Win32.Graphics.DirectWrite;
+using Windows.Win32.Graphics.Imaging;
 
 namespace Windows;
 
@@ -15,6 +16,7 @@ public static unsafe class Application
     private static Direct2dFactory? s_direct2dFactory;
     private static DirectWriteFactory? s_directWriteFactory;
     private static DirectWriteGdiInterop? s_directWriteGdiInterop;
+    private static ImagingFactory? s_imagingFactory;
 
     internal static ActivationScope ThemingScope => new(GetStylesContext());
 
@@ -229,4 +231,5 @@ public static unsafe class Application
     public static Direct2dFactory Direct2dFactory => s_direct2dFactory ??= new();
     public static DirectWriteFactory DirectWriteFactory => s_directWriteFactory ??= new();
     public static DirectWriteGdiInterop DirectWriteGdiInterop => s_directWriteGdiInterop ??= new();
+    public static ImagingFactory ImagingFactory => s_imagingFactory ??= new();
 }

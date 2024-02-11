@@ -6,6 +6,7 @@ using System.Numerics;
 using Windows.Support;
 using Windows.Win32.Graphics.Direct2D.Common;
 using Windows.Win32.Graphics.DirectWrite;
+using Windows.Win32.Graphics.Imaging;
 
 namespace Windows.Win32.Graphics.Direct2D;
 
@@ -114,5 +115,55 @@ public static unsafe class RenderTargetExtensions
         GC.KeepAlive(target);
         GC.KeepAlive(textLayout);
         GC.KeepAlive(defaultFillBrush);
+    }
+
+    /// <inheritdoc cref="ID2D1RenderTarget.CreateBitmapFromWicBitmap(IWICBitmapSource*, D2D1_BITMAP_PROPERTIES*, ID2D1Bitmap**)"/>
+    public static Bitmap CreateBitmapFromWicBitmap<TRenderTarget, TBitmapSource>(
+        this TRenderTarget target,
+        TBitmapSource wicBitmap)
+        where TRenderTarget : IPointer<ID2D1RenderTarget>
+        where TBitmapSource : IPointer<IWICBitmapSource>
+    {
+        ID2D1Bitmap* d2dBitmap;
+        target.Pointer->CreateBitmapFromWicBitmap(
+            wicBitmap.Pointer,
+            bitmapProperties: (D2D1_BITMAP_PROPERTIES*)null,
+            &d2dBitmap).ThrowOnFailure();
+
+        Bitmap bitmap = new(d2dBitmap);
+        GC.KeepAlive(target);
+        GC.KeepAlive(wicBitmap);
+        return bitmap;
+    }
+
+    public static void DrawBitmap<TRenderTarget, TBitmap>(
+        this TRenderTarget target,
+        TBitmap bitmap,
+        RectangleF destinationRectangle = default,
+        float opacity = 1.0f,
+        BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.Linear)
+        where TRenderTarget : IPointer<ID2D1RenderTarget>
+        where TBitmap : IPointer<ID2D1Bitmap>
+    {
+        D2D_RECT_F destination = (D2D_RECT_F)destinationRectangle;
+        if (destinationRectangle.IsEmpty)
+        {
+            D2D_SIZE_F size = target.Pointer->GetSizeHack();
+            destination = new D2D_RECT_F { left = 0, top = 0, right = size.width, bottom = size.height };
+        }
+        else
+        {
+            destination = (D2D_RECT_F)destinationRectangle;
+        }
+
+        target.Pointer->DrawBitmap(
+            bitmap.Pointer,
+            &destination,
+            opacity,
+            (D2D1_BITMAP_INTERPOLATION_MODE)interpolationMode,
+            null);
+
+        GC.KeepAlive(target);
+        GC.KeepAlive(bitmap);
     }
 }

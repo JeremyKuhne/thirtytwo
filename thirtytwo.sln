@@ -61,6 +61,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Direct2dDemo", "src\samples
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectWriteDemo", "src\samples\DirectDraw\DirectWriteDemo\DirectWriteDemo.csproj", "{24BAE093-7546-4ED1-AF5C-2A62AD244C63}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImagingDemo", "src\samples\DirectDraw\ImagingDemo\ImagingDemo.csproj", "{4CF43863-B039-4DB8-BB1E-0AB825A4A09E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -151,6 +153,10 @@ Global
 		{24BAE093-7546-4ED1-AF5C-2A62AD244C63}.Debug|x64.Build.0 = Debug|x64
 		{24BAE093-7546-4ED1-AF5C-2A62AD244C63}.Release|x64.ActiveCfg = Release|x64
 		{24BAE093-7546-4ED1-AF5C-2A62AD244C63}.Release|x64.Build.0 = Release|x64
+		{4CF43863-B039-4DB8-BB1E-0AB825A4A09E}.Debug|x64.ActiveCfg = Debug|x64
+		{4CF43863-B039-4DB8-BB1E-0AB825A4A09E}.Debug|x64.Build.0 = Debug|x64
+		{4CF43863-B039-4DB8-BB1E-0AB825A4A09E}.Release|x64.ActiveCfg = Release|x64
+		{4CF43863-B039-4DB8-BB1E-0AB825A4A09E}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -177,6 +183,7 @@ Global
 		{7107A105-51E2-46EB-859D-E2DD2FD51839} = {C059056C-D771-4CF5-A93F-AA7140FF7827}
 		{1EC566E8-C337-42FF-9BA4-DB66BFAE5B8A} = {7107A105-51E2-46EB-859D-E2DD2FD51839}
 		{24BAE093-7546-4ED1-AF5C-2A62AD244C63} = {7107A105-51E2-46EB-859D-E2DD2FD51839}
+		{4CF43863-B039-4DB8-BB1E-0AB825A4A09E} = {7107A105-51E2-46EB-859D-E2DD2FD51839}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3761BFC9-DBEF-4186-BB8B-BC0D84ED9AE5}

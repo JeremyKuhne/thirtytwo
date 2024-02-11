@@ -7,6 +7,14 @@ using Windows.Win32.Graphics.Direct2D.Common;
 
 namespace Windows.Win32.Graphics.Direct2D;
 
+/// <summary>
+///  <see cref="HWND"/> render target.
+/// </summary>
+/// <devdoc>
+///  <see href="https://learn.microsoft.com/windows/win32/Direct2D/supported-pixel-formats-and-alpha-modes#supported-formats-for-id2d1hwndrendertarget">
+///   Supported Formats for ID2D1HwndRenderTarget
+///  </see>
+/// </devdoc>
 public unsafe class HwndRenderTarget : RenderTarget, IPointer<ID2D1HwndRenderTarget>
 {
     public new ID2D1HwndRenderTarget* Pointer => (ID2D1HwndRenderTarget*)base.Pointer;
@@ -34,6 +42,8 @@ public unsafe class HwndRenderTarget : RenderTarget, IPointer<ID2D1HwndRenderTar
         where TFactory : IPointer<ID2D1Factory>
         where TWindow : IHandle<HWND>
     {
+        // DXGI_FORMAT_B8G8R8A8_UNORM is the recommended pixel format for HwndRenderTarget for performance reasons.
+        // DXGI_FORMAT_UNKNOWN and DXGI_FORMAT_UNKNOWN give DXGI_FORMAT_B8G8R8A8_UNORM and D2D1_ALPHA_MODE_IGNORE.
         D2D1_RENDER_TARGET_PROPERTIES properties = default;
         D2D1_HWND_RENDER_TARGET_PROPERTIES hwndProperties = new()
         {

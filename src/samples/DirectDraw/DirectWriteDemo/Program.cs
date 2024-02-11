@@ -24,7 +24,10 @@ internal class Program
 
         protected SolidColorBrush? _blackBrush;
 
-        public DirectWriteDemo() : base(title: "Simple DirectWrite Application", features: Features.EnableDirect2d)
+        public DirectWriteDemo() : base(
+            title: "Simple DirectWrite Application",
+            backgroundColor: Color.CornflowerBlue,
+            features: Features.EnableDirect2d)
         {
             _textFormat = new("Gabriola", fontSize: 64)
             {
@@ -45,8 +48,7 @@ internal class Program
 
         protected override void OnPaint()
         {
-            RenderTarget.Clear(Color.CornflowerBlue);
-            RenderTarget.DrawTextLayout(default, _textLayout!, _blackBrush!);
+            RenderTarget.DrawTextLayout(origin: default, _textLayout!, _blackBrush!);
         }
 
         protected override void OnSize(Size size)

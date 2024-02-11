@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Drawing;
+using System.Numerics;
 using Windows.Components;
 using Windows.Support;
 using Windows.Win32.Graphics.Direct2D;
@@ -247,6 +248,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                 if (IsDirect2dEnabled())
                 {
                     _renderTarget.BeginDraw();
+                    _renderTarget.SetTransform(Matrix3x2.Identity);
                     _renderTarget.Clear(_backgroundColor);
                 }
 

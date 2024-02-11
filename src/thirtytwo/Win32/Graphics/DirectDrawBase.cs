@@ -6,6 +6,17 @@ using Windows.Win32.System.Com;
 
 namespace Windows.Win32.Graphics;
 
+/// <summary>
+///  Base class for DirectDraw objects.
+/// </summary>
+/// <devdoc>
+///  <see href="https://learn.microsoft.com/archive/msdn-magazine/2009/june/introducing-direct2d"/>
+///
+///  Direct3D, DirectWrite, and Direct2D use a lightweight version of the COM specification to manage object lifetime
+///  through interfaces derived from IUnknown. There's no need to initialize the COM run time and worry about apartments
+///  or proxies. It's just a convention to simplify resource management and allow APIs and applications to expose and
+///  consume objects in a well-defined way.
+/// </devdoc>
 public unsafe abstract class DirectDrawBase<T> : DisposableBase.Finalizable, IPointer<T> where T : unmanaged
 {
     private nint _pointer;

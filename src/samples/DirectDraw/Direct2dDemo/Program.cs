@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
-using System.Numerics;
 using Windows;
 using Windows.Win32.Graphics.Direct2D;
 
@@ -18,7 +17,10 @@ internal class Program
         private SolidColorBrush? _lightSlateGrayBrush;
         private SolidColorBrush? _cornflowerBlueBrush;
 
-        public Direct2dDemo() : base(title: "Simple Direct2D Application", features: Features.EnableDirect2d)
+        public Direct2dDemo() : base(
+            title: "Simple Direct2D Application",
+            backgroundColor: Color.White,
+            features: Features.EnableDirect2d)
         {
         }
 
@@ -33,9 +35,6 @@ internal class Program
 
         protected override void OnPaint()
         {
-            RenderTarget.SetTransform(Matrix3x2.Identity);
-            RenderTarget.Clear(Color.White);
-
             SizeF size = RenderTarget.Size();
 
             for (int x = 0; x < size.Width; x += 10)
