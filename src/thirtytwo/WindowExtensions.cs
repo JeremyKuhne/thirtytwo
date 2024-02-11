@@ -429,20 +429,19 @@ public static unsafe partial class WindowExtensions
         return result;
     }
 
-    public static DeviceContext BeginPaint<T>(this T window)
+    /// <inheritdoc cref="DeviceContext.BeginPaint{THwnd}(THwnd, bool, out Rectangle)"/>
+    public static DeviceContext BeginPaint<T>(this T window, bool saveContext = true)
         where T : IHandle<HWND>
-        => window.BeginPaint(out _);
+        => window.BeginPaint(saveContext, out _);
 
+    /// <inheritdoc cref="DeviceContext.BeginPaint{THwnd}(THwnd, bool, out Rectangle)"/>
     public static DeviceContext BeginPaint<T>(this T window, out Rectangle paintBounds)
         where T : IHandle<HWND>
-    {
-        PAINTSTRUCT paintStruct = default;
-        Interop.BeginPaint(window.Handle, &paintStruct);
-        DeviceContext context = DeviceContext.Create(in paintStruct, window);
-        paintBounds = paintStruct.rcPaint;
-        GC.KeepAlive(window.Wrapper);
-        return context;
-    }
+        => window.BeginPaint(saveContext: true, out paintBounds);
+
+    /// <inheritdoc cref="DeviceContext.BeginPaint{THwnd}(THwnd, bool, out Rectangle)"/>
+    public static DeviceContext BeginPaint<T>(this T window, bool saveContext, out Rectangle paintBounds)
+        where T : IHandle<HWND> => DeviceContext.BeginPaint(window, saveContext, out paintBounds);
 
     public static bool InvalidateRectangle<T>(this T window, Rectangle rectangle, bool erase)
         where T : IHandle<HWND>

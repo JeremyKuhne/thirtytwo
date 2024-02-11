@@ -4,6 +4,7 @@
 using System.Drawing;
 using Windows;
 using Windows.Messages;
+using Windows.Win32.Graphics.Gdi;
 
 namespace LayoutSample;
 
@@ -20,6 +21,7 @@ internal class Program
         private readonly ButtonControl _buttonControl;
         private readonly StaticControl _staticControl;
         private readonly TextLabelControl _textLabel;
+        private readonly HBRUSH _blueBrush;
 
         public LayoutWindow(string title) : base(title: title)
         {
@@ -41,9 +43,16 @@ internal class Program
                 text: "You pushed it!",
                 parentWindow: this);
 
+            _blueBrush = HBRUSH.CreateSolid(Color.Blue);
+
             _textLabel = new TextLabelControl(
                 text: "Text Label Control",
-                parentWindow: this);
+                parentWindow: this,
+                textColor: Color.White,
+                backgroundColor: Color.Blue,
+                features: Features.EnableDirect2d
+                // features: default
+                );
 
             _textLabel.SetFont("Segoe Print", 20);
 
@@ -76,6 +85,20 @@ internal class Program
                 _textLabel.ShowWindow(ShowWindowCommand.Hide);
                 _staticControl.ShowWindow(ShowWindowCommand.Show);
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _editControl.Dispose();
+                _buttonControl.Dispose();
+                _staticControl.Dispose();
+                _textLabel.Dispose();
+                _blueBrush.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

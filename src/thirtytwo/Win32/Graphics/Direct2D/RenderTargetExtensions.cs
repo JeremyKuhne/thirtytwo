@@ -94,6 +94,7 @@ public static unsafe class RenderTargetExtensions
         return *(SizeF*)&size;
     }
 
+    /// <inheritdoc cref="ID2D1RenderTarget.DrawTextLayout(D2D_POINT_2F, IDWriteTextLayout*, ID2D1Brush*, D2D1_DRAW_TEXT_OPTIONS)"/>
     public static void DrawTextLayout<TTarget, TLayout, TBrush>(
         this TTarget target,
         PointF origin,

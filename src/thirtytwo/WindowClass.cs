@@ -84,6 +84,8 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
         // Handle default values
         className ??= Guid.NewGuid().ToString();
 
+        // Why do I have to add 1 to the color index when I set it as the hbrBackground of a window class?
+        // https://devblogs.microsoft.com/oldnewthing/20140305-00/?p=1593
         if (backgroundBrush.IsNull)
         {
             backgroundBrush = SystemColor.Window;

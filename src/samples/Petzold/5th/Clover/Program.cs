@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Drawing;
 using Windows;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
@@ -24,7 +25,7 @@ internal class Clover : MainWindow
     private HRGN _hrgnClip;
     private const double TWO_PI = Math.PI * 2;
 
-    public Clover() : base(title: "Draw a Clover", backgroundBrush: StockBrush.White) { }
+    public Clover() : base(title: "Draw a Clover", backgroundColor: Color.White) { }
 
     protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
     {

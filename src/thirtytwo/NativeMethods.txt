@@ -40,6 +40,8 @@ CreateStdDispatch
 CREATESTRUCTW
 CreateWindowEx
 CW_USEDEFAULT
+D2D1CreateFactory
+D2DERR_RECREATE_TARGET
 DeactivateActCtx
 DefWindowProc
 DeleteDC
@@ -61,6 +63,7 @@ DrawFocusRect
 DrawIconEx
 DRAWITEMSTRUCT
 DrawTextEx
+DWriteCreateFactory
 E_ACCESSDENIED
 E_FAIL
 E_INVALIDARG
@@ -107,6 +110,7 @@ GET_STOCK_OBJECT_FLAGS
 GetActiveWindow
 GetAncestor
 GetAwarenessFromDpiAwarenessContext
+GetBkColor
 GetClassLong
 GetClientRect
 GetClipboardData
@@ -117,6 +121,7 @@ GetCurrentThread
 GetCurrentThreadId
 GetCursorPos
 GetDC
+GetDCBrushColor
 GetDeviceCaps
 GetDialogBaseUnits
 GetDialogBaseUnits
@@ -141,11 +146,13 @@ GetRgnBox
 GetROP2
 GetStockObject
 GetSysColorBrush
+GetTextColor
 GetThreadDpiAwarenessContext
 GetThreadLocale
 GetUpdatedClipboardFormats
 GetUpdateRgn
 GetUserDefaultLCID
+GetUserDefaultLocaleName
 GetViewportExtEx
 GetViewportOrgEx
 GetWindowExtEx
@@ -173,10 +180,12 @@ IClassFactory2
 IConnectionPoint
 IConnectionPointContainer
 ICreateErrorInfo
+ID2D1Factory
 IDC_*
 IDI_*
 IDispatch
 IDispatchEx
+IDWriteFactory
 IEnumVARIANT
 IErrorInfo
 IFileDialog
@@ -224,6 +233,7 @@ LoadCursor
 LoadIcon
 LoadLibrary
 LoadRegTypeLib
+LOCALE_NAME_MAX_LENGTH
 LocalFree
 LOGFONTW
 LPtoDP
@@ -271,6 +281,7 @@ RegQueryInfoKey
 RegQueryValueEx
 ReleaseCapture
 ReleaseDC
+RestoreDC
 RemoveClipboardFormatListener
 ROLE_SYSTEM_*
 RoundRect
@@ -281,12 +292,15 @@ SafeArrayGetRecordInfo
 SafeArrayGetVartype
 SafeArrayLock
 SafeArrayUnlock
+SaveDC
 ScreenToClient
 SelectClipRgn
 SelectObject
 SELFLAG_*
 SendMessage
 SetActiveWindow
+SetBkColor
+SetBkMode
 SetCapture
 SetClassLong
 SetClassLongPtr
@@ -300,6 +314,7 @@ SetLayeredWindowAttributes
 SetMapMode
 SetPolyFillMode
 SetROP2
+SetTextColor
 SetThreadDpiAwarenessContext
 SetViewportExtEx
 SetViewportOrgEx
@@ -348,8 +363,3 @@ WIN32_ERROR
 WINDOWPOS
 WM_*
 XFORMCOORDS
-ID2D1Factory
-D2D1CreateFactory
-D2DERR_RECREATE_TARGET
-DWriteCreateFactory
-IDWriteFactory

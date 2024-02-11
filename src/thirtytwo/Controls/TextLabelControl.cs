@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
+using Windows.Win32.Graphics.Direct2D;
+using Windows.Win32.Graphics.DirectWrite;
 
 namespace Windows;
 
@@ -9,38 +11,111 @@ public class TextLabelControl : Control
 {
     private static readonly WindowClass s_textLabelClass = new(className: "TextLabelClass");
 
-    private DrawTextFormat _textFormat;
+    private DrawTextFormat _drawTextFormat;
+    private TextFormat? _textFormat;
+    private SolidColorBrush? _textBrush;
+    private Color _textColor;
 
     public TextLabelControl(
         Rectangle bounds = default,
-        DrawTextFormat textFormat = DrawTextFormat.Center | DrawTextFormat.VerticallyCenter,
+        DrawTextFormat textFormat = DrawTextFormat.Center | DrawTextFormat.VerticallyCenter | DrawTextFormat.SingleLine,
         string? text = default,
+        Color textColor = default,
         WindowStyles style = WindowStyles.Overlapped | WindowStyles.Visible | WindowStyles.Child,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
         Window? parentWindow = default,
-        nint parameters = default) : base(
+        nint parameters = default,
+        Color backgroundColor = default,
+        Features features = default) : base(
             bounds,
             text,
             style,
             extendedStyle,
             parentWindow,
             s_textLabelClass,
-            parameters)
+            parameters,
+            backgroundColor: backgroundColor,
+            features: features)
     {
-        _textFormat = textFormat;
+        _drawTextFormat = textFormat;
+        TextColor = textColor;
+    }
+
+    public Color TextColor
+    {
+        get => _textColor;
+        set
+        {
+            if (value.IsEmpty)
+            {
+                value = Color.Black;
+            }
+
+            if (value == _textColor)
+            {
+                return;
+            }
+
+            _textColor = value;
+            if (_textBrush is { } brush)
+            {
+                brush.Color = _textColor;
+            }
+
+            this.Invalidate();
+        }
+    }
+
+    protected override void RenderTargetCreated()
+    {
+        _textBrush?.Dispose();
+        _textBrush = RenderTarget.CreateSolidColorBrush(TextColor);
+        base.RenderTargetCreated();
+    }
+
+    private TextFormat GetTextFormat()
+    {
+        if (_textFormat is null)
+        {
+            HFONT hfont = this.GetFontHandle();
+            _textFormat = new TextFormat(hfont, _drawTextFormat);
+        }
+
+        return _textFormat;
+    }
+
+    protected override void OnPaint()
+    {
+        if (IsDirect2dEnabled())
+        {
+            Size size = this.GetClientRectangle().Size;
+            using TextLayout textLayout = new(Text, GetTextFormat(), size);
+            Debug.Assert(_textBrush is not null);
+            RenderTarget.DrawTextLayout(default, textLayout, _textBrush!);
+        }
+        else
+        {
+            using var deviceContext = this.BeginPaint();
+            Rectangle bounds = this.GetClientRectangle();
+            deviceContext.DrawText(Text, bounds, _drawTextFormat, this.GetFontHandle(), TextColor);
+        }
+
+        base.OnPaint();
     }
 
     protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
     {
         switch (message)
         {
-            case MessageType.Paint:
+            case MessageType.SetFont:
+                if (_textFormat is not null)
                 {
-                    using var deviceContext = window.BeginPaint(out Rectangle paintBounds);
-                    using var selectionScope = deviceContext.SelectObject(this.GetFontHandle());
-                    deviceContext.DrawText(Text, paintBounds, _textFormat);
-                    break;
+                    // The font isn't set until we call base, so we need to wait to recreate the text format.
+                    _textFormat.Dispose();
+                    _textFormat = null;
                 }
+
+                break;
         }
 
         return base.WindowProcedure(window, message, wParam, lParam);
@@ -48,15 +123,15 @@ public class TextLabelControl : Control
 
     public DrawTextFormat TextFormat
     {
-        get => _textFormat;
+        get => _drawTextFormat;
         set
         {
-            if (value == _textFormat)
+            if (value == _drawTextFormat)
             {
                 return;
             }
 
-            _textFormat = value;
+            _drawTextFormat = value;
             this.Invalidate();
         }
     }

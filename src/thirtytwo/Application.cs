@@ -210,6 +210,22 @@ public static unsafe class Application
         using var enumerator = new ThreadWindowEnumerator(threadId, callback);
     }
 
+    public static string GetUserDefaultLocaleName()
+    {
+        Span<char> localeName = stackalloc char[(int)Interop.LOCALE_NAME_MAX_LENGTH];
+        fixed (char* ln = localeName)
+        {
+            int length = Interop.GetUserDefaultLocaleName(ln, (int)Interop.LOCALE_NAME_MAX_LENGTH);
+
+            if (length == 0)
+            {
+                Error.ThrowLastError();
+            }
+
+            return localeName[..(length - 1)].ToString();
+        }
+    }
+
     public static Direct2dFactory Direct2dFactory => s_direct2dFactory ??= new();
     public static DirectWriteFactory DirectWriteFactory => s_directWriteFactory ??= new();
     public static DirectWriteGdiInterop DirectWriteGdiInterop => s_directWriteGdiInterop ??= new();

@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.Drawing;
-using System.Numerics;
 using Windows.Components;
 using Windows.Support;
 using Windows.Win32.Graphics.Direct2D;
@@ -44,14 +43,14 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     private HFONT _font;
     private HFONT _lastCreatedFont;
 
-    private readonly HBRUSH _backgroundBrush;
-
     private HwndRenderTarget? _renderTarget;
 
     protected HwndRenderTarget RenderTarget => _renderTarget ?? throw new InvalidOperationException();
 
     private string? _text;
     private uint _lastDpi;
+    private Color _backgroundColor;
+    private HBRUSH _backgroundBrush;
 
     private readonly Features _features;
 
@@ -83,7 +82,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         WindowClass? windowClass = default,
         nint parameters = default,
         HMENU menuHandle = default,
-        HBRUSH backgroundBrush = default,
+        Color backgroundColor = default,
         Features features = default)
     {
         _windowClass = windowClass ?? s_defaultWindowClass;
@@ -95,6 +94,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
         _text = text;
         _features = features;
+        _backgroundColor = backgroundColor;
 
         try
         {
@@ -119,20 +119,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         // the font (which sends a message to do so).
         _windowProcedure = WindowProcedureInternal;
 
-        _backgroundBrush = backgroundBrush;
-
         s_windows[Handle] = new(this);
-
-        if (parentWindow is null)
-        {
-            // Set up HDC for scaling
-            using var deviceContext = this.GetDeviceContext();
-            deviceContext.SetGraphicsMode(GRAPHICS_MODE.GM_ADVANCED);
-            uint dpi = this.GetDpi();
-            Matrix3x2 transform = Matrix3x2.CreateScale((dpi / 96.0f) * 5.0f);
-            deviceContext.SetWorldTransform(ref transform);
-        }
-
         _priorWindowProcedure = this.SetWindowProcedure(_windowProcedure);
 
         _lastDpi = this.GetDpi();
@@ -260,6 +247,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                 if (IsDirect2dEnabled())
                 {
                     _renderTarget.BeginDraw();
+                    _renderTarget.Clear(_backgroundColor);
                 }
 
                 OnPaint();
@@ -311,16 +299,24 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     {
         switch (message)
         {
+            // https://learn.microsoft.com/windows/win32/gdi/window-background
+            // https://learn.microsoft.com/windows/win32/gdi/drawing-a-custom-window-background
             case MessageType.EraseBackground:
-                if (!_backgroundBrush.IsNull)
-                {
-                    ((HDC)wParam).FillRectangle(this.GetClientRectangle(), _backgroundBrush);
-                    return (LRESULT)1;
-                }
 
                 if (IsDirect2dEnabled())
                 {
-                    // Having the HDC erased will cause flicker, so say we handled it.
+                    // Having the HDC erased will cause flicker, so say we handled it. We could erase using
+                    // Direct2D, but pushing that to the paint method is avoids an extra BeginDraw/EndDraw.
+                    return (LRESULT)1;
+                }
+                else if (!_backgroundColor.IsEmpty)
+                {
+                    if (_backgroundBrush.IsNull)
+                    {
+                        _backgroundBrush = HBRUSH.CreateSolid(_backgroundColor);
+                    }
+
+                    ((HDC)wParam).FillRectangle(this.GetClientRectangle(), _backgroundBrush);
                     return (LRESULT)1;
                 }
 
@@ -496,6 +492,14 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                     Debug.Assert(success);
                 }
             }
+        }
+
+        if (disposing)
+        {
+            _backgroundBrush.Dispose();
+            _lastCreatedFont.Dispose();
+            _font.Dispose();
+            _renderTarget?.Dispose();
         }
     }
 

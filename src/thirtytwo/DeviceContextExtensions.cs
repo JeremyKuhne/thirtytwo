@@ -26,6 +26,22 @@ public static unsafe partial class DeviceContextExtensions
         return mode;
     }
 
+    /// <inheritdoc cref="Interop.GetBkColor(HDC)"/>
+    public static Color GetBackgroundColor<T>(this T context) where T : IHandle<HDC>
+    {
+        COLORREF result = Interop.GetBkColor(context.Handle);
+        GC.KeepAlive(context.Wrapper);
+        return result;
+    }
+
+    /// <inheritdoc cref="Interop.SetBkColor(HDC, COLORREF)"/>
+    public static Color SetBackgroundColor<T>(this T context, Color color) where T : IHandle<HDC>
+    {
+        COLORREF result = Interop.SetBkColor(context.Handle, (COLORREF)color);
+        GC.KeepAlive(context.Wrapper);
+        return result;
+    }
+
     /// <inheritdoc cref="Interop.GetWorldTransform(HDC, XFORM*)"/>
     public static unsafe bool GetWorldTransform<T>(this T context, ref Matrix3x2 transform)
         where T : IHandle<HDC>
@@ -124,27 +140,88 @@ public static unsafe partial class DeviceContextExtensions
         }
     }
 
-    public static unsafe (int Height, uint LengthDrawn, Rectangle Bounds) DrawText<T>(
-        this T context,
+    /// <inheritdoc cref="DrawText{TDeviceContext, HFONT}(TDeviceContext, ReadOnlySpan{char}, Rectangle, DrawTextFormat, HFONT, Color, Color)"/>
+    public static unsafe (int Height, uint LengthDrawn, Rectangle Bounds) DrawText<TDeviceContext>(
+        this TDeviceContext context,
         ReadOnlySpan<char> text,
         Rectangle bounds,
-        DrawTextFormat format)
-        where T : IHandle<HDC>
+        DrawTextFormat format,
+        Color foreColor = default,
+        Color backColor = default)
+        where TDeviceContext : IHandle<HDC> =>
+        DrawText<TDeviceContext, HFONT>(context, text, bounds, format, default, foreColor, backColor);
+
+    /// <summary>
+    ///  Draws text using the given font and format.
+    /// </summary>
+    /// <param name="text">Text to draw.</param>
+    /// <param name="format">Format flags.</param>
+    /// <param name="bounds">The bounds to render in.</param>
+    /// <param name="foreColor">The foreground color for the text, or black by default.</param>
+    /// <param name="backColor">The background color to use, or paint transparently.</param>
+    public static unsafe (int Height, uint LengthDrawn, Rectangle Bounds) DrawText<TDeviceContext, TFont>(
+        this TDeviceContext context,
+        ReadOnlySpan<char> text,
+        Rectangle bounds,
+        DrawTextFormat format,
+        TFont? hfont = default,
+        Color foreColor = default,
+        Color backColor = default)
+        where TDeviceContext : IHandle<HDC>
+        where TFont : IHandle<HFONT>
     {
-        RECT rect = bounds;
+        int state = Interop.SaveDC(context.Handle);
+        Debug.Assert(state != 0);
+
+        BACKGROUND_MODE newBackGroundMode = (backColor.IsEmpty || backColor == Color.Transparent)
+            ? BACKGROUND_MODE.TRANSPARENT
+            : BACKGROUND_MODE.OPAQUE;
+
+        int priorBkMode = Interop.SetBkMode(context.Handle, newBackGroundMode);
+        Debug.Assert(priorBkMode != 0);
+
+        if (newBackGroundMode == BACKGROUND_MODE.OPAQUE)
+        {
+            Interop.SetBkColor(context.Handle, (COLORREF)backColor);
+        }
+
+        if (foreColor.IsEmpty)
+        {
+            foreColor = Color.Black;
+        }
+
+        Interop.SetTextColor(context.Handle, (COLORREF)foreColor);
+
+        if (hfont is not null && !hfont.Handle.IsNull)
+        {
+            Interop.SelectObject(context.Handle, hfont.Handle);
+        }
 
         DRAWTEXTPARAMS* dtp = null;
         DRAWTEXTPARAMS dt = default;
 
         if (format.HasFlag(DrawTextFormat.TabStop))
         {
+            // Populate the tab stops.
             dt.cbSize = (uint)sizeof(DRAWTEXTPARAMS);
             dt.iTabLength = (int)(((uint)format & 0xFF00) >> 8);
             format = (DrawTextFormat)((uint)format & 0xFFFF00FF);
             dtp = &dt;
         }
 
-        return DrawTextHelper(context, text, &rect, format, dtp);
+        RECT rect = bounds;
+
+        try
+        {
+            return DrawTextHelper(context, text, &rect, format, dtp);
+        }
+        finally
+        {
+            bool success = Interop.RestoreDC(context.Handle, state);
+            Debug.Assert(success);
+            GC.KeepAlive(context.Wrapper);
+            GC.KeepAlive(hfont?.Wrapper);
+        }
     }
 
     private static (int Height, uint LengthDrawn, Rectangle Bounds) DrawTextHelper<T>(
@@ -443,5 +520,19 @@ public static unsafe partial class DeviceContextExtensions
         PenMixMode result = (PenMixMode)Interop.GetROP2(context.Handle);
         GC.KeepAlive(context.Wrapper);
         return result;
+    }
+
+    public static Color GetBrushColor<T>(this T context) where T : IHandle<HDC>
+    {
+        COLORREF color = Interop.GetDCBrushColor(context.Handle);
+        GC.KeepAlive(context.Wrapper);
+        return color;
+    }
+
+    public static Color GetTextColor<T>(this T context) where T : IHandle<HDC>
+    {
+        COLORREF color = Interop.GetTextColor(context.Handle);
+        GC.KeepAlive(context.Wrapper);
+        return color;
     }
 }

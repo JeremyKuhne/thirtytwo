@@ -10,7 +10,18 @@ public enum StockBrush : uint
     Gray = GET_STOCK_OBJECT_FLAGS.GRAY_BRUSH,
     DarkGray = GET_STOCK_OBJECT_FLAGS.DKGRAY_BRUSH,
     Black = GET_STOCK_OBJECT_FLAGS.BLACK_BRUSH,
+
+    /// <summary>
+    ///  Used when a brush handle is required, but no painting is needed.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   <see href="https://devblogs.microsoft.com/oldnewthing/20040126-00/?p=40903">The hollow brush</see>
+    ///  </para>
+    /// </remarks>
     Hollow = GET_STOCK_OBJECT_FLAGS.HOLLOW_BRUSH,
+
+    /// <inheritdoc cref="Hollow"/>
     Null = GET_STOCK_OBJECT_FLAGS.NULL_BRUSH,
 
     /// <summary>

@@ -12,7 +12,15 @@ public unsafe abstract class DirectDrawBase<T> : DisposableBase.Finalizable, IPo
 
     public T* Pointer => (T*)_pointer;
 
-    public DirectDrawBase(T* pointer) => _pointer = (nint)pointer;
+    public DirectDrawBase(T* pointer)
+    {
+        if (pointer is null)
+        {
+            throw new ArgumentNullException(nameof(pointer));
+        }
+
+        _pointer = (nint)pointer;
+    }
 
     public static implicit operator T*(DirectDrawBase<T> d) => d.Pointer;
 

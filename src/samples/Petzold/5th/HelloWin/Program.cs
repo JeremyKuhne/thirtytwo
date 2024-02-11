@@ -8,6 +8,7 @@ using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.Media.Audio;
 using System.Runtime.InteropServices;
 using Windows;
+using System.Drawing;
 
 namespace HelloWin;
 
@@ -121,7 +122,7 @@ internal unsafe static class Program
 
     private class HelloWindow : MainWindow
     {
-        public HelloWindow(string title) : base(title: title, backgroundBrush: StockBrush.White)
+        public HelloWindow(string title) : base(title: title, backgroundColor: Color.White)
         {
         }
 

@@ -18,7 +18,19 @@ public class Control : Window
         Window? parentWindow = default,
         WindowClass? windowClass = default,
         nint parameters = 0,
-        HMENU menuHandle = default) : base(bounds, text, style, extendedStyle, parentWindow, windowClass, parameters, menuHandle)
+        HMENU menuHandle = default,
+        Color backgroundColor = default,
+        Features features = default) : base(
+            bounds,
+            text,
+            style,
+            extendedStyle,
+            parentWindow,
+            windowClass,
+            parameters,
+            menuHandle,
+            backgroundColor,
+            features: features)
     {
     }
 }

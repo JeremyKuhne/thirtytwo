@@ -6,11 +6,28 @@ namespace Windows;
 [Flags]
 public enum DrawTextFormat : uint
 {
+    /// <summary>
+    ///  Justifies the text to the top of the rectangle.
+    /// </summary>
     Top = DRAW_TEXT_FORMAT.DT_TOP,
     Left = DRAW_TEXT_FORMAT.DT_LEFT,
     Center = DRAW_TEXT_FORMAT.DT_CENTER,
     Right = DRAW_TEXT_FORMAT.DT_RIGHT,
+
+    /// <summary>
+    ///  Centers text vertically.
+    /// </summary>
+    /// <remarks>
+    ///  <para>Only works with <see cref="SingleLine"/>.</para>
+    /// </remarks>
     VerticallyCenter = DRAW_TEXT_FORMAT.DT_VCENTER,
+
+    /// <summary>
+    ///  Justifies the text to the bottom of the rectangle.
+    /// </summary>
+    /// <remarks>
+    ///  <para>Only works with <see cref="SingleLine"/>.</para>
+    /// </remarks>
     Bottom = DRAW_TEXT_FORMAT.DT_BOTTOM,
     WordBreak = DRAW_TEXT_FORMAT.DT_WORDBREAK,
     SingleLine = DRAW_TEXT_FORMAT.DT_SINGLELINE,
