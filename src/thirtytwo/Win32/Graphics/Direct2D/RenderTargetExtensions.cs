@@ -117,25 +117,6 @@ public static unsafe class RenderTargetExtensions
         GC.KeepAlive(defaultFillBrush);
     }
 
-    /// <inheritdoc cref="ID2D1RenderTarget.CreateBitmapFromWicBitmap(IWICBitmapSource*, D2D1_BITMAP_PROPERTIES*, ID2D1Bitmap**)"/>
-    public static Bitmap CreateBitmapFromWicBitmap<TRenderTarget, TBitmapSource>(
-        this TRenderTarget target,
-        TBitmapSource wicBitmap)
-        where TRenderTarget : IPointer<ID2D1RenderTarget>
-        where TBitmapSource : IPointer<IWICBitmapSource>
-    {
-        ID2D1Bitmap* d2dBitmap;
-        target.Pointer->CreateBitmapFromWicBitmap(
-            wicBitmap.Pointer,
-            bitmapProperties: (D2D1_BITMAP_PROPERTIES*)null,
-            &d2dBitmap).ThrowOnFailure();
-
-        Bitmap bitmap = new(d2dBitmap);
-        GC.KeepAlive(target);
-        GC.KeepAlive(wicBitmap);
-        return bitmap;
-    }
-
     public static void DrawBitmap<TRenderTarget, TBitmap>(
         this TRenderTarget target,
         TBitmap bitmap,
