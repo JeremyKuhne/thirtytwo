@@ -13,7 +13,6 @@ public unsafe class FormatConverter : BitmapSource, IPointer<IWICFormatConverter
     public FormatConverter() : this(Create()) { }
     public FormatConverter(BitmapSource source) : this(Create()) => Initialize(source);
 
-
     private static IWICFormatConverter* Create()
     {
         IWICFormatConverter* converter;

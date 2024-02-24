@@ -63,5 +63,11 @@ public unsafe class HwndRenderTarget : RenderTarget, IPointer<ID2D1HwndRenderTar
         return new HwndRenderTarget(renderTarget);
     }
 
+    public void Resize(Size size)
+    {
+        Pointer->Resize((D2D_SIZE_U)size).ThrowOnFailure();
+        GC.KeepAlive(this);
+    }
+
     public static implicit operator ID2D1HwndRenderTarget*(HwndRenderTarget target) => target.Pointer;
 }

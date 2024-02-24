@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
+using System.Numerics;
 using Windows.Support;
 using Windows.Win32.Graphics.Direct2D.Common;
+using Windows.Win32.Graphics.DirectWrite;
 using Windows.Win32.Graphics.Dxgi.Common;
 using Windows.Win32.Graphics.Imaging;
 
@@ -15,6 +17,123 @@ public unsafe class RenderTarget : Resource, IPointer<ID2D1RenderTarget>
 
     public RenderTarget(ID2D1RenderTarget* renderTarget) : base((ID2D1Resource*)renderTarget)
     {
+    }
+
+    public void BeginDraw()
+    {
+        Pointer->BeginDraw();
+        GC.KeepAlive(this);
+    }
+
+    public void EndDraw(out bool recreateTarget)
+    {
+        HRESULT result = Pointer->EndDraw(null, null);
+        if (result == HRESULT.D2DERR_RECREATE_TARGET)
+        {
+            recreateTarget = true;
+        }
+        else
+        {
+            result.ThrowOnFailure();
+            recreateTarget = false;
+        }
+
+        GC.KeepAlive(this);
+    }
+
+    public SolidColorBrush CreateSolidColorBrush(Color color)
+    {
+        ID2D1SolidColorBrush* solidColorBrush;
+        D2D1_COLOR_F colorf = (D2D1_COLOR_F)color;
+        Pointer->CreateSolidColorBrush(&colorf, null, &solidColorBrush).ThrowOnFailure();
+        GC.KeepAlive(this);
+        return new SolidColorBrush(solidColorBrush);
+    }
+
+    public void SetTransform(Matrix3x2 transform)
+    {
+        Pointer->SetTransform((D2D_MATRIX_3X2_F*)&transform);
+        GC.KeepAlive(this);
+    }
+
+    public void Clear(Color color)
+    {
+        D2D1_COLOR_F colorf = (D2D1_COLOR_F)color;
+        Pointer->Clear(&colorf);
+        GC.KeepAlive(this);
+    }
+
+    public void DrawLine(PointF point0, PointF point1, Brush brush, float strokeWidth = 1.0f)
+    {
+        Pointer->DrawLine(*(D2D_POINT_2F*)&point0, *(D2D_POINT_2F*)&point1, brush.Pointer, strokeWidth, null);
+        GC.KeepAlive(this);
+    }
+
+    public void FillRectangle(RectangleF rect, Brush brush)
+    {
+        D2D_RECT_F rectf = (D2D_RECT_F)rect;
+        Pointer->FillRectangle(&rectf, brush.Pointer);
+        GC.KeepAlive(this);
+    }
+
+    public void DrawRectangle(RectangleF rect, Brush brush, float strokeWidth = 1.0f)
+    {
+        D2D_RECT_F rectf = (D2D_RECT_F)rect;
+        Pointer->DrawRectangle(&rectf, brush.Pointer, strokeWidth, null);
+        GC.KeepAlive(this);
+    }
+
+    public SizeF Size()
+    {
+        D2D_SIZE_F size = Pointer->GetSizeHack();
+        GC.KeepAlive(this);
+        return *(SizeF*)&size;
+    }
+
+    /// <inheritdoc cref="ID2D1RenderTarget.DrawTextLayout(D2D_POINT_2F, IDWriteTextLayout*, ID2D1Brush*, D2D1_DRAW_TEXT_OPTIONS)"/>
+    public void DrawTextLayout(
+        PointF origin,
+        TextLayout textLayout,
+        Brush defaultFillBrush,
+        DrawTextOptions options = DrawTextOptions.None)
+    {
+        Pointer->DrawTextLayout(
+            origin,
+            textLayout.Pointer,
+            defaultFillBrush.Pointer,
+            (D2D1_DRAW_TEXT_OPTIONS)options);
+
+        GC.KeepAlive(this);
+        GC.KeepAlive(textLayout);
+        GC.KeepAlive(defaultFillBrush);
+    }
+
+    public void DrawBitmap(
+        Bitmap bitmap,
+        RectangleF destinationRectangle = default,
+        float opacity = 1.0f,
+        BitmapInterpolationMode interpolationMode = BitmapInterpolationMode.Linear)
+    {
+        D2D_RECT_F destination = (D2D_RECT_F)destinationRectangle;
+        if (destinationRectangle.IsEmpty)
+        {
+            D2D_SIZE_F size = Pointer->GetSizeHack();
+            destination = new D2D_RECT_F { left = 0, top = 0, right = size.width, bottom = size.height };
+        }
+        else
+        {
+            destination = (D2D_RECT_F)destinationRectangle;
+        }
+
+        Pointer->DrawBitmap(
+            bitmap.Pointer,
+            &destination,
+            opacity,
+            (D2D1_BITMAP_INTERPOLATION_MODE)interpolationMode,
+            null);
+
+        GC.KeepAlive(this);
+        GC.KeepAlive(bitmap);
     }
 
     /// <inheritdoc cref="ID2D1RenderTarget.CreateBitmapFromWicBitmap(IWICBitmapSource*, D2D1_BITMAP_PROPERTIES*, ID2D1Bitmap**)"/>
