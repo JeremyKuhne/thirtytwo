@@ -5,9 +5,9 @@ using System.Drawing;
 
 namespace Windows;
 
-public partial class StaticControl : Window
+public partial class StaticControl : Control
 {
-    private static readonly WindowClass s_buttonClass = new("Static");
+    private static readonly WindowClass s_buttonClass = new(registeredClassName: "Static");
 
     public StaticControl(
         Rectangle bounds = default,

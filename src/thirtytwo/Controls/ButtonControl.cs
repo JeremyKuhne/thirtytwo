@@ -7,7 +7,7 @@ namespace Windows;
 
 public partial class ButtonControl : Control
 {
-    private static readonly WindowClass s_buttonClass = new("Button");
+    private static readonly WindowClass s_buttonClass = new(registeredClassName: "Button");
 
     public ButtonControl(
         Rectangle bounds = default,
