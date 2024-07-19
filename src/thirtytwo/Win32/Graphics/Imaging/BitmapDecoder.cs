@@ -3,6 +3,9 @@
 
 namespace Windows.Win32.Graphics.Imaging;
 
+/// <summary>
+///  WIC Bitmap Decoder.
+/// </summary>
 public unsafe class BitmapDecoder : DirectDrawBase<IWICBitmapDecoder>
 {
     public BitmapDecoder(IWICBitmapDecoder* pointer) : base(pointer) { }

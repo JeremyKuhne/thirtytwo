@@ -38,7 +38,7 @@ public unsafe class StandardDispatchTests
             &standard).ThrowOnFailure();
 
         // StdDispatch does not provide an implementation of IDispatchEx.
-        IDispatchEx* dispatchEx = standard->QueryInterface<IDispatchEx>();
+        IDispatchEx* dispatchEx = standard->TryQueryInterface<IDispatchEx>();
         Assert.True(dispatchEx is null);
 
         standard->Release();

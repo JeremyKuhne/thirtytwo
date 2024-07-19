@@ -231,5 +231,7 @@ public static unsafe class Application
     public static Direct2dFactory Direct2dFactory => s_direct2dFactory ??= new();
     public static DirectWriteFactory DirectWriteFactory => s_directWriteFactory ??= new();
     public static DirectWriteGdiInterop DirectWriteGdiInterop => s_directWriteGdiInterop ??= new();
+
+    /// <inheritdoc cref="Windows.Win32.Graphics.Imaging.ImagingFactory"/>
     public static ImagingFactory ImagingFactory => s_imagingFactory ??= new();
 }

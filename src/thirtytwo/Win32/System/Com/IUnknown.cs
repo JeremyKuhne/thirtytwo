@@ -9,17 +9,24 @@ namespace Windows.Win32.System.Com;
 
 public unsafe partial struct IUnknown : IVTable<IUnknown, IUnknown.Vtbl>
 {
-    public TInterface* QueryInterface<TInterface>() where TInterface : unmanaged, IComIID
+    public TInterface* TryQueryInterface<TInterface>() where TInterface : unmanaged, IComIID
     {
         TInterface* @interface = default;
         QueryInterface(IID.Get<TInterface>(), (void**)&@interface);
         return @interface;
     }
 
-    public AgileComPointer<TInterface>? QueryAgileInterface<TInterface>()
+    public TInterface* QueryInterface<TInterface>() where TInterface : unmanaged, IComIID
+    {
+        TInterface* @interface = default;
+        QueryInterface(IID.Get<TInterface>(), (void**)&@interface).ThrowOnFailure();
+        return @interface;
+    }
+
+    public AgileComPointer<TInterface>? TryQueryAgileInterface<TInterface>()
         where TInterface : unmanaged, IComIID
     {
-        TInterface* @interface = QueryInterface<TInterface>();
+        TInterface* @interface = TryQueryInterface<TInterface>();
         return @interface is null ? null : new(@interface, takeOwnership: true);
     }
 

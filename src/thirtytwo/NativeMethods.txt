@@ -248,6 +248,8 @@ IsWindowEnabled
 IsWindowVisible
 IUIAutomationElement
 IUnknown
+IWICBitmapDecoderInfo
+IWICComponentInfo
 IWICImagingFactory2
 KEY_INFORMATION_CLASS
 KEY_NAME_INFORMATION
@@ -386,6 +388,7 @@ UpdateWindow
 USER_DEFAULT_SCREEN_DPI
 VARIANT_*
 VIRTUAL_KEY
+WICComponentEnumerateOptions
 WIN32_ERROR
 WINDOWPOS
 WM_*

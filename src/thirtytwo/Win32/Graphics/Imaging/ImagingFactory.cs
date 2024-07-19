@@ -6,6 +6,9 @@ using Windows.Win32.System.Com;
 
 namespace Windows.Win32.Graphics.Imaging;
 
+/// <summary>
+///  WIC Imaging Factory.
+/// </summary>
 public unsafe class ImagingFactory : DirectDrawBase<IWICImagingFactory2>
 {
     public ImagingFactory() : base(Create()) { }

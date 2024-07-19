@@ -40,7 +40,7 @@ public unsafe partial class ActiveXControl : Control
         _classId = classId;
         IUnknown* unknown = ComHelpers.CreateComClass(classId);
         _instance = new(unknown, takeOwnership: true);
-        _instanceAsActiveObject = unknown->QueryAgileInterface<IOleInPlaceActiveObject>();
+        _instanceAsActiveObject = unknown->TryQueryAgileInterface<IOleInPlaceActiveObject>();
 
         using ComScope<IOleObject> oleObject = ComScope<IOleObject>.QueryFrom(unknown);
         if (oleObject.Pointer->GetMiscStatus(DVASPECT.DVASPECT_CONTENT, out OLEMISC status).Succeeded)
