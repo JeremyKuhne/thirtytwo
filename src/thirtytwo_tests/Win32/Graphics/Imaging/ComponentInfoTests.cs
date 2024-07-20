@@ -13,6 +13,7 @@ public class ComponentInfoTests
         {
             Assert.NotNull(info);
             Assert.NotNull(info.FriendlyName);
+            info.Dispose();
         }
     }
 }
