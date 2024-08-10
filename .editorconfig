@@ -1,6 +1,9 @@
 # Remove the line below if you want to inherit .editorconfig settings from higher directories
 root = true
 
+[*]
+guidelines = 120 1px dotted 504CFF00, 150 1px dotted 50FF6A00
+
 # Test .cs files
 [**/*Tests.cs]
 

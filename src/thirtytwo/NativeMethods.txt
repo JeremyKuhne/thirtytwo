@@ -144,6 +144,7 @@ GetCurrentThreadId
 GetCursorPos
 GetDC
 GetDCBrushColor
+GetDCEx
 GetDeviceCaps
 GetDialogBaseUnits
 GetDialogBaseUnits

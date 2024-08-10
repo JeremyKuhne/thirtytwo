@@ -44,9 +44,9 @@ internal class Clover : MainWindow
                     using HRGN region1 = HRGN.FromEllipse(_cxClient / 2, _cyClient / 3, _cxClient, 2 * _cyClient / 3);
                     using HRGN region2 = HRGN.FromEllipse(_cxClient / 3, 0, 2 * _cxClient / 3, _cyClient / 2);
                     using HRGN region3 = HRGN.FromEllipse(_cxClient / 3, _cyClient / 2, 2 * _cxClient / 3, _cyClient);
-                    using HRGN region4 = HRGN.CombineRegion(region0, region1, RegionCombineMode.Or);
-                    using HRGN region5 = HRGN.CombineRegion(region2, region3, RegionCombineMode.Or);
-                    _hrgnClip = HRGN.CombineRegion(region4, region5, RegionCombineMode.Xor);
+                    using HRGN region4 = region0.Combine(region1, RegionCombineMode.Or);
+                    using HRGN region5 = region2.Combine(region3, RegionCombineMode.Or);
+                    _hrgnClip = region4.Combine(region5, RegionCombineMode.Xor);
 
                     return (LRESULT)0;
                 }
