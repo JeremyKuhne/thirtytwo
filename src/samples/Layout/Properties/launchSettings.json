@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Layout": {
+      "commandName": "Project",
+      "hotReloadEnabled": false,
+      "nativeDebugging": true
+    }
+  }
+}

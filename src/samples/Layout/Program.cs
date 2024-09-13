@@ -5,13 +5,103 @@ using System.Drawing;
 using Windows;
 using Windows.Messages;
 using Windows.Win32.Graphics.Gdi;
+using Microsoft.UI;
+#pragma warning disable IDE0005 // Using directive is unnecessary.
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Controls;
+#pragma warning restore IDE0005 // Using directive is unnecessary.
+
+using Xaml = Microsoft.UI.Xaml;
+using Windows.Win32.Foundation;
+using Windows.Graphics;
 
 namespace LayoutSample;
 
+public static class GraphicsExtensions
+{
+    public static RectInt32 ToRectInt32(this Rectangle rectangle)
+        => new(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
+}
+
+public class MyApp : Xaml.Application
+{
+
+}
+
 internal class Program
 {
+    private static DispatcherQueueController? s_dispatcher;
+
     [STAThread]
-    private static void Main() => Application.Run(new LayoutWindow("Layout Demo"));
+    private static void Main()
+    {
+        // The runtime should have called CoInitializeEx and RoInitialize for STA (see threads.cpp)
+        // This is effectively winrt::init_apartment() in C++/WinRT.
+
+        // Returns false as it is already initialized for the thread.
+        // HRESULT hr = Windows.Win32.Interop.RoInitialize(Windows.Win32.System.WinRT.RO_INIT_TYPE.RO_INIT_SINGLETHREADED);
+        s_dispatcher = DispatcherQueueController.CreateOnCurrentThread();
+        WindowsXamlManager.InitializeForCurrentThread();
+        var current = Xaml.Application.Current;
+
+        Windows.Application.Run(new LayoutWindow("Layout Demo"));
+    }
+
+    public class ColorPicker : XamlControl
+    {
+        private readonly Xaml.Controls.ColorPicker _colorPicker;
+
+        public ColorPicker(Windows.Window parentWindow) : base(new Xaml.Controls.ColorPicker(), parentWindow)
+        {
+            _colorPicker = (Xaml.Controls.ColorPicker)_control;
+        }
+
+        public override void Layout(Rectangle bounds)
+        {
+            base.Layout(bounds);
+        }
+    }
+
+    public class XamlControl : DisposableBase, ILayoutHandler
+    {
+        //private Panel _panel;
+        protected Xaml.Controls.Control _control;
+
+        public XamlControl(Xaml.Controls.Control control, Windows.Window parentWindow)
+        {
+            XamlSource = new();
+            _control = control;
+            XamlSource.Initialize(Win32Interop.GetWindowIdFromWindow(parentWindow.Handle));
+            //Page page = new();
+            //Grid grid = new();
+            //grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+            //grid.Children.Add(control);
+            //page.Content = grid;
+            XamlSource.Content = control;
+
+            //_panel = grid;
+        }
+
+        protected DesktopWindowXamlSource XamlSource { get; }
+
+        public HWND Handle => (HWND)Win32Interop.GetWindowFromWindowId(XamlSource.SiteBridge.WindowId);
+
+        public virtual void Layout(Rectangle bounds)
+        {
+            XamlSource.SiteBridge.MoveAndResize(bounds.ToRectInt32());
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                XamlSource.Dispose();
+            }
+        }
+    }
 
     private class LayoutWindow : MainWindow
     {
@@ -21,6 +111,7 @@ internal class Program
         private readonly ButtonControl _buttonControl;
         private readonly StaticControl _staticControl;
         private readonly TextLabelControl _textLabel;
+        private readonly ColorPicker _colorPicker;
         private readonly HBRUSH _blueBrush;
 
         public LayoutWindow(string title) : base(title: title)
@@ -54,6 +145,8 @@ internal class Program
                 // features: default
                 );
 
+            _colorPicker = new ColorPicker(this);
+
             _textLabel.SetFont("Segoe Print", 20);
 
             var font = _buttonControl.GetFontHandle();
@@ -61,17 +154,17 @@ internal class Program
 
             _replaceableLayout = new ReplaceableLayout(_textLabel);
 
-            this.AddLayoutHandler(Layout.Vertical(
-                (.5f, Layout.Margin((5, 5, 0, 0), Layout.Fill(_editControl))),
-                (.5f, Layout.Horizontal(
-                    (.7f, Layout.FixedPercent(.4f, _replaceableLayout)),
-                    (.3f, Layout.FixedPercent(.5f, _buttonControl))))));
+            this.AddLayoutHandler(Windows.Layout.Vertical(
+                (.5f, Windows.Layout.Margin((5, 5, 0, 0), Windows.Layout.Fill(_colorPicker))),
+                (.5f, Windows.Layout.Horizontal(
+                    (.7f, Windows.Layout.FixedPercent(.4f, _replaceableLayout)),
+                    (.3f, Windows.Layout.FixedPercent(.5f, _buttonControl))))));
 
             MouseHandler handler = new(_buttonControl);
             handler.MouseUp += Handler_MouseUp;
         }
 
-        private void Handler_MouseUp(Window window, Point position, MouseButton button, MouseKey mouseState)
+        private void Handler_MouseUp(Windows.Window window, Point position, MouseButton button, MouseKey mouseState)
         {
             if (_replaceableLayout.Handler == _staticControl)
             {

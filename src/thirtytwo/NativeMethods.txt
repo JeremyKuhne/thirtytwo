@@ -313,6 +313,7 @@ ReleaseCapture
 ReleaseDC
 RemoveClipboardFormatListener
 RestoreDC
+RoInitialize
 ROLE_SYSTEM_*
 RoundRect
 S_FALSE
