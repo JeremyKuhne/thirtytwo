@@ -86,6 +86,18 @@ internal unsafe static class Program
             case Interop.WM_CREATE:
                 s_xamlSource = new DesktopWindowXamlSource();
                 s_xamlSource.Initialize(Win32Interop.GetWindowIdFromWindow(window));
+
+                HWND xamlSourceWindow = (HWND)Win32Interop.GetWindowFromWindowId(s_xamlSource.SiteBridge.WindowId);
+
+                // Style is already WS_CHILD | WS_VISIBLE
+
+                // WINDOW_STYLE existing = (WINDOW_STYLE)Interop.GetWindowLongPtr(xamlSourceWindow, WINDOW_LONG_PTR_INDEX.GWL_STYLE);
+
+                // Interop.SetWindowLongPtr(
+                //     xamlSourceWindow,
+                //     WINDOW_LONG_PTR_INDEX.GWL_STYLE,
+                //     (nint)(WINDOW_STYLE.WS_CHILD | WINDOW_STYLE.WS_VISIBLE));
+
                 s_control = new Xaml.Controls.ColorPicker();
                 s_xamlSource.Content = s_control;
                 return (LRESULT)0;
@@ -95,6 +107,11 @@ internal unsafe static class Program
                     RectInt32 size = new(0, 0, lParam.LOWORD, lParam.HIWORD);
                     s_xamlSource.SiteBridge.MoveAndResize(size);
                 }
+                return (LRESULT)0;
+            case Interop.WM_PAINT:
+                PAINTSTRUCT paintStruct;
+                Interop.BeginPaint(window, &paintStruct);
+                Interop.EndPaint(window, &paintStruct);
                 return (LRESULT)0;
             case Interop.WM_DESTROY:
                 Interop.PostQuitMessage(0);
