@@ -22,6 +22,7 @@ CoGetClassObject
 CombineRgn
 COMBOBOXINFO_BUTTON_STATE
 CopyImage
+CoTaskMemAlloc
 CoTaskMemFree
 CountClipboardFormats
 CreateActCtx
@@ -224,6 +225,7 @@ IMarshal
 IModalWindow
 InitCommonControlsEx
 InitVariantFromDoubleArray
+INoMarshal
 INTERFACEDATA
 INVALID_HANDLE_VALUE
 InvalidateRect
