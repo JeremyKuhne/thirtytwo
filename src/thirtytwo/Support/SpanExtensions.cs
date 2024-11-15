@@ -28,7 +28,7 @@ public static class SpanExtensions
     /// <summary>
     ///  Splits into strings on the given <paramref name="delimiter"/>.
     /// </summary>
-    public static IEnumerable<string> Split(this ReadOnlySpan<char> span, char delimiter, bool includeEmptyStrings = false)
+    public static IEnumerable<string> SplitToEnumerable(this ReadOnlySpan<char> span, char delimiter, bool includeEmptyStrings = false)
     {
         List<string> strings = [];
         SpanReader<char> reader = new(span);
@@ -61,4 +61,33 @@ public static class SpanExtensions
 
         return strings;
     }
+
+    /*
+        Currently not possible: https://github.com/dotnet/runtime/issues/109874
+
+        public static T[] ToArray<T>(this MemoryExtensions.SpanSplitEnumerator<T> enumerator)
+            where T : IEquatable<T>
+        {
+            using BufferScope<Range> ranges = new(stackalloc Range[10]);
+            int index = -1;
+
+            while (enumerator.MoveNext())
+            {
+                ranges.EnsureCapacity(index++);
+                ranges[index] = enumerator.Current;
+            }
+
+            if (index == -1)
+            {
+                return [];
+            }
+
+            T[] result = new T[ranges.Length];
+            for (int i = 0; i < ranges.Length; i++)
+            {
+                // The enumerator does not expose the span
+                // result[i] = enumerator.Span.Slice(ranges[i])
+            }
+        }
+    */
 }

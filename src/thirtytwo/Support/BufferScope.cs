@@ -71,10 +71,18 @@ public ref struct BufferScope<T>
     /// <param name="copy">True to copy the existing elements when new space is allocated.</param>
     public unsafe void EnsureCapacity(int capacity, bool copy = false)
     {
-        if (_span!.Length >= capacity)
+        if (_span.Length >= capacity)
         {
             return;
         }
+
+        // Keep method separate for better inlining.
+        IncreaseCapacity(capacity, copy);
+    }
+
+    private void IncreaseCapacity(int capacity, bool copy)
+    {
+        Debug.Assert(capacity > _span.Length);
 
         T[] newArray = ArrayPool<T>.Shared.Rent(capacity);
         if (copy)

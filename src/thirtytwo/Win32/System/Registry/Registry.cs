@@ -199,7 +199,7 @@ public static unsafe partial class Registry
                 // Size includes the null
                 return MemoryMarshal.Cast<byte, char>(buffer)[..^1].ToString();
             case REG_VALUE_TYPE.REG_MULTI_SZ:
-                return MemoryMarshal.Cast<byte, char>(buffer).Split('\0').ToArray();
+                return MemoryMarshal.Cast<byte, char>(buffer).SplitToEnumerable('\0').ToArray();
             case REG_VALUE_TYPE.REG_DWORD_LITTLE_ENDIAN:
                 return BinaryPrimitives.ReadUInt32LittleEndian(buffer);
             case REG_VALUE_TYPE.REG_DWORD_BIG_ENDIAN:
