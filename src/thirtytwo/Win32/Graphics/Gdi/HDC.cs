@@ -5,12 +5,10 @@ using Windows.Support;
 
 namespace Windows.Win32.Graphics.Gdi;
 
-public partial struct HDC : IHandle<HDC>
+public unsafe partial struct HDC : IHandle<HDC>
 {
     HDC IHandle<HDC>.Handle => this;
     object? IHandle<HDC>.Wrapper => null;
-
-    public bool IsNull => Value == 0;
 
     public static explicit operator HDC(HGDIOBJ handle)
     {

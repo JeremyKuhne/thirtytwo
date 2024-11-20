@@ -143,7 +143,7 @@ public unsafe readonly struct DeviceContext : IDisposable, IHandle<HDC>
     }
 
     public static implicit operator HDC(DeviceContext context) => context.Handle;
-    public static unsafe explicit operator DeviceContext(WPARAM wparam) => Create(new(new(wparam)));
+    public static unsafe explicit operator DeviceContext(WPARAM wparam) => Create(new((nint)wparam));
 
     [Flags]
     private enum ContextState

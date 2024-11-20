@@ -26,7 +26,7 @@ public unsafe partial struct HRGN : IDisposable
     /// <summary>
     ///  Special <see cref="HRGN"/> sent during WM_NCPAINT to indicate the entire window.
     /// </summary>
-    public static HRGN Full { get; } = (HRGN)1;
+    public static HRGN Full { get; } = (HRGN)(nint)1;
 
     /// <summary>
     ///  Is special <see cref="HRGN.Full"/> value.

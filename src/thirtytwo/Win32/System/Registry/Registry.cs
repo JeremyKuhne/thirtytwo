@@ -4,6 +4,7 @@
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using Windows.Support;
+using Windows.Wdk.System.Registry;
 using Windows.Wdk.System.SystemServices;
 
 namespace Windows.Win32.System.Registry;

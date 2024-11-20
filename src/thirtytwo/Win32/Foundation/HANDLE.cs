@@ -10,7 +10,7 @@ public readonly partial struct HANDLE : IDisposable
 {
     public unsafe void Dispose()
     {
-        if (Value != 0 && Value != -1)
+        if ((nint)Value != 0 && (nint)Value != -1)
         {
             Interop.CloseHandle(this).ThrowLastErrorIfFalse();
         }

@@ -5,7 +5,7 @@ using Windows.Support;
 
 namespace Windows.Win32.System.Registry;
 
-public partial struct HKEY : IDisposable
+public unsafe partial struct HKEY : IDisposable
 {
     private const uint REMOTE_HANDLE_TAG = 0x00000001;
     private const uint REG_CLASSES_SPECIAL_TAG = 0x00000002;
@@ -16,13 +16,13 @@ public partial struct HKEY : IDisposable
     /// <summary>
     ///  Returns true if the key is from the local machine.
     /// </summary>
-    public bool IsLocalKey => (Value & REMOTE_HANDLE_TAG) == 0;
+    public bool IsLocalKey => ((nuint)Value & REMOTE_HANDLE_TAG) == 0;
 
     /// <summary>
     ///  Returns true if the key is special (notably in <see cref="HKEY.HKEY_CLASSES_ROOT"/>, where
     ///  it might be redirected to per user settings).
     /// </summary>
-    public bool IsSpecialKey => (Value & REG_CLASSES_SPECIAL_TAG) != 0;
+    public bool IsSpecialKey => ((nuint)Value & REG_CLASSES_SPECIAL_TAG) != 0;
 
     public void Dispose()
     {
