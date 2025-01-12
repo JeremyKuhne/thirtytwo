@@ -6,6 +6,9 @@ using Windows.Support;
 
 namespace Windows;
 
+/// <summary>
+///  <see href="https://learn.microsoft.com/windows/win32/controls/about-rich-edit-controls#rich-edit-version-41">RichEdit 4.1</see> control wrapper.
+/// </summary>
 public partial class RichEditControl : EditBase
 {
     private static readonly WindowClass s_richEditClass;

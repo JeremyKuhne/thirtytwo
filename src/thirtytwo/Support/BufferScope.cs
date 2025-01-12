@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Buffers;
-using System.Runtime.InteropServices;
 
 namespace Windows.Support;
 
@@ -105,7 +104,11 @@ public ref struct BufferScope<T>
 
     public readonly Span<T> Slice(int start, int length) => _span.Slice(start, length);
 
-    public readonly ref T GetPinnableReference() => ref MemoryMarshal.GetReference<T>(_span);
+    /// <inheritdoc cref="Span{T}.GetPinnableReference"/>
+    /// <remarks>
+    ///  This is used by C# to enable using the buffer in a fixed statement.
+    /// </remarks>
+    public readonly ref T GetPinnableReference() => ref _span.GetPinnableReference();
 
     public readonly int Length => _span.Length;
 
@@ -115,6 +118,9 @@ public ref struct BufferScope<T>
 
     public static implicit operator ReadOnlySpan<T>(BufferScope<T> scope) => scope._span;
 
+    /// <summary>
+    ///  Returns an enumerator for the buffer's backing <see cref="Span{T}"/>.
+    /// </summary>
     public readonly Span<T>.Enumerator GetEnumerator() => _span.GetEnumerator();
 
     public void Dispose()

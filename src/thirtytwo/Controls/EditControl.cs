@@ -5,6 +5,9 @@ using System.Drawing;
 
 namespace Windows;
 
+/// <summary>
+///  <see href="https://learn.microsoft.com/windows/win32/controls/edit-controls">Edit common control</see> wrapper.
+/// </summary>
 public partial class EditControl : EditBase
 {
     private static readonly WindowClass s_editClass = new("Edit");
