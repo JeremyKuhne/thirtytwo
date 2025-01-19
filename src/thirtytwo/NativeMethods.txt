@@ -60,6 +60,7 @@ DISPID_Parent
 DISPID_PROPERTYPUT
 DISPID_STARTENUM
 DISPID_UNKNOWN
+DLLVERSIONINFO
 DPI_AWARENESS_CONTEXT_*
 DrawFocusRect
 DrawIconEx
@@ -263,6 +264,7 @@ LineTo
 LoadCursor
 LoadIcon
 LoadLibrary
+LoadLibraryEx
 LoadRegTypeLib
 LOCALE_NAME_MAX_LENGTH
 LocalFree

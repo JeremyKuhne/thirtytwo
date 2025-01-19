@@ -2,11 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Support;
+using Windows.Win32.System.LibraryLoader;
 
 namespace Windows.Win32.Foundation;
 
 public unsafe partial struct HMODULE : IHandle<HMODULE>
 {
+    private const string DllGetVersionMethodName = "DllGetVersion";
+
     HMODULE IHandle<HMODULE>.Handle => this;
     object? IHandle<HMODULE>.Wrapper => null;
 
@@ -67,5 +70,60 @@ public unsafe partial struct HMODULE : IHandle<HMODULE>
 
             return hmodule;
         }
+    }
+
+    /// <summary>
+    ///  Loads the module from the specified file path. Throws on failure.
+    /// </summary>
+    public static HMODULE LoadModule(string filePath, LOAD_LIBRARY_FLAGS flags = default)
+    {
+        HMODULE module = Interop.LoadLibraryEx(filePath, flags);
+        if (module.IsNull)
+        {
+            Error.ThrowLastError();
+        }
+
+        return module;
+    }
+
+    /// <summary>
+    ///  Gets the dll version of the module. Throws if the module doesn't expose `DllGetVersion`.
+    /// </summary>
+    public Version GetDllVersion()
+    {
+        FARPROC proc = Interop.GetProcAddress(this, DllGetVersionMethodName);
+
+        if (proc.IsNull)
+        {
+            Error.ThrowLastError();
+        }
+
+        DLLVERSIONINFO versionInfo = new()
+        {
+            cbSize = (uint)sizeof(DLLVERSIONINFO)
+        };
+
+        // HRESULT Dllgetversionproc(DLLVERSIONINFO* version)
+        ((delegate* unmanaged<DLLVERSIONINFO*, HRESULT>)proc.Value)(&versionInfo).ThrowOnFailure();
+
+        return new Version(
+            (int)versionInfo.dwMajorVersion,
+            (int)versionInfo.dwMinorVersion,
+            (int)versionInfo.dwBuildNumber,
+            (int)versionInfo.dwPlatformID);
+    }
+
+    /// <summary>
+    ///  Gets the address of the specified procedure. Throws if the procedure can't be found.
+    /// </summary>
+    public FARPROC GetProcAddress(string procName)
+    {
+        FARPROC proc = Interop.GetProcAddress(this, procName);
+        if (proc.IsNull)
+        {
+            Error.ThrowLastError();
+        }
+
+        return proc;
     }
 }
