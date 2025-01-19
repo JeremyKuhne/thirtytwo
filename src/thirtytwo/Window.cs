@@ -217,6 +217,32 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
         switch (message)
         {
+            case Interop.WM_SIZE:
+                Size size = new(lParam.LOWORD, lParam.HIWORD);
+
+                // Check the flag directly here so we don't create then resize.
+                if (_features.AreFlagsSet(Features.EnableDirect2d))
+                {
+                    UpdateRenderTarget(window, size);
+                }
+
+                break;
+
+            case Interop.WM_PAINT:
+                if (IsDirect2dEnabled())
+                {
+                    _renderTarget.BeginDraw();
+                    _renderTarget.SetTransform(Matrix3x2.Identity);
+                    _renderTarget.Clear(_backgroundColor);
+                }
+
+                break;
+        }
+
+        bool handled = InvokeHandlers(out LRESULT result);
+
+        switch (message)
+        {
             case Interop.WM_NCDESTROY:
                 lock (_lock)
                 {
@@ -233,43 +259,18 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
             case Interop.WM_SIZE:
                 Size size = new(lParam.LOWORD, lParam.HIWORD);
-
-                // Check the flag directly here so we don't create then resize.
-                if (_features.AreFlagsSet(Features.EnableDirect2d))
-                {
-                    UpdateRenderTarget(window, size);
-                }
-
                 OnSize(size);
-
                 break;
 
             case Interop.WM_PAINT:
-                if (IsDirect2dEnabled())
-                {
-                    _renderTarget.BeginDraw();
-                    _renderTarget.SetTransform(Matrix3x2.Identity);
-                    _renderTarget.Clear(_backgroundColor);
-                }
-
                 OnPaint();
-
                 break;
         }
 
-        if (MessageHandler is { } handlers)
+        if (!handled)
         {
-            foreach (var handler in handlers.GetInvocationList().OfType<WindowsMessageEvent>())
-            {
-                LRESULT? result = handler(this, window, (MessageType)message, wParam, lParam);
-                if (result.HasValue)
-                {
-                    return result.Value;
-                }
-            }
+            result = WindowProcedure(window, (MessageType)message, wParam, lParam);
         }
-
-        LRESULT windProcResult = WindowProcedure(window, (MessageType)message, wParam, lParam);
 
         if (message == Interop.WM_PAINT && IsDirect2dEnabled())
         {
@@ -284,7 +285,26 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
         // Ensure we're not collected while we're processing a message.
         GC.KeepAlive(this);
-        return windProcResult;
+        return result;
+
+        bool InvokeHandlers(out LRESULT result)
+        {
+            if (MessageHandler is { } handlers)
+            {
+                foreach (var handler in handlers.GetInvocationList().OfType<WindowsMessageEvent>())
+                {
+                    LRESULT? handlerResult = handler(this, window, (MessageType)message, wParam, lParam);
+                    if (handlerResult.HasValue)
+                    {
+                        result = handlerResult.Value;
+                        return true;
+                    }
+                }
+            }
+
+            result = default;
+            return false;
+        }
     }
 
     /// <summary>
