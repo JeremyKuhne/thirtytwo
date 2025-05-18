@@ -92,6 +92,7 @@ public unsafe class Clipboard
                 if (count > buffer.Length - 2)
                 {
                     buffer.EnsureCapacity(buffer.Length * 2);
+                    continue;
                 }
 
                 return buffer.Slice(0, count).ToString();
