@@ -598,7 +598,7 @@ public static unsafe partial class WindowExtensions
         (WindowStyles)window.GetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_STYLE);
 
     public static ExtendedWindowStyles GetExtendedWindowStyle<T>(this T window) where T : IHandle<HWND> =>
-        (ExtendedWindowStyles)window.GetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_STYLE);
+        (ExtendedWindowStyles)window.GetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
 }
 
 /// <docs>https://learn.microsoft.com/windows/win32/api/winuser/nc-winuser-timerproc</docs>

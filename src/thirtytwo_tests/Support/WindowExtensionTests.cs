@@ -27,4 +27,11 @@ public class WindowExtensionTests
         window.SetWindowText("Golly");
         window.GetWindowText().Should().Be("Golly");
     }
+
+    [Fact]
+    public void GetExtendedWindowStyle_TopMost()
+    {
+        using Window window = new(Window.DefaultBounds, extendedStyle: ExtendedWindowStyles.TopMost);
+        window.GetExtendedWindowStyle().HasFlag(ExtendedWindowStyles.TopMost).Should().BeTrue();
+    }
 }
