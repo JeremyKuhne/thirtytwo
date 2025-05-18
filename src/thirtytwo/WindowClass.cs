@@ -308,27 +308,29 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
 
     protected override void Dispose(bool disposing)
     {
-        if (Atom.IsValid)
+        if (!Atom.IsValid)
         {
-            // Free the memory for the window class and prevent further callbacks.
-            // (Presuming that we don't have to set the default WNDPROC back via SetClassLong, if we do
-            //  we can follow along with what Window does.)
-            if (Interop.UnregisterClass((char*)Atom.Value, ModuleInstance))
+            return;
+        }
+
+        // Free the memory for the window class and prevent further callbacks.
+        // (Presuming that we don't have to set the default WNDPROC back via SetClassLong, if we do
+        //  we can follow along with what Window does.)
+        if (Interop.UnregisterClass((char*)Atom.Value, ModuleInstance))
+        {
+            Atom = default;
+        }
+        else
+        {
+            WIN32_ERROR error = Error.GetLastError();
+            if (disposing)
             {
-                Atom = default;
+                error.Throw();
             }
             else
             {
-                WIN32_ERROR error = Error.GetLastError();
-                if (disposing)
-                {
-                    error.Throw();
-                }
-                else
-                {
-                    // Don't want to throw on the finalizer thread.
-                    Debug.Fail($"Failed to unregister window class: {error}");
-                }
+                // Don't want to throw on the finalizer thread.
+                Debug.Fail($"Failed to unregister window class {_className}: \n{error}");
             }
         }
     }

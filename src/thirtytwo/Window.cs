@@ -31,7 +31,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     // Stash the delegate to keep it from being collected
     private readonly WindowProcedure _windowProcedure;
     private readonly WNDPROC _priorWindowProcedure;
-    private readonly WindowClass _windowClass;
+    protected readonly WindowClass _windowClass;
     private bool _destroyed;
     private HWND _handle;
 
@@ -502,14 +502,18 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         {
             if (!_destroyed)
             {
-                // We don't want any messages coming in anymore (as the Window will be collected eventually and
-                // our callback will no longer exist). Set the default window procedure to the window and post
-                // a close message so it will destroy the window on the correct thread.
+                // Set back the default Window procedure as we don't want any messages coming in anymore.
                 Handle.SetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, (nint)(void*)DefaultWindowProcedure);
-                Handle.PostMessage(MessageType.Close);
 
-                if (disposing)
+                // Send a close message to the window. This will cause the window to be destroyed. If we're being
+                // finalized, post instead of send to ensure the message is processed on the right thread.
+                if (!disposing)
                 {
+                    Handle.PostMessage(MessageType.Close);
+                }
+                else
+                {
+                    Handle.SendMessage(MessageType.Close);
                     bool success = s_windows.TryRemove(Handle, out _);
                     Debug.Assert(success);
                 }

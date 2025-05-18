@@ -76,5 +76,14 @@ public class IconTests
 
             return base.WindowProcedure(window, message, wParam, lParam);
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (disposing)
+            {
+                _windowClass.Dispose();
+            }
+        }
     }
 }
