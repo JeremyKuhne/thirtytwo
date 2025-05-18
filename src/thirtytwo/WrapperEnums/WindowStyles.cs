@@ -27,14 +27,14 @@ public enum WindowStyles : uint
     Minimize = WINDOW_STYLE.WS_MINIMIZE,
 
     /// <summary>
-    ///  Initialy visible.
+    ///  Initially visible.
     /// </summary>
     Visible = WINDOW_STYLE.WS_VISIBLE,
 
     /// <summary>
     ///  Initially disabled.
     /// </summary>
-    Diabled = WINDOW_STYLE.WS_DISABLED,
+    Disabled = WINDOW_STYLE.WS_DISABLED,
 
     /// <summary>
     ///  Clips child windows relative to each other, preventing drawing in each-other
@@ -70,7 +70,7 @@ public enum WindowStyles : uint
     /// <summary>
     ///  Has a vertical scroll bar.
     /// </summary>
-    VerticalScroll = WINDOW_STYLE.WS_HSCROLL,
+    VerticalScroll = WINDOW_STYLE.WS_VSCROLL,
 
     /// <summary>
     ///  Has a horizontal scroll bar.
@@ -93,7 +93,7 @@ public enum WindowStyles : uint
     Group = WINDOW_STYLE.WS_GROUP,
 
     /// <summary>
-    ///  Is a control that can recieve focus via the TAB key.
+    ///  Is a control that can receive focus via the TAB key.
     /// </summary>
     TabStop = WINDOW_STYLE.WS_TABSTOP,
 
