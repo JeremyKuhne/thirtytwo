@@ -4,7 +4,7 @@
 namespace Windows;
 
 /// <summary>
-///  Delegate for handling Windows messages. Used to forward recieved messages for a window.
+///  Delegate for handling Windows messages. Used to forward received messages for a window.
 /// </summary>
 /// <param name="sender">The class invoking the delegate.</param>
 /// <returns>
