@@ -100,6 +100,7 @@ public class FileOpenDialogTests
             string? selection = dialog.CurrentSelection;
         };
 
+        dialog.DialogOptions = FileDialog.Options.AllowMultiselect;
         dialog.ShowDialog();
     }
 }

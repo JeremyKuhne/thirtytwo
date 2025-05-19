@@ -6,7 +6,7 @@ using Windows.Win32.System.Com;
 
 namespace Windows.Dialogs;
 
-public unsafe partial class FileOpenDialog : FileDialog
+public sealed unsafe partial class FileOpenDialog : FileDialog
 {
     public FileOpenDialog(IHandle<HWND>? owner = default) : base(CreateInstance(), owner)
     {
@@ -37,7 +37,7 @@ public unsafe partial class FileOpenDialog : FileDialog
         for (int i = 0; i < count; i++)
         {
             using ComScope<IShellItem> item = new(null);
-            items.Pointer->GetItemAt(0, item).ThrowOnFailure();
+            items.Pointer->GetItemAt((uint)i, item).ThrowOnFailure();
             paths[i] = item.Pointer->GetFullPath();
         }
 
