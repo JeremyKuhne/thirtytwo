@@ -64,7 +64,7 @@ public unsafe partial class FileDialog
         ///  Prompt for creation if the item returned in the save dialog does not exist. Note that this does not
         ///  actually create the item.
         /// </summary>
-        CreatePrompty = FILEOPENDIALOGOPTIONS.FOS_CREATEPROMPT,
+        CreatePrompt = FILEOPENDIALOGOPTIONS.FOS_CREATEPROMPT,
 
         /// <summary>
         ///  In the case of a sharing violation when an application is opening a file, call the application back
