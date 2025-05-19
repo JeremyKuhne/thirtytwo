@@ -16,6 +16,7 @@ public static unsafe partial class WindowExtensions
         int length = Interop.GetWindowTextLength(window.Handle);
         if (length == 0)
         {
+            Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_SUCCESS);
             return string.Empty;
         }
 
