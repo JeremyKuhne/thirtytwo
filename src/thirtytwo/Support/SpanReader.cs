@@ -69,6 +69,11 @@ public unsafe ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged
 
                 UnsafeAdvance(index);
             }
+            else if (advancePastDelimiter)
+            {
+                // We found the delimiter at the start of the span
+                UnsafeAdvance(1);
+            }
         }
 
         return found;

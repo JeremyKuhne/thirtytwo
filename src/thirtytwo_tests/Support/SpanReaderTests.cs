@@ -42,6 +42,38 @@ public class SpanReaderTests
     }
 
     [Fact]
+    public void SpanReader_TryReadTo_DelimiterAtStart_SkipDelimiter()
+    {
+        ReadOnlySpan<byte> span = [1, 2, 3];
+        SpanReader<byte> reader = new(span);
+
+        reader.TryReadTo(1, out var read).Should().BeTrue();
+        read.ToArray().Should().BeEmpty();
+        reader.Position.Should().Be(1);
+
+        reader.Reset();
+        reader.TryReadTo(1, advancePastDelimiter: false, out read).Should().BeTrue();
+        read.ToArray().Should().BeEmpty();
+        reader.Position.Should().Be(0);
+    }
+
+    [Fact]
+    public void SpanReader_TryReadTo_DelimiterAtStart_DoNotSkipDelimiter()
+    {
+        ReadOnlySpan<byte> span = [1, 2, 3];
+        SpanReader<byte> reader = new(span);
+
+        reader.TryReadTo(1, out var read).Should().BeTrue();
+        read.ToArray().Should().BeEmpty();
+        reader.Position.Should().Be(1);
+
+        reader.Reset();
+        reader.TryReadTo(1, advancePastDelimiter: true, out read).Should().BeTrue();
+        read.ToArray().Should().BeEmpty();
+        reader.Position.Should().Be(1);
+    }
+
+    [Fact]
     public void SpanReader_Advance()
     {
         ReadOnlySpan<byte> span = [1, 2, 3, 4, 5];
