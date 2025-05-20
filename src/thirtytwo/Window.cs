@@ -48,7 +48,6 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
     protected HwndRenderTarget RenderTarget => _renderTarget ?? throw new InvalidOperationException();
 
-    private string? _text;
     private uint _lastDpi;
     private Color _backgroundColor;
     private HBRUSH _backgroundBrush;
@@ -93,7 +92,6 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
             bounds = DefaultBounds;
         }
 
-        _text = text;
         _features = features;
         _backgroundColor = backgroundColor;
 
@@ -367,25 +365,6 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
                 break;
 
-            case MessageType.SetText:
-                // Update our cached text if necessary
-
-                if (lParam == 0)
-                {
-                    _text = null;
-                }
-                else
-                {
-                    Message.SetText setText = new(lParam);
-                    if (!setText.Text.Equals(_text, StringComparison.Ordinal))
-                    {
-                        _text = setText.Text.ToString();
-                    }
-                }
-
-                // The default proc actually sets the text, so we shouldn't return from here
-                break;
-
             case MessageType.DpiChanged:
                 {
                     // Resize and reposition for the new DPI
@@ -437,16 +416,6 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
             FromHandle(child)?.UpdateFontsForDpi(lastDpi, newDpi);
             return true;
         });
-    }
-
-    public string Text
-    {
-        get => _text ?? string.Empty;
-        set
-        {
-            this.SetWindowText(value);
-            _text = value;
-        }
     }
 
     /// <summary>

@@ -8,7 +8,7 @@ using Windows.Win32.System.Ole;
 
 namespace Windows;
 
-public unsafe partial class ActiveXControl : Control
+public unsafe partial class ActiveXControl : CustomControl
 {
     private static readonly WindowClass s_class = new(
         className: "ActiveXHostControlClass",
