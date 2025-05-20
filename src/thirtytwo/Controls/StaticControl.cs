@@ -5,7 +5,7 @@ using System.Drawing;
 
 namespace Windows;
 
-public partial class StaticControl : Control
+public partial class StaticControl : RegisteredControl
 {
     private static readonly WindowClass s_buttonClass = new(registeredClassName: "Static");
 

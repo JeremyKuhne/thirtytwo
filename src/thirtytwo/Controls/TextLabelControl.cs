@@ -7,7 +7,7 @@ using Windows.Win32.Graphics.DirectWrite;
 
 namespace Windows;
 
-public class TextLabelControl : Control
+public class TextLabelControl : CustomControl
 {
     private static readonly WindowClass s_textLabelClass = new(className: "TextLabelClass");
 

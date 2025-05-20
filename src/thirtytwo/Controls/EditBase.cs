@@ -6,7 +6,7 @@ using Windows.Support;
 
 namespace Windows;
 
-public abstract class EditBase : Control
+public abstract class EditBase : CustomControl
 {
     protected EditBase(
         Rectangle bounds,
