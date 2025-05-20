@@ -1,3 +1,7 @@
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Windows.Support;
 using Windows.Win32.Foundation;
 
 namespace Windows.Controls;
@@ -41,12 +45,31 @@ public unsafe class CustomControlTests
         int length = (int)control.SendMessage(MessageType.GetTextLength);
         length.Should().Be(5);
 
-        using var buffer = new BufferScope<char>(stackalloc char[length + 1]);
+        using BufferScope<char> buffer = new(stackalloc char[length + 1]);
         fixed (char* c = buffer)
         {
             int copied = (int)control.SendMessage(MessageType.GetText, (WPARAM)buffer.Length, (LPARAM)c);
             copied.Should().Be(length);
             buffer[..copied].ToString().Should().Be("Hello");
+        }
+    }
+
+    [Fact]
+    public unsafe void GetTextMessage_BufferSmallerThanTextTruncates()
+    {
+        using Window window = new(Window.DefaultBounds);
+        using CustomControl control = new(Window.DefaultBounds, text: "HelloWorld", parentWindow: window);
+
+        int length = (int)control.SendMessage(MessageType.GetTextLength);
+        length.Should().Be(10);
+
+        // Create a buffer smaller than the text length
+        using BufferScope<char> buffer = new(stackalloc char[5]); // Only enough for "Hello" without null terminator
+        fixed (char* c = buffer)
+        {
+            int copied = (int)control.SendMessage(MessageType.GetText, (WPARAM)buffer.Length, (LPARAM)c);
+            copied.Should().Be(4); // Only 4 characters should be copied (to allow for null terminator)
+            buffer[..copied].ToString().Should().Be("Hell"); // Should only copy "Hell"
         }
     }
 }

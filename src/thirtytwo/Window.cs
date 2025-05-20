@@ -365,7 +365,6 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
                 break;
 
-
             case MessageType.DpiChanged:
                 {
                     // Resize and reposition for the new DPI
@@ -418,8 +417,6 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
             return true;
         });
     }
-
-
 
     /// <summary>
     ///  Try to get the <see cref="Window"/> from the given <paramref name="handle"/>. Walks parent windows
