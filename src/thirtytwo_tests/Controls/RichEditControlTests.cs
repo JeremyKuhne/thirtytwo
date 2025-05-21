@@ -70,8 +70,9 @@ public class RichEditControlTests
         edit.Modified.Should().BeTrue();
         edit.CanUndo.Should().BeTrue();
 
-        var selection = edit.GetSelection();
-        selection.Start.Should().Be(1);
+        (int start, int end) = edit.GetSelection();
+        start.Should().Be(2);
+        end.Should().Be(2);
 
         edit.Undo().Should().BeTrue();
         edit.Text.Should().Be("Hello");
