@@ -48,4 +48,29 @@ public class EditControlTests
 
         edit.GetLine(lineNumber).Should().Be(expectedLine);
     }
+
+    [Fact]
+    public void Selection_Modified_Undo()
+    {
+        using Window window = new(Window.DefaultBounds);
+        using EditControl edit = new(Window.DefaultBounds, "Hello", parentWindow: window);
+
+        edit.SetSelection(1, 3);
+        edit.ReplaceSelection("i");
+
+        edit.Text.Should().Be("Hilo");
+        edit.Modified.Should().BeTrue();
+        edit.CanUndo.Should().BeTrue();
+
+        var selection = edit.GetSelection();
+        selection.Start.Should().Be(1);
+
+        edit.Undo().Should().BeTrue();
+        edit.Text.Should().Be("Hello");
+
+        edit.EmptyUndoBuffer();
+        edit.CanUndo.Should().BeFalse();
+        edit.Modified = false;
+        edit.Modified.Should().BeFalse();
+    }
 }
