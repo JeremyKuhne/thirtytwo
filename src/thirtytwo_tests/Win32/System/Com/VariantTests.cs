@@ -220,10 +220,10 @@ public unsafe class VariantTests
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                ReadOnlySpan<byte> data = new byte[]
-                {
+                ReadOnlySpan<byte> data =
+                [
                     0x32, 0xEE, 0xE9, 0x3B, 0xFB, 0x26, 0x7A, 0x4E, 0xB8, 0xA8, 0x25, 0x79, 0x5A, 0x7E, 0xFB, 0x53
-                };
+                ];
 
                 return ref Unsafe.As<byte, Guid>(ref MemoryMarshal.GetReference(data));
             }
