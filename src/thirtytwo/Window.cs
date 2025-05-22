@@ -237,22 +237,28 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                 break;
         }
 
-        bool handled = InvokeHandlers(out LRESULT result);
+        bool handled;
+        LRESULT result;
+
+        try
+        {
+            handled = InvokeHandlers(out result);
+        }
+        catch
+        {
+            // If this is WM_NCDESTROY, handle it before re-throwing the exception
+            if (message == Interop.WM_NCDESTROY)
+            {
+                HandleNcDestroy();
+            }
+
+            throw; // Re-throw the exception
+        }
 
         switch (message)
         {
             case Interop.WM_NCDESTROY:
-                lock (_lock)
-                {
-                    // This should be the final message. Track that we've been destroyed so we know we don't have
-                    // to manually clean up.
-
-                    bool success = s_windows.TryRemove(Handle, out _);
-                    Debug.Assert(success);
-                    _handle = default;
-                    _destroyed = true;
-                }
-
+                HandleNcDestroy();
                 break;
 
             case Interop.WM_SIZE:
@@ -284,6 +290,20 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         // Ensure we're not collected while we're processing a message.
         GC.KeepAlive(this);
         return result;
+
+        void HandleNcDestroy()
+        {
+            lock (_lock)
+            {
+                // This should be the final message. Track that we've been destroyed so we know we don't have
+                // to manually clean up.
+
+                bool success = s_windows.TryRemove(Handle, out _);
+                Debug.Assert(success);
+                _handle = default;
+                _destroyed = true;
+            }
+        }
 
         bool InvokeHandlers(out LRESULT result)
         {
