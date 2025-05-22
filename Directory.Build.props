@@ -17,7 +17,7 @@
     <!-- Input Directories -->
     <PackagesDir Condition="'$(PackagesDir)'==''">$(RepoDir)packages\</PackagesDir>
 
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
