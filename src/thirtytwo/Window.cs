@@ -239,36 +239,39 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
         bool handled;
         LRESULT result = default;
-        Exception? caughtException = null;
 
         try
         {
             handled = InvokeHandlers(out result);
-
-            switch (message)
-            {
-                case Interop.WM_SIZE:
-                    Size size = new(lParam.LOWORD, lParam.HIWORD);
-                    OnSize(size);
-                    break;
-
-                case Interop.WM_PAINT:
-                    OnPaint();
-                    break;
-            }
-        }
-        catch (Exception ex)
-        {
-            caughtException = ex;
-            handled = false; // Ensure we consider the message unhandled if an exception occurred
         }
         finally
         {
             // Always process WM_NCDESTROY regardless of exceptions
             if (message == Interop.WM_NCDESTROY)
             {
-                HandleNcDestroy();
+                lock (_lock)
+                {
+                    // This should be the final message. Track that we've been destroyed so we know we don't have
+                    // to manually clean up.
+
+                    bool success = s_windows.TryRemove(Handle, out _);
+                    Debug.Assert(success);
+                    _handle = default;
+                    _destroyed = true;
+                }
             }
+        }
+
+        switch (message)
+        {
+            case Interop.WM_SIZE:
+                Size size = new(lParam.LOWORD, lParam.HIWORD);
+                OnSize(size);
+                break;
+
+            case Interop.WM_PAINT:
+                OnPaint();
+                break;
         }
 
         // If the message wasn't handled by InvokeHandlers, use the default window procedure
@@ -291,27 +294,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         // Ensure we're not collected while we're processing a message.
         GC.KeepAlive(this);
         
-        // Re-throw exception if one was caught
-        if (caughtException != null)
-        {
-            throw caughtException;
-        }
-        
         return result;
-
-        void HandleNcDestroy()
-        {
-            lock (_lock)
-            {
-                // This should be the final message. Track that we've been destroyed so we know we don't have
-                // to manually clean up.
-
-                bool success = s_windows.TryRemove(Handle, out _);
-                Debug.Assert(success);
-                _handle = default;
-                _destroyed = true;
-            }
-        }
 
         bool InvokeHandlers(out LRESULT result)
         {
