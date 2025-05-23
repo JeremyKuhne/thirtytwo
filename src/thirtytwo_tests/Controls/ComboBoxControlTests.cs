@@ -298,4 +298,121 @@ public class ComboBoxControlTests
         window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_SELCHANGE), (LPARAM)combo.Handle);
         changeCount.Should().Be(1);
     }
+
+    [Fact]
+    public void GotFocus_FiresFromCommandMessage()
+    {
+        using MainWindow window = new(Window.DefaultBounds);
+        using ComboBoxControl combo = new(parentWindow: window);
+
+        int count = 0;
+        combo.GotFocus += (s, e) => count++;
+
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_SETFOCUS), (LPARAM)combo.Handle);
+        count.Should().Be(1);
+    }
+
+    [Fact]
+    public void LostFocus_FiresFromCommandMessage()
+    {
+        using MainWindow window = new(Window.DefaultBounds);
+        using ComboBoxControl combo = new(parentWindow: window);
+
+        int count = 0;
+        combo.LostFocus += (s, e) => count++;
+
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_KILLFOCUS), (LPARAM)combo.Handle);
+        count.Should().Be(1);
+    }
+
+    [Fact]
+    public void DropDown_FiresFromCommandMessage()
+    {
+        using MainWindow window = new(Window.DefaultBounds);
+        using ComboBoxControl combo = new(parentWindow: window);
+
+        int count = 0;
+        combo.DropDown += (s, e) => count++;
+
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_DROPDOWN), (LPARAM)combo.Handle);
+        count.Should().Be(1);
+    }
+
+    [Fact]
+    public void CloseUp_FiresFromCommandMessage()
+    {
+        using MainWindow window = new(Window.DefaultBounds);
+        using ComboBoxControl combo = new(parentWindow: window);
+
+        int count = 0;
+        combo.CloseUp += (s, e) => count++;
+
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_CLOSEUP), (LPARAM)combo.Handle);
+        count.Should().Be(1);
+    }
+
+    [Fact]
+    public void DoubleClicked_FiresFromCommandMessage()
+    {
+        using MainWindow window = new(Window.DefaultBounds);
+        using ComboBoxControl combo = new(parentWindow: window);
+
+        int count = 0;
+        combo.DoubleClicked += (s, e) => count++;
+
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_DBLCLK), (LPARAM)combo.Handle);
+        count.Should().Be(1);
+    }
+
+    [Fact]
+    public void TextChanged_FiresFromCommandMessage()
+    {
+        using MainWindow window = new(Window.DefaultBounds);
+        using ComboBoxControl combo = new(parentWindow: window);
+
+        int count = 0;
+        combo.TextChanged += (s, e) => count++;
+
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_EDITCHANGE), (LPARAM)combo.Handle);
+        count.Should().Be(1);
+    }
+
+    [Fact]
+    public void TextUpdated_FiresFromCommandMessage()
+    {
+        using MainWindow window = new(Window.DefaultBounds);
+        using ComboBoxControl combo = new(parentWindow: window);
+
+        int count = 0;
+        combo.TextUpdated += (s, e) => count++;
+
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_EDITUPDATE), (LPARAM)combo.Handle);
+        count.Should().Be(1);
+    }
+
+    [Fact]
+    public void SelectionCommitted_FiresFromCommandMessage()
+    {
+        using MainWindow window = new(Window.DefaultBounds);
+        using ComboBoxControl combo = new(parentWindow: window);
+
+        int count = 0;
+        combo.SelectionCommitted += (s, e) => count++;
+
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_SELENDOK), (LPARAM)combo.Handle);
+        count.Should().Be(1);
+    }
+
+    [Fact]
+    public void SelectionCanceled_FiresFromCommandMessage()
+    {
+        using MainWindow window = new(Window.DefaultBounds);
+        using ComboBoxControl combo = new(parentWindow: window);
+
+        int count = 0;
+        combo.SelectionCanceled += (s, e) => count++;
+
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_SELENDCANCEL), (LPARAM)combo.Handle);
+        count.Should().Be(1);
+    }
 }
