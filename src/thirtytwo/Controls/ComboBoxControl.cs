@@ -13,7 +13,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
 {
     private static readonly WindowClass s_comboBoxClass = new("ComboBox");
 
-    public EventHandler? SelectionChanged;
+    public event EventHandler? SelectionChanged;
 
     public ComboBoxControl(
         Rectangle bounds = default,
