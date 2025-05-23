@@ -13,6 +13,11 @@ public unsafe partial class ComboBoxControl : RegisteredControl
 {
     private static readonly WindowClass s_comboBoxClass = new("ComboBox");
 
+    /// <summary>
+    ///  Occurs when the selection in the ComboBox changes.
+    /// </summary>
+    /// <param name="sender">The source of the event, typically the ComboBoxControl instance.</param>
+    /// <param name="e">An EventArgs object that contains no event data.</param>
     public event EventHandler? SelectionChanged;
 
     public ComboBoxControl(
