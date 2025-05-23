@@ -18,6 +18,78 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// </summary>
     public event EventHandler? SelectionChanged;
 
+    /// <summary>
+    ///  Occurs when the ComboBox receives the keyboard focus.
+    /// </summary>
+    /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-setfocus</docs>
+    public event EventHandler? GotFocus;
+
+    /// <summary>
+    ///  Occurs when the ComboBox loses the keyboard focus.
+    /// </summary>
+    /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-killfocus</docs>
+    public event EventHandler? LostFocus;
+
+    /// <summary>
+    ///  Occurs when the text in the ComboBox's edit portion is changed.
+    /// </summary>
+    /// <remarks>
+    ///  This event is not raised for ComboBoxes created with <see cref="Styles.DropDownList"/>.
+    /// </remarks>
+    /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-editchange</docs>
+    public event EventHandler? TextChanged;
+
+    /// <summary>
+    ///  Occurs when the text in the ComboBox's edit portion is about to update.
+    /// </summary>
+    /// <remarks>
+    ///  This event is not raised for ComboBoxes created with <see cref="Styles.DropDownList"/>.
+    /// </remarks>
+    /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-editupdate</docs>
+    public event EventHandler? TextUpdated;
+
+    /// <summary>
+    ///  Occurs when the ComboBox's drop-down list is about to be displayed.
+    /// </summary>
+    /// <remarks>
+    ///  This event does not occur for ComboBoxes created with <see cref="Styles.Simple"/>.
+    /// </remarks>
+    /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-dropdown</docs>
+    public event EventHandler? DropDown;
+
+    /// <summary>
+    ///  Occurs when the ComboBox's drop-down list is closed.
+    /// </summary>
+    /// <remarks>
+    ///  This event does not occur for ComboBoxes created with <see cref="Styles.Simple"/>.
+    /// </remarks>
+    /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-closeup</docs>
+    public event EventHandler? CloseUp;
+
+    /// <summary>
+    ///  Occurs when the user double-clicks an item in the ComboBox's list.
+    /// </summary>
+    /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-dblclk</docs>
+    public event EventHandler? DoubleClicked;
+
+    /// <summary>
+    ///  Occurs when the current selection is finalized by the user.
+    /// </summary>
+    /// <remarks>
+    ///  This event does not occur for ComboBoxes created with <see cref="Styles.Simple"/>.
+    /// </remarks>
+    /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-selendok</docs>
+    public event EventHandler? SelectionCommitted;
+
+    /// <summary>
+    ///  Occurs when the user cancels a selection in the drop-down list.
+    /// </summary>
+    /// <remarks>
+    ///  This event does not occur for ComboBoxes created with <see cref="Styles.Simple"/>.
+    /// </remarks>
+    /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-selendcancel</docs>
+    public event EventHandler? SelectionCanceled;
+
     public ComboBoxControl(
         Rectangle bounds = default,
         string? text = default,
@@ -207,6 +279,42 @@ public unsafe partial class ComboBoxControl : RegisteredControl
                 OnSelectionChange();
                 SelectionChanged?.Invoke(this, EventArgs.Empty);
                 break;
+            case Interop.CBN_SETFOCUS:
+                OnGotFocus();
+                GotFocus?.Invoke(this, EventArgs.Empty);
+                break;
+            case Interop.CBN_KILLFOCUS:
+                OnLostFocus();
+                LostFocus?.Invoke(this, EventArgs.Empty);
+                break;
+            case Interop.CBN_DROPDOWN:
+                OnDropDown();
+                DropDown?.Invoke(this, EventArgs.Empty);
+                break;
+            case Interop.CBN_CLOSEUP:
+                OnCloseUp();
+                CloseUp?.Invoke(this, EventArgs.Empty);
+                break;
+            case Interop.CBN_DBLCLK:
+                OnDoubleClicked();
+                DoubleClicked?.Invoke(this, EventArgs.Empty);
+                break;
+            case Interop.CBN_EDITCHANGE:
+                OnTextChanged();
+                TextChanged?.Invoke(this, EventArgs.Empty);
+                break;
+            case Interop.CBN_EDITUPDATE:
+                OnTextUpdated();
+                TextUpdated?.Invoke(this, EventArgs.Empty);
+                break;
+            case Interop.CBN_SELENDOK:
+                OnSelectionCommitted();
+                SelectionCommitted?.Invoke(this, EventArgs.Empty);
+                break;
+            case Interop.CBN_SELENDCANCEL:
+                OnSelectionCanceled();
+                SelectionCanceled?.Invoke(this, EventArgs.Empty);
+                break;
         }
     }
 
@@ -219,6 +327,87 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     ///  </para>
     /// </remarks>
     public virtual void OnSelectionChange()
+    {
+    }
+
+    /// <summary>
+    ///  Called when the ComboBox receives the keyboard focus.
+    /// </summary>
+    public virtual void OnGotFocus()
+    {
+    }
+
+    /// <summary>
+    ///  Called when the ComboBox loses the keyboard focus.
+    /// </summary>
+    public virtual void OnLostFocus()
+    {
+    }
+
+    /// <summary>
+    ///  Called when the ComboBox's drop-down list is about to be displayed.
+    /// </summary>
+    /// <remarks>
+    ///  This is not sent for ComboBoxes created with <see cref="Styles.Simple"/>.
+    /// </remarks>
+    public virtual void OnDropDown()
+    {
+    }
+
+    /// <summary>
+    ///  Called when the ComboBox's drop-down list is closed.
+    /// </summary>
+    /// <remarks>
+    ///  This is not sent for ComboBoxes created with <see cref="Styles.Simple"/>.
+    /// </remarks>
+    public virtual void OnCloseUp()
+    {
+    }
+
+    /// <summary>
+    ///  Called when the user double-clicks an item in the ComboBox's list.
+    /// </summary>
+    public virtual void OnDoubleClicked()
+    {
+    }
+
+    /// <summary>
+    ///  Called after the text in the ComboBox's edit portion has changed.
+    /// </summary>
+    /// <remarks>
+    ///  This is not sent for ComboBoxes created with <see cref="Styles.DropDownList"/>.
+    /// </remarks>
+    public virtual void OnTextChanged()
+    {
+    }
+
+    /// <summary>
+    ///  Called when the text in the ComboBox's edit portion is about to update.
+    /// </summary>
+    /// <remarks>
+    ///  This is not sent for ComboBoxes created with <see cref="Styles.DropDownList"/>.
+    /// </remarks>
+    public virtual void OnTextUpdated()
+    {
+    }
+
+    /// <summary>
+    ///  Called when the current selection is finalized by the user.
+    /// </summary>
+    /// <remarks>
+    ///  This is not sent for ComboBoxes created with <see cref="Styles.Simple"/>.
+    /// </remarks>
+    public virtual void OnSelectionCommitted()
+    {
+    }
+
+    /// <summary>
+    ///  Called when the user cancels selection in the drop-down list.
+    /// </summary>
+    /// <remarks>
+    ///  This is not sent for ComboBoxes created with <see cref="Styles.Simple"/>.
+    /// </remarks>
+    public virtual void OnSelectionCanceled()
     {
     }
 }
