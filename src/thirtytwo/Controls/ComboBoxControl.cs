@@ -13,6 +13,11 @@ public unsafe partial class ComboBoxControl : RegisteredControl
 {
     private static readonly WindowClass s_comboBoxClass = new("ComboBox");
 
+    /// <summary>
+    ///  Occurs when the selection in the ComboBox is changed by the user.
+    /// </summary>
+    public event EventHandler? SelectionChanged;
+
     public ComboBoxControl(
         Rectangle bounds = default,
         string? text = default,
@@ -192,5 +197,28 @@ public unsafe partial class ComboBoxControl : RegisteredControl
                 SelectedIndex = (int)this.SendMessage((MessageType)Interop.CB_FINDSTRINGEXACT, (WPARAM)(-1), (LPARAM)pValue);
             }
         }
+    }
+
+    protected override void OnCommand(int controlId, int notificationCode)
+    {
+        switch ((uint)notificationCode)
+        {
+            case Interop.CBN_SELCHANGE:
+                OnSelectionChange();
+                SelectionChanged?.Invoke(this, EventArgs.Empty);
+                break;
+        }
+    }
+
+    /// <summary>
+    ///  Called when the selection in the ComboBox is changed by the user.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   Override this method to handle selection change logic in derived classes.
+    ///  </para>
+    /// </remarks>
+    public virtual void OnSelectionChange()
+    {
     }
 }

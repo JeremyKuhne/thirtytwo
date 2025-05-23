@@ -195,6 +195,19 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     {
     }
 
+    /// <summary>
+    ///  Called whenever a command is sent to the window.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   Control classes send the command to the parent Window first. We also reflect the message back to
+    ///   the control Window so that it can handle the message. This is similar to MFC/WinForms behavior.
+    ///  </para>
+    /// </remarks>
+    protected virtual void OnCommand(int controlId, int notificationCode)
+    {
+    }
+
     private LRESULT InitializationWindowProcedure(HWND window, uint message, WPARAM wParam, LPARAM lParam)
     {
         if (Handle.IsNull)
@@ -213,6 +226,8 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         // What is the difference between WM_DESTROY and WM_NCDESTROY?
         // https://devblogs.microsoft.com/oldnewthing/20050726-00/?p=34803
 
+        // Check for messages that we need to process before invoking handlers. Currently this means making
+        // sure that Direct2D is in the right state if it has been opted into.
         switch (message)
         {
             case Interop.WM_SIZE:
@@ -237,8 +252,10 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                 break;
         }
 
+        // Let attached handlers have a chance to deal with the message.
         bool handled = InvokeHandlers(out LRESULT result);
 
+        // Handle messages that we need to update state or invoke virtuals on.
         switch (message)
         {
             case Interop.WM_NCDESTROY:
@@ -267,6 +284,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
         if (!handled)
         {
+            // Not marked as handled, call the virtual method to allow for "normal" processing.
             result = WindowProcedure(window, (MessageType)message, wParam, lParam);
         }
 
@@ -366,11 +384,27 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                 break;
 
             case MessageType.DpiChanged:
+                // Resize and reposition for the new DPI
+                HandleDpiChanged(new(wParam, lParam));
+                break;
+
+            case MessageType.Command:
+                if (lParam != 0 && FromHandle((HWND)lParam, walkParents: false) is Window child)
                 {
-                    // Resize and reposition for the new DPI
-                    HandleDpiChanged(new(wParam, lParam));
-                    break;
+                    // Control command from a child control, reflect the message to the control Window.
+                    // (Matching MFC/WinForms behavior here.)
+                    LRESULT result = child.SendMessage(MessageType.ReflectCommand, wParam, lParam);
+                    OnCommand(wParam.LOWORD, wParam.HIWORD);
+                    return result;
                 }
+
+                break;
+
+            case MessageType.ReflectCommand:
+                OnCommand(wParam.LOWORD, wParam.HIWORD);
+
+                // 0 means we handled the Command, no reason to call base as this message was reflected to us.
+                return (LRESULT)0;
         }
 
         return _priorWindowProcedure.IsNull

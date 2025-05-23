@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 
 namespace Windows.Controls;
 
@@ -278,5 +280,22 @@ public class ComboBoxControlTests
 
         combo.Clear();
         combo.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public void SelectionChanged_FiresFromCommandMessage()
+    {
+        using MainWindow window = new(Window.DefaultBounds);
+        using ComboBoxControl combo = new(bounds: new(default, new(400, 40)), parentWindow: window);
+
+        int changeCount = 0;
+        combo.AddItems(new[] { "Item1", "Item2", "Item3" });
+        combo.SelectionChanged += (s, e) =>
+        {
+            changeCount++;
+        };
+
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_SELCHANGE), (LPARAM)combo.Handle);
+        changeCount.Should().Be(1);
     }
 }

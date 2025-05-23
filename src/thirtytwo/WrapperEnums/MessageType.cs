@@ -713,5 +713,20 @@ public enum MessageType : uint
     DwmSendIconicLivePreviewBitmap = Interop.WM_DWMSENDICONICLIVEPREVIEWBITMAP,
 
     /// <inheritdoc cref="Interop.WM_GETTITLEBARINFOEX"/>
-    GetTitleBarInfo = Interop.WM_GETTITLEBARINFOEX
+    GetTitleBarInfo = Interop.WM_GETTITLEBARINFOEX,
+
+    /// <summary>
+    ///  Used as a base value for reflecting messages sent from Controls to parent Windows back to the Control.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   <see href="https://web.archive.org/web/20200426010008/http://www.tech-archive.net/Archive/VC/microsoft.public.vc.language/2005-08/msg00589.html">
+    ///    What is the point of using WM_REFLECT?
+    ///   </see>
+    ///  </para>
+    /// </remarks>
+    Reflect = Interop.WM_USER + 0x1C00,
+
+    /// <inheritdoc cref="Interop.WM_COMMAND"/>
+    ReflectCommand = Reflect | Interop.WM_COMMAND
 }
