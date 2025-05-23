@@ -212,6 +212,11 @@ public unsafe partial class ComboBoxControl : RegisteredControl
         }
     }
 
+    /// <summary>
+    ///  Called when the selection in the ComboBox changes.
+    ///  Override this method to handle selection change logic in derived classes.
+    ///  This method is invoked after the <see cref="SelectionChanged"/> event is raised.
+    /// </summary>
     public virtual void OnSelectionChange()
     {
     }
