@@ -1,0 +1,86 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/Samples/">
+    <Project Path="src/samples/ActiveX/ActiveX.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/ClipboardViewer/ClipboardViewer.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/KeyWatch/KeyWatch.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/Layout/Layout.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/Transparency/Transparency.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/Windows101/Windows101.csproj">
+      <Platform Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/Samples/DirectDraw/">
+    <Project Path="src/samples/DirectDraw/Direct2dDemo/Direct2dDemo.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/DirectDraw/DirectWriteDemo/DirectWriteDemo.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/DirectDraw/ImagingDemo/ImagingDemo.csproj">
+      <Platform Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/Samples/Petzold/">
+    <Project Path="src/samples/Petzold/5th/AltWind/AltWind.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/Petzold/5th/Beeper/Beeper.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/Petzold/5th/Bezier/Bezier.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/Petzold/5th/Blokout2/Blokout2.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/Petzold/5th/BtnLook/BtnLook.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/Petzold/5th/Checker1/Checker.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/Petzold/5th/Clock/Clock.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/Petzold/5th/Clover/Clover.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/Petzold/5th/HelloWin/HelloWin.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/Petzold/5th/LineDemo/LineDemo.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/Petzold/5th/RandRect/RandRect.csproj">
+      <Platform Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="LICENSE" />
+    <File Path="nuget.config" />
+    <File Path="stylecop.json" />
+    <File Path="THIRD-PARTY-NOTICES.TXT" />
+  </Folder>
+  <Project Path="src/thirtytwo/thirtytwo.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="src/thirtytwo_tests/thirtytwo_tests.csproj">
+    <Platform Project="x64" />
+  </Project>
+</Solution>
