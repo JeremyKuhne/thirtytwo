@@ -13,6 +13,8 @@ public unsafe partial class ComboBoxControl : RegisteredControl
 {
     private static readonly WindowClass s_comboBoxClass = new("ComboBox");
 
+    public EventHandler? SelectionChanged;
+
     public ComboBoxControl(
         Rectangle bounds = default,
         string? text = default,
@@ -192,5 +194,20 @@ public unsafe partial class ComboBoxControl : RegisteredControl
                 SelectedIndex = (int)this.SendMessage((MessageType)Interop.CB_FINDSTRINGEXACT, (WPARAM)(-1), (LPARAM)pValue);
             }
         }
+    }
+
+    protected override void OnCommand(int controlId, int notificationCode)
+    {
+        switch ((uint)notificationCode)
+        {
+            case Interop.CBN_SELCHANGE:
+                OnSelectionChange();
+                SelectionChanged?.Invoke(this, EventArgs.Empty);
+                break;
+        }
+    }
+
+    public virtual void OnSelectionChange()
+    {
     }
 }
