@@ -14,10 +14,8 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     private static readonly WindowClass s_comboBoxClass = new("ComboBox");
 
     /// <summary>
-    ///  Occurs when the selection in the ComboBox changes.
+    ///  Occurs when the selection in the ComboBox is changed by the user.
     /// </summary>
-    /// <param name="sender">The source of the event, typically the ComboBoxControl instance.</param>
-    /// <param name="e">An EventArgs object that contains no event data.</param>
     public event EventHandler? SelectionChanged;
 
     public ComboBoxControl(
@@ -213,10 +211,13 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     }
 
     /// <summary>
-    ///  Called when the selection in the ComboBox changes.
-    ///  Override this method to handle selection change logic in derived classes.
-    ///  This method is invoked after the <see cref="SelectionChanged"/> event is raised.
+    ///  Called when the selection in the ComboBox is changed by the user.
     /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   Override this method to handle selection change logic in derived classes.
+    ///  </para>
+    /// </remarks>
     public virtual void OnSelectionChange()
     {
     }
