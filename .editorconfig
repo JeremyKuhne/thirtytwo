@@ -4,12 +4,11 @@ root = true
 [*]
 guidelines = 120 1px dotted 504CFF00, 150 1px dotted 50FF6A00
 
-# Test .cs files
-[**/*Tests.cs]
+[src/**/*.cs]
+file_header_template = Copyright (c) Jeremy W. Kuhne. All rights reserved.\nLicensed under the MIT license. See LICENSE file in the project root for full license information.
 
-# This doesn't work well with TheoryData
-# CA1861: Avoid constant arrays as arguments
-dotnet_diagnostic.CA1861.severity = none
+# IDE0073: The file header is missing or not located at the top of the file
+dotnet_diagnostic.IDE0073.severity = warning
 
 # Native .cs files
 [**/Win32/**/*.cs]
@@ -58,7 +57,6 @@ insert_final_newline = false
 # Organize usings
 dotnet_separate_import_directive_groups = false
 dotnet_sort_system_directives_first = false
-file_header_template = unset
 
 # this. and Me. preferences
 dotnet_style_qualification_for_event = false:silent
@@ -447,3 +445,10 @@ dotnet_style_qualification_for_property = false:silent
 dotnet_style_qualification_for_field = false:silent
 dotnet_style_qualification_for_event = false:silent
 dotnet_style_qualification_for_method = false:silent
+
+# Test .cs files
+[**/*Tests.cs]
+
+# This doesn't work well with TheoryData
+# CA1861: Avoid constant arrays as arguments
+dotnet_diagnostic.CA1861.severity = none

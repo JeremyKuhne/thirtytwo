@@ -1,5 +1,9 @@
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System.Drawing;
-namespace Windows.LayoutTests;
+
+namespace Windows;
 
 public class LastLayoutHandler : ILayoutHandler
 {
@@ -13,7 +17,7 @@ public class LayoutTests
     public void FillLayout_ForwardsBounds()
     {
         LastLayoutHandler handler = new();
-        ILayoutHandler layout = new FillLayout(handler);
+        FillLayout layout = new(handler);
         Rectangle bounds = new(1, 2, 3, 4);
         layout.Layout(bounds);
         handler.LastBounds.Should().Be(bounds);
@@ -23,7 +27,7 @@ public class LayoutTests
     public void FixedPercentLayout_PositionsAndSizesCorrectly()
     {
         LastLayoutHandler handler = new();
-        ILayoutHandler layout = new FixedPercentLayout(
+        FixedPercentLayout layout = new(
             handler,
             heightPercent: 0.5f,
             widthPercent: 0.3f,
@@ -38,7 +42,7 @@ public class LayoutTests
     public void FixedSizeLayout_PositionsCorrectly()
     {
         LastLayoutHandler handler = new();
-        ILayoutHandler layout = new FixedSizeLayout(
+        FixedSizeLayout layout = new(
             handler,
             new Size(50, 30),
             VerticalAlignment.Bottom,
@@ -52,7 +56,7 @@ public class LayoutTests
     public void PaddedLayout_AppliesPadding()
     {
         LastLayoutHandler handler = new();
-        ILayoutHandler layout = new PaddedLayout((10, 20, 30, 40), handler);
+        PaddedLayout layout = new((10, 20, 30, 40), handler);
         Rectangle bounds = new(0, 0, 100, 200);
         layout.Layout(bounds);
         handler.LastBounds.Should().Be(new Rectangle(10, 20, 60, 140));
@@ -63,7 +67,7 @@ public class LayoutTests
     {
         LastLayoutHandler handler1 = new();
         LastLayoutHandler handler2 = new();
-        ILayoutHandler layout = new HorizontalLayout((0.3f, handler1), (0.7f, handler2));
+        HorizontalLayout layout = new((0.3f, handler1), (0.7f, handler2));
         Rectangle bounds = new(0, 0, 100, 200);
         layout.Layout(bounds);
         handler1.LastBounds.Should().Be(new Rectangle(0, 0, 100, 60));
@@ -75,7 +79,7 @@ public class LayoutTests
     {
         LastLayoutHandler handler1 = new();
         LastLayoutHandler handler2 = new();
-        ILayoutHandler layout = new VerticalLayout((0.4f, handler1), (0.6f, handler2));
+        VerticalLayout layout = new((0.4f, handler1), (0.6f, handler2));
         Rectangle bounds = new(0, 0, 100, 200);
         layout.Layout(bounds);
         handler1.LastBounds.Should().Be(new Rectangle(0, 0, 40, 200));

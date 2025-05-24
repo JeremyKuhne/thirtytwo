@@ -1,4 +1,7 @@
-﻿// Taken from Xuint samples. https://github.com/xunit/samples.xunit/tree/main/RetryFactExample
+﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+// Taken from Xuint samples. https://github.com/xunit/samples.xunit/tree/main/RetryFactExample
 
 using Xunit.Abstractions;
 using Xunit.Sdk;
