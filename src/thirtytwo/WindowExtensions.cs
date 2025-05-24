@@ -62,6 +62,33 @@ public static unsafe partial class WindowExtensions
         return dpi;
     }
 
+    /// <summary>
+    ///  Gets the scale factor for the window based on its DPI.
+    /// </summary>
+    public static float GetScale<T>(this T window) where T : IHandle<HWND>
+    {
+        // Scale is the DPI divided by 96.
+        uint dpi = window.GetDpi();
+        GC.KeepAlive(window.Wrapper);
+
+        if (dpi <= 0)
+        {
+            Debug.Fail("Window handle is invalid.");
+            return 1.0f;
+        }
+
+        // Optimize for common values
+        return dpi switch
+        {
+            Interop.USER_DEFAULT_SCREEN_DPI => 1.0f,
+            (int)(Interop.USER_DEFAULT_SCREEN_DPI * 1.25f) => 1.25f,
+            (int)(Interop.USER_DEFAULT_SCREEN_DPI * 1.5f) => 1.5f,
+            (int)(Interop.USER_DEFAULT_SCREEN_DPI * 1.75f) => 1.75f,
+            Interop.USER_DEFAULT_SCREEN_DPI * 2 => 2.0f,
+            _ => (float)(dpi / (float)Interop.USER_DEFAULT_SCREEN_DPI)
+        };
+    }
+
     /// <remarks>
     ///  <para>
     ///   Use in a <see langword="using"/> block to ensure the HDC is released.
@@ -463,7 +490,7 @@ public static unsafe partial class WindowExtensions
 
     /// <summary>
     ///  Binds the given layout <paramref name="handler"/> to the window. This will call
-    ///  <see cref="ILayoutHandler.Layout(Rectangle)"/> with the window's client rectangle whenever the window's
+    ///  <see cref="ILayoutHandler.Layout(Rectangle, float)"/> with the window's client rectangle whenever the window's
     ///  position or size changes.
     /// </summary>
     /// <remarks>

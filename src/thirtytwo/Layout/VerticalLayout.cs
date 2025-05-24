@@ -40,7 +40,7 @@ public class VerticalLayout : ILayoutHandler
     ///  Lays out the handlers vertically within the specified bounds.
     /// </summary>
     /// <param name="bounds">The bounds to layout within.</param>
-    public void Layout(Rectangle bounds)
+    public void Layout(Rectangle bounds, float scale)
     {
         int last = _handlers.Length - 1;
         int left = bounds.Left;
@@ -48,10 +48,10 @@ public class VerticalLayout : ILayoutHandler
         for (int i = 0; i < last; i++)
         {
             int currentWidth = (int)(bounds.Width * _handlers[i].Percent);
-            _handlers[i].Handler.Layout(new Rectangle(left, bounds.Y, currentWidth, bounds.Height));
+            _handlers[i].Handler.Layout(new Rectangle(left, bounds.Y, currentWidth, bounds.Height), scale);
             left += currentWidth;
         }
 
-        _handlers[last].Handler.Layout(new Rectangle(left, bounds.Y, bounds.Width - left, bounds.Height));
+        _handlers[last].Handler.Layout(new Rectangle(left, bounds.Y, bounds.Width - left, bounds.Height), scale);
     }
 }

@@ -14,5 +14,9 @@ public interface ILayoutHandler
     ///  Layout the control using the specified bounds.
     /// </summary>
     /// <param name="bounds">The bounds to layout within.</param>
-    void Layout(Rectangle bounds);
+    /// <param name="scale">
+    ///  The scale factor to apply to the layout for fixed size calculations.
+    ///  This can be used for DPI scaling or other transformations.
+    /// </param>
+    void Layout(Rectangle bounds, float scale);
 }

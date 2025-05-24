@@ -532,7 +532,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         }
     }
 
-    void ILayoutHandler.Layout(Rectangle bounds) => LayoutWindow(bounds);
+    void ILayoutHandler.Layout(Rectangle bounds, float scale) => LayoutWindow(bounds);
 
     protected virtual void LayoutWindow(Rectangle bounds)
     {
