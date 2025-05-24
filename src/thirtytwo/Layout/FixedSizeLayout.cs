@@ -18,7 +18,7 @@ public class FixedSizeLayout(
     VerticalAlignment verticalAlignment = VerticalAlignment.Center,
     HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center) : ILayoutHandler
 {
-    public void Layout(Rectangle bounds)
+    public void Layout(Rectangle bounds, float scale)
     {
         int x = horizontalAlignment switch
         {
@@ -36,6 +36,6 @@ public class FixedSizeLayout(
             _ => bounds.Top,
         };
 
-        handler.Layout(new Rectangle(new Point(x, y), size));
+        handler.Layout(new Rectangle(new Point(x, y), size), scale);
     }
 }
