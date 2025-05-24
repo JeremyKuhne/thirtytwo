@@ -12,6 +12,7 @@ namespace Windows;
 public class ReplaceableLayout(ILayoutHandler handler) : ILayoutHandler
 {
     private Rectangle _lastBounds;
+    private float _lastScale = 1.0f;
 
     /// <summary>
     ///  Gets or sets the current layout handler. When set, immediately performs layout
@@ -23,13 +24,14 @@ public class ReplaceableLayout(ILayoutHandler handler) : ILayoutHandler
         set
         {
             handler = value;
-            handler.Layout(_lastBounds);
+            handler.Layout(_lastBounds, _lastScale);
         }
     }
 
-    public void Layout(Rectangle bounds)
+    public void Layout(Rectangle bounds, float scale)
     {
         _lastBounds = bounds;
-        Handler.Layout(bounds);
+        _lastScale = scale;
+        Handler.Layout(bounds, scale);
     }
 }

@@ -10,7 +10,7 @@ namespace Windows;
 /// </summary>
 public class EmptyLayout : ILayoutHandler
 {
-    public void Layout(Rectangle bounds) { }
+    public void Layout(Rectangle bounds, float scale) { }
     private EmptyLayout() { }
     public static EmptyLayout Instance { get; } = new EmptyLayout();
 }

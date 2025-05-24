@@ -16,5 +16,5 @@ namespace Windows;
 /// </remarks>
 public class FillLayout(ILayoutHandler handler) : ILayoutHandler
 {
-    public void Layout(Rectangle bounds) => handler.Layout(bounds);
+    public void Layout(Rectangle bounds, float scale) => handler.Layout(bounds, scale);
 }

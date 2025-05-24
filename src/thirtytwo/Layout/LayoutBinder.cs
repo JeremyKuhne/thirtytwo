@@ -32,7 +32,7 @@ public class LayoutBinder
     {
         if (message == MessageType.WindowPositionChanged)
         {
-            _handler.Layout(window.GetClientRectangle());
+            _handler.Layout(window.GetClientRectangle(), window.GetScale());
         }
 
         // Return null to indicate that the message was not handled.

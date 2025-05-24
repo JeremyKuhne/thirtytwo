@@ -18,34 +18,67 @@ public class PaddedLayout(
     ///  Lays out the handler within the specified bounds, applying the configured padding.
     /// </summary>
     /// <param name="bounds">The bounds within which to layout, before padding is applied.</param>
-    public void Layout(Rectangle bounds)
+    public void Layout(Rectangle bounds, float scale)
     {
-        int widthMargin = margin.Left + margin.Right;
-        int remainingWidth = bounds.Width - widthMargin;
-        if (remainingWidth < 0)
+        ApplyLeftAndRightPadding(ref bounds, margin.Left, margin.Right, scale);
+        ApplyTopAndBottomPadding(ref bounds, margin.Top, margin.Bottom, scale);
+
+        handler.Layout(bounds, scale);
+
+        static void ApplyLeftAndRightPadding(ref Rectangle bounds, int leftPadding, int rightPadding, float scale)
         {
-            // Not enough space to grant full margins
-            // TODO: Complicated logic here (evenly distribute what we have available in pixels?)
-        }
-        else
-        {
-            bounds.X += margin.Left;
-            bounds.Width -= margin.Left + margin.Right;
+            if (bounds.Width <= 0)
+            {
+                // No width to work with, nothing to do.
+                return;
+            }
+
+            int left = (int)MathF.Round(leftPadding * scale);
+            int right = (int)MathF.Round(rightPadding * scale);
+
+            int marginWidth = left + right;
+            int remainingWidth = bounds.Width - marginWidth;
+            if (remainingWidth < 0)
+            {
+                if (left > 1 || right > 1)
+                {
+                    // Not enough space to grant full margins, try again at half scale.
+                    ApplyLeftAndRightPadding(ref bounds, left, right, .5f);
+                }
+            }
+            else
+            {
+                bounds.X += left;
+                bounds.Width -= marginWidth;
+            }
         }
 
-        int heightMargin = margin.Top + margin.Bottom;
-        int remainingHeight = bounds.Height - heightMargin;
-        if (remainingHeight < 0)
+        static void ApplyTopAndBottomPadding(ref Rectangle bounds, int topPadding, int bottomPadding, float scale)
         {
-            // Not enough space to grant full margins
-            // TODO: Complicated logic here (evenly distribute what we have available in pixels?)
-        }
-        else
-        {
-            bounds.Y += margin.Top;
-            bounds.Height -= margin.Top + margin.Bottom;
-        }
+            if (bounds.Height <= 0)
+            {
+                // No height to work with, nothing to do.
+                return;
+            }
 
-        handler.Layout(bounds);
+            int top = (int)MathF.Round(topPadding * scale);
+            int bottom = (int)MathF.Round(bottomPadding * scale);
+            int marginHeight = top + bottom;
+            int remainingHeight = bounds.Height - marginHeight;
+
+            if (remainingHeight < 0)
+            {
+                if (top > 1 || bottom > 1)
+                {
+                    // Not enough space to grant full margins, try again at half scale.
+                    ApplyTopAndBottomPadding(ref bounds, top, bottom, .5f);
+                }
+            }
+            else
+            {
+                bounds.Y += top;
+                bounds.Height -= marginHeight;
+            }
+        }
     }
 }
