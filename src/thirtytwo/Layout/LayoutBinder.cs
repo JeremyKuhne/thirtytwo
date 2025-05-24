@@ -3,10 +3,20 @@
 
 namespace Windows;
 
+/// <summary>
+///  Binds a <see cref="Window"/> to an <see cref="ILayoutHandler"/> and listens for window position changes
+///  to trigger layout updates.
+/// </summary>
 public class LayoutBinder
 {
     private readonly ILayoutHandler _handler;
 
+    /// <summary>
+    ///  Initializes a new instance of the <see cref="LayoutBinder"/> class and attaches the layout handler
+    ///  to the specified <paramref name="window"/>.
+    /// </summary>
+    /// <param name="window">The window to bind to layout changes.</param>
+    /// <param name="handler">The layout handler to invoke on layout events.</param>
     public LayoutBinder(Window window, ILayoutHandler handler)
     {
         _handler = handler;
@@ -20,12 +30,12 @@ public class LayoutBinder
         WPARAM wParam,
         LPARAM lParam)
     {
-        if (message != MessageType.WindowPositionChanged)
+        if (message == MessageType.WindowPositionChanged)
         {
-            return null;
+            _handler.Layout(window.GetClientRectangle());
         }
 
-        _handler.Layout(window.GetClientRectangle());
+        // Return null to indicate that the message was not handled.
         return null;
     }
 }

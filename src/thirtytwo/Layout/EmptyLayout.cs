@@ -5,6 +5,9 @@ using System.Drawing;
 
 namespace Windows;
 
+/// <summary>
+///  A layout handler that does nothing. Useful for designating a space that has no content.
+/// </summary>
 public class EmptyLayout : ILayoutHandler
 {
     public void Layout(Rectangle bounds) { }

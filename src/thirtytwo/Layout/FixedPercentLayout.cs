@@ -5,22 +5,26 @@ using System.Drawing;
 
 namespace Windows;
 
+/// <summary>
+///  Uses a fixed percent of the available space, aligning within as specified.
+/// </summary>
+/// <param name="handler">The handler to layout within the specified space.</param>
+/// <param name="heightPercent">The percentage of available height to use.</param>
+/// <param name="widthPercent">The percentage of available width to use.</param>
+/// <param name="verticalAlignment">The vertical alignment within the bounds.</param>
+/// <param name="horizontalAlignment">The horizontal alignment within the bounds.</param>
 public class FixedPercentLayout(
     ILayoutHandler handler,
-    SizeF percent,
+    float heightPercent,
+    float widthPercent,
     VerticalAlignment verticalAlignment = VerticalAlignment.Center,
     HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center) : ILayoutHandler
 {
-    private readonly ILayoutHandler _handler = handler;
-    private readonly SizeF _percent = percent;
-    private readonly VerticalAlignment _verticalAlignment = verticalAlignment;
-    private readonly HorizontalAlignment _horizontalAlignment = horizontalAlignment;
-
     public void Layout(Rectangle bounds)
     {
-        Size size = new((int)(bounds.Width * _percent.Width), (int)(bounds.Height * _percent.Height));
+        Size size = new((int)(bounds.Width * widthPercent), (int)(bounds.Height * heightPercent));
 
-        int x = _horizontalAlignment switch
+        int x = horizontalAlignment switch
         {
             HorizontalAlignment.Left => bounds.Left,
             HorizontalAlignment.Right => bounds.Right - size.Width,
@@ -28,7 +32,7 @@ public class FixedPercentLayout(
             _ => bounds.Left,
         };
 
-        int y = _verticalAlignment switch
+        int y = verticalAlignment switch
         {
             VerticalAlignment.Top => bounds.Top,
             VerticalAlignment.Bottom => bounds.Bottom - size.Height,
@@ -36,6 +40,6 @@ public class FixedPercentLayout(
             _ => bounds.Top,
         };
 
-        _handler.Layout(new Rectangle(new Point(x, y), size));
+        handler.Layout(new Rectangle(new Point(x, y), size));
     }
 }

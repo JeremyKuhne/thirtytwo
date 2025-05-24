@@ -5,9 +5,16 @@ using System.Drawing;
 
 namespace Windows;
 
+/// <summary>
+///  Simple layout handler that fills the available space.
+/// </summary>
+/// <remarks>
+///  <para>
+///   This usually isn't needed. <see cref="Window"/> itself is an <see cref="ILayoutHandler"/>
+///   and it fills the available space by default.
+///  </para>
+/// </remarks>
 public class FillLayout(ILayoutHandler handler) : ILayoutHandler
 {
-    private readonly ILayoutHandler _handler = handler;
-
-    public void Layout(Rectangle bounds) => _handler.Layout(bounds);
+    public void Layout(Rectangle bounds) => handler.Layout(bounds);
 }

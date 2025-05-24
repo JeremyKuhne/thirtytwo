@@ -5,7 +5,14 @@ using System.Drawing;
 
 namespace Windows;
 
+/// <summary>
+///  An interface for layout handlers.
+/// </summary>
 public interface ILayoutHandler
 {
+    /// <summary>
+    ///  Layout the control using the specified bounds.
+    /// </summary>
+    /// <param name="bounds">The bounds to layout within.</param>
     void Layout(Rectangle bounds);
 }

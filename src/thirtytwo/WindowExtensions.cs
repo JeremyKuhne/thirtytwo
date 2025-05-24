@@ -466,6 +466,20 @@ public static unsafe partial class WindowExtensions
     ///  <see cref="ILayoutHandler.Layout(Rectangle)"/> with the window's client rectangle whenever the window's
     ///  position or size changes.
     /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   This is the preferred way to handle dynamic layout in a window. Use the <see cref="Layout"/> class to
+    ///   create layout handlers that perform the desired layout within the window. For example, in the constructor
+    ///   of a <see cref="Window"/> you can split two text controls horizontally:
+    ///  </para>
+    ///  <code>
+    ///   <![CDATA[
+    ///     this.AddLayoutHandler(Layout.Vertical(
+    ///       (.5f, _textBox1),
+    ///       (.5f, _textBox2)));
+    ///   ]]>
+    ///  </code>
+    /// </remarks>
     public static LayoutBinder AddLayoutHandler(this Window window, ILayoutHandler handler)
         => new(window, handler);
 

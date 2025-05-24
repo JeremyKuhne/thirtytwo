@@ -5,16 +5,22 @@ using System.Drawing;
 
 namespace Windows;
 
+/// <summary>
+///  Applies padding (margins) to the layout area before delegating layout to the specified handler.
+/// </summary>
+/// <param name="margin">The padding to apply on each side of the layout bounds.</param>
+/// <param name="handler">The layout handler to which the padded bounds are passed.</param>
 public class PaddedLayout(
     Padding margin,
     ILayoutHandler handler) : ILayoutHandler
 {
-    private readonly ILayoutHandler _handler = handler;
-    private readonly Padding _margin = margin;
-
+    /// <summary>
+    ///  Lays out the handler within the specified bounds, applying the configured padding.
+    /// </summary>
+    /// <param name="bounds">The bounds within which to layout, before padding is applied.</param>
     public void Layout(Rectangle bounds)
     {
-        int widthMargin = _margin.Left + _margin.Right;
+        int widthMargin = margin.Left + margin.Right;
         int remainingWidth = bounds.Width - widthMargin;
         if (remainingWidth < 0)
         {
@@ -23,11 +29,11 @@ public class PaddedLayout(
         }
         else
         {
-            bounds.X += _margin.Left;
-            bounds.Width -= _margin.Left + _margin.Right;
+            bounds.X += margin.Left;
+            bounds.Width -= margin.Left + margin.Right;
         }
 
-        int heightMargin = _margin.Top + _margin.Bottom;
+        int heightMargin = margin.Top + margin.Bottom;
         int remainingHeight = bounds.Height - heightMargin;
         if (remainingHeight < 0)
         {
@@ -36,10 +42,10 @@ public class PaddedLayout(
         }
         else
         {
-            bounds.Y += _margin.Top;
-            bounds.Height -= _margin.Top + _margin.Bottom;
+            bounds.Y += margin.Top;
+            bounds.Height -= margin.Top + margin.Bottom;
         }
 
-        _handler.Layout(bounds);
+        handler.Layout(bounds);
     }
 }

@@ -5,10 +5,23 @@ using System.Drawing;
 
 namespace Windows;
 
+/// <summary>
+///  Arranges elements horizontally by allocating a percentage of the available height to each handler.
+/// </summary>
 public class HorizontalLayout : ILayoutHandler
 {
     private readonly (float Percent, ILayoutHandler Handler)[] _handlers;
 
+    /// <summary>
+    ///  Initializes a new instance of the <see cref="HorizontalLayout"/> class.
+    /// </summary>
+    /// <param name="handlers">
+    ///  An array of tuples containing the percentage of height to allocate and the handler to layout in that space.
+    ///  The sum of all percentages must equal 1.0.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///  Thrown when the sum of all percentages does not equal 1.0.
+    /// </exception>
     public HorizontalLayout(params (float Percent, ILayoutHandler Handler)[] handlers)
     {
         float totalPercent = 0f;
@@ -23,6 +36,10 @@ public class HorizontalLayout : ILayoutHandler
         _handlers = handlers;
     }
 
+    /// <summary>
+    ///  Lays out the handlers horizontally within the specified bounds.
+    /// </summary>
+    /// <param name="bounds">The bounds to layout within.</param>
     public void Layout(Rectangle bounds)
     {
         int last = _handlers.Length - 1;

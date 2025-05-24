@@ -33,14 +33,4 @@ public class Control : Window
             features: features)
     {
     }
-
-    protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
-    {
-        switch (message)
-        {
-
-        }
-
-        return base.WindowProcedure(window, message, wParam, lParam);
-    }
 }

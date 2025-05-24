@@ -5,35 +5,37 @@ using System.Drawing;
 
 namespace Windows;
 
+/// <summary>
+///  Uses a fixed size for the layout, aligning within as specified.
+/// </summary>
+/// <param name="handler">The handler to layout within the specified space.</param>
+/// <param name="size">The fixed size to use.</param>
+/// <param name="verticalAlignment">The vertical alignment within the bounds.</param>
+/// <param name="horizontalAlignment">The horizontal alignment within the bounds.</param>
 public class FixedSizeLayout(
     ILayoutHandler handler,
     Size size,
     VerticalAlignment verticalAlignment = VerticalAlignment.Center,
     HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center) : ILayoutHandler
 {
-    private readonly ILayoutHandler _handler = handler;
-    private readonly Size _size = size;
-    private readonly VerticalAlignment _verticalAlignment = verticalAlignment;
-    private readonly HorizontalAlignment _horizontalAlignment = horizontalAlignment;
-
     public void Layout(Rectangle bounds)
     {
-        int x = _horizontalAlignment switch
+        int x = horizontalAlignment switch
         {
             HorizontalAlignment.Left => bounds.Left,
-            HorizontalAlignment.Right => bounds.Right - _size.Width,
-            HorizontalAlignment.Center => (bounds.Width - _size.Width) / 2,
+            HorizontalAlignment.Right => bounds.Right - size.Width,
+            HorizontalAlignment.Center => (bounds.Width - size.Width) / 2,
             _ => bounds.Left,
         };
 
-        int y = _verticalAlignment switch
+        int y = verticalAlignment switch
         {
             VerticalAlignment.Top => bounds.Top,
-            VerticalAlignment.Bottom => bounds.Bottom - _size.Height,
-            VerticalAlignment.Center => (bounds.Height - _size.Height) / 2,
+            VerticalAlignment.Bottom => bounds.Bottom - size.Height,
+            VerticalAlignment.Center => (bounds.Height - size.Height) / 2,
             _ => bounds.Top,
         };
 
-        _handler.Layout(new Rectangle(new Point(x, y), _size));
+        handler.Layout(new Rectangle(new Point(x, y), size));
     }
 }
