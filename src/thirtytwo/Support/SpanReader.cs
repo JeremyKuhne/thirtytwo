@@ -24,15 +24,55 @@ public unsafe ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged
 {
     // Deliberately not an auto property for performance.
     private ReadOnlySpan<T> _unread = span;
+
+    /// <summary>
+    ///  Gets the original span that the reader was created with.
+    /// </summary>
     public ReadOnlySpan<T> Span { get; } = span;
 
+    /// <summary>
+    ///  Gets or sets the current position of the reader within the span.
+    /// </summary>
+    /// <value>
+    ///  The zero-based position of the reader. Setting this value repositions the reader.
+    /// </value>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///  Thrown when the value is negative or greater than <see cref="Length"/>.
+    /// </exception>
     public int Position
     {
         readonly get => Span.Length - _unread.Length;
         set => _unread = Span[value..];
     }
 
+    /// <summary>
+    ///  Gets the total length of the original span.
+    /// </summary>
     public readonly int Length => Span.Length;
+
+    /// <summary>
+    ///  Splits out the next span of data up to the given <paramref name="delimiter"/> or the end of the unread data.
+    ///  Positions the reader to the next unread data after the delimiter.
+    /// </summary>
+    /// <param name="delimiter">The delimiter to look for.</param>
+    /// <param name="span">The read data, if any.</param>
+    /// <returns><see langword="true"/> if a segment was found; otherwise, <see langword="false"/>.</returns>
+    public bool TrySplit(T delimiter, out ReadOnlySpan<T> span)
+    {
+        if (_unread.IsEmpty)
+        {
+            span = default;
+            return false;
+        }
+
+        if (!TryReadTo(delimiter, advancePastDelimiter: true, out span))
+        {
+            span = _unread;
+            _unread = default;
+        }
+
+        return true;
+    }
 
     /// <summary>
     ///  Try to read everything up to the given <paramref name="delimiter"/>. Advances the reader past the
@@ -62,18 +102,14 @@ public unsafe ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged
             {
                 span = _unread;
                 UncheckedSliceTo(ref span, index);
-                if (advancePastDelimiter)
-                {
-                    index++;
-                }
+            }
 
-                UnsafeAdvance(index);
-            }
-            else if (advancePastDelimiter)
+            if (advancePastDelimiter)
             {
-                // We found the delimiter at the start of the span
-                UnsafeAdvance(1);
+                index++;
             }
+
+            UnsafeAdvance(index);
         }
 
         return found;
@@ -82,6 +118,10 @@ public unsafe ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged
     /// <summary>
     ///  Try to read the next value.
     /// </summary>
+    /// <param name="value">
+    ///  When this method returns, contains the value that was read, or the default value if no value could be read.
+    /// </param>
+    /// <returns><see langword="true"/> if a value was successfully read; otherwise, <see langword="false"/>.</returns>
     public bool TryRead(out T value)
     {
         bool success;
@@ -104,6 +144,14 @@ public unsafe ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged
     /// <summary>
     ///  Try to read a span of the given <paramref name="count"/>.
     /// </summary>
+    /// <param name="count">The number of elements to read.</param>
+    /// <param name="span">
+    ///  When this method returns, contains the span of data that was read, or an empty span if not enough data was available.
+    /// </param>
+    /// <returns>
+    ///  <see langword="true"/> if the requested number of elements was successfully read; otherwise, <see langword="false"/>.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="count"/> is negative.</exception>
     public bool TryRead(int count, out ReadOnlySpan<T> span)
     {
         bool success;
@@ -127,6 +175,14 @@ public unsafe ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged
     ///  Try to read a value of the given type. The size of the value must be evenly divisible by the size of
     ///  <typeparamref name="T"/>.
     /// </summary>
+    /// <typeparam name="TValue">The type of value to read. Must be an unmanaged type.</typeparam>
+    /// <param name="value">
+    ///  When this method returns, contains the value that was read, or the default value if not enough data was available.
+    /// </param>
+    /// <returns><see langword="true"/> if the value was successfully read; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentException">
+    ///  Thrown when the size of <typeparamref name="TValue"/> is not evenly divisible by the size of <typeparamref name="T"/>.
+    /// </exception>
     /// <remarks>
     ///  <para>
     ///   This is just a straight copy of bits. If <typeparamref name="TValue"/> has methods that depend on
@@ -164,6 +220,18 @@ public unsafe ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged
     ///  Try to read a span of values of the given type. The size of the value must be evenly divisible by the size of
     ///  <typeparamref name="T"/>.
     /// </summary>
+    /// <typeparam name="TValue">The type of values to read. Must be an unmanaged type.</typeparam>
+    /// <param name="count">The number of values to read.</param>
+    /// <param name="value">
+    ///  When this method returns, contains the span of values that were read, or an empty span if not enough data
+    ///  was available.
+    /// </param>
+    /// <returns>
+    ///  <see langword="true"/> if the requested number of values was successfully read; otherwise, <see langword="false"/>.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    ///  Thrown when the size of <typeparamref name="TValue"/> is not evenly divisible by the size of <typeparamref name="T"/>.
+    /// </exception>
     /// <remarks>
     ///  <para>
     ///   This effectively does a <see cref="MemoryMarshal.Cast{TFrom, TTo}(ReadOnlySpan{TFrom})"/> and the same
@@ -214,7 +282,8 @@ public unsafe ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged
     /// <summary>
     ///  Advance the reader past consecutive instances of the given <paramref name="value"/>.
     /// </summary>
-    /// <returns>How many positions the reader has been advanced</returns>
+    /// <param name="value">The value to advance past.</param>
+    /// <returns>How many positions the reader has been advanced.</returns>
     public int AdvancePast(T value)
     {
         int count = 0;
@@ -238,13 +307,25 @@ public unsafe ref struct SpanReader<T>(ReadOnlySpan<T> span) where T : unmanaged
     /// <summary>
     ///  Advance the reader by the given <paramref name="count"/>.
     /// </summary>
+    /// <param name="count">The number of positions to advance.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///  Thrown when <paramref name="count"/> is negative or would advance past the end of the span.
+    /// </exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Advance(int count) => _unread = _unread[count..];
 
     /// <summary>
     ///  Rewind the reader by the given <paramref name="count"/>.
     /// </summary>
-    public void Rewind(int count) => _unread = Span[(Span.Length - _unread.Length - count)..];
+    /// <param name="count">The number of positions to rewind.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///  Thrown when <paramref name="count"/> is negative or would rewind past the beginning of the span.
+    /// </exception>
+    public void Rewind(int count)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
+        _unread = Span[(Span.Length - _unread.Length - count)..];
+    }
 
     /// <summary>
     ///  Reset the reader to the beginning of the span.
