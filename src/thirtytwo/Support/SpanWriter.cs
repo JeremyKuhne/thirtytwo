@@ -12,19 +12,37 @@ namespace Windows.Support;
 public unsafe ref struct SpanWriter<T>(Span<T> span) where T : unmanaged, IEquatable<T>
 {
     private Span<T> _unwritten = span;
+
+    /// <summary>
+    ///  Gets the original span that the writer was created with.
+    /// </summary>
     public Span<T> Span { get; } = span;
 
+    /// <summary>
+    ///  Gets or sets the current position of the writer within the span.
+    /// </summary>
+    /// <value>
+    ///  The zero-based position of the writer. Setting this value repositions the writer.
+    /// </value>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///  Thrown when the value is negative or greater than <see cref="Length"/>.
+    /// </exception>
     public int Position
     {
         readonly get => Span.Length - _unwritten.Length;
         set => _unwritten = Span[value..];
     }
 
+    /// <summary>
+    ///  Gets the total length of the original span.
+    /// </summary>
     public readonly int Length => Span.Length;
 
     /// <summary>
     ///  Try to write the given value.
     /// </summary>
+    /// <param name="value">The value to write.</param>
+    /// <returns><see langword="true"/> if the value was successfully written; otherwise, <see langword="false"/>.</returns>
     public bool TryWrite(T value)
     {
         bool success = false;
@@ -40,8 +58,10 @@ public unsafe ref struct SpanWriter<T>(Span<T> span) where T : unmanaged, IEquat
     }
 
     /// <summary>
-    ///  Try to write the given value.
+    ///  Try to write the given values.
     /// </summary>
+    /// <param name="values">The values to write.</param>
+    /// <returns><see langword="true"/> if all values were successfully written; otherwise, <see langword="false"/>.</returns>
     public bool TryWrite(ReadOnlySpan<T> values)
     {
         bool success = false;
@@ -59,6 +79,10 @@ public unsafe ref struct SpanWriter<T>(Span<T> span) where T : unmanaged, IEquat
     /// <summary>
     ///  Try to write the given value <paramref name="count"/> times.
     /// </summary>
+    /// <param name="count">The number of times to write the value.</param>
+    /// <param name="value">The value to write.</param>
+    /// <returns><see langword="true"/> if all values were successfully written; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="count"/> is negative.</exception>
     public bool TryWrite(int count, T value)
     {
         bool success = false;
@@ -76,16 +100,28 @@ public unsafe ref struct SpanWriter<T>(Span<T> span) where T : unmanaged, IEquat
     /// <summary>
     ///  Advance the writer by the given <paramref name="count"/>.
     /// </summary>
+    /// <param name="count">The number of positions to advance.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///  Thrown when <paramref name="count"/> is negative or would advance past the end of the span.
+    /// </exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Advance(int count) => _unwritten = _unwritten[count..];
 
     /// <summary>
     ///  Rewind the writer by the given <paramref name="count"/>.
     /// </summary>
-    public void Rewind(int count) => _unwritten = Span[(Span.Length - _unwritten.Length - count)..];
+    /// <param name="count">The number of positions to rewind.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///  Thrown when <paramref name="count"/> is negative or would rewind past the beginning of the span.
+    /// </exception>
+    public void Rewind(int count)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
+        _unwritten = Span[(Span.Length - _unwritten.Length - count)..];
+    }
 
     /// <summary>
-    ///  Reset the reader to the beginning of the span.
+    ///  Reset the writer to the beginning of the span.
     /// </summary>
     public void Reset() => _unwritten = Span;
 
