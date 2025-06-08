@@ -159,7 +159,7 @@ public unsafe class Clipboard
             }
 
             ReadOnlySpan<char> buffer = new(Interop.GlobalLock(global), size);
-            return SpanExtensions.SliceAtNull(buffer).ToString();
+            return Touki.SpanExtensions.SliceAtNull(buffer).ToString();
         }
         finally
         {

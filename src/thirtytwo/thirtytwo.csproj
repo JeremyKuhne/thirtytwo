@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="KlutzyNinja.Touki" Version="0.0.0-alpha.0.7" />
     <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.196">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
