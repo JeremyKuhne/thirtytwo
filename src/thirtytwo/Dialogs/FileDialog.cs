@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Windows.Components;
 using Windows.Support;
 using Windows.Win32.System.Com;
 using Windows.Win32.System.Ole;
@@ -158,6 +157,8 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
             dialog.Pointer->SetClientGuid(value);
         }
     }
+
+    object? IHandle<HWND>.Wrapper => this;
 
     /// <summary>
     ///  Clears persisted state information. See <see cref="ClientGuid"/>.

@@ -4,8 +4,6 @@
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.Numerics;
-using Windows.Components;
-using Windows.Support;
 using Windows.Win32.Graphics.Direct2D;
 
 namespace Windows;
@@ -70,6 +68,8 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     ///  The window handle. This will be <see cref="HWND.Null"/> after the window is destroyed.
     /// </summary>
     public HWND Handle => _handle;
+
+    object? IHandle<HWND>.Wrapper => this;
 
     public event WindowsMessageEvent? MessageHandler;
 
@@ -445,7 +445,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
             this.SetFontHandle(GetDefaultFontForDpi((int)newDpi));
         }
 
-        this.EnumerateChildWindows((HWND child) =>
+        this.EnumerateChildWindows(child =>
         {
             FromHandle(child)?.UpdateFontsForDpi(lastDpi, newDpi);
             return true;

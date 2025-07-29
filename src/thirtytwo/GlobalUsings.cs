@@ -4,6 +4,7 @@
 global using System.Diagnostics;
 global using System.Diagnostics.CodeAnalysis;
 global using Touki;
+global using Touki.Interop;
 global using Windows.Win32;
 global using Windows.Win32.Foundation;
 global using Windows.Win32.Graphics.Gdi;
