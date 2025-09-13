@@ -32,7 +32,7 @@ jobs:
         dotnet test -c Release --no-build `
           -p:TestingPlatformCaptureOutput=false `
           -- `
-          --results-directory "$RESULTS_DIR" `
+          --results-directory "$resultsDir" `
           --report-xunit-trx `
           --show-live-output on
     - name: Upload raw logs
