@@ -497,14 +497,14 @@ public unsafe class IReflectTests
         dispatchIds.Keys.Should().BeEquivalentTo(names);
     }
 
-    public static TheoryData<object> ReflectClasses => new()
-    {
-        new ReflectClass(),
-        new WithInterfaceClass(),
-        new SubMemberClass(),
-        new SubMethodClass(),
-        new ReflectSelf()
-    };
+    public static TheoryData<object> ReflectClasses =>
+    [
+        (object)new ReflectClass(),
+        (object)new WithInterfaceClass(),
+        (object)new SubMemberClass(),
+        (object)new SubMethodClass(),
+        (object)new ReflectSelf()
+    ];
 
     [Theory, MemberData(nameof(ReflectClasses))]
     public void IReflect_IDispatchDefaultBehavior(object reflect)

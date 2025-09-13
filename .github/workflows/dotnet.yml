@@ -19,10 +19,30 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4.0.0
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 9.0.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
+    - name: Build Release
+      run: dotnet build --configuration Release --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: |
+        $resultsDir = Join-Path $PWD.Path 'artifacts/test-results'
+        New-Item -ItemType Directory -Force -Path $resultsDir | Out-Null
+
+        dotnet test -c Release --no-build `
+          -p:TestingPlatformCaptureOutput=false `
+          -- `
+          --results-directory "$resultsDir" `
+          --report-xunit-trx `
+          --show-live-output on
+    - name: Upload raw logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: mtp-logs
+        path: |
+          artifacts/test-results/**/*.trx
+        if-no-files-found: warn
+        retention-days: 14

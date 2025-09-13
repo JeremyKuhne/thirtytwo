@@ -3,33 +3,36 @@
 
 // Taken from Xuint samples. https://github.com/xunit/samples.xunit/tree/main/RetryFactExample
 
-using Xunit.Abstractions;
+using Xunit.Internal;
 using Xunit.Sdk;
+using Xunit.v3;
 
 namespace Xunit;
 
 public class RetryFactDiscoverer : IXunitTestCaseDiscoverer
 {
-    private readonly IMessageSink _diagnosticMessageSink;
-
-    public RetryFactDiscoverer(IMessageSink diagnosticMessageSink) => _diagnosticMessageSink = diagnosticMessageSink;
-
-    public IEnumerable<IXunitTestCase> Discover(
+    public ValueTask<IReadOnlyCollection<IXunitTestCase>> Discover(
         ITestFrameworkDiscoveryOptions discoveryOptions,
-        ITestMethod testMethod,
-        IAttributeInfo factAttribute)
+        IXunitTestMethod testMethod,
+        IFactAttribute factAttribute)
     {
-        var maxRetries = factAttribute.GetNamedArgument<int>("MaxRetries");
-        if (maxRetries < 1)
-        {
-            maxRetries = 3;
-        }
+        var maxRetries = (factAttribute as RetryFactAttribute)?.MaxRetries ?? 3;
+        var details = TestIntrospectionHelper.GetTestCaseDetails(discoveryOptions, testMethod, factAttribute, label: null);
+        var testCase = new RetryTestCase(
+            maxRetries,
+            details.ResolvedTestMethod,
+            details.TestCaseDisplayName,
+            details.UniqueID,
+            details.Explicit,
+            details.SkipExceptions,
+            details.SkipReason,
+            details.SkipType,
+            details.SkipUnless,
+            details.SkipWhen,
+            testMethod.Traits.ToReadWrite(StringComparer.OrdinalIgnoreCase),
+            timeout: details.Timeout
+        );
 
-        yield return new RetryTestCase(
-            _diagnosticMessageSink,
-            discoveryOptions.MethodDisplayOrDefault(),
-            discoveryOptions.MethodDisplayOptionsOrDefault(),
-            testMethod,
-            maxRetries);
+        return new([testCase]);
     }
 }

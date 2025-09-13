@@ -44,7 +44,7 @@ public class RegistryTests
             @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon");
 
         // \REGISTRY\USER\S-1-5-21-3004159937-2065658190-3839796541-1001\Software\Microsoft\Windows NT\CurrentVersion\Winlogon
-        Registry.QueryKeyName(key).Should().StartWith(@"\REGISTRY\USER\S-1").And.EndWith(@"\Software\Microsoft\Windows NT\CurrentVersion\Winlogon");
+        Registry.QueryKeyName(key).Should().StartWith(@"\REGISTRY\USER\S-1").And.EndWithEquivalentOf(@"\Software\Microsoft\Windows NT\CurrentVersion\Winlogon");
     }
 
 
