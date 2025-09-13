@@ -33,7 +33,7 @@ jobs:
           -p:TestingPlatformCaptureOutput=false \
           -- \
           --results-directory "$RESULTS_DIR" \
-          --report-xunit-trx
+          --report-xunit-trx \
           --show-live-output on
     - name: Upload raw logs
       if: always()
@@ -42,7 +42,5 @@ jobs:
         name: mtp-logs
         path: |
           artifacts/test-results/**/*.trx
-          artifacts/test-results/**/*.diag
-          **/TestResults/**/*.log
         if-no-files-found: warn
         retention-days: 14
