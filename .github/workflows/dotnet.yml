@@ -19,10 +19,28 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4.0.0
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 9.0.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: |
+        RESULTS_DIR="$PWD/artifacts/test-results"
+        mkdir -p "$RESULTS_DIR"
+
+        dotnet test -c Release --no-build \
+          --report-trx --report-trx-filename "tests.trx" \
+          --results-directory "$RESULTS_DIR" \
+          --diagnostic --diagnostic-output-directory "$RESULTS_DIR"
+    - name: Upload raw logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: mtp-logs
+        path: |
+          artifacts/test-results/**/*.trx
+          artifacts/test-results/**/*.diag
+          **/TestResults/**/*.log
+        if-no-files-found: warn
+        retention-days: 14
