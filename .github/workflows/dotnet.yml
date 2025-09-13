@@ -24,6 +24,8 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
+    - name: Build Release
+      run: dotnet build --configuration Release --no-restore
     - name: Test
       run: |
         $resultsDir = Join-Path $PWD.Path 'artifacts/test-results'
