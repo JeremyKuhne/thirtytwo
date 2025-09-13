@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-// Taken from Xuint samples. https://github.com/xunit/samples.xunit/tree/main/RetryFactExample
+// Taken from Xuint samples. https://github.com/xunit/samples.xunit/blob/main/v3/RetryFactExample
 
-using Xunit.Abstractions;
 using Xunit.Sdk;
+using Xunit.v3;
 
 namespace Xunit;
 
@@ -12,12 +12,9 @@ namespace Xunit;
 ///  Used to capture messages to potentially be forwarded later. Messages are forwarded by
 ///  disposing of the message bus.
 /// </summary>
-public class DelayedMessageBus : IMessageBus
+public class DelayedMessageBus(IMessageBus innerBus) : IMessageBus
 {
-    private readonly IMessageBus _innerBus;
     private readonly List<IMessageSinkMessage> _messages = [];
-
-    public DelayedMessageBus(IMessageBus innerBus) => _innerBus = innerBus;
 
     public bool QueueMessage(IMessageSinkMessage message)
     {
@@ -39,7 +36,7 @@ public class DelayedMessageBus : IMessageBus
     {
         foreach (var message in _messages)
         {
-            _innerBus.QueueMessage(message);
+            innerBus.QueueMessage(message);
         }
 
         GC.SuppressFinalize(this);
