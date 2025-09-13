@@ -26,8 +26,8 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: |
-        RESULTS_DIR="$PWD/artifacts/test-results"
-        mkdir -p "$RESULTS_DIR"
+        $resultsDir = Join-Path $PWD.Path 'artifacts/test-results'
+        New-Item -ItemType Directory -Force -Path $resultsDir | Out-Null
 
         dotnet test -c Release --no-build `
           -p:TestingPlatformCaptureOutput=false `
