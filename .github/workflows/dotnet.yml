@@ -29,11 +29,11 @@ jobs:
         RESULTS_DIR="$PWD/artifacts/test-results"
         mkdir -p "$RESULTS_DIR"
 
-        dotnet test -c Release --no-build \
-          -p:TestingPlatformCaptureOutput=false \
-          -- \
-          --results-directory "$RESULTS_DIR" \
-          --report-xunit-trx \
+        dotnet test -c Release --no-build `
+          -p:TestingPlatformCaptureOutput=false `
+          -- `
+          --results-directory "$RESULTS_DIR" `
+          --report-xunit-trx `
           --show-live-output on
     - name: Upload raw logs
       if: always()
