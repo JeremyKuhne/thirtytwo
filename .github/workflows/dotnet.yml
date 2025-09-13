@@ -30,9 +30,11 @@ jobs:
         mkdir -p "$RESULTS_DIR"
 
         dotnet test -c Release --no-build \
-          --report-trx --report-trx-filename "tests.trx" \
+          -p:TestingPlatformCaptureOutput=false \
+          -- \
           --results-directory "$RESULTS_DIR" \
-          --diagnostic --diagnostic-output-directory "$RESULTS_DIR"
+          --report-xunit-trx
+          --show-live-output on
     - name: Upload raw logs
       if: always()
       uses: actions/upload-artifact@v4
