@@ -3,11 +3,16 @@
 
 namespace Windows.Win32.Graphics.DirectWrite;
 
+/// <summary>
+///  Object that allows interoperation between GDI and DirectWrite. Primarily used to convert
+///  between GDI logical fonts and DirectWrite text formats. Also allows creating a
+///  <see cref="IDWriteBitmapRenderTarget"/> from an <see cref="HDC"/>.
+/// </summary>
 /// <devdoc>
 ///  https://learn.microsoft.com/windows/win32/directwrite/appendix--win32-migration
 ///  https://learn.microsoft.com/windows/win32/directwrite/interoperating-with-gdi
 /// </devdoc>
-public unsafe class DirectWriteGdiInterop : DirectDrawBase<IDWriteGdiInterop>
+public unsafe sealed class DirectWriteGdiInterop : DirectDrawBase<IDWriteGdiInterop>
 {
     public DirectWriteGdiInterop() : this(Create())
     {

@@ -3,7 +3,12 @@
 
 namespace Windows.Win32.Graphics.DirectWrite;
 
-public unsafe class DirectWriteFactory : DirectDrawBase<IDWriteFactory>
+/// <summary>
+///  Factory that is used to create DirectWrite resources. Use the <see cref="Application.DirectWriteFactory"/>
+///  instance unless you need a custom factory.
+/// </summary>
+/// <inheritdoc cref="Interop.DWriteCreateFactory(DWRITE_FACTORY_TYPE, Guid*, void**)"/>
+public unsafe sealed class DirectWriteFactory : DirectDrawBase<IDWriteFactory>
 {
     public DirectWriteFactory(DWRITE_FACTORY_TYPE factoryType = DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED)
         : base(Create(factoryType))

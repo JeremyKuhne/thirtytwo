@@ -10,6 +10,9 @@ using Windows.Win32.Graphics.Imaging;
 
 namespace Windows;
 
+/// <summary>
+///  Main application class.
+/// </summary>
 public static unsafe class Application
 {
     private static ActivationContext? s_visualStylesContext;
@@ -18,7 +21,36 @@ public static unsafe class Application
     private static DirectWriteGdiInterop? s_directWriteGdiInterop;
     private static ImagingFactory? s_imagingFactory;
 
-    internal static ActivationScope ThemingScope => new(GetStylesContext());
+    internal static ActivationScope ThemingScope
+    {
+        get
+        {
+            return new(GetStylesContext());
+
+            static ActivationContext? GetStylesContext()
+            {
+                if (!UseVisualStyles)
+                {
+                    return null;
+                }
+
+                if (s_visualStylesContext is not null)
+                {
+                    return s_visualStylesContext;
+                }
+
+                HINSTANCE instance = (HINSTANCE)Marshal.GetHINSTANCE(typeof(Application).Module);
+                if (!instance.IsNull && instance != (HINSTANCE)(-1))
+                {
+                    // We have a native module, point to our native embedded manifest resource.
+                    // CSC embeds DLL manifests as native resource ID 2.
+                    s_visualStylesContext = new ActivationContext(instance, nativeResourceManifestID: 2);
+                }
+
+                return s_visualStylesContext;
+            }
+        }
+    }
 
     internal static void EnsureDpiAwareness()
     {
@@ -39,7 +71,7 @@ public static unsafe class Application
         TaskDialogIcon? icon = null)
     {
         HWND active = Interop.GetActiveWindow();
-        return new HandleRef<HWND>(Window.FromHandle(active), active).TaskDialog(mainInstruction, content, title, buttons, icon);
+        return new HandleRef<HWND>(Window.FromHandle(active), active).ShowTaskDialog(mainInstruction, content, title, buttons, icon);
     }
 
     public static DialogResult ShowTaskDialog<T>(
@@ -51,7 +83,7 @@ public static unsafe class Application
         TaskDialogIcon? icon = null)
         where T : IHandle<HWND>
     {
-        return owner.TaskDialog(mainInstruction, content, title, buttons, icon);
+        return owner.ShowTaskDialog(mainInstruction, content, title, buttons, icon);
     }
 
     // TaskDialog is not a 1-1 replacement for MessageBox. There is very little reason to use MessageBox, but leaving
@@ -140,16 +172,16 @@ public static unsafe class Application
                 window.Dispose();
             }
         }
-    }
 
-    private static LRESULT? Window_QuitHandler(object obj, HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
-    {
-        if (message == MessageType.Destroy)
+        static LRESULT? Window_QuitHandler(object obj, HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
         {
-            Interop.PostQuitMessage(0);
-        }
+            if (message == MessageType.Destroy)
+            {
+                Interop.PostQuitMessage(0);
+            }
 
-        return null;
+            return null;
+        }
     }
 
     /// <summary>
@@ -157,29 +189,6 @@ public static unsafe class Application
     ///  <see langword="false"/> the application manifest setting (if any) will be used.
     /// </summary>
     public static bool UseVisualStyles { get; set; } = true;
-
-    private static ActivationContext? GetStylesContext()
-    {
-        if (!UseVisualStyles)
-        {
-            return null;
-        }
-
-        if (s_visualStylesContext is not null)
-        {
-            return s_visualStylesContext;
-        }
-
-        HINSTANCE instance = (HINSTANCE)Marshal.GetHINSTANCE(typeof(Application).Module);
-        if (!instance.IsNull && instance != (HINSTANCE)(-1))
-        {
-            // We have a native module, point to our native embedded manifest resource.
-            // CSC embeds DLL manifests as native resource ID 2.
-            s_visualStylesContext = new ActivationContext(instance, nativeResourceManifestID: 2);
-        }
-
-        return s_visualStylesContext;
-    }
 
     /// <summary>
     ///  Enters a modal scope for the current thread. All active visible windows are disabled until the returned
@@ -228,8 +237,16 @@ public static unsafe class Application
         }
     }
 
+    /// <inheritdoc cref="Win32.Graphics.Direct2D.Direct2dFactory"/>
     public static Direct2dFactory Direct2dFactory => s_direct2dFactory ??= new();
+
+    /// <summary>
+    ///  Factory that is used to create DirectWrite resources.
+    /// </summary>
+    /// <inheritdoc cref="Win32.Graphics.DirectWrite.DirectWriteFactory"/>/>
     public static DirectWriteFactory DirectWriteFactory => s_directWriteFactory ??= new();
+
+    /// <inheritdoc cref="Win32.Graphics.DirectWrite.DirectWriteGdiInterop"/>
     public static DirectWriteGdiInterop DirectWriteGdiInterop => s_directWriteGdiInterop ??= new();
 
     /// <inheritdoc cref="Windows.Win32.Graphics.Imaging.ImagingFactory"/>

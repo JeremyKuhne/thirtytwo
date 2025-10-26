@@ -401,7 +401,10 @@ public static unsafe partial class WindowExtensions
         | MessageBoxStyles.IconInformation
         | MessageBoxStyles.IconError;
 
-    public static DialogResult TaskDialog<T>(
+    /// <summary>
+    ///  Shows a task dialog.
+    /// </summary>
+    public static DialogResult ShowTaskDialog<T>(
         this T owner,
         string? mainInstruction = null,
         string? content = null,
@@ -418,15 +421,31 @@ public static unsafe partial class WindowExtensions
         fixed (char* t = title)
         {
             int button;
-            Interop.TaskDialog(
-                owner.Handle,
-                HINSTANCE.Null,
-                t,
-                mi,
-                c,
-                (TASKDIALOG_COMMON_BUTTON_FLAGS)buttons,
-                icon.HasValue ? (PWSTR)(char*)(nint)icon.Value : default,
-                &button).ThrowOnFailure();
+            TASKDIALOGCONFIG config = new()
+            {
+                cbSize = (uint)sizeof(TASKDIALOGCONFIG),
+                hwndParent = owner.Handle,
+                dwFlags = TASKDIALOG_FLAGS.TDF_ALLOW_DIALOG_CANCELLATION
+                    | TASKDIALOG_FLAGS.TDF_USE_HICON_MAIN
+                    | TASKDIALOG_FLAGS.TDF_USE_COMMAND_LINKS_NO_ICON
+                    | TASKDIALOG_FLAGS.TDF_EXPAND_FOOTER_AREA,
+                dwCommonButtons = (TASKDIALOG_COMMON_BUTTON_FLAGS)buttons,
+                pszWindowTitle = t,
+                pszMainInstruction = mi,
+                pszContent = c,
+            };
+
+            if (icon.HasValue)
+            {
+                config.Anonymous1.pszMainIcon = (char*)(nint)icon.Value;
+            }
+
+            Interop.TaskDialogIndirect(
+                &config,
+                &button,
+                null,
+                null).ThrowOnFailure();
+
             return (DialogResult)button;
         }
     }
