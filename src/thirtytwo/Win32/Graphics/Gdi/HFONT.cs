@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.CompilerServices;
-using Windows.Support;
 
 namespace Windows.Win32.Graphics.Gdi;
 
@@ -56,10 +55,10 @@ public unsafe partial struct HFONT : IHandle<HFONT>, IDisposable
                 (uint)(int)(BOOL)italic,
                 (uint)(int)(BOOL)underline,
                 (uint)(int)(BOOL)strikeout,
-                (uint)characterSet,
-                (uint)outputPrecision,
-                (uint)clippingPrecision,
-                (uint)quality,
+                (FONT_CHARSET)characterSet,
+                (FONT_OUTPUT_PRECISION)outputPrecision,
+                (FONT_CLIP_PRECISION)clippingPrecision,
+                (FONT_QUALITY)quality,
                 (uint)((byte)pitch | (byte)family),
                 t);
         }
