@@ -8,16 +8,8 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <OutputType>Exe</OutputType>
 
-    <!-- Use the Microsoft Testing Platform -->
-    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
-
-    <!-- This will no longer be needed for the .NET 10 SDK -->
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-
-    <!-- Show each failed test's error/stack in the console -->
-    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
-
-    <!-- Use the MSTest runner on the Microsoft Testing Platform -->
+    <!-- Use the MSTest runner on the Microsoft Testing Platform.
+         The new 'dotnet test' MTP experience is opted into via global.json. -->
     <EnableMSTestRunner>true</EnableMSTestRunner>
 
     <!-- RetryAttribute is currently shipped as an experimental MSTest API -->
