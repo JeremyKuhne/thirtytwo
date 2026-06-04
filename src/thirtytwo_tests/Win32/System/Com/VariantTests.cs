@@ -10,9 +10,10 @@ using InteropMarshal = System.Runtime.InteropServices.Marshal;
 
 namespace Windows.Win32.System.Com;
 
+[TestClass]
 public unsafe class VariantTests
 {
-    [Fact]
+    [TestMethod]
     public void MarshalRectangleToVariant()
     {
         // COM Interop can't handle converting arbitrary structs to VARIANT. The one special case type from
@@ -20,15 +21,15 @@ public unsafe class VariantTests
         Rectangle rectangle = new(1, 2, 3, 4);
         using VARIANT variant = default;
         nint address = (nint)(void*)&variant;
-        Assert.Throws<NotSupportedException>(() => InteropMarshal.GetNativeVariantForObject(rectangle, address));
+        Assert.ThrowsExactly<NotSupportedException>(() => InteropMarshal.GetNativeVariantForObject(rectangle, address));
 
         using TestVariant test = new();
         using ComScope<IUnknown> unknown = test.GetComCallableWrapper();
         ITestVariantComInterop comInterop = (ITestVariantComInterop)InteropMarshal.GetObjectForIUnknown(unknown);
-        Assert.Throws<NotSupportedException>(() => comInterop.SetVariant(rectangle));
+        Assert.ThrowsExactly<NotSupportedException>(() => comInterop.SetVariant(rectangle));
     }
 
-    [Fact]
+    [TestMethod]
     public void MarshalRectangleToVariant_ThroughLegacyCCW()
     {
         // Create a managed object that marshals through `object`
@@ -43,7 +44,7 @@ public unsafe class VariantTests
         variant.IsEmpty.Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void MarshalArrayToVariant()
     {
         int[] array = [1, 2, 3, 4];
@@ -74,11 +75,11 @@ public unsafe class VariantTests
         SAFEARRAY* newSafeArray = variant.data.parray;
 
         // It's surprising that the SAFEARRAY is reused, but it is.
-        Assert.True(newSafeArray == safeArray);
+        Assert.IsTrue(newSafeArray == safeArray);
     }
 
 
-    [Fact]
+    [TestMethod]
     public void ArrayToVariantAfterFreeIsSometimesNewObject()
     {
         int[] array = [1, 2, 3, 4];

@@ -5,9 +5,10 @@ using System.ComponentModel;
 
 namespace Windows.Win32.System.Com;
 
+[TestClass]
 public unsafe class ComTypeDescriptorTests
 {
-    [StaFact]
+    [STATestMethod]
     public void ComTypeDescriptor_ClassName_MediaPlayer()
     {
         using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer), takeOwnership: true);
@@ -17,7 +18,7 @@ public unsafe class ComTypeDescriptorTests
         className.Should().Be("WindowsMediaPlayer");
     }
 
-    [StaFact]
+    [STATestMethod]
     public void ComTypeDescriptor_ComponentName_MediaPlayer()
     {
         using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer), takeOwnership: true);
@@ -27,7 +28,7 @@ public unsafe class ComTypeDescriptorTests
         className.Should().BeEmpty();
     }
 
-    [StaFact]
+    [STATestMethod]
     public void ComTypeDescriptor_GetProperties_MediaPlayer()
     {
         using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer), takeOwnership: true);
@@ -40,7 +41,7 @@ public unsafe class ComTypeDescriptorTests
         urlDescriptor!.IsReadOnly.Should().BeFalse();
     }
 
-    [StaFact]
+    [STATestMethod]
     public void ComTypeDescriptor_GetEvents_MediaPlayer()
     {
         using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer), takeOwnership: true);

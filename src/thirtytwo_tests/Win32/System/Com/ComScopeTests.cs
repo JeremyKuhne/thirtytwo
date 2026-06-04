@@ -7,9 +7,10 @@ using Windows.Win32.Foundation;
 
 namespace Windows.Win32.System.Com;
 
+[TestClass]
 public unsafe class ComScopeTests
 {
-    [StaFact]
+    [STATestMethod]
     public void ComScope_NullAfterDispose()
     {
         ComScope<ITestObject> scope = new(ComHelpers.GetComPointer<ITestObject>(new TestObject()));

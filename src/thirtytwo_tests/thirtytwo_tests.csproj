@@ -8,20 +8,17 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <OutputType>Exe</OutputType>
 
-    <!-- Use the Microsoft Testing Platform -->
-    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+    <!-- Use the MSTest runner on the Microsoft Testing Platform.
+         The new 'dotnet test' MTP experience is opted into via global.json. -->
+    <EnableMSTestRunner>true</EnableMSTestRunner>
 
-    <!-- This will no longer be needed for the .NET 10 SDK -->
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-
-    <!-- Show each failed test's error/stack in the console -->
-    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
+    <!-- RetryAttribute is currently shipped as an experimental MSTest API -->
+    <NoWarn>$(NoWarn);MSTESTEXP</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="xunit.v3" />
-    <PackageReference Include="Xunit.StaFact" />
+    <PackageReference Include="MSTest" />
     <PackageReference Include="coverlet.collector">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

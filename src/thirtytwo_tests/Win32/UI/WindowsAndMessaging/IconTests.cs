@@ -7,15 +7,16 @@ using Windows.Win32.UI.Shell;
 
 namespace Windows.Win32.UI.WindowsAndMessaging;
 
+[TestClass]
 public class IconTests
 {
-    [Fact]
+    [TestMethod]
     public void GetFileIconCount_Regedit()
     {
         HICON.GetFileIconCount("regedit.exe").Should().BeOneOf(5, 7);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetFileIconCount_OneDrive()
     {
         if (File.Exists(@"C:\Windows\System32\OneDrive.ico"))
@@ -24,7 +25,7 @@ public class IconTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ExtractIcon_File()
     {
         using HICON icon = HICON.ExtractIcon("regedit.exe", 1);
@@ -32,10 +33,10 @@ public class IconTests
         size.Should().NotBe(Size.Empty);
     }
 
-    [Theory]
-    [InlineData(1, 1)]
-    [InlineData(15, 15)]
-    [InlineData(300, 300)]
+    [TestMethod]
+    [DataRow(1, 1)]
+    [DataRow(15, 15)]
+    [DataRow(300, 300)]
     public void ExtractIcon_StockIcon_Sizes(int requestedSize, int expectedSize)
     {
         using HICON icon = HICON.ExtractIcon(SHSTOCKICONID.SIID_APPLICATION, size: (ushort)requestedSize);
@@ -43,7 +44,7 @@ public class IconTests
         size.Should().Be(new Size(expectedSize, expectedSize));
     }
 
-    [Fact]
+    [TestMethod]
     public void ExtractIcon_Draw()
     {
         using HICON icon = HICON.ExtractIcon(SHSTOCKICONID.SIID_DEVICECAMERA, size: 256);

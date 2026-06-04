@@ -33,11 +33,8 @@ jobs:
         New-Item -ItemType Directory -Force -Path $resultsDir | Out-Null
 
         dotnet test -c Release --no-build `
-          -p:TestingPlatformCaptureOutput=false `
-          -- `
           --results-directory "$resultsDir" `
-          --report-xunit-trx `
-          --show-live-output on
+          --report-trx
     - name: Upload raw logs
       if: always()
       uses: actions/upload-artifact@v4

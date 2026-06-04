@@ -10,24 +10,25 @@ using static Windows.Win32.System.Ole.FDEX_PROP_FLAGS;
 
 namespace Windows.Win32.System.Com;
 
+[TestClass]
 public unsafe class ReflectPropertiesDispatchTests
 {
-    public static TheoryData<object?, VARENUM> ObjectBehaviorTestData => new()
-    {
-        { null, VARENUM.VT_EMPTY },
-        { new object(), VARENUM.VT_DISPATCH },
-        { 42, VARENUM.VT_I4 },
+    public static IEnumerable<object?[]> ObjectBehaviorTestData =>
+    [
+        [null, VARENUM.VT_EMPTY],
+        [new object(), VARENUM.VT_DISPATCH],
+        [42, VARENUM.VT_I4],
         // Structs aren't normally handled - returns COR_E_NOTSUPPORTED
-        { new Point(1, 2), VARENUM.VT_ILLEGAL },
+        [new Point(1, 2), VARENUM.VT_ILLEGAL],
         // System.Drawing.Color has special handling
-        { Color.Blue, VARENUM.VT_UI4 },
-        { new int[] { 1, 2 }, VARENUM.VT_ARRAY | VARENUM.VT_I4 },
-    };
+        [Color.Blue, VARENUM.VT_UI4],
+        [new int[] { 1, 2 }, VARENUM.VT_ARRAY | VARENUM.VT_I4],
+    ];
 
     /// <remarks>
     ///  Aligns with <see cref="IReflectTests.IReflect_ObjectBehavior"/>.
     /// </remarks>
-    [Theory, MemberData(nameof(ObjectBehaviorTestData))]
+    [TestMethod, DynamicData(nameof(ObjectBehaviorTestData))]
     public void ReflectPropertiesDispatch_ObjectBehavior(object? obj, VARENUM expected)
     {
         ReflectObjectTypes reflect = new();
@@ -74,7 +75,7 @@ public unsafe class ReflectPropertiesDispatchTests
     /// <remarks>
     ///  Aligns with <see cref="IReflectTests.IReflect_NonObjectBehavior"/>.
     /// </remarks>
-    [Fact]
+    [TestMethod]
     public void ReflectPropertiesDispatch_NonObjectBehavior()
     {
         ReflectNonObjectTypes reflect = new()

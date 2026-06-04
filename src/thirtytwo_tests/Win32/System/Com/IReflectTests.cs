@@ -16,11 +16,12 @@ using InteropMarshal = System.Runtime.InteropServices.Marshal;
 
 namespace Windows.Win32.System.Com;
 
+[TestClass]
 public unsafe class IReflectTests
 {
     // Interestingly IReflect only generates a useful DispatchEx with TypeInfo if the type is *not* public.
 
-    [Fact]
+    [TestMethod]
     public void SimpleClass_Public_CanGetDispatch()
     {
         PublicSimpleClass publicSimple = new();
@@ -43,7 +44,7 @@ public unsafe class IReflectTests
         InteropMarshal.Release(unknown);
     }
 
-    [Fact]
+    [TestMethod]
     public void SimpleClass_Public_DispatchBehavior()
     {
         PublicSimpleClass publicSimple = new();
@@ -54,7 +55,7 @@ public unsafe class IReflectTests
         hr.Should().Be(HRESULT.TLBX_E_LIBNOTREGISTERED);
     }
 
-    [Fact]
+    [TestMethod]
     public void SimpleClass_Private_CannotGetDispatch()
     {
         PrivateSimpleClass privateSimple = new();
@@ -76,7 +77,7 @@ public unsafe class IReflectTests
         InteropMarshal.Release(unknown);
     }
 
-    [Fact]
+    [TestMethod]
     public void IReflect_GetDispatch()
     {
         ReflectClass reflect = new();
@@ -100,7 +101,7 @@ public unsafe class IReflectTests
         // IDispatchEx is generated for Type, EnumBuilder, TypeBuilder, and any class that derives from IReflect.
     }
 
-    [Fact]
+    [TestMethod]
     public void IReflect_ISupportErrorInfo()
     {
         ReflectClass reflect = new();
@@ -121,7 +122,7 @@ public unsafe class IReflectTests
         hr.Should().Be(HRESULT.E_NOINTERFACE);
     }
 
-    [Fact]
+    [TestMethod]
     public void IReflect_IConnectionPointContainer_NoAttribute()
     {
         ReflectEvent reflect = new();
@@ -150,7 +151,7 @@ public unsafe class IReflectTests
     }
 
 
-    [Fact]
+    [TestMethod]
     public void IReflect_IConnectionPointContainer_Attributed()
     {
         ReflectSourcedEvent reflect = new();
@@ -172,7 +173,7 @@ public unsafe class IReflectTests
                 connection->GetConnectionInterface(out Guid riid).Succeeded.Should().BeTrue();
                 IConnectionPoint* foundConnection;
                 hr = container->FindConnectionPoint(&riid, &foundConnection);
-                Assert.True(connection == foundConnection);
+                Assert.IsTrue(connection == foundConnection);
                 foundConnection->Release();
                 connection->Release();
             }
@@ -181,7 +182,7 @@ public unsafe class IReflectTests
         container->Release();
     }
 
-    [Fact]
+    [TestMethod]
     public void IReflect_IMarshal()
     {
         ReflectClass reflect = new();
@@ -194,7 +195,7 @@ public unsafe class IReflectTests
         marshal->Release();
     }
 
-    [Fact]
+    [TestMethod]
     public void IReflect_IAgileObject()
     {
         ReflectClass reflect = new();
@@ -208,7 +209,7 @@ public unsafe class IReflectTests
         agileObject->Release();
     }
 
-    [Fact]
+    [TestMethod]
     public void IReflect_IClassInfo()
     {
         ReflectClass reflect = new();
@@ -228,7 +229,7 @@ public unsafe class IReflectTests
         hr.Should().Be(HRESULT.TLBX_E_LIBNOTREGISTERED);
     }
 
-    [Fact]
+    [TestMethod]
     public void IReflect_IManagedObject()
     {
         ReflectClass reflect = new();
@@ -241,7 +242,7 @@ public unsafe class IReflectTests
         hr.Should().Be(HRESULT.E_NOINTERFACE);
     }
 
-    [Fact]
+    [TestMethod]
     public void IReflect_DoesNotImpactGetType()
     {
         ReflectClass reflect = new();
@@ -255,7 +256,7 @@ public unsafe class IReflectTests
         memberInfo.Length.Should().Be(subMemberInfo.Length);
     }
 
-    [Fact]
+    [TestMethod]
     public void IReflect_InvokeMember()
     {
         InvokeMemberClass invoke = new();
@@ -297,7 +298,7 @@ public unsafe class IReflectTests
             null);
     }
 
-    [Fact]
+    [TestMethod]
     public void IReflect_Enumerate_ReflectSelf()
     {
         ReflectSelf reflect = new();
@@ -376,19 +377,19 @@ public unsafe class IReflectTests
         hr.Should().Be(HRESULT.TYPE_E_ELEMENTNOTFOUND);
     }
 
-    public static TheoryData<object?, VARENUM> ObjectBehaviorTestData => new()
-    {
-        { null, VARENUM.VT_EMPTY },
-        { new object(), VARENUM.VT_DISPATCH },
-        { 42, VARENUM.VT_I4 },
+    public static IEnumerable<object?[]> ObjectBehaviorTestData =>
+    [
+        [null, VARENUM.VT_EMPTY],
+        [new object(), VARENUM.VT_DISPATCH],
+        [42, VARENUM.VT_I4],
         // Structs aren't normally handled - returns COR_E_NOTSUPPORTED
-        { new Point(1, 2), VARENUM.VT_ILLEGAL },
+        [new Point(1, 2), VARENUM.VT_ILLEGAL],
         // System.Drawing.Color has special handling
-        { Color.Blue, VARENUM.VT_UI4 },
-        { new int[] { 1, 2 }, VARENUM.VT_ARRAY | VARENUM.VT_I4 },
-    };
+        [Color.Blue, VARENUM.VT_UI4],
+        [new int[] { 1, 2 }, VARENUM.VT_ARRAY | VARENUM.VT_I4],
+    ];
 
-    [Theory, MemberData(nameof(ObjectBehaviorTestData))]
+    [TestMethod, DynamicData(nameof(ObjectBehaviorTestData))]
     public void IReflect_ObjectBehavior(object? obj, VARENUM expected)
     {
         ReflectObjectTypes reflect = new();
@@ -431,7 +432,7 @@ public unsafe class IReflectTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void IReflect_NonObjectBehavior()
     {
         ReflectNonObjectTypes reflect = new()
@@ -476,16 +477,16 @@ public unsafe class IReflectTests
             | fdexPropCanCall | fdexPropCannotConstruct | fdexPropCannotSourceEvents);
     }
 
-    public static TheoryData<object, IEnumerable<string>> EnumerateBehaviorTestData => new()
-    {
-        { new ReflectClass(), Array.Empty<string>() },
-        { new WithInterfaceClass(), Array.Empty<string>() },
-        { new SubMemberClass(), Array.Empty<string>() },
-        { new SubMethodClass(), new string[] { "ToString" } },
-        { new ReflectSelf(), new string[] { "GetType", "ToString", "Equals", "GetHashCode" } }
-    };
+    public static IEnumerable<object[]> EnumerateBehaviorTestData =>
+    [
+        [new ReflectClass(), Array.Empty<string>()],
+        [new WithInterfaceClass(), Array.Empty<string>()],
+        [new SubMemberClass(), Array.Empty<string>()],
+        [new SubMethodClass(), new string[] { "ToString" }],
+        [new ReflectSelf(), new string[] { "GetType", "ToString", "Equals", "GetHashCode" }]
+    ];
 
-    [Theory, MemberData(nameof(EnumerateBehaviorTestData))]
+    [TestMethod, DynamicData(nameof(EnumerateBehaviorTestData))]
     public void IReflect_IDispatchEx_Enumerate(object reflect, IEnumerable<string> names)
     {
         using ComScope<IUnknown> unknown = new((IUnknown*)InteropMarshal.GetIUnknownForObject(reflect));
@@ -497,16 +498,16 @@ public unsafe class IReflectTests
         dispatchIds.Keys.Should().BeEquivalentTo(names);
     }
 
-    public static TheoryData<object> ReflectClasses =>
+    public static IEnumerable<object[]> ReflectClasses =>
     [
-        (object)new ReflectClass(),
-        (object)new WithInterfaceClass(),
-        (object)new SubMemberClass(),
-        (object)new SubMethodClass(),
-        (object)new ReflectSelf()
+        [new ReflectClass()],
+        [new WithInterfaceClass()],
+        [new SubMemberClass()],
+        [new SubMethodClass()],
+        [new ReflectSelf()]
     ];
 
-    [Theory, MemberData(nameof(ReflectClasses))]
+    [TestMethod, DynamicData(nameof(ReflectClasses))]
     public void IReflect_IDispatchDefaultBehavior(object reflect)
     {
         // All we ever see via IDispatch are the IUnknown methods.
@@ -533,7 +534,7 @@ public unsafe class IReflectTests
         attrCopy.cbAlignment.Should().Be((ushort)sizeof(nint));
         attrCopy.guid.Should().Be(IUnknown.IID_Guid);
         attrCopy.lcid.Should().Be(0);
-        Assert.True(attrCopy.lpstrSchema.Value is null);
+        Assert.IsTrue(attrCopy.lpstrSchema.Value is null);
         attrCopy.memidConstructor.Should().Be(-1);
         attrCopy.memidDestructor.Should().Be(-1);
         attrCopy.typekind.Should().Be(TYPEKIND.TKIND_INTERFACE);

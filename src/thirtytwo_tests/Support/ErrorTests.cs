@@ -5,10 +5,12 @@ using Windows.Win32.Foundation;
 
 namespace Windows.Support;
 
-[Collection(nameof(ErrorTestCollection))]
+[DoNotParallelize]
+[TestClass]
 public class ErrorTests
 {
-    [RetryFact(MaxRetries = 5)]
+    [TestMethod]
+    [Retry(5)]
     public void Error_FormatMessage_RuntimeError()
     {
         // The Marshal.GetExceptionForHR method is not thread safe for CLR (COR_E*) HRESULTs.
@@ -19,7 +21,7 @@ public class ErrorTests
         message.Should().Be("Cannot access a disposed object.");
     }
 
-    [Fact]
+    [TestMethod]
     public void Error_FormatMesage()
     {
         // Check an HRESULT with a product string that hopefully isn't localized.
@@ -40,28 +42,28 @@ public class ErrorTests
         message.Should().Be(formatted);
     }
 
-    [Theory,
-        InlineData(WIN32_ERROR.ERROR_FILE_NOT_FOUND, typeof(FileNotFoundException)),
-        InlineData(WIN32_ERROR.ERROR_PATH_NOT_FOUND, typeof(DirectoryNotFoundException)),
-        InlineData(WIN32_ERROR.ERROR_ACCESS_DENIED, typeof(UnauthorizedAccessException)),
-        InlineData(WIN32_ERROR.ERROR_NETWORK_ACCESS_DENIED, typeof(UnauthorizedAccessException)),
-        InlineData(WIN32_ERROR.ERROR_FILENAME_EXCED_RANGE, typeof(PathTooLongException)),
-        InlineData(WIN32_ERROR.ERROR_INVALID_DRIVE, typeof(DriveNotFoundException)),
-        InlineData(WIN32_ERROR.ERROR_OPERATION_ABORTED, typeof(OperationCanceledException)),
-        InlineData(WIN32_ERROR.ERROR_NOT_READY, typeof(DriveNotReadyException)),
-        InlineData(WIN32_ERROR.ERROR_ALREADY_EXISTS, typeof(FileExistsException)),
-        InlineData(WIN32_ERROR.ERROR_SHARING_VIOLATION, typeof(ThirtyTwoException)),
-        InlineData(WIN32_ERROR.ERROR_FILE_EXISTS, typeof(FileExistsException))
+    [TestMethod,
+        DataRow(WIN32_ERROR.ERROR_FILE_NOT_FOUND, typeof(FileNotFoundException)),
+        DataRow(WIN32_ERROR.ERROR_PATH_NOT_FOUND, typeof(DirectoryNotFoundException)),
+        DataRow(WIN32_ERROR.ERROR_ACCESS_DENIED, typeof(UnauthorizedAccessException)),
+        DataRow(WIN32_ERROR.ERROR_NETWORK_ACCESS_DENIED, typeof(UnauthorizedAccessException)),
+        DataRow(WIN32_ERROR.ERROR_FILENAME_EXCED_RANGE, typeof(PathTooLongException)),
+        DataRow(WIN32_ERROR.ERROR_INVALID_DRIVE, typeof(DriveNotFoundException)),
+        DataRow(WIN32_ERROR.ERROR_OPERATION_ABORTED, typeof(OperationCanceledException)),
+        DataRow(WIN32_ERROR.ERROR_NOT_READY, typeof(DriveNotReadyException)),
+        DataRow(WIN32_ERROR.ERROR_ALREADY_EXISTS, typeof(FileExistsException)),
+        DataRow(WIN32_ERROR.ERROR_SHARING_VIOLATION, typeof(ThirtyTwoException)),
+        DataRow(WIN32_ERROR.ERROR_FILE_EXISTS, typeof(FileExistsException))
         ]
     public void ErrorsMapToExceptions(WIN32_ERROR error, Type exceptionType)
     {
         error.GetException().Should().BeOfType(exceptionType);
     }
 
-    [Theory,
-        InlineData(0, @"ERROR_SUCCESS (0): The operation completed successfully. "),
-        InlineData(2, @"ERROR_FILE_NOT_FOUND (2): The system cannot find the file specified. "),
-        InlineData(3, @"ERROR_PATH_NOT_FOUND (3): The system cannot find the path specified. ")
+    [TestMethod,
+        DataRow(0u, @"ERROR_SUCCESS (0): The operation completed successfully. "),
+        DataRow(2u, @"ERROR_FILE_NOT_FOUND (2): The system cannot find the file specified. "),
+        DataRow(3u, @"ERROR_PATH_NOT_FOUND (3): The system cannot find the path specified. ")
         ]
     public void WindowsErrorTextIsAsExpected(uint error, string expected)
     {

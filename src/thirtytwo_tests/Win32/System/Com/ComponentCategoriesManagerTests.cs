@@ -5,9 +5,10 @@ using Windows.Win32.Foundation;
 
 namespace Windows.Win32.System.Com;
 
+[TestClass]
 public unsafe class ComponentCategoriesManagerTests
 {
-    [StaFact]
+    [STATestMethod]
     public void EnumerateCategories()
     {
         using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.StdComponentCategoriesManager), takeOwnership: true);
@@ -27,7 +28,7 @@ public unsafe class ComponentCategoriesManagerTests
         categories.Should().Contain(new KeyValuePair<Guid, string>(CATID.Control, "Controls"));
     }
 
-    [StaFact]
+    [STATestMethod]
     public void EnumerateActiveXClasses()
     {
         using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.StdComponentCategoriesManager), takeOwnership: true);

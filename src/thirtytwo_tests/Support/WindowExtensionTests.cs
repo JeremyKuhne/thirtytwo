@@ -3,9 +3,10 @@
 
 namespace Windows;
 
+[TestClass]
 public class WindowExtensionTests
 {
-    [Fact]
+    [TestMethod]
     public void GetWindowText()
     {
         const string Title = "This is the window title I've always wanted.";
@@ -13,14 +14,14 @@ public class WindowExtensionTests
         window.GetWindowText().Should().Be(Title);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetWindowText_NoText()
     {
         using Window window = new(Window.DefaultBounds);
         window.GetWindowText().Should().Be(string.Empty);
     }
 
-    [Fact]
+    [TestMethod]
     public void SetWindowText()
     {
         using Window window = new(Window.DefaultBounds);
@@ -28,7 +29,7 @@ public class WindowExtensionTests
         window.GetWindowText().Should().Be("Golly");
     }
 
-    [Fact]
+    [TestMethod]
     public void GetExtendedWindowStyle_TopMost()
     {
         using Window window = new(Window.DefaultBounds, extendedStyle: ExtendedWindowStyles.TopMost);

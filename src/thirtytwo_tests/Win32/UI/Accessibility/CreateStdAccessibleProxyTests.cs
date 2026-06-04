@@ -8,10 +8,11 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Windows.Win32.UI.Accessibility;
 
-[Collection("Accessibility")]
+[DoNotParallelize]
+[TestClass]
 public unsafe class CreateStdAccessibleProxyTests
 {
-    [StaFact]
+    [STATestMethod]
     public void CreateStdAccessibleProxy_Button()
     {
         using Window window = new(Window.DefaultBounds);
@@ -26,7 +27,7 @@ public unsafe class CreateStdAccessibleProxyTests
         using ComScope<IAccessible> accessible = new(ppvObject);
     }
 
-    [StaFact]
+    [STATestMethod]
     public void CreateStdAccessibleProxy_GetIdsOfNames()
     {
         using Window window = new(Window.DefaultBounds);
@@ -78,7 +79,7 @@ public unsafe class CreateStdAccessibleProxyTests
         result[3].Should().Be(Interop.DISPID_UNKNOWN);
     }
 
-    [StaFact]
+    [STATestMethod]
     public void CreateStdAccessibleProxy_GetTypeInfo()
     {
         using Window window = new(Window.DefaultBounds);

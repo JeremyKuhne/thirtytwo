@@ -5,9 +5,10 @@ using Windows.Win32;
 
 namespace Windows;
 
+[TestClass]
 public unsafe class IconIdTests
 {
-    [Fact]
+    [TestMethod]
     public void IconId_Defines()
     {
         IconId.Application.Should().Be((IconId)(uint)Interop.IDI_APPLICATION.Value);

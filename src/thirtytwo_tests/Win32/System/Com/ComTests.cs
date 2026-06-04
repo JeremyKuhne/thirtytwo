@@ -11,29 +11,30 @@ using InteropMarshal = global::System.Runtime.InteropServices.Marshal;
 
 namespace Windows.Win32.System.Com;
 
+[TestClass]
 public unsafe class ComTests
 {
-    [Fact]
+    [TestMethod]
     public void Com_GetComPointer_SameUnknownInstance()
     {
         FileDialog.FileDialogEvents events = new(null!);
         using ComScope<IUnknown> unknown1 = events.GetComCallableWrapper();
         using ComScope<IUnknown> unknown2 = events.GetComCallableWrapper();
 
-        Assert.True(unknown1.Pointer == unknown2.Pointer);
+        Assert.IsTrue(unknown1.Pointer == unknown2.Pointer);
     }
 
-    [Fact]
+    [TestMethod]
     public void Com_GetComPointer_SameInterfaceInstance()
     {
         FileDialog.FileDialogEvents events = new(null!);
         using ComScope<IFileDialogEvents> iEvents1 = events.GetComCallableWrapper<IFileDialogEvents>();
         using ComScope<IFileDialogEvents> iEvents2 = events.GetComCallableWrapper<IFileDialogEvents>();
 
-        Assert.True(iEvents1.Pointer == iEvents2.Pointer);
+        Assert.IsTrue(iEvents1.Pointer == iEvents2.Pointer);
     }
 
-    [Fact]
+    [TestMethod]
     public void Com_BuiltInCom_RCW_Behavior()
     {
         UnknownTest unknown = new();

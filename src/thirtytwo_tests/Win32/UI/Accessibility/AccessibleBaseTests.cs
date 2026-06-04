@@ -8,9 +8,10 @@ using Windows.Win32.System.Variant;
 
 namespace Windows.Win32.UI.Accessibility;
 
+[TestClass]
 public unsafe class AccessibleBaseTests
 {
-    [StaFact]
+    [STATestMethod]
     public void AccessibleBase_Dispatch()
     {
         AccessibleCallback callback = new();

@@ -7,9 +7,10 @@ using Windows.Win32.System.Variant;
 
 namespace Windows.Win32.System.Com;
 
+[TestClass]
 public unsafe class StandardDispatchTests
 {
-    [Fact]
+    [TestMethod]
     public void StandardDispatch_ImplDoesNotProvideEx()
     {
         // Load the registered type library and get the relevant ITypeInfo for the specified interface.
@@ -39,7 +40,7 @@ public unsafe class StandardDispatchTests
 
         // StdDispatch does not provide an implementation of IDispatchEx.
         IDispatchEx* dispatchEx = standard->TryQueryInterface<IDispatchEx>();
-        Assert.True(dispatchEx is null);
+        Assert.IsTrue(dispatchEx is null);
 
         standard->Release();
         unknown->Release();
@@ -51,7 +52,7 @@ public unsafe class StandardDispatchTests
         HRESULT IOleWindow.Interface.ContextSensitiveHelp(BOOL fEnterMode) => HRESULT.E_NOTIMPL;
     }
 
-    [Fact]
+    [TestMethod]
     public void StandardDispatch_IUnknown()
     {
         SimpleDispatch unknownDispatch = new();
@@ -76,7 +77,7 @@ public unsafe class StandardDispatchTests
         attrCopy.cbAlignment.Should().Be((ushort)sizeof(nint));
         attrCopy.guid.Should().Be(IUnknown.IID_Guid);
         attrCopy.lcid.Should().Be(0);
-        Assert.True(attrCopy.lpstrSchema.Value is null);
+        Assert.IsTrue(attrCopy.lpstrSchema.Value is null);
         attrCopy.memidConstructor.Should().Be(-1);
         attrCopy.memidDestructor.Should().Be(-1);
         attrCopy.typekind.Should().Be(TYPEKIND.TKIND_INTERFACE);

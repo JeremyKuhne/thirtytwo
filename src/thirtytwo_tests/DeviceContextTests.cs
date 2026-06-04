@@ -7,9 +7,10 @@ using Windows.Win32.Graphics.Gdi;
 
 namespace Windows;
 
+[TestClass]
 public unsafe class DeviceContextTests
 {
-    [Fact]
+    [TestMethod]
     public void DeviceContext_ScreenDeviceContextBehavior()
     {
         using DeviceContext context = DeviceContext.Create();

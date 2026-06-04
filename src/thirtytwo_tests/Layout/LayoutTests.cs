@@ -5,9 +5,10 @@ using System.Drawing;
 
 namespace Windows;
 
+[TestClass]
 public class LayoutTests
 {
-    [Fact]
+    [TestMethod]
     public void FillLayout_ForwardsBounds()
     {
         LastLayoutHandler handler = new();
@@ -17,7 +18,7 @@ public class LayoutTests
         handler.LastBounds.Should().Be(bounds);
     }
 
-    [Fact]
+    [TestMethod]
     public void FixedPercentLayout_PositionsAndSizesCorrectly()
     {
         LastLayoutHandler handler = new();
@@ -32,7 +33,7 @@ public class LayoutTests
         handler.LastBounds.Should().Be(new Rectangle(0, 100, 30, 100));
     }
 
-    [Fact]
+    [TestMethod]
     public void FixedSizeLayout_PositionsCorrectly()
     {
         LastLayoutHandler handler = new();
@@ -46,7 +47,7 @@ public class LayoutTests
         handler.LastBounds.Should().Be(new Rectangle(150, 70, 50, 30));
     }
 
-    [Fact]
+    [TestMethod]
     public void PaddedLayout_AppliesPadding()
     {
         LastLayoutHandler handler = new();
@@ -56,7 +57,7 @@ public class LayoutTests
         handler.LastBounds.Should().Be(new Rectangle(10, 20, 60, 140));
     }
 
-    [Fact]
+    [TestMethod]
     public void HorizontalLayout_DistributesHeight()
     {
         LastLayoutHandler handler1 = new();
@@ -68,7 +69,7 @@ public class LayoutTests
         handler2.LastBounds.Should().Be(new Rectangle(0, 60, 100, 140));
     }
 
-    [Fact]
+    [TestMethod]
     public void VerticalLayout_DistributesWidth()
     {
         LastLayoutHandler handler1 = new();
@@ -80,7 +81,7 @@ public class LayoutTests
         handler2.LastBounds.Should().Be(new Rectangle(40, 0, 60, 200));
     }
 
-    [Fact]
+    [TestMethod]
     public void HorizontalLayout_InvalidPercentages_Throws()
     {
         LastLayoutHandler handler = new();
@@ -88,7 +89,7 @@ public class LayoutTests
             .Should().Throw<ArgumentOutOfRangeException>();
     }
 
-    [Fact]
+    [TestMethod]
     public void VerticalLayout_InvalidPercentages_Throws()
     {
         LastLayoutHandler handler = new();
@@ -96,7 +97,7 @@ public class LayoutTests
             .Should().Throw<ArgumentOutOfRangeException>();
     }
 
-    [Fact]
+    [TestMethod]
     public void ReplaceableLayout_UpdatesNewHandler()
     {
         LastLayoutHandler handler1 = new();
@@ -109,7 +110,7 @@ public class LayoutTests
         handler2.LastBounds.Should().Be(bounds);
     }
 
-    [Fact]
+    [TestMethod]
     public void ReplaceableLayout_SetNullHandler_Throws()
     {
         LastLayoutHandler handler = new();
@@ -118,7 +119,7 @@ public class LayoutTests
             .Should().Throw<NullReferenceException>();
     }
 
-    [Fact]
+    [TestMethod]
     public void PaddedLayout_ScalesCorrectly_Scale125()
     {
         LastLayoutHandler handler = new();
@@ -131,7 +132,7 @@ public class LayoutTests
         handler.LastScale.Should().Be(1.25f);
     }
 
-    [Fact]
+    [TestMethod]
     public void PaddedLayout_ScalesCorrectly_Scale150()
     {
         LastLayoutHandler handler = new();
@@ -144,7 +145,7 @@ public class LayoutTests
         handler.LastScale.Should().Be(1.5f);
     }
 
-    [Fact]
+    [TestMethod]
     public void PaddedLayout_ScalesCorrectly_Scale175()
     {
         LastLayoutHandler handler = new();
@@ -157,7 +158,7 @@ public class LayoutTests
         handler.LastScale.Should().Be(1.75f);
     }
 
-    [Fact]
+    [TestMethod]
     public void PaddedLayout_ScalesCorrectly_Scale200()
     {
         LastLayoutHandler handler = new();
@@ -170,7 +171,7 @@ public class LayoutTests
         handler.LastScale.Should().Be(2.0f);
     }
 
-    [Fact]
+    [TestMethod]
     public void PaddedLayout_InsufficientWidth_ScalesDown()
     {
         LastLayoutHandler handler = new();
@@ -185,7 +186,7 @@ public class LayoutTests
         handler.LastScale.Should().Be(1.0f);
     }
 
-    [Fact]
+    [TestMethod]
     public void PaddedLayout_InsufficientHeight_ScalesDown()
     {
         LastLayoutHandler handler = new();
@@ -200,7 +201,7 @@ public class LayoutTests
         handler.LastScale.Should().Be(1.0f);
     }
 
-    [Fact]
+    [TestMethod]
     public void PaddedLayout_ExtremelySmallBounds_WidthProvidesSomePadding()
     {
         LastLayoutHandler handler = new();
@@ -215,7 +216,7 @@ public class LayoutTests
         handler.LastScale.Should().Be(1.0f);
     }
 
-    [Fact]
+    [TestMethod]
     public void PaddedLayout_ExtremelySmallBounds_HeightProvidesSomePadding()
     {
         LastLayoutHandler handler = new();
@@ -230,7 +231,7 @@ public class LayoutTests
         handler.LastScale.Should().Be(1.0f);
     }
 
-    [Fact]
+    [TestMethod]
     public void PaddedLayout_VeryHighScale_HandlesTightBounds()
     {
         LastLayoutHandler handler = new();
@@ -243,7 +244,7 @@ public class LayoutTests
         handler.LastScale.Should().Be(5.0f);
     }
 
-    [Fact]
+    [TestMethod]
     public void PaddedLayout_ZeroWidthBounds_PreservesPosition()
     {
         LastLayoutHandler handler = new();
@@ -258,7 +259,7 @@ public class LayoutTests
         handler.LastScale.Should().Be(1.0f);
     }
 
-    [Fact]
+    [TestMethod]
     public void PaddedLayout_ZeroHeightBounds_PreservesPosition()
     {
         LastLayoutHandler handler = new();
@@ -273,7 +274,7 @@ public class LayoutTests
         handler.LastScale.Should().Be(1.0f);
     }
 
-    [Fact]
+    [TestMethod]
     public void PaddedLayout_DeepRecursion()
     {
         LastLayoutHandler handler = new();

@@ -3,30 +3,31 @@
 
 namespace Windows.Win32.System.Registry;
 
+[TestClass]
 public class RegistryTests
 {
-    [Fact]
+    [TestMethod]
     public void Registry_OpenKey_UserKey()
     {
         using HKEY key = Registry.OpenKey(HKEY.HKEY_CURRENT_USER, null);
         key.IsNull.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Registry_QueryKeyName_UserKey()
     {
         using HKEY key = Registry.OpenKey(HKEY.HKEY_CURRENT_USER, null);
         Registry.QueryKeyName(key).Should().Be(@"\REGISTRY\USER\.DEFAULT");
     }
 
-    [Fact]
+    [TestMethod]
     public void Registry_QueryKeyName_ClassesRoot()
     {
         using HKEY key = Registry.OpenKey(HKEY.HKEY_CLASSES_ROOT, null);
         Registry.QueryKeyName(key).Should().Be(@"\REGISTRY\MACHINE\SOFTWARE\CLASSES");
     }
 
-    [Fact]
+    [TestMethod]
     public void Registry_OpenKey_UserSubKey()
     {
         using HKEY key = Registry.OpenKey(
@@ -36,7 +37,7 @@ public class RegistryTests
         key.IsNull.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Registry_QueryKeyName_UserSubKey()
     {
         using HKEY key = Registry.OpenKey(
@@ -48,14 +49,14 @@ public class RegistryTests
     }
 
 
-    [Fact]
+    [TestMethod]
     public void HKEY_IsLocalKey()
     {
         using HKEY key = Registry.OpenKey(HKEY.HKEY_CURRENT_USER, null);
         key.IsLocalKey.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void HKEY_IsSpecialKey()
     {
         using HKEY key = Registry.OpenKey(HKEY.HKEY_CLASSES_ROOT, null);
@@ -63,7 +64,7 @@ public class RegistryTests
         key.IsSpecialKey.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Registry_QueryValueExists()
     {
         using HKEY key = Registry.OpenKey(
@@ -72,7 +73,7 @@ public class RegistryTests
         Registry.QueryValueExists(key, "BuildNumber").Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void Registry_QueryValueExists_False()
     {
         using HKEY key = Registry.OpenKey(
@@ -81,7 +82,7 @@ public class RegistryTests
         Registry.QueryValueExists(key, "Fizzlewig").Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void Registry_QueryValueType()
     {
         using HKEY key = Registry.OpenKey(
@@ -90,7 +91,7 @@ public class RegistryTests
         Registry.QueryValueType(key, "BuildNumber").Should().Be(REG_VALUE_TYPE.REG_DWORD);
     }
 
-    [Fact]
+    [TestMethod]
     public void Registry_GetValueNames()
     {
         using HKEY key = Registry.OpenKey(
@@ -100,28 +101,28 @@ public class RegistryTests
         names.Should().Contain("BuildNumber");
     }
 
-    [Fact]
+    [TestMethod]
     public void Registry_GetValueNames_PerformanceData()
     {
         var names = Registry.GetValueNames(HKEY.HKEY_PERFORMANCE_DATA);
         names.Should().ContainInOrder("Global", "Costly");
     }
 
-    [Fact]
+    [TestMethod]
     public void Registry_GetValueNames_PerformanceText()
     {
         var names = Registry.GetValueNames(HKEY.HKEY_PERFORMANCE_TEXT);
         names.Should().ContainInOrder("Counter", "Help");
     }
 
-    [Fact]
+    [TestMethod]
     public void Registry_GetValueNames_PerformanceNlsText()
     {
         var names = Registry.GetValueNames(HKEY.HKEY_PERFORMANCE_NLSTEXT);
         names.Should().ContainInOrder("Counter", "Help");
     }
 
-    [Fact]
+    [TestMethod]
     public void Registry_QueryValue_Uint()
     {
         using HKEY key = Registry.OpenKey(
@@ -131,7 +132,7 @@ public class RegistryTests
         buildNumber.Should().BeOfType<uint>();
     }
 
-    [Fact]
+    [TestMethod]
     public void Registry_QueryValue_String()
     {
         using HKEY key = Registry.OpenKey(
