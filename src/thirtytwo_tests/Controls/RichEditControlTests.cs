@@ -3,19 +3,20 @@
 
 namespace Windows.Controls;
 
+[TestClass]
 public class RichEditControlTests
 {
-    [Theory]
-    [InlineData(null, true, 1)]
-    [InlineData(null, false, 1)]
-    [InlineData("Foo", true, 1)]
-    [InlineData("Foo", false, 1)]
-    [InlineData("Foo\nBar", true, 2)]
-    [InlineData("Foo\nBar", false, 1)]
-    [InlineData("Foo\r\nBar", true, 2)]
-    [InlineData("Foo\r\nBar", false, 1)]
-    [InlineData("Foo\rBar", true, 2)]
-    [InlineData("Foo\rBar", false, 1)]
+    [TestMethod]
+    [DataRow(null, true, 1)]
+    [DataRow(null, false, 1)]
+    [DataRow("Foo", true, 1)]
+    [DataRow("Foo", false, 1)]
+    [DataRow("Foo\nBar", true, 2)]
+    [DataRow("Foo\nBar", false, 1)]
+    [DataRow("Foo\r\nBar", true, 2)]
+    [DataRow("Foo\r\nBar", false, 1)]
+    [DataRow("Foo\rBar", true, 2)]
+    [DataRow("Foo\rBar", false, 1)]
     public void LineCount(string? text, bool multiline, int expectedCount)
     {
         using Window window = new(Window.DefaultBounds);
@@ -28,19 +29,19 @@ public class RichEditControlTests
         edit.LineCount.Should().Be(expectedCount);
     }
 
-    [Theory]
-    [InlineData(null, 1, true, "")]
-    [InlineData(null, 1, false, "")]
-    [InlineData(null, 3, true, "")]
-    [InlineData(null, 3, false, "")]
-    [InlineData("Foo", 0, true, "Foo\r")]
-    [InlineData("Foo", 0, false, "Foo\r")]
-    [InlineData("Foo", 2, true, "")]
-    [InlineData("Foo", 1, false, "")]
-    [InlineData("Foo\r\nBar", 0, true, "Foo\r")]
-    [InlineData("Foo\r\nBar", 0, false, "Foo\r")]
-    [InlineData("Foo\r\nBar", 1, true, "Bar\r")]
-    [InlineData("Foo\r\nBar", 1, false, "")]
+    [TestMethod]
+    [DataRow(null, 1, true, "")]
+    [DataRow(null, 1, false, "")]
+    [DataRow(null, 3, true, "")]
+    [DataRow(null, 3, false, "")]
+    [DataRow("Foo", 0, true, "Foo\r")]
+    [DataRow("Foo", 0, false, "Foo\r")]
+    [DataRow("Foo", 2, true, "")]
+    [DataRow("Foo", 1, false, "")]
+    [DataRow("Foo\r\nBar", 0, true, "Foo\r")]
+    [DataRow("Foo\r\nBar", 0, false, "Foo\r")]
+    [DataRow("Foo\r\nBar", 1, true, "Bar\r")]
+    [DataRow("Foo\r\nBar", 1, false, "")]
     public void GetLine(string? text, int lineNumber, bool multiline, string? expectedLine)
     {
         // It isn't clear exactly what is going on with the RichEdit control's handling of EM_LINELENGTH and
@@ -57,7 +58,7 @@ public class RichEditControlTests
         edit.GetLine(lineNumber).Should().Be(expectedLine);
     }
 
-    [Fact]
+    [TestMethod]
     public void Selection_Modified_Undo()
     {
         using Window window = new(Window.DefaultBounds);

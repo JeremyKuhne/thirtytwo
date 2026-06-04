@@ -7,22 +7,23 @@ using Windows.Win32.Foundation;
 
 namespace Windows.Dialogs;
 
+[TestClass]
 public class FileOpenDialogTests
 {
-    [StaFact]
+    [STATestMethod]
     public void FileOpenDialog_Create()
     {
         using FileOpenDialog dialog = new();
     }
 
-    [StaFact]
+    [STATestMethod]
     public void FileOpenDialog_GetResults_AfterCreation()
     {
         using FileOpenDialog dialog = new();
-        Assert.Throws<COMException>(() => dialog.GetResults());
+        Assert.ThrowsExactly<COMException>(() => dialog.GetResults());
     }
 
-    [StaFact]
+    [STATestMethod]
     public void FileOpenDialog_GetResults_AfterShow()
     {
         using Window window = new(Window.DefaultBounds);
@@ -36,10 +37,10 @@ public class FileOpenDialogTests
         dialog.ShowDialog().Should().BeFalse();
 
         // Can't get results if none were selected
-        Assert.Throws<COMException>(() => dialog.GetResults());
+        Assert.ThrowsExactly<COMException>(() => dialog.GetResults());
     }
 
-    [StaFact]
+    [STATestMethod]
     public void FileOpenDialog_GetHWND_WithoutParent()
     {
         using FileOpenDialog dialog = new();
@@ -47,7 +48,7 @@ public class FileOpenDialogTests
         hwnd.Should().NotBeNull();
     }
 
-    [StaFact]
+    [STATestMethod]
     public void FileOpenDialog_ShowAndClose()
     {
         using Window window = new(Window.DefaultBounds);
@@ -62,7 +63,7 @@ public class FileOpenDialogTests
         dialog.ShowDialog().Should().BeFalse();
     }
 
-    [StaFact]
+    [STATestMethod]
     public void FileOpenDialog_DialogOptions_Get()
     {
         using FileOpenDialog dialog = new();
@@ -70,14 +71,14 @@ public class FileOpenDialogTests
         options.Should().Be(FileDialog.Options.NoChangeDirectory | FileDialog.Options.PathMustExist | FileDialog.Options.FileMustExist);
     }
 
-    [StaFact]
+    [STATestMethod]
     public void FileOpenDialog_CurrentSelection_AfterCreate()
     {
         using FileOpenDialog dialog = new();
         dialog.CurrentSelection.Should().BeNull();
     }
 
-    [StaFact]
+    [STATestMethod]
     public void FileOpenDialog_CurrentSelection_AfterShow()
     {
         using FileOpenDialog dialog = new();
@@ -90,7 +91,7 @@ public class FileOpenDialogTests
         dialog.ShowDialog().Should().BeFalse();
     }
 
-    [StaFact(Skip = "For manual testing.")]
+    [STATestMethod, Ignore("For manual testing.")]
     public void FileOpenDialog_Manual()
     {
         using FileOpenDialog dialog = new();

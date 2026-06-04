@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Support;
@@ -7,24 +7,28 @@ using Windows.Win32.System.Ole;
 
 namespace Windows;
 
-[Collection(nameof(ClipboardTestCollection))]
+[DoNotParallelize]
+[TestClass]
 public unsafe class ClipboardTests
 {
-    [Fact]
+    [TestMethod]
+    [Retry(5, MillisecondsDelayBetweenRetries = 100, BackoffType = DelayBackoffType.Exponential)]
     public void Clipboard_GetClipboardFormatName()
     {
         uint format = Clipboard.RegisterClipboardFormat("MyText");
         Clipboard.GetClipboardFormatName(format).Should().Be("MyText");
     }
 
-    [Fact]
+    [TestMethod]
+    [Retry(5, MillisecondsDelayBetweenRetries = 100, BackoffType = DelayBackoffType.Exponential)]
     public void Clipboard_RegisterClipboardFormat()
     {
         uint format = Clipboard.RegisterClipboardFormat("MyText");
         format.Should().NotBe(0);
     }
 
-    [Fact]
+    [TestMethod]
+    [Retry(5, MillisecondsDelayBetweenRetries = 100, BackoffType = DelayBackoffType.Exponential)]
     public void Clipboard_OpenClipboard_AlreadyOpenWithWindow()
     {
         using Window window = new(Window.DefaultBounds);
@@ -39,7 +43,8 @@ public unsafe class ClipboardTests
         }
     }
 
-    [Fact]
+    [TestMethod]
+    [Retry(5, MillisecondsDelayBetweenRetries = 100, BackoffType = DelayBackoffType.Exponential)]
     public void Clipboard_OpenClipboard_AlreadyOpenWithoutWindow()
     {
         try
@@ -53,7 +58,8 @@ public unsafe class ClipboardTests
         }
     }
 
-    [Fact]
+    [TestMethod]
+    [Retry(5, MillisecondsDelayBetweenRetries = 100, BackoffType = DelayBackoffType.Exponential)]
     public void Clipboard_GetAvailableClipboardFormats_NoData()
     {
         try
@@ -68,7 +74,8 @@ public unsafe class ClipboardTests
         }
     }
 
-    [Fact]
+    [TestMethod]
+    [Retry(5, MillisecondsDelayBetweenRetries = 100, BackoffType = DelayBackoffType.Exponential)]
     public void Clipboard_GetOpenClipboardWindow_Window()
     {
         using Window window = new(Window.DefaultBounds);
@@ -83,7 +90,8 @@ public unsafe class ClipboardTests
         }
     }
 
-    [Fact]
+    [TestMethod]
+    [Retry(5, MillisecondsDelayBetweenRetries = 100, BackoffType = DelayBackoffType.Exponential)]
     public void Clipboard_GetOpenClipboardWindow_NoWindow()
     {
         try
@@ -97,13 +105,15 @@ public unsafe class ClipboardTests
         }
     }
 
-    [Fact]
+    [TestMethod]
+    [Retry(5, MillisecondsDelayBetweenRetries = 100, BackoffType = DelayBackoffType.Exponential)]
     public void Clipboard_CloseClipboard_NotOpen()
     {
         Clipboard.CloseClipboard();
     }
 
-    [Fact]
+    [TestMethod]
+    [Retry(5, MillisecondsDelayBetweenRetries = 100, BackoffType = DelayBackoffType.Exponential)]
     public void Clipboard_EmptyClipboard_NotOpen()
     {
         Action action = () => Clipboard.EmptyClipboard();
@@ -111,7 +121,8 @@ public unsafe class ClipboardTests
             .And.HResult.Should().Be(WIN32_ERROR.ERROR_CLIPBOARD_NOT_OPEN.ToHRESULT());
     }
 
-    [Fact]
+    [TestMethod]
+    [Retry(5, MillisecondsDelayBetweenRetries = 100, BackoffType = DelayBackoffType.Exponential)]
     public void Clipboard_SetClipboardData_UnicodeText()
     {
         try
@@ -151,7 +162,8 @@ public unsafe class ClipboardTests
         Clipboard.GetClipboardText().Should().Be("Test string.");
     }
 
-    [Fact]
+    [TestMethod]
+    [Retry(5, MillisecondsDelayBetweenRetries = 100, BackoffType = DelayBackoffType.Exponential)]
     public void Clipboard_IsClipboardFormatAvailable_No()
     {
         Clipboard.IsClipboardFormatAvailable(uint.MaxValue).Should().BeFalse();

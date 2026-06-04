@@ -5,9 +5,10 @@ using Windows.Win32.Foundation;
 
 namespace Windows.Win32.System.Com;
 
+[TestClass]
 public unsafe class IComCallableWrapperTests
 {
-    [Fact]
+    [TestMethod]
     public void IComCallableWrapper_Guid()
     {
         Guid iidGuid = IComCallableWrapper.IID_Guid;

@@ -6,9 +6,10 @@ using Windows.Win32.System.Ole;
 
 namespace Windows.Win32.System.Com;
 
+[TestClass]
 public unsafe class ManagedWrapperTests
 {
-    [Fact]
+    [TestMethod]
     public void ManagedWrapper_SameInterfaceDifferentClasses()
     {
         OleContainerOne containerOne = new();
@@ -18,11 +19,11 @@ public unsafe class ManagedWrapperTests
         ComInterfaceTable tableTwo = ((IManagedWrapper)containerTwo).GetInterfaceTable();
 
         // We should get the same table instance
-        Assert.False(tableOne.Entries is null);
-        Assert.True(tableOne.Entries == tableTwo.Entries);
+        Assert.IsFalse(tableOne.Entries is null);
+        Assert.IsTrue(tableOne.Entries == tableTwo.Entries);
     }
 
-    [Fact]
+    [TestMethod]
     public void ManagedWrapper_DifferentInterfaceDifferentClasses()
     {
         OleContainerOne container = new();
@@ -32,18 +33,18 @@ public unsafe class ManagedWrapperTests
         ComInterfaceTable siteTable = ((IManagedWrapper)site).GetInterfaceTable();
 
         // We should not get the same table instance
-        Assert.False(containerTable.Entries is null);
-        Assert.False(siteTable.Entries is null);
-        Assert.False(containerTable.Entries == siteTable.Entries);
+        Assert.IsFalse(containerTable.Entries is null);
+        Assert.IsFalse(siteTable.Entries is null);
+        Assert.IsFalse(containerTable.Entries == siteTable.Entries);
     }
 
-    [Fact]
+    [TestMethod]
     public void ManagedWrapper_TwoInterfaces()
     {
         OleThing thing = new();
         ComInterfaceTable table = ((IManagedWrapper)thing).GetInterfaceTable();
 
-        Assert.False(table.Entries is null);
+        Assert.IsFalse(table.Entries is null);
         table.Count.Should().BeGreaterThanOrEqualTo(3);
         table.Entries[0].Vtable.Should().NotBe(0);
         table.Entries[0].IID.Should().Be(*IID.Get<IOleClientSite>());
@@ -53,13 +54,13 @@ public unsafe class ManagedWrapperTests
         table.Entries[2].IID.Should().Be(*IID.Get<IComCallableWrapper>());
     }
 
-    [Fact]
+    [TestMethod]
     public void ManagedWrapper_OneInterface()
     {
         OleContainerOne thing = new();
         ComInterfaceTable table = ((IManagedWrapper)thing).GetInterfaceTable();
 
-        Assert.False(table.Entries is null);
+        Assert.IsFalse(table.Entries is null);
         table.Count.Should().BeGreaterThanOrEqualTo(2);
         table.Entries[0].Vtable.Should().NotBe(0);
         table.Entries[0].IID.Should().Be(*IID.Get<IOleContainer>());

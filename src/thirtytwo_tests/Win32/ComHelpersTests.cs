@@ -7,9 +7,10 @@ using Windows.Win32.System.Ole;
 
 namespace Windows.Win32;
 
+[TestClass]
 public unsafe class ComHelpersTests
 {
-    [StaFact]
+    [STATestMethod]
     public void CreateComClass_MediaPlayer()
     {
         using ComScope<IUnknown> mediaPlayer = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer));

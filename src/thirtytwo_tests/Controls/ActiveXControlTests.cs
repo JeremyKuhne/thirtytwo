@@ -5,9 +5,10 @@ using Windows.Win32.System.Com;
 
 namespace Windows.Controls;
 
+[TestClass]
 public class ActiveXControlTests
 {
-    [StaFact]
+    [STATestMethod]
     public void ActiveXControl_MediaPlayer_Create()
     {
         using Window container = new(Window.DefaultBounds);

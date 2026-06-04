@@ -5,9 +5,10 @@ using System.Text;
 
 namespace Windows.ProcessAndThreads;
 
+[TestClass]
 public class ProcessInfoTests
 {
-    [Fact]
+    [TestMethod]
     public void BasicFunctionality()
     {
         ProcessInfo info = new();

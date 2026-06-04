@@ -3,9 +3,10 @@
 
 namespace Windows.Win32.Foundation;
 
+[TestClass]
 public class BstrBufferTests
 {
-    [Fact]
+    [TestMethod]
     public unsafe void BstrBuffer_Basics()
     {
         BSTR bstr = new("Foo");
@@ -16,7 +17,7 @@ public class BstrBufferTests
         buffer[0].IsNull.Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void BstrBuffer_Clear_FreesBstrs()
     {
         using BstrBuffer buffer = new(2);

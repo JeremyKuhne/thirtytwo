@@ -5,9 +5,11 @@ using Windows.Support;
 
 namespace Windows.Win32.Foundation;
 
+[TestClass]
 public class HRESULTTests
 {
-    [RetryFact(MaxRetries = 5)]
+    [TestMethod]
+    [Retry(5)]
     public void HRESULT_ToStringWithDescription()
     {
         // The Marshal.GetExceptionForHR method is not thread safe for CLR (COR_E*) HRESULTs.

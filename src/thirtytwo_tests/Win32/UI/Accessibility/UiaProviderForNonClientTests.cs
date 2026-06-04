@@ -8,9 +8,10 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Windows.Win32.UI.Accessibility;
 
+[TestClass]
 public unsafe class UiaProviderForNonClientTests
 {
-    [StaFact]
+    [STATestMethod]
     public void UiaProviderForNonClient_Window()
     {
         using Window window = new(Window.DefaultBounds);

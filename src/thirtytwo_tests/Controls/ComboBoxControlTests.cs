@@ -7,9 +7,10 @@ using Windows.Win32.Foundation;
 
 namespace Windows.Controls;
 
+[TestClass]
 public class ComboBoxControlTests
 {
-    [Fact]
+    [TestMethod]
     public void Add_Select_Clear_Works()
     {
         using Window window = new(Window.DefaultBounds);
@@ -36,7 +37,7 @@ public class ComboBoxControlTests
         combo.Count.Should().Be(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void Constructor_DefaultValues_Created()
     {
         using Window window = new(Window.DefaultBounds);
@@ -47,7 +48,7 @@ public class ComboBoxControlTests
         combo.SelectedItem.Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void Constructor_WithStyles_Created()
     {
         using Window window = new(Window.DefaultBounds);
@@ -60,7 +61,7 @@ public class ComboBoxControlTests
         combo.Count.Should().Be(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void AddItem_WithValidItem_AddsAndReturnsIndex()
     {
         using Window window = new(Window.DefaultBounds);
@@ -72,7 +73,7 @@ public class ComboBoxControlTests
         combo.Count.Should().Be(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void AddItem_WithNullOrEmpty_ThrowsArgumentException()
     {
         using Window window = new(Window.DefaultBounds);
@@ -84,7 +85,7 @@ public class ComboBoxControlTests
             .Should().Throw<ArgumentException>();
     }
 
-    [Fact]
+    [TestMethod]
     public void AddItems_WithValidCollection_AddsAllAndReturnsCount()
     {
         using Window window = new(Window.DefaultBounds);
@@ -97,7 +98,7 @@ public class ComboBoxControlTests
         combo.Count.Should().Be(3);
     }
 
-    [Fact]
+    [TestMethod]
     public void AddItems_WithNullCollection_ThrowsArgumentNullException()
     {
         using Window window = new(Window.DefaultBounds);
@@ -107,7 +108,7 @@ public class ComboBoxControlTests
             .Should().Throw<ArgumentNullException>();
     }
 
-    [Fact]
+    [TestMethod]
     public void AddItems_WithEmptyCollection_ReturnsCurrentCount()
     {
         using Window window = new(Window.DefaultBounds);
@@ -120,7 +121,7 @@ public class ComboBoxControlTests
         combo.Count.Should().Be(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void RemoveItem_WithValidIndex_RemovesAndReturnsRemainingCount()
     {
         using Window window = new(Window.DefaultBounds);
@@ -138,7 +139,7 @@ public class ComboBoxControlTests
         combo.GetItemText(1).Should().Be("Item3");
     }
 
-    [Fact]
+    [TestMethod]
     public void RemoveItem_WithInvalidIndex_ThrowsArgumentOutOfRangeException()
     {
         using Window window = new(Window.DefaultBounds);
@@ -152,7 +153,7 @@ public class ComboBoxControlTests
             .Should().Throw<ArgumentOutOfRangeException>();
     }
 
-    [Fact]
+    [TestMethod]
     public void Clear_RemovesAllItems()
     {
         using Window window = new(Window.DefaultBounds);
@@ -166,7 +167,7 @@ public class ComboBoxControlTests
         combo.Count.Should().Be(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void SelectedIndex_SetAndGet_UpdatesCorrectly()
     {
         using Window window = new(Window.DefaultBounds);
@@ -185,7 +186,7 @@ public class ComboBoxControlTests
         combo.SelectedIndex.Should().Be(-1);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetItemText_WithValidIndex_ReturnsText()
     {
         using Window window = new(Window.DefaultBounds);
@@ -199,7 +200,7 @@ public class ComboBoxControlTests
         text.Should().Be("Item2");
     }
 
-    [Fact]
+    [TestMethod]
     public void GetItemText_WithInvalidIndex_ThrowsArgumentOutOfRangeException()
     {
         using Window window = new(Window.DefaultBounds);
@@ -213,7 +214,7 @@ public class ComboBoxControlTests
             .Should().Throw<ArgumentOutOfRangeException>();
     }
 
-    [Fact]
+    [TestMethod]
     public void SelectedItem_SetAndGet_UpdatesCorrectly()
     {
         using Window window = new(Window.DefaultBounds);
@@ -231,7 +232,7 @@ public class ComboBoxControlTests
         combo.SelectedIndex.Should().Be(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void SelectedItem_SetToNull_ClearsSelection()
     {
         using Window window = new(Window.DefaultBounds);
@@ -246,7 +247,7 @@ public class ComboBoxControlTests
         combo.SelectedItem.Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void SelectedItem_SetToNonExistentItem_SetsIndexToNegativeOne()
     {
         using Window window = new(Window.DefaultBounds);
@@ -261,7 +262,7 @@ public class ComboBoxControlTests
         combo.SelectedItem.Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void Count_ReflectsNumberOfItems()
     {
         using Window window = new(Window.DefaultBounds);
@@ -282,7 +283,7 @@ public class ComboBoxControlTests
         combo.Count.Should().Be(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void SelectionChanged_FiresFromCommandMessage()
     {
         using MainWindow window = new(Window.DefaultBounds);
@@ -299,7 +300,7 @@ public class ComboBoxControlTests
         changeCount.Should().Be(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void GotFocus_FiresFromCommandMessage()
     {
         using MainWindow window = new(Window.DefaultBounds);
@@ -312,7 +313,7 @@ public class ComboBoxControlTests
         count.Should().Be(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void LostFocus_FiresFromCommandMessage()
     {
         using MainWindow window = new(Window.DefaultBounds);
@@ -325,7 +326,7 @@ public class ComboBoxControlTests
         count.Should().Be(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void DropDown_FiresFromCommandMessage()
     {
         using MainWindow window = new(Window.DefaultBounds);
@@ -338,7 +339,7 @@ public class ComboBoxControlTests
         count.Should().Be(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void CloseUp_FiresFromCommandMessage()
     {
         using MainWindow window = new(Window.DefaultBounds);
@@ -351,7 +352,7 @@ public class ComboBoxControlTests
         count.Should().Be(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void DoubleClicked_FiresFromCommandMessage()
     {
         using MainWindow window = new(Window.DefaultBounds);
@@ -364,7 +365,7 @@ public class ComboBoxControlTests
         count.Should().Be(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void TextChanged_FiresFromCommandMessage()
     {
         using MainWindow window = new(Window.DefaultBounds);
@@ -377,7 +378,7 @@ public class ComboBoxControlTests
         count.Should().Be(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void TextUpdated_FiresFromCommandMessage()
     {
         using MainWindow window = new(Window.DefaultBounds);
@@ -390,7 +391,7 @@ public class ComboBoxControlTests
         count.Should().Be(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void SelectionCommitted_FiresFromCommandMessage()
     {
         using MainWindow window = new(Window.DefaultBounds);
@@ -403,7 +404,7 @@ public class ComboBoxControlTests
         count.Should().Be(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void SelectionCanceled_FiresFromCommandMessage()
     {
         using MainWindow window = new(Window.DefaultBounds);

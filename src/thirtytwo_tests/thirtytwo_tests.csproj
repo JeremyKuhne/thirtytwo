@@ -16,12 +16,17 @@
 
     <!-- Show each failed test's error/stack in the console -->
     <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
+
+    <!-- Use the MSTest runner on the Microsoft Testing Platform -->
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+
+    <!-- RetryAttribute is currently shipped as an experimental MSTest API -->
+    <NoWarn>$(NoWarn);MSTESTEXP</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="xunit.v3" />
-    <PackageReference Include="Xunit.StaFact" />
+    <PackageReference Include="MSTest" />
     <PackageReference Include="coverlet.collector">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

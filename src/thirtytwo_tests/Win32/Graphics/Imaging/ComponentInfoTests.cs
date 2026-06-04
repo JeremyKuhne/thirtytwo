@@ -3,16 +3,17 @@
 
 namespace Windows.Win32.Graphics.Imaging;
 
+[TestClass]
 public class ComponentInfoTests
 {
-    [Fact]
+    [TestMethod]
     public void EnumerateDecoders()
     {
         ComponentEnumerator enumerator = new(WICComponentType.WICDecoder);
         while (enumerator.Next(out ComponentInfo? info))
         {
-            Assert.NotNull(info);
-            Assert.NotNull(info.FriendlyName);
+            Assert.IsNotNull(info);
+            Assert.IsNotNull(info.FriendlyName);
             info.Dispose();
         }
     }

@@ -5,9 +5,10 @@ using Windows.Win32.Foundation;
 
 namespace Windows.Controls;
 
+[TestClass]
 public unsafe class CustomControlTests
 {
-    [Fact]
+    [TestMethod]
     public void TextProperty_RoundTrip()
     {
         using Window window = new(Window.DefaultBounds);
@@ -19,7 +20,7 @@ public unsafe class CustomControlTests
         control.GetWindowText().Should().Be("Bar");
     }
 
-    [Fact]
+    [TestMethod]
     public unsafe void SetTextMessage_UpdatesText()
     {
         using Window window = new(Window.DefaultBounds);
@@ -35,7 +36,7 @@ public unsafe class CustomControlTests
         control.GetWindowText().Should().Be(MessageText);
     }
 
-    [Fact]
+    [TestMethod]
     public unsafe void GetTextMessage_ReturnsText()
     {
         using Window window = new(Window.DefaultBounds);
@@ -53,7 +54,7 @@ public unsafe class CustomControlTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public unsafe void GetTextMessage_BufferSmallerThanTextTruncates()
     {
         using Window window = new(Window.DefaultBounds);

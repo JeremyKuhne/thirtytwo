@@ -7,11 +7,12 @@ using Windows.Win32.UI.Accessibility;
 
 namespace Windows.Win32.System.Ole;
 
+[TestClass]
 public unsafe class LoadRegTypeLibTests
 {
     private static readonly Guid s_accessibilityTypeLib = new("1ea4dbf0-3c3b-11cf-810c-00aa00389b71");
 
-    [StaFact]
+    [STATestMethod]
     public void LoadRegTypeLib_Accessibility()
     {
         using ComScope<ITypeLib> typelib = new(null);

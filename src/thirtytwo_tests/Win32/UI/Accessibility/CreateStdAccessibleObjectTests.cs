@@ -10,10 +10,11 @@ using IServiceProvider = Windows.Win32.System.Com.IServiceProvider;
 
 namespace Windows.Win32.UI.Accessibility;
 
-[Collection("Accessibility")]
+[DoNotParallelize]
+[TestClass]
 public unsafe class CreateStdAccessibleObjectTests
 {
-    [StaFact]
+    [STATestMethod]
     public void CreateStdAccessibleObject_Window()
     {
         // Default accessibility objects implement the following publicly documented interfaces:
