@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.CompilerServices;
@@ -10,11 +10,11 @@ public unsafe partial struct HFONT : IHandle<HFONT>, IDisposable
     HFONT IHandle<HFONT>.Handle => this;
     object? IHandle<HFONT>.Wrapper => null;
 
-    public static implicit operator HFONT(StockFont font) => (HFONT)Interop.GetStockObject((GET_STOCK_OBJECT_FLAGS)font);
+    public static implicit operator HFONT(StockFont font) => (HFONT)PInvoke.GetStockObject((GET_STOCK_OBJECT_FLAGS)font);
 
     public static explicit operator HFONT(HGDIOBJ handle)
     {
-        Debug.Assert(handle.IsNull || (OBJ_TYPE)Interop.GetObjectType(handle) == OBJ_TYPE.OBJ_FONT);
+        Debug.Assert(handle.IsNull || (OBJ_TYPE)PInvoke.GetObjectType(handle) == OBJ_TYPE.OBJ_FONT);
         return new(handle.Value);
     }
 
@@ -46,7 +46,7 @@ public unsafe partial struct HFONT : IHandle<HFONT>, IDisposable
     {
         fixed (char* t = typeface)
         {
-            return Interop.CreateFont(
+            return PInvoke.CreateFont(
                 height,
                 width,
                 escapement,
@@ -67,7 +67,7 @@ public unsafe partial struct HFONT : IHandle<HFONT>, IDisposable
     public LOGFONTW GetLogicalFont()
     {
         Unsafe.SkipInit(out LOGFONTW logfont);
-        if (Interop.GetObject(this, sizeof(LOGFONTW), &logfont) == 0)
+        if (PInvoke.GetObject(this, sizeof(LOGFONTW), &logfont) == 0)
         {
             logfont = default;
         }
@@ -90,7 +90,7 @@ public unsafe partial struct HFONT : IHandle<HFONT>, IDisposable
     public static int GetHeightForDpi(int pointSize, int dpi)
     {
         // A point is 1/72 of an inch (1/12 of a pica)
-        return -Interop.MulDiv(
+        return -PInvoke.MulDiv(
             pointSize,
             dpi,
             72);
@@ -100,7 +100,7 @@ public unsafe partial struct HFONT : IHandle<HFONT>, IDisposable
     {
         if (!IsNull)
         {
-            Interop.DeleteObject(this);
+            PInvoke.DeleteObject(this);
         }
 
         Unsafe.AsRef(in this) = default;

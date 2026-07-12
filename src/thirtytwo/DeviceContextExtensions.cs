@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -12,7 +12,7 @@ public static unsafe partial class DeviceContextExtensions
     /// <inheritdoc cref="Interop.GetGraphicsMode(HDC)"/>
     public static GRAPHICS_MODE GetGraphicsMode<T>(this T context) where T : IHandle<HDC>
     {
-        GRAPHICS_MODE mode = (GRAPHICS_MODE)Interop.GetGraphicsMode(context.Handle);
+        GRAPHICS_MODE mode = (GRAPHICS_MODE)PInvoke.GetGraphicsMode(context.Handle);
         GC.KeepAlive(context.Wrapper);
         return mode;
     }
@@ -21,7 +21,7 @@ public static unsafe partial class DeviceContextExtensions
     public static GRAPHICS_MODE SetGraphicsMode<T>(this T context, GRAPHICS_MODE mode)
         where T : IHandle<HDC>
     {
-        mode = (GRAPHICS_MODE)Interop.SetGraphicsMode(context.Handle, mode);
+        mode = (GRAPHICS_MODE)PInvoke.SetGraphicsMode(context.Handle, mode);
         GC.KeepAlive(context.Wrapper);
         return mode;
     }
@@ -29,7 +29,7 @@ public static unsafe partial class DeviceContextExtensions
     /// <inheritdoc cref="Interop.GetBkColor(HDC)"/>
     public static Color GetBackgroundColor<T>(this T context) where T : IHandle<HDC>
     {
-        COLORREF result = Interop.GetBkColor(context.Handle);
+        COLORREF result = PInvoke.GetBkColor(context.Handle);
         GC.KeepAlive(context.Wrapper);
         return result;
     }
@@ -37,7 +37,7 @@ public static unsafe partial class DeviceContextExtensions
     /// <inheritdoc cref="Interop.SetBkColor(HDC, COLORREF)"/>
     public static Color SetBackgroundColor<T>(this T context, Color color) where T : IHandle<HDC>
     {
-        COLORREF result = Interop.SetBkColor(context.Handle, (COLORREF)color);
+        COLORREF result = PInvoke.SetBkColor(context.Handle, (COLORREF)color);
         GC.KeepAlive(context.Wrapper);
         return result;
     }
@@ -48,7 +48,7 @@ public static unsafe partial class DeviceContextExtensions
     {
         fixed (Matrix3x2* t = &transform)
         {
-            bool result = Interop.GetWorldTransform(context.Handle, (XFORM*)t);
+            bool result = PInvoke.GetWorldTransform(context.Handle, (XFORM*)t);
             GC.KeepAlive(context.Wrapper);
             return result;
         }
@@ -60,7 +60,7 @@ public static unsafe partial class DeviceContextExtensions
     {
         fixed (Matrix3x2* t = &transform)
         {
-            bool result = Interop.SetWorldTransform(context.Handle, (XFORM*)t);
+            bool result = PInvoke.SetWorldTransform(context.Handle, (XFORM*)t);
             GC.KeepAlive(context.Wrapper);
             return result;
         }
@@ -70,7 +70,7 @@ public static unsafe partial class DeviceContextExtensions
     public static int GetDeviceCaps<T>(this T context, GET_DEVICE_CAPS_INDEX index)
        where T : IHandle<HDC>
     {
-        int result = Interop.GetDeviceCaps(context.Handle, index);
+        int result = PInvoke.GetDeviceCaps(context.Handle, index);
         GC.KeepAlive(context.Wrapper);
         return result;
     }
@@ -82,9 +82,9 @@ public static unsafe partial class DeviceContextExtensions
         where T : IHandle<HDC>
     {
         Application.EnsureDpiAwareness();
-        int result = Interop.MulDiv(
+        int result = PInvoke.MulDiv(
            pointSize,
-           Interop.GetDeviceCaps(context.Handle, GET_DEVICE_CAPS_INDEX.LOGPIXELSY),
+           PInvoke.GetDeviceCaps(context.Handle, GET_DEVICE_CAPS_INDEX.LOGPIXELSY),
            72);
 
         GC.KeepAlive(context.Wrapper);
@@ -94,20 +94,20 @@ public static unsafe partial class DeviceContextExtensions
     public static ObjectScope<T> SelectObject<T>(this T context, HGDIOBJ @object)
         where T : IHandle<HDC>
     {
-        HGDIOBJ handle = Interop.SelectObject(context.Handle, @object);
+        HGDIOBJ handle = PInvoke.SelectObject(context.Handle, @object);
         if (handle.IsNull)
         {
             return default;
         }
 
-        OBJ_TYPE type = (OBJ_TYPE)Interop.GetObjectType(@object);
+        OBJ_TYPE type = (OBJ_TYPE)PInvoke.GetObjectType(@object);
         return type == OBJ_TYPE.OBJ_REGION ? default : new(handle, context);
     }
 
     public static PolyFillMode SetPolyFillMode<T>(this T context, PolyFillMode mode)
         where T : IHandle<HDC>
     {
-        PolyFillMode result = (PolyFillMode)Interop.SetPolyFillMode(context.Handle, (CREATE_POLYGON_RGN_MODE)mode);
+        PolyFillMode result = (PolyFillMode)PInvoke.SetPolyFillMode(context.Handle, (CREATE_POLYGON_RGN_MODE)mode);
         GC.KeepAlive(context.Wrapper);
         return result;
     }
@@ -120,7 +120,7 @@ public static unsafe partial class DeviceContextExtensions
     {
         fixed (Point* p = points)
         {
-            bool result = Interop.Polygon(context.Handle, p, points.Length);
+            bool result = PInvoke.Polygon(context.Handle, p, points.Length);
             GC.KeepAlive(context.Wrapper);
             return result;
         }
@@ -134,7 +134,7 @@ public static unsafe partial class DeviceContextExtensions
     {
         fixed (Point* p = points)
         {
-            bool result = Interop.Polyline(context.Handle, p, points.Length);
+            bool result = PInvoke.Polyline(context.Handle, p, points.Length);
             GC.KeepAlive(context.Wrapper);
             return result;
         }
@@ -170,19 +170,19 @@ public static unsafe partial class DeviceContextExtensions
         where TDeviceContext : IHandle<HDC>
         where TFont : IHandle<HFONT>
     {
-        int state = Interop.SaveDC(context.Handle);
+        int state = PInvoke.SaveDC(context.Handle);
         Debug.Assert(state != 0);
 
         BACKGROUND_MODE newBackGroundMode = (backColor.IsEmpty || backColor == Color.Transparent)
             ? BACKGROUND_MODE.TRANSPARENT
             : BACKGROUND_MODE.OPAQUE;
 
-        int priorBkMode = Interop.SetBkMode(context.Handle, newBackGroundMode);
+        int priorBkMode = PInvoke.SetBkMode(context.Handle, newBackGroundMode);
         Debug.Assert(priorBkMode != 0);
 
         if (newBackGroundMode == BACKGROUND_MODE.OPAQUE)
         {
-            Interop.SetBkColor(context.Handle, (COLORREF)backColor);
+            PInvoke.SetBkColor(context.Handle, (COLORREF)backColor);
         }
 
         if (foreColor.IsEmpty)
@@ -190,11 +190,11 @@ public static unsafe partial class DeviceContextExtensions
             foreColor = Color.Black;
         }
 
-        Interop.SetTextColor(context.Handle, (COLORREF)foreColor);
+        PInvoke.SetTextColor(context.Handle, (COLORREF)foreColor);
 
         if (hfont is not null && !hfont.Handle.IsNull)
         {
-            Interop.SelectObject(context.Handle, hfont.Handle);
+            PInvoke.SelectObject(context.Handle, hfont.Handle);
         }
 
         DRAWTEXTPARAMS* dtp = null;
@@ -217,7 +217,7 @@ public static unsafe partial class DeviceContextExtensions
         }
         finally
         {
-            bool success = Interop.RestoreDC(context.Handle, state);
+            bool success = PInvoke.RestoreDC(context.Handle, state);
             Debug.Assert(success);
             GC.KeepAlive(context.Wrapper);
             GC.KeepAlive(hfont?.Wrapper);
@@ -237,7 +237,7 @@ public static unsafe partial class DeviceContextExtensions
             // The string won't be changed, we can just pin
             fixed (char* c = text)
             {
-                int result = Interop.DrawTextEx(
+                int result = PInvoke.DrawTextEx(
                     context.Handle,
                     (PWSTR)c,
                     text.Length,
@@ -247,7 +247,7 @@ public static unsafe partial class DeviceContextExtensions
 
                 if (result == 0)
                 {
-                    Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_SUCCESS);
+                    WIN32_ERROR.ERROR_SUCCESS.ThrowIfLastErrorNot();
                 }
 
                 GC.KeepAlive(context.Wrapper);
@@ -259,10 +259,10 @@ public static unsafe partial class DeviceContextExtensions
         text.CopyTo(buffer);
         fixed (char* c = buffer)
         {
-            int result = Interop.DrawTextEx(context.Handle, (PWSTR)c, text.Length, bounds, (DRAW_TEXT_FORMAT)format, dtp);
+            int result = PInvoke.DrawTextEx(context.Handle, (PWSTR)c, text.Length, bounds, (DRAW_TEXT_FORMAT)format, dtp);
             if (result == 0)
             {
-                Error.ThrowLastError();
+                Error.GetLastError().ThrowThirtyTwoException();
             }
 
             GC.KeepAlive(context.Wrapper);
@@ -279,7 +279,7 @@ public static unsafe partial class DeviceContextExtensions
             where TDeviceContext : IHandle<HDC>
             where TIcon : IHandle<HICON>
     {
-        if (!Interop.DrawIconEx(
+        if (!PInvoke.DrawIconEx(
             context.Handle,
             location.X, location.Y,
             icon.Handle,
@@ -288,7 +288,7 @@ public static unsafe partial class DeviceContextExtensions
             HBRUSH.Null,
             flags))
         {
-            Error.ThrowLastError();
+            Error.GetLastError().ThrowThirtyTwoException();
         }
 
         GC.KeepAlive(context.Wrapper);
@@ -298,10 +298,10 @@ public static unsafe partial class DeviceContextExtensions
     public static DeviceContext CreateCompatibleDeviceContext<TDeviceContext>(this TDeviceContext context)
         where TDeviceContext : IHandle<HDC>
     {
-        HDC hdc = Interop.CreateCompatibleDC(context.Handle);
+        HDC hdc = PInvoke.CreateCompatibleDC(context.Handle);
         if (hdc.IsNull)
         {
-            Error.ThrowLastError();
+            Error.GetLastError().ThrowThirtyTwoException();
         }
 
         GC.KeepAlive(context.Wrapper);
@@ -310,10 +310,10 @@ public static unsafe partial class DeviceContextExtensions
 
     public static Bitmap CreateCompatibleBitmap<T>(this T context, Size size) where T : IHandle<HDC>
     {
-        HBITMAP hbitmap = Interop.CreateCompatibleBitmap(context.Handle, size.Width, size.Height);
+        HBITMAP hbitmap = PInvoke.CreateCompatibleBitmap(context.Handle, size.Width, size.Height);
         if (hbitmap.IsNull)
         {
-            Error.ThrowLastError();
+            Error.GetLastError().ThrowThirtyTwoException();
         }
 
         GC.KeepAlive(context.Wrapper);
@@ -322,14 +322,14 @@ public static unsafe partial class DeviceContextExtensions
 
     public static unsafe bool OffsetWindowOrigin<T>(this T context, int x, int y) where T : IHandle<HDC>
     {
-        bool success = Interop.OffsetWindowOrgEx(context.Handle, x, y, null);
+        bool success = PInvoke.OffsetWindowOrgEx(context.Handle, x, y, null);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
 
     public static unsafe bool OffsetViewportOrigin<T>(this T context, int x, int y) where T : IHandle<HDC>
     {
-        bool success = Interop.OffsetViewportOrgEx(context.Handle, x, y, null);
+        bool success = PInvoke.OffsetViewportOrgEx(context.Handle, x, y, null);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
@@ -338,7 +338,7 @@ public static unsafe partial class DeviceContextExtensions
     {
         fixed (Size* s = &size)
         {
-            bool success = Interop.GetWindowExtEx(context.Handle, (SIZE*)s);
+            bool success = PInvoke.GetWindowExtEx(context.Handle, (SIZE*)s);
             GC.KeepAlive(context.Wrapper);
             return success;
         }
@@ -349,7 +349,7 @@ public static unsafe partial class DeviceContextExtensions
     /// </summary>
     public static unsafe bool SetWindowExtents<T>(this T context, Size size) where T : IHandle<HDC>
     {
-        bool success = Interop.SetWindowExtEx(context.Handle, size.Width, size.Height, null);
+        bool success = PInvoke.SetWindowExtEx(context.Handle, size.Width, size.Height, null);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
@@ -358,7 +358,7 @@ public static unsafe partial class DeviceContextExtensions
     {
         fixed (Size* s = &size)
         {
-            bool success = Interop.GetViewportExtEx(context.Handle, (SIZE*)s);
+            bool success = PInvoke.GetViewportExtEx(context.Handle, (SIZE*)s);
             GC.KeepAlive(context.Wrapper);
             return success;
         }
@@ -366,21 +366,21 @@ public static unsafe partial class DeviceContextExtensions
 
     public static unsafe bool SetViewportExtents<T>(this T context, Size size) where T : IHandle<HDC>
     {
-        bool success = Interop.SetViewportExtEx(context.Handle, size.Width, size.Height, null);
+        bool success = PInvoke.SetViewportExtEx(context.Handle, size.Width, size.Height, null);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
 
     public static MappingMode GetMappingMode<T>(this T context) where T : IHandle<HDC>
     {
-        MappingMode result = (MappingMode)Interop.GetMapMode(context.Handle);
+        MappingMode result = (MappingMode)PInvoke.GetMapMode(context.Handle);
         GC.KeepAlive(context.Wrapper);
         return result;
     }
 
     public static MappingMode SetMappingMode<T>(this T context, MappingMode mapMode) where T : IHandle<HDC>
     {
-        MappingMode result = (MappingMode)Interop.SetMapMode(context.Handle, (HDC_MAP_MODE)mapMode);
+        MappingMode result = (MappingMode)PInvoke.SetMapMode(context.Handle, (HDC_MAP_MODE)mapMode);
         GC.KeepAlive(context.Wrapper);
         return result;
     }
@@ -389,7 +389,7 @@ public static unsafe partial class DeviceContextExtensions
         where T : IHandle<HDC>
     {
         Point point;
-        success = Interop.GetViewportOrgEx(context.Handle, &point);
+        success = PInvoke.GetViewportOrgEx(context.Handle, &point);
         GC.KeepAlive(context.Wrapper);
         return point;
     }
@@ -397,7 +397,7 @@ public static unsafe partial class DeviceContextExtensions
     public static unsafe bool SetViewportOrigin<T>(this T context, Point point)
         where T : IHandle<HDC>
     {
-        bool result = Interop.SetViewportOrgEx(context.Handle, point.X, point.Y, null);
+        bool result = PInvoke.SetViewportOrgEx(context.Handle, point.X, point.Y, null);
         GC.KeepAlive(context.Wrapper);
         return result;
     }
@@ -405,7 +405,7 @@ public static unsafe partial class DeviceContextExtensions
     public static RegionType SelectClippingRegion<T>(this T context, HRGN region)
         where T : IHandle<HDC>
     {
-        RegionType type = (RegionType)Interop.SelectClipRgn(context.Handle, region);
+        RegionType type = (RegionType)PInvoke.SelectClipRgn(context.Handle, region);
         GC.KeepAlive(context.Wrapper);
         return type;
     }
@@ -415,7 +415,7 @@ public static unsafe partial class DeviceContextExtensions
 
     public static bool MoveTo<T>(this T context, int x, int y) where T : IHandle<HDC>
     {
-        bool result = Interop.MoveToEx(context.Handle, x, y, null);
+        bool result = PInvoke.MoveToEx(context.Handle, x, y, null);
         GC.KeepAlive(context.Wrapper);
         return result;
     }
@@ -425,7 +425,7 @@ public static unsafe partial class DeviceContextExtensions
 
     public static bool LineTo<T>(this T context, int x, int y) where T : IHandle<HDC>
     {
-        bool success = Interop.LineTo(context.Handle, x, y);
+        bool success = PInvoke.LineTo(context.Handle, x, y);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
@@ -435,7 +435,7 @@ public static unsafe partial class DeviceContextExtensions
 
     public static bool Ellipse<T>(this T context, int left, int top, int right, int bottom) where T : IHandle<HDC>
     {
-        bool success = Interop.Ellipse(context.Handle, left, top, right, bottom);
+        bool success = PInvoke.Ellipse(context.Handle, left, top, right, bottom);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
@@ -447,7 +447,7 @@ public static unsafe partial class DeviceContextExtensions
     {
         fixed (Point* p = points)
         {
-            bool success = Interop.PolyBezier(context.Handle, p, (uint)points.Length);
+            bool success = PInvoke.PolyBezier(context.Handle, p, (uint)points.Length);
             GC.KeepAlive(context.Wrapper);
             return success;
         }
@@ -459,7 +459,7 @@ public static unsafe partial class DeviceContextExtensions
     public static bool Rectangle<T>(this T context, int left, int top, int right, int bottom)
         where T : IHandle<HDC>
     {
-        bool success = Interop.Rectangle(context.Handle, left, top, right, bottom);
+        bool success = PInvoke.Rectangle(context.Handle, left, top, right, bottom);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
@@ -470,7 +470,7 @@ public static unsafe partial class DeviceContextExtensions
     public static bool RoundRectangle<T>(this T context, int left, int top, int right, int bottom, int width, int height)
         where T : IHandle<HDC>
     {
-        bool success = Interop.RoundRect(context.Handle, left, top, right, bottom, width, height);
+        bool success = PInvoke.RoundRect(context.Handle, left, top, right, bottom, width, height);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
@@ -478,7 +478,7 @@ public static unsafe partial class DeviceContextExtensions
     public static bool FillRectangle<T>(this T context, Rectangle rectangle, HBRUSH hbrush) where T : IHandle<HDC>
     {
         RECT rect = rectangle;
-        bool success = (BOOL)Interop.FillRect(context.Handle, &rect, hbrush);
+        bool success = (BOOL)PInvoke.FillRect(context.Handle, &rect, hbrush);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
@@ -486,7 +486,7 @@ public static unsafe partial class DeviceContextExtensions
     public static bool FrameRectangle<T>(this T context, Rectangle rectangle, HBRUSH brush) where T : IHandle<HDC>
     {
         RECT rect = rectangle;
-        bool success = (BOOL)Interop.FrameRect(context.Handle, &rect, brush);
+        bool success = (BOOL)PInvoke.FrameRect(context.Handle, &rect, brush);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
@@ -494,7 +494,7 @@ public static unsafe partial class DeviceContextExtensions
     public static bool InvertRectangle<T>(this T context, Rectangle rectangle) where T : IHandle<HDC>
     {
         RECT rect = rectangle;
-        bool success = Interop.InvertRect(context.Handle, &rect);
+        bool success = PInvoke.InvertRect(context.Handle, &rect);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
@@ -502,7 +502,7 @@ public static unsafe partial class DeviceContextExtensions
     public static bool DrawFocusRectangle<T>(this T context, Rectangle rectangle) where T : IHandle<HDC>
     {
         RECT rect = rectangle;
-        bool success = Interop.DrawFocusRect(context.Handle, &rect);
+        bool success = PInvoke.DrawFocusRect(context.Handle, &rect);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
@@ -510,28 +510,28 @@ public static unsafe partial class DeviceContextExtensions
     public static PenMixMode SetRasterOperation<T>(this T context, PenMixMode foregroundMixMode)
         where T : IHandle<HDC>
     {
-        PenMixMode result = (PenMixMode)Interop.SetROP2(context.Handle, (R2_MODE)foregroundMixMode);
+        PenMixMode result = (PenMixMode)PInvoke.SetROP2(context.Handle, (R2_MODE)foregroundMixMode);
         GC.KeepAlive(context.Wrapper);
         return result;
     }
 
     public static PenMixMode GetRasterOperation<T>(this T context) where T : IHandle<HDC>
     {
-        PenMixMode result = (PenMixMode)Interop.GetROP2(context.Handle);
+        PenMixMode result = (PenMixMode)PInvoke.GetROP2(context.Handle);
         GC.KeepAlive(context.Wrapper);
         return result;
     }
 
     public static Color GetBrushColor<T>(this T context) where T : IHandle<HDC>
     {
-        COLORREF color = Interop.GetDCBrushColor(context.Handle);
+        COLORREF color = PInvoke.GetDCBrushColor(context.Handle);
         GC.KeepAlive(context.Wrapper);
         return color;
     }
 
     public static Color GetTextColor<T>(this T context) where T : IHandle<HDC>
     {
-        COLORREF color = Interop.GetTextColor(context.Handle);
+        COLORREF color = PInvoke.GetTextColor(context.Handle);
         GC.KeepAlive(context.Wrapper);
         return color;
     }

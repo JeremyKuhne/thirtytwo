@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.System.Com;
@@ -40,7 +40,7 @@ public unsafe partial class ActiveXControl
                 : base(connectionPoint, takeOwnership: true)
             {
                 uint cookie = 0;
-                IUnknown* ccw = ComHelpers.TryGetComPointer<IUnknown>(sink, out HRESULT hr);
+                IUnknown* ccw = sink.TryGetComPointer<IUnknown>(out HRESULT hr);
                 if (hr.Failed || connectionPoint->Advise(ccw, &cookie).Failed)
                 {
                     Dispose();

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.Foundation;
@@ -24,14 +24,14 @@ public unsafe class CreateStdAccessibleObjectTests
         using Window window = new(Window.DefaultBounds);
 
         // using ComScope<IAccessible> accessible = new(null);
-        // HRESULT hr = Interop.AccessibleObjectFromWindow(
+        // HRESULT hr = PInvoke.AccessibleObjectFromWindow(
         //     window,
         //     (uint)OBJECT_IDENTIFIER.OBJID_WINDOW,
         //     IID.Get<IDispatch>(),
         //     accessible);
 
         using ComScope<IAccessible> accessible = new(null);
-        HRESULT hr = Interop.CreateStdAccessibleObject(
+        HRESULT hr = PInvoke.CreateStdAccessibleObject(
             window.Handle,
             (int)OBJECT_IDENTIFIER.OBJID_WINDOW,
             IID.Get<IAccessible>(),
@@ -52,23 +52,23 @@ public unsafe class CreateStdAccessibleObjectTests
         childCount.Should().Be(7);
 
         using BSTR description = default;
-        accessible.Pointer->get_accDescription((VARIANT)(int)Interop.CHILDID_SELF, &description).Should().Be(HRESULT.S_FALSE);
+        accessible.Pointer->get_accDescription((VARIANT)(int)PInvoke.CHILDID_SELF, &description).Should().Be(PInvoke.S_FALSE);
         accessible.Pointer->get_accDescription((VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU, &description).Succeeded.Should().BeTrue();
         description.ToStringAndFree().Should().Be("Contains commands to manipulate the window");
 
         // Navigating left from the system menu goes nowhere.
         using VARIANT result = default;
-        hr = accessible.Pointer->accNavigate((int)Interop.NAVDIR_LEFT, (VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU, &result);
+        hr = accessible.Pointer->accNavigate((int)PInvoke.NAVDIR_LEFT, (VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU, &result);
         result.vt.Should().Be(VARENUM.VT_EMPTY);
         result.Dispose();
 
         // We get IDispatch for the title bar going right from the system menu
-        hr = accessible.Pointer->accNavigate((int)Interop.NAVDIR_RIGHT, (VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU, &result);
+        hr = accessible.Pointer->accNavigate((int)PInvoke.NAVDIR_RIGHT, (VARIANT)(int)OBJECT_IDENTIFIER.OBJID_SYSMENU, &result);
         using ComScope<IDispatch> right = new((IDispatch*)result);
 
         // Can't directly get IAccessibleEx / IRawElementProviderSimple
-        right.TryQueryInterface<IAccessibleEx>().IsNull.Should().BeTrue();
-        right.TryQueryInterface<IRawElementProviderSimple>().IsNull.Should().BeTrue();
+        right.TryQueryInterface<IAccessibleEx>(out _).IsNull.Should().BeTrue();
+        right.TryQueryInterface<IRawElementProviderSimple>(out _).IsNull.Should().BeTrue();
 
         using (ComScope<IServiceProvider> rightService = right.QueryInterface<IServiceProvider>())
         {
@@ -99,9 +99,9 @@ public unsafe class CreateStdAccessibleObjectTests
 
         byte* id = default;
         uint length;
-        identity.Pointer->GetIdentityString(Interop.CHILDID_SELF, &id, &length);
+        identity.Pointer->GetIdentityString(PInvoke.CHILDID_SELF, &id, &length);
         Span<byte> idSpan = new(id, (int)length);
         idSpan.IsEmpty.Should().BeFalse();
-        Interop.CoTaskMemFree(id);
+        PInvoke.CoTaskMemFree(id);
     }
 }

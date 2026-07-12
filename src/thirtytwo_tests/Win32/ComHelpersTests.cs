@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.Foundation;
@@ -13,7 +13,7 @@ public unsafe class ComHelpersTests
     [STATestMethod]
     public void CreateComClass_MediaPlayer()
     {
-        using ComScope<IUnknown> mediaPlayer = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer));
+        using ComScope<IUnknown> mediaPlayer = new(CLSID.WindowsMediaPlayer.CreateComClass());
 
         using ComScope<IDispatch> dispatch = mediaPlayer.TryQueryInterface<IDispatch>(out HRESULT hr);
         hr.Succeeded.Should().BeTrue();

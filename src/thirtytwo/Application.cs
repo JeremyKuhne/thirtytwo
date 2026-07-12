@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -55,11 +55,11 @@ public static unsafe class Application
     internal static void EnsureDpiAwareness()
     {
         // Enable High DPI awareness if not enabled already. Requires Windows 10.
-        if (Interop.GetAwarenessFromDpiAwarenessContext(Interop.GetThreadDpiAwarenessContext()) == DPI_AWARENESS.DPI_AWARENESS_UNAWARE
-            && Interop.SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2).IsNull)
+        if (PInvoke.GetAwarenessFromDpiAwarenessContext(PInvoke.GetThreadDpiAwarenessContext()) == DPI_AWARENESS.DPI_AWARENESS_UNAWARE
+            && PInvoke.SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2).IsNull)
         {
             // Fall back from V2 if needed
-            Interop.SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+            PInvoke.SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT.DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
         }
     }
 
@@ -70,7 +70,7 @@ public static unsafe class Application
         TaskDialogButtons buttons = TaskDialogButtons.Ok,
         TaskDialogIcon? icon = null)
     {
-        HWND active = Interop.GetActiveWindow();
+        HWND active = PInvoke.GetActiveWindow();
         return new HandleRef<HWND>(Window.FromHandle(active), active).ShowTaskDialog(mainInstruction, content, title, buttons, icon);
     }
 
@@ -95,7 +95,7 @@ public static unsafe class Application
         string caption,
         MessageBoxStyles style = MessageBoxStyles.Ok)
     {
-        HWND active = Interop.GetActiveWindow();
+        HWND active = PInvoke.GetActiveWindow();
         return new HandleRef<HWND>(Window.FromHandle(active), active).MessageBox(text, caption, style);
     }
 
@@ -146,15 +146,15 @@ public static unsafe class Application
             window.ShowWindow(ShowWindowCommand.Normal);
             window.UpdateWindow();
 
-            while (Interop.GetMessage(out MSG message, HWND.Null, 0, 0))
+            while (PInvoke.GetMessage(out MSG message, HWND.Null, 0, 0))
             {
                 if (Window.FromHandle(message.hwnd) is { } target && target.PreProcessMessage(ref message))
                 {
                     continue;
                 }
 
-                Interop.TranslateMessage(&message);
-                Interop.DispatchMessage(&message);
+                PInvoke.TranslateMessage(&message);
+                PInvoke.DispatchMessage(&message);
             }
 
             // Make sure our window doesn't get collected while we're pumping messages
@@ -162,7 +162,7 @@ public static unsafe class Application
         }
         catch
         {
-            Interop.DestroyWindow(window);
+            PInvoke.DestroyWindow(window);
             throw;
         }
         finally
@@ -177,7 +177,7 @@ public static unsafe class Application
         {
             if (message == MessageType.Destroy)
             {
-                Interop.PostQuitMessage(0);
+                PInvoke.PostQuitMessage(0);
             }
 
             return null;
@@ -205,7 +205,7 @@ public static unsafe class Application
     public static void EnumerateThreadWindows(
         Func<HWND, bool> callback)
     {
-        using var enumerator = new ThreadWindowEnumerator(Interop.GetCurrentThreadId(), callback);
+        using var enumerator = new ThreadWindowEnumerator(PInvoke.GetCurrentThreadId(), callback);
     }
 
     /// <summary>
@@ -223,14 +223,14 @@ public static unsafe class Application
 
     public static string GetUserDefaultLocaleName()
     {
-        Span<char> localeName = stackalloc char[(int)Interop.LOCALE_NAME_MAX_LENGTH];
+        Span<char> localeName = stackalloc char[(int)PInvoke.LOCALE_NAME_MAX_LENGTH];
         fixed (char* ln = localeName)
         {
-            int length = Interop.GetUserDefaultLocaleName(ln, (int)Interop.LOCALE_NAME_MAX_LENGTH);
+            int length = PInvoke.GetUserDefaultLocaleName(ln, (int)PInvoke.LOCALE_NAME_MAX_LENGTH);
 
             if (length == 0)
             {
-                Error.ThrowLastError();
+                Error.GetLastError().ThrowThirtyTwoException();
             }
 
             return localeName[..(length - 1)].ToString();

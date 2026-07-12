@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.Foundation;
@@ -15,7 +15,7 @@ public unsafe class StandardDispatchTests
     {
         // Load the registered type library and get the relevant ITypeInfo for the specified interface.
         using ComScope<ITypeLib> typelib = new(null);
-        HRESULT hr = Interop.LoadRegTypeLib(
+        HRESULT hr = PInvoke.LoadRegTypeLib(
             new Guid("00020430-0000-0000-C000-000000000046"),
             2,
             0,
@@ -27,12 +27,13 @@ public unsafe class StandardDispatchTests
         using ComScope<ITypeInfo> typeinfo = new(null);
         typelib.Pointer->GetTypeInfoOfGuid(IUnknown.IID_Guid, typeinfo);
 
-        IUnknown* unknown = ComHelpers.GetComPointer<IUnknown>(new OleWindow());
+        IUnknown* unknown = new OleWindow().GetComPointer<IUnknown>();
 
         // The unknown we get is a wrapper unknown.
-        unknown->QueryInterface(IUnknown.IID_Guid, out void* instance).ThrowOnFailure();
+        void* instance;
+        unknown->QueryInterface(IID.Get<IUnknown>(), &instance).ThrowOnFailure();
         IUnknown* standard = default;
-        Interop.CreateStdDispatch(
+        PInvoke.CreateStdDispatch(
             unknown,
             instance,
             typeinfo.Pointer,
@@ -48,19 +49,19 @@ public unsafe class StandardDispatchTests
 
     public class OleWindow : IOleWindow.Interface, IManagedWrapper<IOleWindow>
     {
-        HRESULT IOleWindow.Interface.GetWindow(HWND* phwnd) => HRESULT.E_NOTIMPL;
-        HRESULT IOleWindow.Interface.ContextSensitiveHelp(BOOL fEnterMode) => HRESULT.E_NOTIMPL;
+        HRESULT IOleWindow.Interface.GetWindow(HWND* phwnd) => PInvoke.E_NOTIMPL;
+        HRESULT IOleWindow.Interface.ContextSensitiveHelp(BOOL fEnterMode) => PInvoke.E_NOTIMPL;
     }
 
     [TestMethod]
     public void StandardDispatch_IUnknown()
     {
         SimpleDispatch unknownDispatch = new();
-        using ComScope<IDispatch> dispatch = new(ComHelpers.GetComPointer<IDispatch>(unknownDispatch));
+        using ComScope<IDispatch> dispatch = new(unknownDispatch.GetComPointer<IDispatch>());
         using ComScope<IDispatchEx> dispatchEx = dispatch.TryQueryInterface<IDispatchEx>(out HRESULT hr);
 
         using ComScope<ITypeInfo> typeInfo = new(null);
-        hr = dispatch.Pointer->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
+        hr = dispatch.Pointer->GetTypeInfo(0, PInvoke.GetThreadLocale(), typeInfo);
         hr.Should().Be(HRESULT.S_OK);
 
         // This all matches what we get off of an IReflect dispatch through COM interop
@@ -91,7 +92,7 @@ public unsafe class StandardDispatchTests
 
         VARDESC* vardesc;
         hr = typeInfo.Pointer->GetVarDesc(1, &vardesc);
-        hr.Should().Be(HRESULT.TYPE_E_ELEMENTNOTFOUND);
+        hr.Should().Be(PInvoke.TYPE_E_ELEMENTNOTFOUND);
 
         FUNCDESC* funcdesc;
         hr = typeInfo.Pointer->GetFuncDesc(0, &funcdesc);
@@ -126,7 +127,7 @@ public unsafe class StandardDispatchTests
         name.ToStringAndFree().Should().Be("QueryInterface");
     }
 
-    private class SimpleDispatch : UnknownDispatch, IManagedWrapper<IDispatch>
+    private class SimpleDispatch : UnknownDispatch, IManagedWrapper<IDispatchCcw>
     {
     }
 }

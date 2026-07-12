@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Support;
@@ -24,7 +24,7 @@ public unsafe class Clipboard
     /// </summary>
     public static unsafe uint[] GetAvailableClipboardFormats()
     {
-        uint count = (uint)Interop.CountClipboardFormats();
+        uint count = (uint)PInvoke.CountClipboardFormats();
         if (count == 0)
         {
             return [];
@@ -33,12 +33,12 @@ public unsafe class Clipboard
         using BufferScope<uint> buffer = new(stackalloc uint[(int)count]);
         do
         {
-            if (Interop.GetUpdatedClipboardFormats(buffer, out count))
+            if (PInvoke.GetUpdatedClipboardFormats(buffer, out count))
             {
                 break;
             }
 
-            Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
+            WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER.ThrowIfLastErrorNot();
             buffer.EnsureCapacity((int)count);
         } while (true);
 
@@ -50,11 +50,11 @@ public unsafe class Clipboard
     /// </summary>
     public static bool IsClipboardFormatAvailable(uint format)
     {
-        bool result = Interop.IsClipboardFormatAvailable(format);
+        bool result = PInvoke.IsClipboardFormatAvailable(format);
 
         if (!result)
         {
-            Error.ThrowIfLastErrorNot(WIN32_ERROR.NO_ERROR);
+            WIN32_ERROR.NO_ERROR.ThrowIfLastErrorNot();
         }
 
         return result;
@@ -64,12 +64,12 @@ public unsafe class Clipboard
     ///  Returns true if there is text on the clipboard.
     /// </summary>
     public static bool IsClipboardTextAvailable()
-        => Interop.IsClipboardFormatAvailable((uint)CLIPBOARD_FORMAT.CF_UNICODETEXT);
+        => PInvoke.IsClipboardFormatAvailable((uint)CLIPBOARD_FORMAT.CF_UNICODETEXT);
 
     /// <summary>
     ///  Empty the clipboard.
     /// </summary>
-    public static void EmptyClipboard() => Interop.EmptyClipboard().ThrowLastErrorIfFalse();
+    public static void EmptyClipboard() => PInvoke.EmptyClipboard().ThrowLastErrorIfFalse();
 
     /// <summary>
     ///  This only works for types that aren't built in (e.g. defined in ClipboardFormat).
@@ -83,10 +83,10 @@ public unsafe class Clipboard
         {
             fixed (char* b = buffer)
             {
-                int count = Interop.GetClipboardFormatName(format, b, buffer.Length);
+                int count = PInvoke.GetClipboardFormatName(format, b, buffer.Length);
                 if (count == 0)
                 {
-                    Error.ThrowLastError();
+                    Error.GetLastError().ThrowThirtyTwoException();
                 }
 
                 if (count > buffer.Length - 2)
@@ -105,10 +105,10 @@ public unsafe class Clipboard
     /// </summary>
     public static uint RegisterClipboardFormat(string formatName)
     {
-        uint id = Interop.RegisterClipboardFormat(formatName);
+        uint id = PInvoke.RegisterClipboardFormat(formatName);
         if (id == 0)
         {
-            Error.ThrowLastError(formatName);
+            Error.GetLastError().ThrowThirtyTwoException(formatName);
         }
 
         return id;
@@ -118,16 +118,16 @@ public unsafe class Clipboard
     public static unsafe void SetClipboardData<T>(ReadOnlySpan<T> data, uint format)
         where T : unmanaged
     {
-        HGLOBAL global = Interop.GlobalAlloc(
+        HGLOBAL global = PInvoke.GlobalAlloc(
             GLOBAL_ALLOC_FLAGS.GMEM_MOVEABLE,
             (nuint)((data.Length + 1) * sizeof(T)));
 
-        Span<T> buffer = new(Interop.GlobalLock(global), data.Length + 1);
+        Span<T> buffer = new(PInvoke.GlobalLock(global), data.Length + 1);
         data.CopyTo(buffer);
         buffer[^1] = default;
 
-        Interop.GlobalUnlock(global);
-        Interop.SetClipboardData(format, (HANDLE)(nint)global);
+        PInvoke.GlobalUnlock(global);
+        PInvoke.SetClipboardData(format, (HANDLE)(nint)global);
     }
 
     /// <summary>
@@ -145,27 +145,27 @@ public unsafe class Clipboard
 
         try
         {
-            global = (HGLOBAL)(nint)Interop.GetClipboardData((uint)CLIPBOARD_FORMAT.CF_UNICODETEXT);
+            global = (HGLOBAL)(nint)PInvoke.GetClipboardData((uint)CLIPBOARD_FORMAT.CF_UNICODETEXT);
             if (global == 0)
             {
                 return null;
             }
 
-            int size = checked((int)(Interop.GlobalSize(global) / sizeof(char)));
+            int size = checked((int)(PInvoke.GlobalSize(global) / sizeof(char)));
 
             if (size == 0)
             {
                 return string.Empty;
             }
 
-            ReadOnlySpan<char> buffer = new(Interop.GlobalLock(global), size);
+            ReadOnlySpan<char> buffer = new(PInvoke.GlobalLock(global), size);
             return Touki.SpanExtensions.SliceAtNull(buffer).ToString();
         }
         finally
         {
             if (global != 0)
             {
-                Interop.GlobalUnlock(global);
+                PInvoke.GlobalUnlock(global);
             }
 
             CloseClipboard();
@@ -193,7 +193,7 @@ public unsafe class Clipboard
 
     private static bool OpenClipboardInternal(HWND hwnd)
     {
-        if (!Interop.OpenClipboard(hwnd))
+        if (!PInvoke.OpenClipboard(hwnd))
         {
             WIN32_ERROR error = Error.GetLastError();
             if (error == WIN32_ERROR.ERROR_ACCESS_DENIED)
@@ -202,7 +202,7 @@ public unsafe class Clipboard
                 return false;
             }
 
-            error.Throw();
+            error.ThrowThirtyTwoException();
         }
 
         return true;
@@ -228,7 +228,7 @@ public unsafe class Clipboard
     /// </summary>
     public static void CloseClipboard()
     {
-        if (!Interop.CloseClipboard())
+        if (!PInvoke.CloseClipboard())
         {
             WIN32_ERROR error = Error.GetLastError();
             if (error == WIN32_ERROR.ERROR_CLIPBOARD_NOT_OPEN)
@@ -238,19 +238,19 @@ public unsafe class Clipboard
                 return;
             }
 
-            error.Throw();
+            error.ThrowThirtyTwoException();
         }
     }
 
     /// <summary>
     ///  Returns the window handle that has the clipboard open, if any.
     /// </summary>
-    public static HWND GetOpenClipboardWindow() => Interop.GetOpenClipboardWindow();
+    public static HWND GetOpenClipboardWindow() => PInvoke.GetOpenClipboardWindow();
 
     /// <summary>
     ///  Returns the window handle that owns the clipboard data, if any.
     /// </summary>
-    public static HWND GetClipboardOwner() => Interop.GetClipboardOwner();
+    public static HWND GetClipboardOwner() => PInvoke.GetClipboardOwner();
 
     /// <summary>
     ///  Registers the given window to get <see cref="MessageType.ClipboardUpdate"/> messages when the
@@ -258,7 +258,7 @@ public unsafe class Clipboard
     /// </summary>
     public static void AddClipboardFormatListener<T>(T window) where T : IHandle<HWND>
     {
-        Interop.AddClipboardFormatListener(window.Handle).ThrowLastErrorIfFalse();
+        PInvoke.AddClipboardFormatListener(window.Handle).ThrowLastErrorIfFalse();
         GC.KeepAlive(window.Wrapper);
     }
 
@@ -267,7 +267,7 @@ public unsafe class Clipboard
     /// </summary>
     public static void RemoveClipboardFormatListener<T>(T window) where T : IHandle<HWND>
     {
-        Interop.RemoveClipboardFormatListener(window.Handle).ThrowLastErrorIfFalse();
+        PInvoke.RemoveClipboardFormatListener(window.Handle).ThrowLastErrorIfFalse();
         GC.KeepAlive(window.Wrapper);
     }
 }

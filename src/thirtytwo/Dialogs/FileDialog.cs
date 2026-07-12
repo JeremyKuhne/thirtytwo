@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Support;
@@ -22,7 +22,7 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
 
     internal FileDialog(IFileDialog* dialog, IHandle<HWND>? owner = default)
     {
-        dialog->Advise(ComHelpers.GetComPointer<IFileDialogEvents>(new FileDialogEvents(this)), out _cookie);
+        dialog->Advise(new FileDialogEvents(this).GetComPointer<IFileDialogEvents>(), out _cookie);
 
         // Wrap in an agile reference so it will be safely finalized if Dispose isn't called.
         Interface = new AgileComPointer<IFileDialog>(dialog, takeOwnership: true);
@@ -52,7 +52,8 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         using var modalScope = Application.EnterThreadModalScope();
         using var fileDialog = Interface.GetInterface();
         HRESULT result = fileDialog.Pointer->Show(Owner?.Handle ?? default);
-        return result.Succeeded || (result == WIN32_ERROR.ERROR_CANCELLED.ToHRESULT() ? false : throw result);
+        return result.Succeeded
+            || (result == WIN32_ERROR.ERROR_CANCELLED.ToHRESULT() ? false : throw result);
     }
 
     public Options DialogOptions
@@ -80,7 +81,7 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
             using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
             dialog.Pointer->GetFileName(out PWSTR pszName);
             string result = new(pszName);
-            Interop.CoTaskMemFree(pszName);
+            PInvoke.CoTaskMemFree(pszName);
             return result;
         }
         set
@@ -119,7 +120,7 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         set
         {
             using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
-            using ComScope<IShellItem> item = Interop.SHCreateShellItem(value);
+            using ComScope<IShellItem> item = PInvoke.SHCreateShellItem(value);
             dialog.Pointer->SetDefaultFolder(item);
         }
     }
@@ -129,7 +130,7 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         set
         {
             using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();
-            using ComScope<IShellItem> item = Interop.SHCreateShellItem(value);
+            using ComScope<IShellItem> item = PInvoke.SHCreateShellItem(value);
             dialog.Pointer->SetFolder(item);
         }
     }

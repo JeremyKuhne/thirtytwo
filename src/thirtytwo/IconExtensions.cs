@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -16,7 +16,7 @@ public static unsafe class IconExtensions
             cbSize = (uint)sizeof(ICONINFOEXW)
         };
 
-        Interop.GetIconInfoEx(icon.Handle, &info).ThrowLastErrorIfFalse();
+        PInvoke.GetIconInfoEx(icon.Handle, &info).ThrowLastErrorIfFalse();
 
         GC.KeepAlive(icon.Wrapper);
         return info;
@@ -26,10 +26,10 @@ public static unsafe class IconExtensions
         where T : IHandle<HICON>
     {
         ICONINFO info = default;
-        Interop.GetIconInfo(icon.Handle, &info).ThrowLastErrorIfFalse();
+        PInvoke.GetIconInfo(icon.Handle, &info).ThrowLastErrorIfFalse();
         HBITMAP handle = info.hbmColor.IsNull ? info.hbmMask : info.hbmColor;
         BITMAP bitmap;
-        if (Interop.GetObject(handle, sizeof(BITMAP), &bitmap) == 0)
+        if (PInvoke.GetObject(handle, sizeof(BITMAP), &bitmap) == 0)
         {
             throw new InvalidOperationException();
         }
@@ -41,10 +41,10 @@ public static unsafe class IconExtensions
     public static HICON Copy<T>(this T icon, ushort newSize)
         where T : IHandle<HICON>
     {
-        HICON newIcon = (HICON)Interop.CopyImage(icon.Handle, GDI_IMAGE_TYPE.IMAGE_ICON, newSize, newSize, IMAGE_FLAGS.LR_COPYFROMRESOURCE);
+        HICON newIcon = (HICON)PInvoke.CopyImage(icon.Handle, GDI_IMAGE_TYPE.IMAGE_ICON, newSize, newSize, IMAGE_FLAGS.LR_COPYFROMRESOURCE);
         if (newIcon.IsNull)
         {
-            Error.ThrowLastError();
+            Error.GetLastError().ThrowThirtyTwoException();
         }
 
         GC.KeepAlive(icon.Wrapper);

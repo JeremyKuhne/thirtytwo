@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.ComponentModel;
@@ -38,11 +38,11 @@ public unsafe partial class ActiveXControl : CustomControl
             parameters: parameters)
     {
         _classId = classId;
-        IUnknown* unknown = ComHelpers.CreateComClass(classId);
+        IUnknown* unknown = classId.CreateComClass();
         _instance = new(unknown, takeOwnership: true);
         _instanceAsActiveObject = unknown->TryQueryAgileInterface<IOleInPlaceActiveObject>();
 
-        using ComScope<IOleObject> oleObject = ComScope<IOleObject>.QueryFrom(unknown);
+        using ComScope<IOleObject> oleObject = new(unknown->QueryInterface<IOleObject>());
         if (oleObject.Pointer->GetMiscStatus(DVASPECT.DVASPECT_CONTENT, out OLEMISC status).Succeeded)
         {
             _status = status;
@@ -52,7 +52,7 @@ public unsafe partial class ActiveXControl : CustomControl
         _container = new Container(parentWindow);
         _site = new Site(this);
 
-        IOleClientSite* site = ComHelpers.GetComPointer<IOleClientSite>(_site);
+        IOleClientSite* site = _site.GetComPointer<IOleClientSite>();
         HRESULT hr = oleObject.Pointer->SetClientSite(site);
 
         _typeDescriptor = new ComTypeDescriptor(_instance);
@@ -92,7 +92,7 @@ public unsafe partial class ActiveXControl : CustomControl
 
         // Bounds are in pixels here, not HIMETRIC
         RECT rect = bounds;
-        IOleClientSite* clientSite = ComHelpers.GetComPointer<IOleClientSite>(_site);
+        IOleClientSite* clientSite = _site.GetComPointer<IOleClientSite>();
 
         HRESULT hr = oleObject.Pointer->DoVerb(
             iVerb: (int)verb,

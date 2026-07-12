@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Windows;
@@ -12,13 +12,13 @@ public readonly ref struct WaitCursorScope
 
     public WaitCursorScope()
     {
-        _cursor = Interop.SetCursor(Interop.LoadCursor(default, Interop.IDC_WAIT));
-        _ = Interop.ShowCursor(true);
+        _cursor = PInvoke.SetCursor(PInvoke.LoadCursor(default, PInvoke.IDC_WAIT));
+        _ = PInvoke.ShowCursor(true);
     }
 
     public void Dispose()
     {
-        Interop.SetCursor(_cursor);
-        _ = Interop.ShowCursor(false);
+        PInvoke.SetCursor(_cursor);
+        _ = PInvoke.ShowCursor(false);
     }
 }

@@ -139,6 +139,7 @@ GetAncestor
 GetAwarenessFromDpiAwarenessContext
 GetBkColor
 GetClassLong
+GetClassLongPtr
 GetClientRect
 GetClipboardData
 GetClipboardFormatName
@@ -357,6 +358,7 @@ SetViewportExtEx
 SetViewportOrgEx
 SetWindowExtEx
 SetWindowLong
+SetWindowLongPtr
 SetWindowRgn
 SetWindowText
 SetWorldTransform

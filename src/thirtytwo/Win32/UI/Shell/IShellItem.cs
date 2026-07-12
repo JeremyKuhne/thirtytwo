@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Windows.Win32.UI.Shell;
@@ -9,7 +9,7 @@ public unsafe partial struct IShellItem
     {
         GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEEDITING, out PWSTR ppszName).ThrowOnFailure();
         string result = new(ppszName);
-        Interop.CoTaskMemFree(ppszName);
+        PInvoke.CoTaskMemFree(ppszName);
         return result;
     }
 }

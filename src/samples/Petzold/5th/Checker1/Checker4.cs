@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -47,7 +47,7 @@ internal class Checker4 : Checker3
                             repaint: true);
                 return (LRESULT)0;
             case MessageType.LeftButtonDown:
-                Interop.MessageBeep(MESSAGEBOX_STYLE.MB_OK);
+                PInvoke.MessageBeep(MESSAGEBOX_STYLE.MB_OK);
                 return (LRESULT)0;
             // On set-focus message, set focus to child window
             case MessageType.SetFocus:
@@ -130,12 +130,12 @@ internal unsafe class Checker4Child : WindowClass
                     }
 
                     // Draw the "focus" rectangle
-                    if (window == Interop.GetFocus())
+                    if (window == PInvoke.GetFocus())
                     {
                         rect.Inflate(rect.Width / -10, rect.Height / -10);
 
                         dc.SelectObject(StockBrush.Null);
-                        using HPEN pen = Interop.CreatePen(PEN_STYLE.PS_DASH, 0, default);
+                        using HPEN pen = PInvoke.CreatePen(PEN_STYLE.PS_DASH, 0, default);
                         dc.SelectObject(pen);
                         dc.Rectangle(rect);
                         dc.SelectObject(StockPen.Black);

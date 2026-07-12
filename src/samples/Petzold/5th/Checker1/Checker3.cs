@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -41,7 +41,7 @@ internal class Checker3 : MainWindow
                             repaint: true);
                 return (LRESULT)0;
             case MessageType.LeftButtonDown:
-                Interop.MessageBeep(MESSAGEBOX_STYLE.MB_OK);
+                PInvoke.MessageBeep(MESSAGEBOX_STYLE.MB_OK);
                 return (LRESULT)0;
         }
 

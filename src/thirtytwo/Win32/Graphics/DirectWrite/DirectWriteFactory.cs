@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Windows.Win32.Graphics.DirectWrite;
@@ -18,7 +18,7 @@ public unsafe sealed class DirectWriteFactory : DirectDrawBase<IDWriteFactory>
     private static IDWriteFactory* Create(DWRITE_FACTORY_TYPE factoryType)
     {
         IDWriteFactory* factory;
-        Interop.DWriteCreateFactory(
+        PInvoke.DWriteCreateFactory(
             factoryType,
             IID.Get<IDWriteFactory>(),
             (void**)&factory).ThrowOnFailure();

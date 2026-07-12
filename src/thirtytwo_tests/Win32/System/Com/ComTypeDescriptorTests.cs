@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.ComponentModel;
@@ -11,7 +11,7 @@ public unsafe class ComTypeDescriptorTests
     [STATestMethod]
     public void ComTypeDescriptor_ClassName_MediaPlayer()
     {
-        using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer), takeOwnership: true);
+        using AgileComPointer<IUnknown> unknown = new(CLSID.WindowsMediaPlayer.CreateComClass(), takeOwnership: true);
         ComTypeDescriptor comDescriptor = new(unknown);
         ICustomTypeDescriptor descriptor = comDescriptor;
         string? className = descriptor.GetClassName();
@@ -21,7 +21,7 @@ public unsafe class ComTypeDescriptorTests
     [STATestMethod]
     public void ComTypeDescriptor_ComponentName_MediaPlayer()
     {
-        using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer), takeOwnership: true);
+        using AgileComPointer<IUnknown> unknown = new(CLSID.WindowsMediaPlayer.CreateComClass(), takeOwnership: true);
         ComTypeDescriptor comDescriptor = new(unknown);
         ICustomTypeDescriptor descriptor = comDescriptor;
         string? className = descriptor.GetComponentName();
@@ -31,7 +31,7 @@ public unsafe class ComTypeDescriptorTests
     [STATestMethod]
     public void ComTypeDescriptor_GetProperties_MediaPlayer()
     {
-        using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer), takeOwnership: true);
+        using AgileComPointer<IUnknown> unknown = new(CLSID.WindowsMediaPlayer.CreateComClass(), takeOwnership: true);
         ComTypeDescriptor comDescriptor = new(unknown);
         ICustomTypeDescriptor descriptor = comDescriptor;
         var properties = descriptor.GetProperties();
@@ -44,7 +44,7 @@ public unsafe class ComTypeDescriptorTests
     [STATestMethod]
     public void ComTypeDescriptor_GetEvents_MediaPlayer()
     {
-        using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.WindowsMediaPlayer), takeOwnership: true);
+        using AgileComPointer<IUnknown> unknown = new(CLSID.WindowsMediaPlayer.CreateComClass(), takeOwnership: true);
         ComTypeDescriptor comDescriptor = new(unknown);
         ICustomTypeDescriptor descriptor = comDescriptor;
         var events = descriptor.GetEvents();

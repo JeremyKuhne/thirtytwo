@@ -9,7 +9,7 @@ namespace Windows.Accessibility;
 /// <summary>
 ///  Use as a base class when you only want to provide Active Accessibility <see cref="IAccessible"/> support.
 /// </summary>
-public unsafe abstract class LegacyAccessibleBase : AccessibleBase, IManagedWrapper<IAccessible, IDispatch>
+public unsafe abstract class LegacyAccessibleBase : AccessibleBase, IManagedWrapper<IAccessible, IDispatchCcw>
 {
     public LegacyAccessibleBase() : base()
     {

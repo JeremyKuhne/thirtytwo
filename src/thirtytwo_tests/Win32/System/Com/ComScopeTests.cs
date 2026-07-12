@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.CompilerServices;
@@ -13,7 +13,7 @@ public unsafe class ComScopeTests
     [STATestMethod]
     public void ComScope_NullAfterDispose()
     {
-        ComScope<ITestObject> scope = new(ComHelpers.GetComPointer<ITestObject>(new TestObject()));
+        ComScope<ITestObject> scope = new(new TestObject().GetComPointer<ITestObject>());
         scope.IsNull.Should().BeFalse();
         scope.Dispose();
         scope.IsNull.Should().BeTrue();

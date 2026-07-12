@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.System.Com;
@@ -22,7 +22,7 @@ public unsafe partial struct IDispatchEx
 
         hr = InvokeEx(
             dispatchId,
-            Interop.GetThreadLocale(),
+            PInvoke.GetThreadLocale(),
             (ushort)DISPATCH_FLAGS.DISPATCH_PROPERTYGET,
             &dispParams,
             &value,
@@ -37,7 +37,7 @@ public unsafe partial struct IDispatchEx
         VARIANT value)
     {
         VARIANT* arg = &value;
-        int putDispatchID = Interop.DISPID_PROPERTYPUT;
+        int putDispatchID = PInvoke.DISPID_PROPERTYPUT;
 
         DISPPARAMS dispParams = new()
         {
@@ -50,7 +50,7 @@ public unsafe partial struct IDispatchEx
 
         HRESULT hr = InvokeEx(
             dispatchId,
-            Interop.GetThreadLocale(),
+            PInvoke.GetThreadLocale(),
             (ushort)DISPATCH_FLAGS.DISPATCH_PROPERTYPUT,
             &dispParams,
             null,
@@ -62,8 +62,8 @@ public unsafe partial struct IDispatchEx
     public IDictionary<string, int> GetAllDispatchIds()
     {
         Dictionary<string, int> dispatchIds = [];
-        int dispid = Interop.DISPID_STARTENUM;
-        while (GetNextDispID(Interop.fdexEnumAll, dispid, &dispid) == HRESULT.S_OK)
+        int dispid = PInvoke.DISPID_STARTENUM;
+        while (GetNextDispID((uint)PInvoke.fdexEnumAll, dispid, out dispid) == HRESULT.S_OK)
         {
             BSTR name = default;
             HRESULT hr = GetMemberName(dispid, &name);

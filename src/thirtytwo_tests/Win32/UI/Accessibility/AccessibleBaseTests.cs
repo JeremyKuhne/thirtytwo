@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Accessibility;
@@ -19,10 +19,10 @@ public unsafe class AccessibleBaseTests
         IDispatch* dispatch = (IDispatch*)accessible.Pointer;
         int[] result = dispatch->GetIdsOfNames("accHitTest", "xLeft", "yTop", "pvarChild");
         result.Should().HaveCount(4);
-        result[0].Should().Be(Interop.DISPID_ACC_HITTEST);
+        result[0].Should().Be(PInvoke.DISPID_ACC_HITTEST);
         result[1].Should().Be(0);
         result[2].Should().Be(1);
-        result[3].Should().Be(Interop.DISPID_UNKNOWN);
+        result[3].Should().Be(PInvoke.DISPID_UNKNOWN);
 
         result = dispatch->GetIdsOfNames("accChild");
         result.Should().HaveCount(1);

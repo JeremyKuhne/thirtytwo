@@ -11,9 +11,10 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.ResxSourceGenerator" Version="5.0.0-1.25277.114" />
     <PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.231" />
+    <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.298" />
     <PackageVersion Include="MinVer" Version="6.0.0" />
     <PackageVersion Include="MSTest" Version="4.2.3" />
-    <PackageVersion Include="KlutzyNinja.Touki" Version="0.1.0-alpha.8.5" />
+    <PackageVersion Include="KlutzyNinja.Madowaku" Version="0.4.0-alpha.1" />
+    <PackageVersion Include="KlutzyNinja.Touki" Version="0.4.0-alpha.1" />
   </ItemGroup>
 </Project>

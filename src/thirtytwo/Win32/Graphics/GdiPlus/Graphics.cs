@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Support;
@@ -17,13 +17,13 @@ public unsafe class Graphics : DisposableBase.Finalizable, IPointer<GpGraphics>
     {
         GdiPlus.Init();
         GpGraphics* pointer;
-        Interop.GdipCreateFromHDC(hdc, &pointer).ThrowIfFailed();
+        PInvoke.GdipCreateFromHDC(hdc, &pointer).ThrowIfFailed();
         _pointer = pointer;
     }
 
     protected override void Dispose(bool disposing)
     {
-        Status status = Interop.GdipDeleteGraphics(_pointer);
+        Status status = PInvoke.GdipDeleteGraphics(_pointer);
         if (disposing)
         {
             status.ThrowIfFailed();

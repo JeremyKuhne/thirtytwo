@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -36,7 +36,7 @@ public unsafe readonly struct DeviceContext : IDisposable, IHandle<HDC>
     {
         HWND = default,
         State = ContextState.UseRelease,
-        Handle = Interop.GetDC(HWND.Null)
+        Handle = PInvoke.GetDC(HWND.Null)
     };
 
     public static DeviceContext Create(
@@ -86,11 +86,11 @@ public unsafe readonly struct DeviceContext : IDisposable, IHandle<HDC>
         where THwnd : IHandle<HWND>
     {
         PAINTSTRUCT paintStruct = default;
-        Interop.BeginPaint(hwnd.Handle, &paintStruct);
+        PInvoke.BeginPaint(hwnd.Handle, &paintStruct);
         paintBounds = paintStruct.rcPaint;
         if (saveContext)
         {
-            int state = Interop.SaveDC(paintStruct.hdc);
+            int state = PInvoke.SaveDC(paintStruct.hdc);
             Debug.Assert(state != 0);
         }
 
@@ -107,21 +107,21 @@ public unsafe readonly struct DeviceContext : IDisposable, IHandle<HDC>
     {
         if (State.HasFlag(ContextState.RestoreDc))
         {
-            Interop.RestoreDC(Handle, -1);
+            PInvoke.RestoreDC(Handle, -1);
         }
 
         Debug.Assert(State.AreAnyFlagsSet(ContextState.UseDelete | ContextState.UseRelease | ContextState.UseEndPaint | ContextState.DoNotRelease));
 
         if (State.HasFlag(ContextState.UseDelete))
         {
-            if (!Interop.DeleteDC(new(Handle.Value)))
+            if (!PInvoke.DeleteDC(new(Handle.Value)))
             {
                 Debug.WriteLine("Failed to delete DC");
             }
         }
         else if (State.HasFlag(ContextState.UseRelease))
         {
-            if (Interop.ReleaseDC(HWND, Handle) == 0)
+            if (PInvoke.ReleaseDC(HWND, Handle) == 0)
             {
                 Debug.WriteLine("Failed to release DC");
             }
@@ -135,7 +135,7 @@ public unsafe readonly struct DeviceContext : IDisposable, IHandle<HDC>
                 hdc = Handle
             };
 
-            if (!Interop.EndPaint(HWND, &ps))
+            if (!PInvoke.EndPaint(HWND, &ps))
             {
                 Debug.WriteLine("Failed to end paint");
             }

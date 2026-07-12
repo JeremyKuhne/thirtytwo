@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Windows.Win32.System.Com;
@@ -42,7 +42,7 @@ public unsafe abstract class EnumUnknown : IEnumUnknown.Interface, IManagedWrapp
             *pceltFetched = fetched;
         }
 
-        return fetched == celt ? HRESULT.S_OK : HRESULT.S_FALSE;
+        return fetched == celt ? HRESULT.S_OK : PInvoke.S_FALSE;
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public unsafe abstract class EnumUnknown : IEnumUnknown.Interface, IManagedWrapp
     {
         if (celt > _count - _index)
         {
-            return HRESULT.S_FALSE;
+            return PInvoke.S_FALSE;
         }
 
         _index += (int)celt;
@@ -80,7 +80,7 @@ public unsafe abstract class EnumUnknown : IEnumUnknown.Interface, IManagedWrapp
         EnumUnknown clone = Clone();
         clone._index = _index;
 
-        *ppenum = ComHelpers.TryGetComPointer<IEnumUnknown>(clone, out HRESULT hr);
+        *ppenum = clone.TryGetComPointer<IEnumUnknown>(out HRESULT hr);
         return hr;
     }
 

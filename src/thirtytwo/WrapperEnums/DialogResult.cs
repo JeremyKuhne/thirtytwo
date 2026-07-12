@@ -1,11 +1,11 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Windows;
 
 /// <remarks>
 ///  <inheritdoc cref="Interop.MessageBoxEx(HWND, PCWSTR, PCWSTR, MESSAGEBOX_STYLE, ushort)"/>
-///  <inheritdoc cref="Interop.TaskDialogIndirect(TASKDIALOGCONFIG*, int*, int*, BOOL*)"/>
+///  Returned by <c>Interop.TaskDialogIndirect</c>.
 /// </remarks>
 public enum DialogResult : int
 {

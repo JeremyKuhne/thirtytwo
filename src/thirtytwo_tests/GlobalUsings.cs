@@ -3,4 +3,5 @@
 
 global using FluentAssertions;
 global using Touki;
+global using Touki.Buffers;
 global using Microsoft.VisualStudio.TestTools.UnitTesting;

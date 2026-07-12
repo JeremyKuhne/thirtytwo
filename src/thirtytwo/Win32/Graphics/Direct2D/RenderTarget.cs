@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -28,7 +28,7 @@ public unsafe class RenderTarget : Resource, IPointer<ID2D1RenderTarget>
     public void EndDraw(out bool recreateTarget)
     {
         HRESULT result = Pointer->EndDraw(null, null);
-        if (result == HRESULT.D2DERR_RECREATE_TARGET)
+        if (result == PInvoke.D2DERR_RECREATE_TARGET)
         {
             recreateTarget = true;
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.InteropServices;
@@ -36,7 +36,7 @@ public unsafe struct Lifetime<TVTable, TObject> where TVTable : unmanaged
         if (count == 0)
         {
             GCHandle.FromIntPtr((nint)lifetime->Handle).Free();
-            Interop.CoTaskMemFree(lifetime);
+            PInvoke.CoTaskMemFree(lifetime);
         }
 
         return count;
@@ -59,7 +59,7 @@ public unsafe struct Lifetime<TVTable, TObject> where TVTable : unmanaged
     public static unsafe Lifetime<TVTable, TObject>* Allocate(TObject @object, TVTable* vtable)
     {
         // Manually allocate a native instance of this struct.
-        var wrapper = (Lifetime<TVTable, TObject>*)Interop.CoTaskMemAlloc((nuint)sizeof(Lifetime<TVTable, TObject>));
+        var wrapper = (Lifetime<TVTable, TObject>*)PInvoke.CoTaskMemAlloc((nuint)sizeof(Lifetime<TVTable, TObject>));
 
         // Assign a pointer to the vtable, allocate a GCHandle for the related object, and set the initial ref count.
         wrapper->VTable = vtable;

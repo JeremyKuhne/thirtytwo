@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Support;
@@ -31,7 +31,7 @@ public unsafe class FormatConverter : BitmapSource, IPointer<IWICFormatConverter
     {
         if (destinationFormat == Guid.Empty)
         {
-            destinationFormat = Interop.GUID_WICPixelFormat32bppPBGRA;
+            destinationFormat = PInvoke.GUID_WICPixelFormat32bppPBGRA;
         }
 
         Pointer->Initialize(

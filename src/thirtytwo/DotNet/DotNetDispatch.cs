@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.System.Com;
@@ -46,5 +46,5 @@ public unsafe abstract class DotNetDispatch :
 
     // .NET always returns true for ISupportErrorInfo, this would only be relevant for our manual CCWs if we populated
     // IErrorInfo via Win32's SetErrorInfo().
-    HRESULT ISupportErrorInfo.Interface.InterfaceSupportsErrorInfo(Guid* riid) => HRESULT.S_FALSE;
+    HRESULT ISupportErrorInfo.Interface.InterfaceSupportsErrorInfo(Guid* riid) => PInvoke.S_FALSE;
 }

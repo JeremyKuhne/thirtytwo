@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.System.Com;
@@ -45,7 +45,7 @@ public unsafe abstract class EnumVARIANT : IEnumVARIANT.Interface, IManagedWrapp
             *pCeltFetched = fetched;
         }
 
-        return fetched == celt ? HRESULT.S_OK : HRESULT.S_FALSE;
+        return fetched == celt ? HRESULT.S_OK : PInvoke.S_FALSE;
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ public unsafe abstract class EnumVARIANT : IEnumVARIANT.Interface, IManagedWrapp
     {
         if (celt > _count - _index)
         {
-            return HRESULT.S_FALSE;
+            return PInvoke.S_FALSE;
         }
 
         _index += (int)celt;
@@ -83,7 +83,7 @@ public unsafe abstract class EnumVARIANT : IEnumVARIANT.Interface, IManagedWrapp
         EnumVARIANT clone = Clone();
         clone._index = _index;
 
-        *ppEnum = ComHelpers.TryGetComPointer<IEnumVARIANT>(clone, out HRESULT hr);
+        *ppEnum = clone.TryGetComPointer<IEnumVARIANT>(out HRESULT hr);
         return hr;
     }
 

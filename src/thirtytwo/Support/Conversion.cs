@@ -10,7 +10,7 @@ public static class Conversion
     /// </summary>
     public static unsafe ReadOnlySpan<char> NullTerminatedStringToSpan(char* buffer)
     {
-        if (buffer == null)
+        if (buffer is null)
             return default;
 
         char* end = buffer;

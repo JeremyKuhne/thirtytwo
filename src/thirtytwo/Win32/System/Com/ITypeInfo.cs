@@ -5,11 +5,14 @@ using System.Runtime.CompilerServices;
 
 namespace Windows.Win32.System.Com;
 
-public unsafe partial struct ITypeInfo
+public static unsafe class ITypeInfoExtensions
 {
-    public TypeAttrScope GetTypeAttr(out HRESULT hr)
+    extension(ref ITypeInfo typeInfo)
     {
-        hr = GetTypeAttr(out TYPEATTR* typeAttr);
-        return new TypeAttrScope((ITypeInfo*)Unsafe.AsPointer(ref Unsafe.AsRef(in this)), typeAttr);
+        public ITypeInfoTypeAttrScope GetTypeAttr(out HRESULT hr)
+        {
+            hr = typeInfo.GetTypeAttr(out TYPEATTR* typeAttr);
+            return new((ITypeInfo*)Unsafe.AsPointer(ref typeInfo), typeAttr);
+        }
     }
 }

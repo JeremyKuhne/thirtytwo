@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -22,7 +22,7 @@ public unsafe class Bitmap : Image, IPointer<GpBitmap>
         fixed (char* fn = filename)
         {
             GpBitmap* bitmap;
-            Interop.GdipCreateBitmapFromFile(fn, &bitmap).ThrowIfFailed();
+            PInvoke.GdipCreateBitmapFromFile(fn, &bitmap).ThrowIfFailed();
             return bitmap;
         }
     }
@@ -41,7 +41,7 @@ public unsafe class Bitmap : Image, IPointer<GpBitmap>
     public void LockBits(Rectangle rect, ImageLockMode flags, PixelFormat format, ref BitmapData data)
     {
         // LockBits always creates a temporary copy of the data.
-        Interop.GdipBitmapLockBits(
+        PInvoke.GdipBitmapLockBits(
             Pointer,
             (Rect*)&rect,
             (uint)flags,
@@ -53,7 +53,7 @@ public unsafe class Bitmap : Image, IPointer<GpBitmap>
 
     public void UnlockBits(ref BitmapData data)
     {
-        Interop.GdipBitmapUnlockBits(Pointer, (BitmapData*)Unsafe.AsPointer(ref data)).ThrowIfFailed();
+        PInvoke.GdipBitmapUnlockBits(Pointer, (BitmapData*)Unsafe.AsPointer(ref data)).ThrowIfFailed();
         GC.KeepAlive(this);
     }
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -29,7 +29,7 @@ public unsafe partial class ActiveXControl
             _connectionPoint = new(_control._instance, this);
         }
 
-        HRESULT IOleClientSite.Interface.SaveObject() => HRESULT.E_NOTIMPL;
+        HRESULT IOleClientSite.Interface.SaveObject() => PInvoke.E_NOTIMPL;
 
         HRESULT IOleClientSite.Interface.GetMoniker(uint dwAssign, uint dwWhichMoniker, IMoniker** ppmk)
         {
@@ -39,7 +39,7 @@ public unsafe partial class ActiveXControl
             }
 
             *ppmk = null;
-            return HRESULT.E_NOTIMPL;
+            return PInvoke.E_NOTIMPL;
         }
 
         HRESULT IOleClientSite.Interface.GetContainer(IOleContainer** ppContainer)
@@ -49,7 +49,7 @@ public unsafe partial class ActiveXControl
                 return HRESULT.E_POINTER;
             }
 
-            *ppContainer = ComHelpers.GetComPointer<IOleContainer>(_control._container);
+            *ppContainer = _control._container.GetComPointer<IOleContainer>();
             return HRESULT.S_OK;
         }
 
@@ -62,7 +62,7 @@ public unsafe partial class ActiveXControl
 
         HRESULT IOleClientSite.Interface.OnShowWindow(BOOL fShow) => HRESULT.S_OK;
 
-        HRESULT IOleClientSite.Interface.RequestNewObjectLayout() => HRESULT.E_NOTIMPL;
+        HRESULT IOleClientSite.Interface.RequestNewObjectLayout() => PInvoke.E_NOTIMPL;
 
         HRESULT IPropertyNotifySink.Interface.OnChanged(int dispID)
         {
@@ -112,7 +112,7 @@ public unsafe partial class ActiveXControl
             LRESULT* plResult,
             uint dwCookie)
             // We did not process the message.
-            => HRESULT.S_FALSE;
+            => PInvoke.S_FALSE;
 
         public void Dispose()
         {
@@ -157,7 +157,7 @@ public unsafe partial class ActiveXControl
                 return HRESULT.E_POINTER;
             }
 
-            *ppFrame = ComHelpers.GetComPointer<IOleInPlaceFrame>(_control._container);
+            *ppFrame = _control._container.GetComPointer<IOleInPlaceFrame>();
             *ppDoc = null;
 
             // The positioning is in the container frame's client coordinates.
@@ -171,7 +171,7 @@ public unsafe partial class ActiveXControl
             return HRESULT.S_OK;
         }
 
-        HRESULT IOleInPlaceSite.Interface.Scroll(SIZE scrollExtant) => HRESULT.S_FALSE;
+        HRESULT IOleInPlaceSite.Interface.Scroll(SIZE scrollExtant) => PInvoke.S_FALSE;
 
         HRESULT IOleInPlaceSite.Interface.OnUIDeactivate(BOOL fUndoable)
         {
@@ -216,10 +216,10 @@ public unsafe partial class ActiveXControl
             return HRESULT.S_OK;
         }
 
-        HRESULT IOleWindow.Interface.ContextSensitiveHelp(BOOL fEnterMode) => HRESULT.E_NOTIMPL;
+        HRESULT IOleWindow.Interface.ContextSensitiveHelp(BOOL fEnterMode) => PInvoke.E_NOTIMPL;
         HRESULT IOleControlSite.Interface.OnControlInfoChanged() => HRESULT.S_OK;
-        HRESULT IOleControlSite.Interface.LockInPlaceActive(BOOL fLock) => HRESULT.E_NOTIMPL;
-        HRESULT IOleControlSite.Interface.GetExtendedControl(IDispatch** ppDisp) => HRESULT.E_NOTIMPL;
+        HRESULT IOleControlSite.Interface.LockInPlaceActive(BOOL fLock) => PInvoke.E_NOTIMPL;
+        HRESULT IOleControlSite.Interface.GetExtendedControl(IDispatch** ppDisp) => PInvoke.E_NOTIMPL;
 
         HRESULT IOleControlSite.Interface.TransformCoords(POINTL* pPtlHimetric, PointF* pPtfContainer, uint dwFlags)
         {
@@ -246,16 +246,16 @@ public unsafe partial class ActiveXControl
 
         HRESULT IOleControlSite.Interface.TranslateAccelerator(MSG* pMsg, KEYMODIFIERS grfModifiers)
         {
-            if (pMsg == null)
+            if (pMsg is null)
             {
                 return HRESULT.E_POINTER;
             }
 
             // We didn't process the message.
-            return HRESULT.S_FALSE;
+            return PInvoke.S_FALSE;
         }
 
         HRESULT IOleControlSite.Interface.OnFocus(BOOL fGotFocus) => HRESULT.S_OK;
-        HRESULT IOleControlSite.Interface.ShowPropertyFrame() => HRESULT.E_NOTIMPL;
+        HRESULT IOleControlSite.Interface.ShowPropertyFrame() => PInvoke.E_NOTIMPL;
     }
 }

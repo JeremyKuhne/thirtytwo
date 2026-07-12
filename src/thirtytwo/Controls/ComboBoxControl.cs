@@ -111,7 +111,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// <summary>
     ///  Returns the number of items in the ComboBox.
     /// </summary>
-    public int Count => (int)this.SendMessage((MessageType)Interop.CB_GETCOUNT);
+    public int Count => (int)this.SendMessage((MessageType)PInvoke.CB_GETCOUNT);
 
     /// <summary>
     ///  Adds a new item to the ComboBox. The item is added to the end of the list.
@@ -124,8 +124,8 @@ public unsafe partial class ComboBoxControl : RegisteredControl
 
         fixed (char* pItem = item)
         {
-            int index = (int)this.SendMessage((MessageType)Interop.CB_ADDSTRING, 0, (LPARAM)pItem);
-            if (index == Interop.CB_ERRSPACE)
+            int index = (int)this.SendMessage((MessageType)PInvoke.CB_ADDSTRING, 0, (LPARAM)pItem);
+            if (index == PInvoke.CB_ERRSPACE)
             {
                 throw new OutOfMemoryException();
             }
@@ -158,7 +158,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
             return Count;
         }
 
-        if (this.SendMessage((MessageType)Interop.CB_INITSTORAGE, (WPARAM)count, (LPARAM)bytes) == Interop.CB_ERRSPACE)
+        if (this.SendMessage((MessageType)PInvoke.CB_INITSTORAGE, (WPARAM)count, (LPARAM)bytes) == PInvoke.CB_ERRSPACE)
         {
             throw new OutOfMemoryException();
         }
@@ -181,7 +181,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(index, 0);
 
-        int result = (int)this.SendMessage((MessageType)Interop.CB_DELETESTRING, (WPARAM)index);
+        int result = (int)this.SendMessage((MessageType)PInvoke.CB_DELETESTRING, (WPARAM)index);
         if (result == -1)
         {
             throw new ArgumentOutOfRangeException(nameof(index));
@@ -193,15 +193,15 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// <summary>
     ///  Removes all items from the ComboBox.
     /// </summary>
-    public void Clear() => this.SendMessage((MessageType)Interop.CB_RESETCONTENT);
+    public void Clear() => this.SendMessage((MessageType)PInvoke.CB_RESETCONTENT);
 
     /// <summary>
     ///  Changes the selected index of the ComboBox. If the index is -1, no item is selected.
     /// </summary>
     public int SelectedIndex
     {
-        get => (int)this.SendMessage((MessageType)Interop.CB_GETCURSEL);
-        set => this.SendMessage((MessageType)Interop.CB_SETCURSEL, (WPARAM)value);
+        get => (int)this.SendMessage((MessageType)PInvoke.CB_GETCURSEL);
+        set => this.SendMessage((MessageType)PInvoke.CB_SETCURSEL, (WPARAM)value);
     }
 
     /// <summary>
@@ -220,7 +220,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     private ReadOnlySpan<char> GetItemText(ref BufferScope<char> buffer, int index)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(index, 0);
-        int length = (int)this.SendMessage((MessageType)Interop.CB_GETLBTEXTLEN, (WPARAM)index);
+        int length = (int)this.SendMessage((MessageType)PInvoke.CB_GETLBTEXTLEN, (WPARAM)index);
         if (length < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(index));
@@ -229,7 +229,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
         buffer.EnsureCapacity(length + 1);
         fixed (char* pBuffer = buffer)
         {
-            length = (int)this.SendMessage((MessageType)Interop.CB_GETLBTEXT, (WPARAM)index, pBuffer);
+            length = (int)this.SendMessage((MessageType)PInvoke.CB_GETLBTEXT, (WPARAM)index, pBuffer);
         }
 
         if (length < 0)
@@ -265,7 +265,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
 
             fixed (char* pValue = value)
             {
-                SelectedIndex = (int)this.SendMessage((MessageType)Interop.CB_FINDSTRINGEXACT, (WPARAM)(-1), (LPARAM)pValue);
+                SelectedIndex = (int)this.SendMessage((MessageType)PInvoke.CB_FINDSTRINGEXACT, (WPARAM)(-1), (LPARAM)pValue);
             }
         }
     }

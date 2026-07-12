@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Support;
@@ -14,7 +14,7 @@ public sealed unsafe partial class FileOpenDialog : FileDialog
 
     private static IFileDialog* CreateInstance()
     {
-        Interop.CoCreateInstance(
+        PInvoke.CoCreateInstance(
             CLSID.FileOpenDialog,
             null,
             CLSCTX.CLSCTX_INPROC_SERVER,

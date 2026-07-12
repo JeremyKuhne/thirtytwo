@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -13,10 +13,10 @@ public static unsafe partial class WindowExtensions
     /// <inheritdoc cref="Interop.GetWindowText(HWND, PWSTR, int)"/>
     public static string GetWindowText<T>(this T window) where T : IHandle<HWND>
     {
-        int length = Interop.GetWindowTextLength(window.Handle);
+        int length = PInvoke.GetWindowTextLength(window.Handle);
         if (length == 0)
         {
-            Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_SUCCESS);
+            WIN32_ERROR.ERROR_SUCCESS.ThrowIfLastErrorNot();
             return string.Empty;
         }
 
@@ -28,12 +28,12 @@ public static unsafe partial class WindowExtensions
 
             fixed (char* b = buffer)
             {
-                length = Interop.GetWindowText(window.Handle, b, buffer.Length);
+                length = PInvoke.GetWindowText(window.Handle, b, buffer.Length);
             }
 
             if (length == 0)
             {
-                Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_SUCCESS);
+                WIN32_ERROR.ERROR_SUCCESS.ThrowIfLastErrorNot();
             }
             else if (length == buffer.Length - 1)
             {
@@ -49,7 +49,7 @@ public static unsafe partial class WindowExtensions
     /// <inheritdoc cref="Interop.SetWindowText(HWND, PCWSTR)"/>
     public static void SetWindowText<T>(this T window, string text) where T : IHandle<HWND>
     {
-        Error.ThrowLastErrorIfFalse(Interop.SetWindowText(window.Handle, text));
+        PInvoke.SetWindowText(window.Handle, text).ThrowLastErrorIfFalse();
         GC.KeepAlive(window.Wrapper);
     }
 
@@ -57,7 +57,7 @@ public static unsafe partial class WindowExtensions
     /// <inheritdoc cref="Interop.GetDpiForWindow(HWND)"/>
     public static uint GetDpi<T>(this T window) where T : IHandle<HWND>
     {
-        uint dpi = Interop.GetDpiForWindow(window.Handle);
+        uint dpi = PInvoke.GetDpiForWindow(window.Handle);
         GC.KeepAlive(window.Wrapper);
         return dpi;
     }
@@ -85,7 +85,7 @@ public static unsafe partial class WindowExtensions
             (int)(Interop.USER_DEFAULT_SCREEN_DPI * 1.5f) => 1.5f,
             (int)(Interop.USER_DEFAULT_SCREEN_DPI * 1.75f) => 1.75f,
             Interop.USER_DEFAULT_SCREEN_DPI * 2 => 2.0f,
-            _ => (float)(dpi / (float)Interop.USER_DEFAULT_SCREEN_DPI)
+            _ => (float)(dpi / (float)PInvoke.USER_DEFAULT_SCREEN_DPI)
         };
     }
 
@@ -98,7 +98,7 @@ public static unsafe partial class WindowExtensions
     /// <inheritdoc cref="Interop.GetDC(HWND)"/>
     public static DeviceContext GetDeviceContext<T>(this T window) where T : IHandle<HWND>
     {
-        DeviceContext context = DeviceContext.Create(Interop.GetDC(window.Handle), window.Handle);
+        DeviceContext context = DeviceContext.Create(PInvoke.GetDC(window.Handle), window.Handle);
         GC.KeepAlive(window.Wrapper);
         return context;
     }
@@ -110,7 +110,7 @@ public static unsafe partial class WindowExtensions
         WPARAM wParam = default,
         LPARAM lParam = default) where T : IHandle<HWND>
     {
-        LRESULT result = Interop.SendMessage(window.Handle, (uint)message, wParam, lParam);
+        LRESULT result = PInvoke.SendMessage(window.Handle, (uint)message, wParam, lParam);
         GC.KeepAlive(window.Wrapper);
         return result;
     }
@@ -122,7 +122,7 @@ public static unsafe partial class WindowExtensions
         WPARAM wParam = default,
         LPARAM lParam = default) where T : IHandle<HWND>
     {
-        Interop.PostMessage(window.Handle, (uint)message, wParam, lParam).ThrowLastErrorIfFalse();
+        PInvoke.PostMessage(window.Handle, (uint)message, wParam, lParam).ThrowLastErrorIfFalse();
         GC.KeepAlive(window.Wrapper);
     }
 
@@ -141,7 +141,7 @@ public static unsafe partial class WindowExtensions
     /// </summary>
     public static int FontPointSizeToHeight<T>(this T window, int pointSize) where T : IHandle<HWND>
     {
-        int result = Interop.MulDiv(
+        int result = PInvoke.MulDiv(
             pointSize,
             (int)window.GetDpi(),
             72);
@@ -154,12 +154,12 @@ public static unsafe partial class WindowExtensions
     public static nuint GetClassLong<T>(this T window, GET_CLASS_LONG_INDEX index) where T : IHandle<HWND>
     {
         nuint result = Environment.Is64BitProcess
-            ? Interop.GetClassLongPtr(window.Handle, index)
-            : Interop.GetClassLong(window.Handle, index);
+            ? PInvoke.GetClassLongPtr(window.Handle, index)
+            : PInvoke.GetClassLong(window.Handle, index);
 
         if (result == 0)
         {
-            Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_SUCCESS);
+            WIN32_ERROR.ERROR_SUCCESS.ThrowIfLastErrorNot();
         }
 
         return result;
@@ -169,12 +169,12 @@ public static unsafe partial class WindowExtensions
     public static nuint SetClassLong<T>(this T window, GET_CLASS_LONG_INDEX index, nint value) where T : IHandle<HWND>
     {
         nuint result = Environment.Is64BitProcess
-            ? Interop.SetClassLongPtr(window.Handle, index, value)
-            : Interop.SetClassLong(window.Handle, index, (int)value);
+            ? PInvoke.SetClassLongPtr(window.Handle, index, value)
+            : PInvoke.SetClassLong(window.Handle, index, (int)value);
 
         if (result == 0)
         {
-            Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_SUCCESS);
+            WIN32_ERROR.ERROR_SUCCESS.ThrowIfLastErrorNot();
         }
 
         return result;
@@ -189,12 +189,12 @@ public static unsafe partial class WindowExtensions
         where T : IHandle<HWND>
     {
         nint result = Environment.Is64BitProcess
-            ? Interop.GetWindowLongPtr(window.Handle, index)
-            : Interop.GetWindowLong(window.Handle, index);
+            ? PInvoke.GetWindowLongPtr(window.Handle, index)
+            : PInvoke.GetWindowLong(window.Handle, index);
 
         if (result == 0)
         {
-            Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_SUCCESS);
+            WIN32_ERROR.ERROR_SUCCESS.ThrowIfLastErrorNot();
         }
 
         return result;
@@ -205,12 +205,12 @@ public static unsafe partial class WindowExtensions
         where T : IHandle<HWND>
     {
         nint result = Environment.Is64BitProcess
-            ? Interop.SetWindowLongPtr(window.Handle, index, value)
-            : Interop.SetWindowLong(window.Handle, index, (int)value);
+            ? PInvoke.SetWindowLongPtr(window.Handle, index, value)
+            : PInvoke.SetWindowLong(window.Handle, index, (int)value);
 
         if (result == 0)
         {
-            Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_SUCCESS);
+            WIN32_ERROR.ERROR_SUCCESS.ThrowIfLastErrorNot();
         }
 
         return result;
@@ -251,7 +251,7 @@ public static unsafe partial class WindowExtensions
     /// <inheritdoc cref="Interop.ScreenToClient(HWND, ref Point)"/>
     public static bool ScreenToClient<T>(this T window, ref Point point) where T : IHandle<HWND>
     {
-        bool result = Interop.ScreenToClient(window.Handle, ref point);
+        bool result = PInvoke.ScreenToClient(window.Handle, ref point);
         GC.KeepAlive(window.Wrapper);
         return result;
     }
@@ -263,7 +263,7 @@ public static unsafe partial class WindowExtensions
     public static bool ScreenToClient<T>(this T window, ref Rectangle rectangle) where T : IHandle<HWND>
     {
         Point location = rectangle.Location;
-        bool result = Interop.ScreenToClient(window.Handle, &location);
+        bool result = PInvoke.ScreenToClient(window.Handle, &location);
         rectangle.Location = location;
         GC.KeepAlive(window.Wrapper);
         return result;
@@ -272,7 +272,7 @@ public static unsafe partial class WindowExtensions
     /// <inheritdoc cref="Interop.ClientToScreen(HWND, ref Point)"/>
     public static bool ClientToScreen<T>(this T window, ref Point point) where T : IHandle<HWND>
     {
-        bool result = Interop.ClientToScreen(window.Handle, ref point);
+        bool result = PInvoke.ClientToScreen(window.Handle, ref point);
         GC.KeepAlive(window.Wrapper);
         return result;
     }
@@ -284,7 +284,7 @@ public static unsafe partial class WindowExtensions
     public static bool ClientToScreen<T>(this T window, ref Rectangle rectangle) where T : IHandle<HWND>
     {
         Point location = rectangle.Location;
-        bool result = Interop.ClientToScreen(window.Handle, ref location);
+        bool result = PInvoke.ClientToScreen(window.Handle, ref location);
         rectangle.Location = location;
         GC.KeepAlive(window.Wrapper);
         return result;
@@ -296,7 +296,7 @@ public static unsafe partial class WindowExtensions
         where T : IHandle<HWND>
     {
         Unsafe.SkipInit(out RECT rect);
-        Error.ThrowLastErrorIfFalse(Interop.GetClientRect(window.Handle, &rect));
+        PInvoke.GetClientRect(window.Handle, &rect).ThrowLastErrorIfFalse();
         GC.KeepAlive(window.Wrapper);
         return rect;
     }
@@ -308,7 +308,7 @@ public static unsafe partial class WindowExtensions
     public static Rectangle GetWindowRectangle<T>(this T window) where T : IHandle<HWND>
     {
         Unsafe.SkipInit(out RECT rect);
-        Error.ThrowLastErrorIfFalse(Interop.GetWindowRect(window.Handle, &rect));
+        PInvoke.GetWindowRect(window.Handle, &rect).ThrowLastErrorIfFalse();
         GC.KeepAlive(window.Wrapper);
         return rect;
     }
@@ -321,7 +321,7 @@ public static unsafe partial class WindowExtensions
         where TFrom : IHandle<HWND> where TTo : IHandle<HWND>
     {
         RECT rect = rectangle;
-        _ = Interop.MapWindowPoints(from.Handle, to.Handle, (Point*)&rect, 2);
+        _ = PInvoke.MapWindowPoints(from.Handle, to.Handle, (Point*)&rect, 2);
         GC.KeepAlive(to.Wrapper);
         GC.KeepAlive(from.Wrapper);
         return rect;
@@ -335,7 +335,7 @@ public static unsafe partial class WindowExtensions
         where TFrom : IHandle<HWND> where TTo : IHandle<HWND>
     {
         RECT rect = rectangle;
-        _ = Interop.MapWindowPoints(from.Handle, to.Handle, (Point*)&rect, 2);
+        _ = PInvoke.MapWindowPoints(from.Handle, to.Handle, (Point*)&rect, 2);
         GC.KeepAlive(to.Wrapper);
         GC.KeepAlive(from.Wrapper);
         return rect;
@@ -343,7 +343,7 @@ public static unsafe partial class WindowExtensions
 
     public static HWND GetParent<T>(this T child) where T : IHandle<HWND>
     {
-        HWND parent = Interop.GetParent(child.Handle);
+        HWND parent = PInvoke.GetParent(child.Handle);
         GC.KeepAlive(child.Wrapper);
         return parent;
     }
@@ -365,7 +365,7 @@ public static unsafe partial class WindowExtensions
     public static bool ShowWindow<T>(this T window, ShowWindowCommand command = ShowWindowCommand.Show)
         where T : IHandle<HWND>
     {
-        bool result = Interop.ShowWindow(window.Handle, (SHOW_WINDOW_CMD)command);
+        bool result = PInvoke.ShowWindow(window.Handle, (SHOW_WINDOW_CMD)command);
         GC.KeepAlive(window.Wrapper);
         return result;
     }
@@ -377,8 +377,13 @@ public static unsafe partial class WindowExtensions
     public static void MoveWindow<T>(this T window, Rectangle position, bool repaint)
         where T : IHandle<HWND>
     {
-        Error.ThrowLastErrorIfFalse(
-            Interop.MoveWindow(window.Handle, position.X, position.Y, position.Width, position.Height, repaint));
+        PInvoke.MoveWindow(
+            window.Handle,
+            position.X,
+            position.Y,
+            position.Width,
+            position.Height,
+            repaint).ThrowLastErrorIfFalse();
         GC.KeepAlive(window.Wrapper);
     }
 
@@ -386,7 +391,7 @@ public static unsafe partial class WindowExtensions
     /// <inheritdoc cref="Interop.UpdateWindow(HWND)"/>
     public static void UpdateWindow<T>(this T window) where T : IHandle<HWND>
     {
-        Error.ThrowLastErrorIfFalse(Interop.UpdateWindow(window.Handle));
+        PInvoke.UpdateWindow(window.Handle).ThrowLastErrorIfFalse();
         GC.KeepAlive(window.Wrapper);
     }
 
@@ -440,7 +445,7 @@ public static unsafe partial class WindowExtensions
                 config.Anonymous1.pszMainIcon = (char*)(nint)icon.Value;
             }
 
-            Interop.TaskDialogIndirect(
+            PInvoke.TaskDialogIndirect(
                 &config,
                 &button,
                 null,
@@ -460,7 +465,7 @@ public static unsafe partial class WindowExtensions
         using var themeScope = Application.ThemingScope;
         Application.EnsureDpiAwareness();
 
-        DialogResult result = (DialogResult)Interop.MessageBoxEx(
+        DialogResult result = (DialogResult)PInvoke.MessageBoxEx(
             owner.Handle,
             text,
             caption,
@@ -469,7 +474,7 @@ public static unsafe partial class WindowExtensions
 
         if (result == 0)
         {
-            Error.ThrowLastError();
+            Error.GetLastError().ThrowThirtyTwoException();
         }
 
         GC.KeepAlive(owner.Wrapper);
@@ -494,7 +499,7 @@ public static unsafe partial class WindowExtensions
         where T : IHandle<HWND>
     {
         RECT rect = rectangle;
-        bool result = Interop.InvalidateRect(window.Handle, &rect, erase);
+        bool result = PInvoke.InvalidateRect(window.Handle, &rect, erase);
         GC.KeepAlive(window.Wrapper);
         return result;
     }
@@ -502,7 +507,7 @@ public static unsafe partial class WindowExtensions
     public static bool Invalidate<T>(this T window, bool erase = true)
         where T : IHandle<HWND>
     {
-        bool result = Interop.InvalidateRect(window.Handle, (RECT*)null, erase);
+        bool result = PInvoke.InvalidateRect(window.Handle, (RECT*)null, erase);
         GC.KeepAlive(window.Wrapper);
         return result;
     }
@@ -540,8 +545,8 @@ public static unsafe partial class WindowExtensions
     public static HRGN GetWindowRegion<T>(this T window, out GDI_REGION_TYPE type)
         where T : IHandle<HWND>
     {
-        HRGN region = Interop.CreateRectRgn(0, 0, 0, 0);
-        type = Interop.GetWindowRgn(window.Handle, region);
+        HRGN region = PInvoke.CreateRectRgn(0, 0, 0, 0);
+        type = PInvoke.GetWindowRgn(window.Handle, region);
         GC.KeepAlive(window.Wrapper);
         return region;
     }
@@ -552,9 +557,9 @@ public static unsafe partial class WindowExtensions
     public static void SetWindowRegion<T>(this T window, HRGN region, bool redraw = false)
         where T : IHandle<HWND>
     {
-        if (Interop.SetWindowRgn(window.Handle, region, redraw) == 0)
+        if (PInvoke.SetWindowRgn(window.Handle, region, redraw) == 0)
         {
-            Error.ThrowLastError();
+            Error.GetLastError().ThrowThirtyTwoException();
         }
 
         GC.KeepAlive(window.Wrapper);
@@ -576,7 +581,7 @@ public static unsafe partial class WindowExtensions
         uint delayTolerance = 0) where T : IHandle<HWND>
     {
         void* cb = callback is null ? null : (void*)Marshal.GetFunctionPointerForDelegate(callback);
-        nuint result = Interop.SetCoalescableTimer(
+        nuint result = PInvoke.SetCoalescableTimer(
             window.Handle,
             id,
             interval,
@@ -585,7 +590,7 @@ public static unsafe partial class WindowExtensions
 
         if (result == 0)
         {
-            Error.ThrowLastError();
+            Error.GetLastError().ThrowThirtyTwoException();
         }
 
         GC.KeepAlive(window.Wrapper);
@@ -594,10 +599,10 @@ public static unsafe partial class WindowExtensions
 
     public static void KillTimer<T>(this T window, nuint id) where T : IHandle<HWND>
     {
-        bool success = Interop.KillTimer(window.Handle, id);
+        bool success = PInvoke.KillTimer(window.Handle, id);
         if (!success)
         {
-            Error.ThrowIfLastErrorNot(WIN32_ERROR.NO_ERROR);
+            WIN32_ERROR.NO_ERROR.ThrowIfLastErrorNot();
         }
 
         GC.KeepAlive(window.Wrapper);
@@ -605,10 +610,10 @@ public static unsafe partial class WindowExtensions
 
     public static HWND SetFocus<T>(this T window) where T : IHandle<HWND>
     {
-        HWND prior = Interop.SetFocus(window.Handle);
+        HWND prior = PInvoke.SetFocus(window.Handle);
         if (prior.IsNull)
         {
-            Error.ThrowIfLastErrorNot(WIN32_ERROR.NO_ERROR);
+            WIN32_ERROR.NO_ERROR.ThrowIfLastErrorNot();
         }
 
         GC.KeepAlive(window.Wrapper);
@@ -617,10 +622,10 @@ public static unsafe partial class WindowExtensions
 
     public static HWND GetDialogItem<T>(this T window, int id) where T : IHandle<HWND>
     {
-        HWND control = Interop.GetDlgItem(window.Handle, id);
+        HWND control = PInvoke.GetDlgItem(window.Handle, id);
         if (control.IsNull)
         {
-            Error.ThrowLastError();
+            Error.GetLastError().ThrowThirtyTwoException();
         }
 
         return control;
@@ -630,10 +635,10 @@ public static unsafe partial class WindowExtensions
     {
         // GWLP_ID is the control ID or the handle to the menu, depending on whether the window has the WS_CHILD style.
         // Using this API you'll only get the control ID or 0 if it is not a child control (as of 20H2).
-        int id = Interop.GetDlgCtrlID(window.Handle);
+        int id = PInvoke.GetDlgCtrlID(window.Handle);
         if (id == 0)
         {
-            Error.ThrowLastError();
+            Error.GetLastError().ThrowThirtyTwoException();
         }
 
         GC.KeepAlive(window.Wrapper);

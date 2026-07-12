@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.CompilerServices;
@@ -19,7 +19,7 @@ public static unsafe class GdiPlus
         GdiplusStartupInput input = new() { GdiplusVersion = version };
         GdiplusStartupOutput output;
         nuint token;
-        ThrowIfFailed(Interop.GdiplusStartup(
+        ThrowIfFailed(PInvoke.GdiplusStartup(
             &token,
             &input,
             &output));
@@ -27,7 +27,7 @@ public static unsafe class GdiPlus
         return token;
     }
 
-    public static void Shutdown(nuint token) => Interop.GdiplusShutdown(token);
+    public static void Shutdown(nuint token) => PInvoke.GdiplusShutdown(token);
 
     public static void ThrowIfFailed(this Status status)
     {
@@ -42,7 +42,7 @@ public static unsafe class GdiPlus
             case Status.Win32Error:
                 WIN32_ERROR error = Error.GetLastError();
                 if (error != WIN32_ERROR.ERROR_SUCCESS)
-                    return error.GetException();
+                    return error.GetThirtyTwoException();
                 goto default;
             default:
                 return new GdiPlusException(status);

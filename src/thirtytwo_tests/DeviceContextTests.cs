@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -17,7 +17,7 @@ public unsafe class DeviceContextTests
         int logicalDpi = context.GetDeviceCaps(GET_DEVICE_CAPS_INDEX.LOGPIXELSX);
 
         Point point = new(0, 8192);
-        Interop.LPtoDP(context, &point, 1);
-        point.Should().Be(new Point(0, (int)(8192 * (logicalDpi / (float)Interop.USER_DEFAULT_SCREEN_DPI))));
+        PInvoke.LPtoDP(context, &point, 1);
+        point.Should().Be(new Point(0, (int)(8192 * (logicalDpi / (float)PInvoke.USER_DEFAULT_SCREEN_DPI))));
     }
 }

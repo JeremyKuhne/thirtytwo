@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.CompilerServices;
@@ -99,20 +99,29 @@ public unsafe class ComTests
     public static class UnknownCCW
     {
         public static unsafe IUnknown* CreateInstance(IUnkownTest @object)
-            => (IUnknown*)Lifetime<IUnknown.Vtbl, IUnkownTest>.Allocate(@object, CCWVTable);
+            => (IUnknown*)Lifetime<UnknownVtable, IUnkownTest>.Allocate(@object, CCWVTable);
 
-        private static readonly IUnknown.Vtbl* CCWVTable = AllocateVTable();
+        private static readonly UnknownVtable* CCWVTable = AllocateVTable();
 
-        private static unsafe IUnknown.Vtbl* AllocateVTable()
+        private static unsafe UnknownVtable* AllocateVTable()
         {
             // Allocate and create a static VTable for this type projection.
-            var vtable = (IUnknown.Vtbl*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(UnknownCCW), sizeof(IUnknown.Vtbl));
+            var vtable = (UnknownVtable*)RuntimeHelpers.AllocateTypeAssociatedMemory(
+                typeof(UnknownCCW),
+                sizeof(UnknownVtable));
 
             // IUnknown
             vtable->QueryInterface_1 = &QueryInterface;
             vtable->AddRef_2 = &AddRef;
             vtable->Release_3 = &Release;
             return vtable;
+        }
+
+        private struct UnknownVtable
+        {
+            internal delegate* unmanaged[Stdcall]<IUnknown*, Guid*, void**, HRESULT> QueryInterface_1;
+            internal delegate* unmanaged[Stdcall]<IUnknown*, uint> AddRef_2;
+            internal delegate* unmanaged[Stdcall]<IUnknown*, uint> Release_3;
         }
 
         [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
@@ -123,7 +132,7 @@ public unsafe class ComTests
                 return HRESULT.E_POINTER;
             }
 
-            var unknown = Lifetime<IUnknown.Vtbl, IUnkownTest>.GetObject(@this);
+            var unknown = Lifetime<UnknownVtable, IUnkownTest>.GetObject(@this);
             if (unknown is null)
             {
                 return HRESULT.COR_E_OBJECTDISPOSED;
@@ -138,23 +147,23 @@ public unsafe class ComTests
             else
             {
                 *ppvObject = null;
-                return HRESULT.E_NOINTERFACE;
+                return PInvoke.E_NOINTERFACE;
             }
 
-            Lifetime<IUnknown.Vtbl, IUnkownTest>.AddRef(@this);
+            Lifetime<UnknownVtable, IUnkownTest>.AddRef(@this);
             return HRESULT.S_OK;
         }
 
         [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static uint AddRef(IUnknown* @this)
         {
-            var unknown = Lifetime<IUnknown.Vtbl, IUnkownTest>.GetObject(@this);
+            var unknown = Lifetime<UnknownVtable, IUnkownTest>.GetObject(@this);
             if (unknown is null)
             {
                 return HRESULT.COR_E_OBJECTDISPOSED;
             }
 
-            uint current = Lifetime<IUnknown.Vtbl, IUnkownTest>.AddRef(@this);
+            uint current = Lifetime<UnknownVtable, IUnkownTest>.AddRef(@this);
             unknown.AddRef(current);
             return current;
         }
@@ -162,13 +171,13 @@ public unsafe class ComTests
         [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static uint Release(IUnknown* @this)
         {
-            var unknown = Lifetime<IUnknown.Vtbl, IUnkownTest>.GetObject(@this);
+            var unknown = Lifetime<UnknownVtable, IUnkownTest>.GetObject(@this);
             if (unknown is null)
             {
                 return HRESULT.COR_E_OBJECTDISPOSED;
             }
 
-            uint current = Lifetime<IUnknown.Vtbl, IUnkownTest>.Release(@this);
+            uint current = Lifetime<UnknownVtable, IUnkownTest>.Release(@this);
             unknown.Release(current);
             return current;
         }

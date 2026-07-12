@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Support;
@@ -6,125 +6,109 @@ using Windows.Win32.System.Variant;
 
 namespace Windows.Win32.System.Com;
 
-public unsafe partial struct IDispatch
+public static unsafe class IDispatchExtensions
 {
-    public int[] GetIdsOfNames(params string[] names)
+    extension(ref IDispatch dispatch)
     {
-        ArgumentNullException.ThrowIfNull(names);
-
-        if (names.Length == 0)
+        public int[] GetIdsOfNames(params string[] names)
         {
-            return [];
-        }
+            ArgumentNullException.ThrowIfNull(names);
 
-        using StringParameterArray namesArg = new(names);
-        int[] ids = new int[names.Length];
-        fixed (int* i = ids)
-        {
-            HRESULT hr = GetIDsOfNames(IID.Empty(), (PWSTR*)(char**)namesArg, (uint)names.Length, lcid: 0, i);
-            if (hr.Failed && hr != HRESULT.DISP_E_UNKNOWNNAME)
+            if (names.Length == 0)
             {
-                hr.ThrowOnFailure();
+                return [];
             }
-        }
 
-        return ids;
-    }
-
-    public int GetIdOfName(string name)
-    {
-        ArgumentNullException.ThrowIfNull(name);
-
-        int id = Interop.DISPID_UNKNOWN;
-        fixed (char* n = name)
-        {
-            PWSTR* p = (PWSTR*)n;
-            HRESULT hr = GetIDsOfNames(IID.Empty(), (PWSTR*)&p, 1, lcid: 0, &id);
-            if (hr.Failed && hr != HRESULT.DISP_E_UNKNOWNNAME)
+            using StringParameterArray namesArg = new(names);
+            int[] ids = new int[names.Length];
+            fixed (int* i = ids)
             {
-                hr.ThrowOnFailure();
+                HRESULT hr = dispatch.GetIDsOfNames(IID.Empty(), (PWSTR*)(char**)namesArg, (uint)names.Length, lcid: 0, i);
+                if (hr.Failed && hr != PInvoke.DISP_E_UNKNOWNNAME)
+                {
+                    hr.ThrowOnFailure();
+                }
             }
+
+            return ids;
         }
 
-        return id;
-    }
-
-    public VARIANT GetPropertyValue(string name)
-    {
-        int dispid = GetIdOfName(name);
-        if (dispid == Interop.DISPID_UNKNOWN)
+        public int GetIdOfName(string name)
         {
-            return default;
+            ArgumentNullException.ThrowIfNull(name);
+
+            int id = PInvoke.DISPID_UNKNOWN;
+            fixed (char* n = name)
+            {
+                PWSTR* p = (PWSTR*)n;
+                HRESULT hr = dispatch.GetIDsOfNames(IID.Empty(), (PWSTR*)&p, 1, lcid: 0, &id);
+                if (hr.Failed && hr != PInvoke.DISP_E_UNKNOWNNAME)
+                {
+                    hr.ThrowOnFailure();
+                }
+            }
+
+            return id;
         }
 
-        Guid guid = Guid.Empty;
-        EXCEPINFO pExcepInfo = default;
-        DISPPARAMS dispParams = default;
-        VARIANT value = default;
-
-        HRESULT hr = Invoke(
-            dispid,
-            &guid,
-            Interop.GetThreadLocale(),
-            DISPATCH_FLAGS.DISPATCH_PROPERTYGET,
-            &dispParams,
-            &value,
-            &pExcepInfo,
-            null);
-
-        Debug.Assert(hr.Succeeded);
-
-        return value;
-    }
-
-    public VARIANT GetPropertyValue(int dispatchId)
-    {
-        Guid guid = Guid.Empty;
-        EXCEPINFO pExcepInfo = default;
-        DISPPARAMS dispParams = default;
-        VARIANT value = default;
-
-        Invoke(
-            dispatchId,
-            &guid,
-            Interop.GetThreadLocale(),
-            DISPATCH_FLAGS.DISPATCH_PROPERTYGET,
-            &dispParams,
-            &value,
-            &pExcepInfo,
-            null);
-
-        return value;
-    }
-
-    public HRESULT SetPropertyValue(int dispatchId, VARIANT value)
-    {
-        Guid guid = Guid.Empty;
-        EXCEPINFO pExcepInfo = default;
-        VARIANT* arg = &value;
-        int putDispatchID = Interop.DISPID_PROPERTYPUT;
-
-        DISPPARAMS dispParams = new()
+        public VARIANT GetPropertyValue(string name)
         {
-            cArgs = 1,
-            cNamedArgs = 1,
-            // You HAVE to name the put argument or you'll get DISP_E_PARAMNOTFOUND
-            rgdispidNamedArgs = &putDispatchID,
-            rgvarg = arg
-        };
+            int dispid = dispatch.GetIdOfName(name);
+            if (dispid == PInvoke.DISPID_UNKNOWN)
+            {
+                return default;
+            }
 
-        uint argumentError;
+            return dispatch.GetPropertyValue(dispid);
+        }
 
-        HRESULT hr = Invoke(
-            dispatchId,
-            &guid,
-            Interop.GetThreadLocale(),
-            DISPATCH_FLAGS.DISPATCH_PROPERTYPUT,
-            &dispParams,
-            null,
-            &pExcepInfo,
-            &argumentError);
+        public VARIANT GetPropertyValue(int dispatchId)
+        {
+            Guid guid = Guid.Empty;
+            EXCEPINFO exceptionInfo = default;
+            DISPPARAMS parameters = default;
+            VARIANT value = default;
 
-        return hr;
+            dispatch.Invoke(
+                dispatchId,
+                &guid,
+                PInvoke.GetThreadLocale(),
+                DISPATCH_FLAGS.DISPATCH_PROPERTYGET,
+                &parameters,
+                &value,
+                &exceptionInfo,
+                null);
+
+            return value;
+        }
+
+        public HRESULT SetPropertyValue(int dispatchId, VARIANT value)
+        {
+            Guid guid = Guid.Empty;
+            EXCEPINFO exceptionInfo = default;
+            VARIANT* argument = &value;
+            int putDispatchId = PInvoke.DISPID_PROPERTYPUT;
+
+            DISPPARAMS parameters = new()
+            {
+                cArgs = 1,
+                cNamedArgs = 1,
+                // You HAVE to name the put argument or you'll get DISP_E_PARAMNOTFOUND
+                rgdispidNamedArgs = &putDispatchId,
+                rgvarg = argument
+            };
+
+            uint argumentError;
+
+            return dispatch.Invoke(
+                dispatchId,
+                &guid,
+                PInvoke.GetThreadLocale(),
+                DISPATCH_FLAGS.DISPATCH_PROPERTYPUT,
+                &parameters,
+                null,
+                &exceptionInfo,
+                &argumentError);
+        }
     }
 }
