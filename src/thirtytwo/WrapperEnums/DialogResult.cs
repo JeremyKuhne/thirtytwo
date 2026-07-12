@@ -5,7 +5,7 @@ namespace Windows;
 
 /// <remarks>
 ///  <inheritdoc cref="Interop.MessageBoxEx(HWND, PCWSTR, PCWSTR, MESSAGEBOX_STYLE, ushort)"/>
-///  Returned by <c>Interop.TaskDialogIndirect</c>.
+///  Returned by <c>PInvoke.TaskDialogIndirect</c>.
 /// </remarks>
 public enum DialogResult : int
 {

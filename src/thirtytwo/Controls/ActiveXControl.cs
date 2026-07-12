@@ -52,8 +52,8 @@ public unsafe partial class ActiveXControl : CustomControl
         _container = new Container(parentWindow);
         _site = new Site(this);
 
-        IOleClientSite* site = _site.GetComPointer<IOleClientSite>();
-        HRESULT hr = oleObject.Pointer->SetClientSite(site);
+        using ComScope<IOleClientSite> site = new(_site.GetComPointer<IOleClientSite>());
+        HRESULT hr = oleObject.Pointer->SetClientSite(site.Pointer);
 
         _typeDescriptor = new ComTypeDescriptor(_instance);
     }
@@ -92,12 +92,12 @@ public unsafe partial class ActiveXControl : CustomControl
 
         // Bounds are in pixels here, not HIMETRIC
         RECT rect = bounds;
-        IOleClientSite* clientSite = _site.GetComPointer<IOleClientSite>();
+        using ComScope<IOleClientSite> clientSite = new(_site.GetComPointer<IOleClientSite>());
 
         HRESULT hr = oleObject.Pointer->DoVerb(
             iVerb: (int)verb,
             lpmsg: (MSG*)null,
-            pActiveSite: clientSite,
+            pActiveSite: clientSite.Pointer,
             lindex: 0,
             hwndParent: _parentWindow,
             lprcPosRect: &rect);

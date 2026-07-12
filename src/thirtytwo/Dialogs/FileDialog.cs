@@ -22,7 +22,9 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
 
     internal FileDialog(IFileDialog* dialog, IHandle<HWND>? owner = default)
     {
-        dialog->Advise(new FileDialogEvents(this).GetComPointer<IFileDialogEvents>(), out _cookie);
+        using ComScope<IFileDialogEvents> events = new(
+            new FileDialogEvents(this).GetComPointer<IFileDialogEvents>());
+        _ = dialog->Advise(events.Pointer, out _cookie);
 
         // Wrap in an agile reference so it will be safely finalized if Dispose isn't called.
         Interface = new AgileComPointer<IFileDialog>(dialog, takeOwnership: true);
@@ -180,7 +182,21 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
     {
         if (disposing)
         {
-            Interface.Dispose();
+            try
+            {
+                if (_cookie != 0)
+                {
+                    using ComScope<IFileDialog> dialog = Interface.TryGetInterface(out HRESULT result);
+                    if (result.Succeeded)
+                    {
+                        _ = dialog.Pointer->Unadvise(_cookie);
+                    }
+                }
+            }
+            finally
+            {
+                Interface.Dispose();
+            }
         }
     }
 }

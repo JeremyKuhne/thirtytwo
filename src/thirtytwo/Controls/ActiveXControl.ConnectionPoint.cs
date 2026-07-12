@@ -40,8 +40,8 @@ public unsafe partial class ActiveXControl
                 : base(connectionPoint, takeOwnership: true)
             {
                 uint cookie = 0;
-                IUnknown* ccw = sink.TryGetComPointer<IUnknown>(out HRESULT hr);
-                if (hr.Failed || connectionPoint->Advise(ccw, &cookie).Failed)
+                using ComScope<IUnknown> ccw = new(sink.TryGetComPointer<IUnknown>(out HRESULT hr));
+                if (hr.Failed || connectionPoint->Advise(ccw.Pointer, &cookie).Failed)
                 {
                     Dispose();
                 }

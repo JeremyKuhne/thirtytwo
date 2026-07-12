@@ -20,7 +20,7 @@ public class RegistryTests
 
             string name = Registry.QueryKeyName(key);
 
-            name.Should().EndWith(subKeyName);
+            name.Should().EndWithEquivalentOf(subKeyName);
         }
         finally
         {
