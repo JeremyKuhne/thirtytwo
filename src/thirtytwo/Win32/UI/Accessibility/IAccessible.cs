@@ -9,7 +9,7 @@ public unsafe partial struct IAccessible : IVTable<IAccessible, IAccessible.Vtbl
 {
     static void IVTable<IAccessible, Vtbl>.PopulateVTable(Vtbl* vtable)
     {
-        IDispatch.PopulateVTable((IDispatch.Vtbl*)vtable);
+        IDispatchCcw.PopulateVTable((IDispatchCcw.Vtbl*)vtable);
         PopulateVTable(vtable);
     }
 }

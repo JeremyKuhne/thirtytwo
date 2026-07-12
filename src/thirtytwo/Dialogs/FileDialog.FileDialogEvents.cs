@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.System.Com;
@@ -19,7 +19,7 @@ public unsafe partial class FileDialog
             {
                 AcceptEventArgs args = new();
                 clicked.Invoke(_dialog, args);
-                return args.Accept ? HRESULT.S_OK : HRESULT.S_FALSE;
+                return args.Accept ? HRESULT.S_OK : PInvoke.S_FALSE;
             }
 
             return HRESULT.S_OK;

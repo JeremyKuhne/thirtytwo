@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.InteropServices;
@@ -11,7 +11,7 @@ public static unsafe class GraphicsExtensions
 {
     public static void SetSmoothingMode<T>(this T graphics, SmoothingMode smoothingMode) where T : IPointer<GpGraphics>
     {
-        Interop.GdipSetSmoothingMode(graphics.Pointer, smoothingMode).ThrowIfFailed();
+        PInvoke.GdipSetSmoothingMode(graphics.Pointer, smoothingMode).ThrowIfFailed();
         GC.KeepAlive(graphics);
     }
 
@@ -26,7 +26,7 @@ public static unsafe class GraphicsExtensions
     {
         fixed (Point* p = points)
         {
-            Interop.GdipDrawLinesI(graphics.Pointer, pen.Pointer, p, points.Length).ThrowIfFailed();
+            PInvoke.GdipDrawLinesI(graphics.Pointer, pen.Pointer, p, points.Length).ThrowIfFailed();
         }
 
         GC.KeepAlive(graphics);
@@ -44,7 +44,7 @@ public static unsafe class GraphicsExtensions
     {
         fixed (PointF* p = points)
         {
-            Interop.GdipDrawLines(graphics.Pointer, pen.Pointer, p, points.Length).ThrowIfFailed();
+            PInvoke.GdipDrawLines(graphics.Pointer, pen.Pointer, p, points.Length).ThrowIfFailed();
         }
 
         GC.KeepAlive(graphics);
@@ -70,7 +70,7 @@ public static unsafe class GraphicsExtensions
         where TGraphics : IPointer<GpGraphics>
         where TBrush : IPointer<GpBrush>
     {
-        Interop.GdipFillEllipse(graphics.Pointer, brush.Pointer, x, y, width, height).ThrowIfFailed();
+        PInvoke.GdipFillEllipse(graphics.Pointer, brush.Pointer, x, y, width, height).ThrowIfFailed();
         GC.KeepAlive(graphics);
         GC.KeepAlive(brush);
     }

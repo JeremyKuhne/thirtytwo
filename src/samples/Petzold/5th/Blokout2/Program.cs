@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -36,7 +36,7 @@ internal class Blockout2 : MainWindow
                 _ptBeg.X = _ptEnd.X = lParam.LOWORD;
                 _ptBeg.Y = _ptEnd.Y = lParam.HIWORD;
                 DrawBoxOutline(window, _ptBeg, _ptEnd);
-                Interop.SetCapture(window);
+                PInvoke.SetCapture(window);
                 CursorId.Cross.SetCursor();
                 _fBlocking = true;
                 return (LRESULT)0;
@@ -58,7 +58,7 @@ internal class Blockout2 : MainWindow
                     _ptBoxBeg = _ptBeg;
                     _ptBoxEnd.X = lParam.LOWORD;
                     _ptBoxEnd.Y = lParam.HIWORD;
-                    Interop.ReleaseCapture();
+                    PInvoke.ReleaseCapture();
                     CursorId.Arrow.SetCursor();
                     _fBlocking = false;
                     _fValidBox = true;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -36,7 +36,7 @@ internal class Beeper2 : MainWindow
 
     private void TimerProcedure(HWND window, MessageType message, nuint timerId, uint time)
     {
-        Interop.MessageBeep(MESSAGEBOX_STYLE.MB_OK);
+        PInvoke.MessageBeep(MESSAGEBOX_STYLE.MB_OK);
         _flipFlop = !_flipFlop;
         using DeviceContext dc = window.GetDeviceContext();
         using HBRUSH brush = HBRUSH.CreateSolid(_flipFlop ? Color.Red : Color.Blue);

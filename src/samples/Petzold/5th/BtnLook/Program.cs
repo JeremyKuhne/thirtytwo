@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -36,7 +36,7 @@ internal static class Program
             switch (message)
             {
                 case MessageType.Create:
-                    int baseUnits = Interop.GetDialogBaseUnits();
+                    int baseUnits = PInvoke.GetDialogBaseUnits();
                     _baseUnits = new(baseUnits & 0xFFFF, baseUnits >> 16);
                     _btnWidth = _baseUnits.Width * 8;
                     _btnHeight = _baseUnits.Height * 4;

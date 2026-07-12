@@ -1,9 +1,10 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using Windows.Support;
+using Windows.Wdk;
 using Windows.Wdk.System.Registry;
 using Windows.Wdk.System.SystemServices;
 
@@ -45,18 +46,26 @@ public static unsafe partial class Registry
         while (true) fixed (char* b = buffer)
         {
             uint length;
-            NTSTATUS status = Wdk.Interop.NtQueryKey(key, KEY_INFORMATION_CLASS.KeyNameInformation, b, (uint)buffer.Length, &length);
+            uint bufferSizeInBytes = checked((uint)buffer.Length * sizeof(char));
+            NTSTATUS status = Wdk.Interop.NtQueryKey(
+                key,
+                KEY_INFORMATION_CLASS.KeyNameInformation,
+                b,
+                bufferSizeInBytes,
+                &length);
 
-            if (status == NTSTATUS.STATUS_BUFFER_TOO_SMALL || status == NTSTATUS.STATUS_BUFFER_OVERFLOW)
+            if (status == PInvoke.STATUS_BUFFER_TOO_SMALL || status == PInvoke.STATUS_BUFFER_OVERFLOW)
             {
-                buffer.EnsureCapacity((int)length);
+                int requiredCharacterCapacity = checked((int)(((ulong)length + sizeof(char) - 1) / sizeof(char)));
+                buffer.EnsureCapacity(requiredCharacterCapacity);
                 continue;
             }
 
             status.ThrowIfFailed();
 
             KEY_NAME_INFORMATION* nameInfo = (KEY_NAME_INFORMATION*)b;
-            return nameInfo->Name.AsSpan((int)nameInfo->NameLength / sizeof(char)).ToString();
+            int nameLength = checked((int)(nameInfo->NameLength / sizeof(char)));
+            return nameInfo->Name.AsSpan(nameLength).ToString();
         }
     }
 
@@ -68,8 +77,7 @@ public static unsafe partial class Registry
         string? subKeyName,
         REG_SAM_FLAGS rights = REG_SAM_FLAGS.KEY_READ)
     {
-        HKEY subKey;
-        Interop.RegOpenKeyEx(key, subKeyName, 0, rights, &subKey).ThrowIfFailed();
+        PInvoke.RegOpenKeyEx(key, subKeyName, 0, rights, out HKEY subKey).ThrowIfThirtyTwoFailed();
         return subKey;
     }
 
@@ -80,12 +88,12 @@ public static unsafe partial class Registry
     {
         fixed (char* c = valueName)
         {
-            WIN32_ERROR result = Interop.RegQueryValueEx(key, c, null, null, null, null);
+            WIN32_ERROR result = PInvoke.RegQueryValueEx(key, c, null, null, null, null);
             return result switch
             {
                 WIN32_ERROR.ERROR_SUCCESS => true,
                 WIN32_ERROR.ERROR_FILE_NOT_FOUND => false,
-                _ => throw Error.GetException(result)
+                _ => throw result.GetThirtyTwoException()
             };
         }
     }
@@ -98,12 +106,12 @@ public static unsafe partial class Registry
         fixed (char* c = valueName)
         {
             REG_VALUE_TYPE valueType = default;
-            WIN32_ERROR result = Interop.RegQueryValueEx(key, c, null, &valueType, null, null);
+            WIN32_ERROR result = PInvoke.RegQueryValueEx(key, c, null, &valueType, null, null);
             return result switch
             {
                 WIN32_ERROR.ERROR_SUCCESS => valueType,
                 WIN32_ERROR.ERROR_FILE_NOT_FOUND => REG_VALUE_TYPE.REG_NONE,
-                _ => throw result.GetException(),
+                _ => throw result.GetThirtyTwoException(),
             };
         }
     }
@@ -118,7 +126,7 @@ public static unsafe partial class Registry
             REG_VALUE_TYPE valueType = default;
 
             uint length = (uint)buffer.Length;
-            WIN32_ERROR result = Interop.RegQueryValueEx(key, n, null, &valueType, b, &length);
+            WIN32_ERROR result = PInvoke.RegQueryValueEx(key, n, null, &valueType, b, &length);
 
             switch (result)
             {
@@ -132,7 +140,7 @@ public static unsafe partial class Registry
                 case WIN32_ERROR.ERROR_FILE_NOT_FOUND:
                     return null;
                 default:
-                    throw result.GetException();
+                    throw result.GetThirtyTwoException();
             }
         }
     }
@@ -144,7 +152,11 @@ public static unsafe partial class Registry
     {
         uint valueCount;
         uint maxValueNameLength;
-        Interop.RegQueryInfoKey(key, default, lpcValues: &valueCount, lpcbMaxValueNameLen: &maxValueNameLength).ThrowIfFailed();
+        PInvoke.RegQueryInfoKey(
+            key,
+            default,
+            lpcValues: &valueCount,
+            lpcbMaxValueNameLen: &maxValueNameLength).ThrowIfThirtyTwoFailed();
 
         List<string> names = [];
 
@@ -160,7 +172,7 @@ public static unsafe partial class Registry
         while (true) fixed (char* c = buffer)
         {
             uint length = (uint)buffer.Length;
-            result = Interop.RegEnumValue(key, (uint)names.Count, c, &length, null, null, null, null);
+            result = PInvoke.RegEnumValue(key, (uint)names.Count, c, &length, null, null, null, null);
 
             switch (result)
             {
@@ -185,7 +197,7 @@ public static unsafe partial class Registry
 
                     break;
                 default:
-                    throw result.GetException();
+                    throw result.GetThirtyTwoException();
             }
         }
     }
@@ -200,7 +212,20 @@ public static unsafe partial class Registry
                 // Size includes the null
                 return MemoryMarshal.Cast<byte, char>(buffer)[..^1].ToString();
             case REG_VALUE_TYPE.REG_MULTI_SZ:
-                return MemoryMarshal.Cast<byte, char>(buffer).SplitToEnumerable('\0').ToArray();
+                ReadOnlySpan<char> characters = MemoryMarshal.Cast<byte, char>(buffer);
+                List<string> values = [];
+                foreach (Range range in characters.Split('\0'))
+                {
+                    ReadOnlySpan<char> value = characters[range];
+                    if (value.IsEmpty)
+                    {
+                        break;
+                    }
+
+                    values.Add(value.ToString());
+                }
+
+                return values.ToArray();
             case REG_VALUE_TYPE.REG_DWORD_LITTLE_ENDIAN:
                 return BinaryPrimitives.ReadUInt32LittleEndian(buffer);
             case REG_VALUE_TYPE.REG_DWORD_BIG_ENDIAN:

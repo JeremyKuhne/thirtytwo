@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.System.Ole;
@@ -26,8 +26,8 @@ public unsafe abstract class ReflectPropertiesDispatch : UnknownDispatch
             return HRESULT.S_OK;
         }
 
-        *pid = Interop.DISPID_UNKNOWN;
-        return HRESULT.DISP_E_UNKNOWNNAME;
+        *pid = PInvoke.DISPID_UNKNOWN;
+        return PInvoke.DISP_E_UNKNOWNNAME;
     }
 
     protected override HRESULT GetMemberName(int id, BSTR* pbstrName)
@@ -39,7 +39,7 @@ public unsafe abstract class ReflectPropertiesDispatch : UnknownDispatch
         }
 
         *pbstrName = default;
-        return HRESULT.DISP_E_UNKNOWNNAME;
+        return PInvoke.DISP_E_UNKNOWNNAME;
     }
 
     protected override HRESULT GetNextDispID(uint grfdex, int id, int* pid)
@@ -50,8 +50,8 @@ public unsafe abstract class ReflectPropertiesDispatch : UnknownDispatch
             return HRESULT.S_OK;
         }
 
-        *pid = Interop.DISPID_UNKNOWN;
-        return HRESULT.S_FALSE;
+        *pid = PInvoke.DISPID_UNKNOWN;
+        return PInvoke.S_FALSE;
     }
 
     protected override HRESULT Invoke(
@@ -72,6 +72,6 @@ public unsafe abstract class ReflectPropertiesDispatch : UnknownDispatch
         }
 
         properties = default;
-        return HRESULT.DISP_E_UNKNOWNNAME;
+        return PInvoke.DISP_E_UNKNOWNNAME;
     }
 }

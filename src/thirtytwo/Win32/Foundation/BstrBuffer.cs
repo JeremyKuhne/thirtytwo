@@ -16,6 +16,7 @@ namespace Windows.Win32.Foundation;
 ///   make the data in the buffer point to random stack data.
 ///  </para>
 /// </remarks>
+[NonCopyable]
 public unsafe ref struct BstrBuffer
 {
     private const int StackSpace = 16;

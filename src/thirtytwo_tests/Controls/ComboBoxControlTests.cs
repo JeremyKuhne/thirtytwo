@@ -296,7 +296,7 @@ public class ComboBoxControlTests
             changeCount++;
         };
 
-        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_SELCHANGE), (LPARAM)combo.Handle);
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)PInvoke.CBN_SELCHANGE), (LPARAM)combo.Handle);
         changeCount.Should().Be(1);
     }
 
@@ -309,7 +309,7 @@ public class ComboBoxControlTests
         int count = 0;
         combo.GotFocus += (s, e) => count++;
 
-        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_SETFOCUS), (LPARAM)combo.Handle);
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)PInvoke.CBN_SETFOCUS), (LPARAM)combo.Handle);
         count.Should().Be(1);
     }
 
@@ -322,7 +322,7 @@ public class ComboBoxControlTests
         int count = 0;
         combo.LostFocus += (s, e) => count++;
 
-        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_KILLFOCUS), (LPARAM)combo.Handle);
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)PInvoke.CBN_KILLFOCUS), (LPARAM)combo.Handle);
         count.Should().Be(1);
     }
 
@@ -335,7 +335,7 @@ public class ComboBoxControlTests
         int count = 0;
         combo.DropDown += (s, e) => count++;
 
-        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_DROPDOWN), (LPARAM)combo.Handle);
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)PInvoke.CBN_DROPDOWN), (LPARAM)combo.Handle);
         count.Should().Be(1);
     }
 
@@ -348,7 +348,7 @@ public class ComboBoxControlTests
         int count = 0;
         combo.CloseUp += (s, e) => count++;
 
-        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_CLOSEUP), (LPARAM)combo.Handle);
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)PInvoke.CBN_CLOSEUP), (LPARAM)combo.Handle);
         count.Should().Be(1);
     }
 
@@ -361,7 +361,7 @@ public class ComboBoxControlTests
         int count = 0;
         combo.DoubleClicked += (s, e) => count++;
 
-        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_DBLCLK), (LPARAM)combo.Handle);
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)PInvoke.CBN_DBLCLK), (LPARAM)combo.Handle);
         count.Should().Be(1);
     }
 
@@ -374,7 +374,7 @@ public class ComboBoxControlTests
         int count = 0;
         combo.TextChanged += (s, e) => count++;
 
-        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_EDITCHANGE), (LPARAM)combo.Handle);
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)PInvoke.CBN_EDITCHANGE), (LPARAM)combo.Handle);
         count.Should().Be(1);
     }
 
@@ -387,7 +387,7 @@ public class ComboBoxControlTests
         int count = 0;
         combo.TextUpdated += (s, e) => count++;
 
-        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_EDITUPDATE), (LPARAM)combo.Handle);
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)PInvoke.CBN_EDITUPDATE), (LPARAM)combo.Handle);
         count.Should().Be(1);
     }
 
@@ -400,7 +400,7 @@ public class ComboBoxControlTests
         int count = 0;
         combo.SelectionCommitted += (s, e) => count++;
 
-        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_SELENDOK), (LPARAM)combo.Handle);
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)PInvoke.CBN_SELENDOK), (LPARAM)combo.Handle);
         count.Should().Be(1);
     }
 
@@ -413,7 +413,7 @@ public class ComboBoxControlTests
         int count = 0;
         combo.SelectionCanceled += (s, e) => count++;
 
-        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)Interop.CBN_SELENDCANCEL), (LPARAM)combo.Handle);
+        window.SendMessage(MessageType.Command, WPARAM.MAKEWPARAM(0, (int)PInvoke.CBN_SELENDCANCEL), (LPARAM)combo.Handle);
         count.Should().Be(1);
     }
 }

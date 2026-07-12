@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 // The GDI+ variant works, but is far from optimized. Creating and disposing a Graphics object every second
@@ -142,13 +142,13 @@ internal class Clock : MainWindow
         {
             case MessageType.Create:
                 window.SetTimer(ID_TIMER, 1000);
-                Interop.GetLocalTime(out _previousTime);
+                PInvoke.GetLocalTime(out _previousTime);
                 return (LRESULT)0;
             case MessageType.Size:
                 _clientSize = new Message.Size(wParam, lParam).NewSize;
                 return (LRESULT)0;
             case MessageType.Timer:
-                Interop.GetLocalTime(out SYSTEMTIME time);
+                PInvoke.GetLocalTime(out SYSTEMTIME time);
                 bool drawAllHands = time.wHour != _previousTime.wHour || time.wMinute != _previousTime.wMinute;
                 using (DeviceContext dc = window.GetDeviceContext())
                 {

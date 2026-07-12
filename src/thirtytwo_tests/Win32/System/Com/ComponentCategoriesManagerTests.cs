@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.Foundation;
@@ -11,11 +11,13 @@ public unsafe class ComponentCategoriesManagerTests
     [STATestMethod]
     public void EnumerateCategories()
     {
-        using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.StdComponentCategoriesManager), takeOwnership: true);
+        using AgileComPointer<IUnknown> unknown = new(
+            CLSID.StdComponentCategoriesManager.CreateComClass(),
+            takeOwnership: true);
         using var categoriesInfo = unknown.TryGetInterface<ICatInformation>(out HRESULT hr);
 
         using ComScope<IEnumCATEGORYINFO> enumCategories = new(null);
-        hr = categoriesInfo.Pointer->EnumCategories(Interop.GetUserDefaultLCID(), enumCategories);
+        hr = categoriesInfo.Pointer->EnumCategories(PInvoke.GetUserDefaultLCID(), enumCategories);
 
         Dictionary<Guid, string> categories = [];
         CATEGORYINFO categoryInfo = default;
@@ -31,7 +33,9 @@ public unsafe class ComponentCategoriesManagerTests
     [STATestMethod]
     public void EnumerateActiveXClasses()
     {
-        using AgileComPointer<IUnknown> unknown = new(ComHelpers.CreateComClass(CLSID.StdComponentCategoriesManager), takeOwnership: true);
+        using AgileComPointer<IUnknown> unknown = new(
+            CLSID.StdComponentCategoriesManager.CreateComClass(),
+            takeOwnership: true);
         using var categoriesInfo = unknown.TryGetInterface<ICatInformation>(out HRESULT hr);
 
         using ComScope<IEnumGUID> enumGuids = new(null);

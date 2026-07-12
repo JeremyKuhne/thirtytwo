@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.System.Com;
@@ -10,7 +10,7 @@ namespace Windows.Accessibility;
 public unsafe abstract class UiaBase :
     AccessibleBase,
     IRawElementProviderSimple.Interface,
-    IManagedWrapper<IRawElementProviderSimple, IAccessible, IDispatch>
+    IManagedWrapper<IRawElementProviderSimple, IAccessible, IDispatchCcw>
 {
     public UiaBase() : base()
     {
@@ -29,7 +29,7 @@ public unsafe abstract class UiaBase :
 
     HRESULT IRawElementProviderSimple.Interface.GetPatternProvider(UIA_PATTERN_ID patternId, IUnknown** pRetVal)
     {
-        return HRESULT.E_NOTIMPL;
+        return PInvoke.E_NOTIMPL;
     }
 
     protected virtual bool IsPatternSupported(UIA_PATTERN_ID patternId)

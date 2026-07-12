@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -29,13 +29,13 @@ internal class Checker2 : MainWindow
                 _cyBlock = lParam.HIWORD / DIVISIONS;
                 return (LRESULT)0;
             case MessageType.SetFocus:
-                _ = Interop.ShowCursor(true);
+                _ = PInvoke.ShowCursor(true);
                 return (LRESULT)0;
             case MessageType.KillFocus:
-                _ = Interop.ShowCursor(false);
+                _ = PInvoke.ShowCursor(false);
                 return (LRESULT)0;
             case MessageType.KeyDown:
-                Interop.GetCursorPos(out Point point);
+                PInvoke.GetCursorPos(out Point point);
                 window.ScreenToClient(ref point);
                 int x = Math.Max(0, Math.Min(DIVISIONS - 1, point.X / _cxBlock));
                 int y = Math.Max(0, Math.Min(DIVISIONS - 1, point.Y / _cyBlock));
@@ -72,7 +72,7 @@ internal class Checker2 : MainWindow
 
                 point = new Point(x * _cxBlock + _cxBlock / 2, y * _cyBlock + _cyBlock / 2);
                 window.ClientToScreen(ref point);
-                Interop.SetCursorPos(point.X, point.Y);
+                PInvoke.SetCursorPos(point.X, point.Y);
                 return (LRESULT)0;
             case MessageType.LeftButtonDown:
                 x = lParam.LOWORD / _cxBlock;
@@ -91,7 +91,7 @@ internal class Checker2 : MainWindow
                 }
                 else
                 {
-                    Interop.MessageBeep(0);
+                    PInvoke.MessageBeep(0);
                 }
 
                 return (LRESULT)0;

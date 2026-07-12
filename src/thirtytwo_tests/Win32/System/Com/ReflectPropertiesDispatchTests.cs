@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -33,7 +33,7 @@ public unsafe class ReflectPropertiesDispatchTests
     {
         ReflectObjectTypes reflect = new();
 
-        using ComScope<IDispatchEx> dispatch = new(ComHelpers.GetComPointer<IDispatchEx>(reflect));
+        using ComScope<IDispatchEx> dispatch = new(reflect.GetComPointer<IDispatchEx>());
 
         var dispatchIds = dispatch.Pointer->GetAllDispatchIds();
 
@@ -83,7 +83,7 @@ public unsafe class ReflectPropertiesDispatchTests
             Color = Color.Blue
         };
 
-        using ComScope<IDispatchEx> dispatch = new(ComHelpers.GetComPointer<IDispatchEx>(reflect));
+        using ComScope<IDispatchEx> dispatch = new(reflect.GetComPointer<IDispatchEx>());
 
         var dispatchIds = dispatch.Pointer->GetAllDispatchIds();
 
@@ -103,7 +103,7 @@ public unsafe class ReflectPropertiesDispatchTests
 
         value = (VARIANT)(uint)0x000000FF;
         hr = dispatch.Pointer->TrySetPropertyValue(dispatchIds["Color"], value);
-        hr.Should().Be(HRESULT.DISP_E_MEMBERNOTFOUND);
+        hr.Should().Be(PInvoke.DISP_E_MEMBERNOTFOUND);
 
         dispatch.Pointer->GetMemberProperties(dispatchIds["Color"], uint.MaxValue, out var flags);
         flags.Should().Be(fdexPropCanGet | fdexPropCanPut | fdexPropCannotPutRef
@@ -111,7 +111,7 @@ public unsafe class ReflectPropertiesDispatchTests
     }
 
 
-    private class ReflectObjectTypes : ReflectPropertiesDispatch, IManagedWrapper<IDispatch, IDispatchEx>
+    private class ReflectObjectTypes : ReflectPropertiesDispatch, IManagedWrapper<IDispatchCcw, IDispatchEx>
     {
         public object? ObjectAsInterface
         {
@@ -124,7 +124,7 @@ public unsafe class ReflectPropertiesDispatchTests
         public object? Object { get; set; }
     }
 
-    private class ReflectNonObjectTypes : ReflectPropertiesDispatch, IManagedWrapper<IDispatch, IDispatchEx>
+    private class ReflectNonObjectTypes : ReflectPropertiesDispatch, IManagedWrapper<IDispatchCcw, IDispatchEx>
     {
         public Point Location { get; internal set; }
         public Color Color { get; set; }

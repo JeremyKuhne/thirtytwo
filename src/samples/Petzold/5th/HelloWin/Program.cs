@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -34,7 +34,7 @@ internal unsafe static class Program
 
         WindowProcedure wndProc = WindowProcedure;
         HMODULE module;
-        Interop.GetModuleHandleEx(0, (PCWSTR)null, &module);
+        PInvoke.GetModuleHandleEx(0, (PCWSTR)null, &module);
 
         HWND hwnd;
 
@@ -47,20 +47,20 @@ internal unsafe static class Program
                 style = WNDCLASS_STYLES.CS_HREDRAW | WNDCLASS_STYLES.CS_VREDRAW,
                 lpfnWndProc = (WNDPROC)Marshal.GetFunctionPointerForDelegate(wndProc),
                 hInstance = module,
-                hIcon = Interop.LoadIcon(default, Interop.IDI_APPLICATION),
-                hCursor = Interop.LoadCursor(default, Interop.IDC_ARROW),
-                hbrBackground = (HBRUSH)Interop.GetStockObject(GET_STOCK_OBJECT_FLAGS.WHITE_BRUSH),
+                hIcon = PInvoke.LoadIcon(default, PInvoke.IDI_APPLICATION),
+                hCursor = PInvoke.LoadCursor(default, PInvoke.IDC_ARROW),
+                hbrBackground = (HBRUSH)PInvoke.GetStockObject(GET_STOCK_OBJECT_FLAGS.WHITE_BRUSH),
                 lpszClassName = appName
             };
 
-            ATOM atom = Interop.RegisterClassEx(&wndClass);
+            ATOM atom = PInvoke.RegisterClassEx(&wndClass);
 
-            hwnd = Interop.CreateWindowEx(
+            hwnd = PInvoke.CreateWindowEx(
                 WINDOW_EX_STYLE.WS_EX_OVERLAPPEDWINDOW,
                 appName,
                 title,
                 WINDOW_STYLE.WS_OVERLAPPEDWINDOW,
-                Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT,
+                PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT,
                 HWND.Null,
                 HMENU.Null,
                 module,
@@ -69,13 +69,13 @@ internal unsafe static class Program
 
         }
 
-        Interop.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWDEFAULT);
-        Interop.UpdateWindow(hwnd);
+        PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWDEFAULT);
+        PInvoke.UpdateWindow(hwnd);
 
-        while (Interop.GetMessage(out MSG msg, HWND.Null, 0, 0))
+        while (PInvoke.GetMessage(out MSG msg, HWND.Null, 0, 0))
         {
-            Interop.TranslateMessage(msg);
-            Interop.DispatchMessage(msg);
+            PInvoke.TranslateMessage(msg);
+            PInvoke.DispatchMessage(msg);
         }
 
         GC.KeepAlive(wndProc);
@@ -86,22 +86,22 @@ internal unsafe static class Program
         switch (message)
         {
             case Interop.WM_CREATE:
-                Interop.PlaySound(
+                PInvoke.PlaySound(
                     (char*)SND_ALIAS_SYSTEMHAND,
                     HMODULE.Null,
                     SND_FLAGS.SND_ASYNC | SND_FLAGS.SND_NODEFAULT | SND_FLAGS.SND_ALIAS_ID);
                 return (LRESULT)0;
             case Interop.WM_PAINT:
                 PAINTSTRUCT ps;
-                HDC hdc = Interop.BeginPaint(window, &ps);
+                HDC hdc = PInvoke.BeginPaint(window, &ps);
 
                 RECT rect;
-                Interop.GetClientRect(window, &rect);
+                PInvoke.GetClientRect(window, &rect);
 
                 // Technically this is unsafe as ellipsis options will modify the passed in string.
                 fixed (char* text = "Hello, Windows 98!")
                 {
-                    _ = Interop.DrawTextEx(
+                    _ = PInvoke.DrawTextEx(
                         hdc,
                         text,
                         -1,
@@ -110,14 +110,14 @@ internal unsafe static class Program
                         null);
                 }
 
-                Interop.EndPaint(window, &ps);
+                PInvoke.EndPaint(window, &ps);
                 return (LRESULT)0;
             case Interop.WM_DESTROY:
-                Interop.PostQuitMessage(0);
+                PInvoke.PostQuitMessage(0);
                 return (LRESULT)0;
         }
 
-        return Interop.DefWindowProc(window, message, wParam, lParam);
+        return PInvoke.DefWindowProc(window, message, wParam, lParam);
     }
 
     private class HelloWindow : MainWindow
@@ -131,7 +131,7 @@ internal unsafe static class Program
             switch (message)
             {
                 case MessageType.Create:
-                    Interop.PlaySound(
+                    PInvoke.PlaySound(
                         (char*)SND_ALIAS_SYSTEMHAND,
                         HMODULE.Null,
                         SND_FLAGS.SND_ASYNC | SND_FLAGS.SND_NODEFAULT | SND_FLAGS.SND_ALIAS_ID);

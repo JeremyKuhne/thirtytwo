@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -23,7 +23,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
     // https://learn.microsoft.com/windows/win32/winauto/window
     // https://learn.microsoft.com/windows/win32/winauto/client-object
 
-    public static VARIANT Self { get; } = (VARIANT)(int)Interop.CHILDID_SELF;
+    public static VARIANT Self { get; } = (VARIANT)(int)PInvoke.CHILDID_SELF;
 
     public static Rectangle InvalidBounds { get; } = new(int.MinValue, int.MinValue, int.MinValue, int.MinValue);
 
@@ -38,7 +38,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
     }
 
     protected VARIANT AsVariant(AccessibleBase accessible)
-        => accessible == this ? Self : (VARIANT)ComHelpers.GetComPointer<IDispatch>(accessible);
+        => accessible == this ? Self : (VARIANT)accessible.GetComPointer<IDispatch>();
 
     HRESULT IAccessible.Interface.get_accDescription(VARIANT varChild, BSTR* pszDescription)
     {
@@ -55,15 +55,15 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         // OBJID_WINDOW doesn't have a description, but it's children do.
         // OBJID_CLIENT doesn't have this by default. Docs recommend not to support this as UIA doesn't use it.
 
-        if ((int)varChild != Interop.CHILDID_SELF)
+        if ((int)varChild != PInvoke.CHILDID_SELF)
         {
-            return _childHandler?.get_accDescription(varChild, pszDescription) ?? HRESULT.S_FALSE;
+            return _childHandler?.get_accDescription(varChild, pszDescription) ?? PInvoke.S_FALSE;
         }
 
         if (Description is not { } description)
         {
             *pszDescription = default;
-            return HRESULT.S_FALSE;
+            return PInvoke.S_FALSE;
         }
 
         *pszDescription = new(description);
@@ -84,10 +84,10 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
             return HRESULT.E_INVALIDARG;
         }
 
-        if ((int)varChild != Interop.CHILDID_SELF)
+        if ((int)varChild != PInvoke.CHILDID_SELF)
         {
             *pvarRole = VARIANT.Empty;
-            return _childHandler?.get_accRole(varChild, pvarRole) ?? HRESULT.S_FALSE;
+            return _childHandler?.get_accRole(varChild, pvarRole) ?? PInvoke.S_FALSE;
         }
 
         // For OBJID_WINDOW this is ROLE_SYSTEM_WINDOW. For OBJID_CLIENT this is ROLE_SYSTEM_CLIENT.
@@ -122,10 +122,10 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         //
         // OBJID_CLIENT always adds STATE_SYSTEM_FOCUSABLE and adds STATE_SYSTEM_FOCUSED if the HWND has focus
 
-        if ((int)varChild != Interop.CHILDID_SELF)
+        if ((int)varChild != PInvoke.CHILDID_SELF)
         {
             *pvarState = VARIANT.Empty;
-            return _childHandler?.get_accRole(varChild, pvarState) ?? HRESULT.S_FALSE;
+            return _childHandler?.get_accRole(varChild, pvarState) ?? PInvoke.S_FALSE;
         }
 
         *pvarState = (VARIANT)(int)State;
@@ -150,16 +150,16 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
             return HRESULT.E_INVALIDARG;
         }
 
-        if ((int)varChild != Interop.CHILDID_SELF)
+        if ((int)varChild != PInvoke.CHILDID_SELF)
         {
             *pszHelp = default;
-            return _childHandler?.get_accHelp(varChild, pszHelp) ?? HRESULT.S_FALSE;
+            return _childHandler?.get_accHelp(varChild, pszHelp) ?? PInvoke.S_FALSE;
         }
 
         if (Help is not { } help)
         {
             *pszHelp = default;
-            return HRESULT.S_FALSE;
+            return PInvoke.S_FALSE;
         }
 
         *pszHelp = new(help);
@@ -171,7 +171,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
     HRESULT IAccessible.Interface.get_accHelpTopic(BSTR* pszHelpFile, VARIANT varChild, int* pidTopic)
     {
         // Docs list this method as depreciated and state that it should not be used.
-        return HRESULT.DISP_E_MEMBERNOTFOUND;
+        return PInvoke.DISP_E_MEMBERNOTFOUND;
     }
 
     HRESULT IAccessible.Interface.get_accKeyboardShortcut(VARIANT varChild, BSTR* pszKeyboardShortcut)
@@ -186,16 +186,16 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
             return HRESULT.E_INVALIDARG;
         }
 
-        if ((int)varChild != Interop.CHILDID_SELF)
+        if ((int)varChild != PInvoke.CHILDID_SELF)
         {
             *pszKeyboardShortcut = default;
-            return _childHandler?.get_accKeyboardShortcut(varChild, pszKeyboardShortcut) ?? HRESULT.S_FALSE;
+            return _childHandler?.get_accKeyboardShortcut(varChild, pszKeyboardShortcut) ?? PInvoke.S_FALSE;
         }
 
         if (KeyboardShortcut is not { } shortcut)
         {
             *pszKeyboardShortcut = default;
-            return HRESULT.S_FALSE;
+            return PInvoke.S_FALSE;
         }
 
         *pszKeyboardShortcut = new(shortcut);
@@ -216,16 +216,16 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
             return HRESULT.E_INVALIDARG;
         }
 
-        if ((int)varChild != Interop.CHILDID_SELF)
+        if ((int)varChild != PInvoke.CHILDID_SELF)
         {
             *pszDefaultAction = default;
-            return _childHandler?.get_accDefaultAction(varChild, pszDefaultAction) ?? HRESULT.S_FALSE;
+            return _childHandler?.get_accDefaultAction(varChild, pszDefaultAction) ?? PInvoke.S_FALSE;
         }
 
         if (DefaultAction is not { } action)
         {
             *pszDefaultAction = default;
-            return HRESULT.S_FALSE;
+            return PInvoke.S_FALSE;
         }
 
         *pszDefaultAction = new(action);
@@ -246,15 +246,15 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
             return HRESULT.E_INVALIDARG;
         }
 
-        if ((int)varChild != Interop.CHILDID_SELF)
+        if ((int)varChild != PInvoke.CHILDID_SELF)
         {
-            return _childHandler?.accLocation(pxLeft, pyTop, pcxWidth, pcyHeight, varChild) ?? HRESULT.S_FALSE;
+            return _childHandler?.accLocation(pxLeft, pyTop, pcxWidth, pcyHeight, varChild) ?? PInvoke.S_FALSE;
         }
 
         Rectangle bounds = Bounds;
         if (bounds == InvalidBounds)
         {
-            return HRESULT.DISP_E_MEMBERNOTFOUND;
+            return PInvoke.DISP_E_MEMBERNOTFOUND;
         }
 
         *pxLeft = bounds.Left;
@@ -273,14 +273,14 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
 
     private static bool ValidateNavigationDirection(int direction, int id)
     {
-        if (direction <= Interop.NAVDIR_MIN || direction >= Interop.NAVDIR_MAX)
+        if (direction <= PInvoke.NAVDIR_MIN || direction >= PInvoke.NAVDIR_MAX)
         {
             return false;
         }
 
         return (uint)direction switch
         {
-            Interop.NAVDIR_FIRSTCHILD or Interop.NAVDIR_LASTCHILD => id == Interop.CHILDID_SELF,
+            Interop.NAVDIR_FIRSTCHILD or Interop.NAVDIR_LASTCHILD => id == PInvoke.CHILDID_SELF,
             _ => true,
         };
     }
@@ -358,7 +358,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
 
         if (!Navigate(navDir, (int)varStart, out VARIANT result))
         {
-            return HRESULT.S_FALSE;
+            return PInvoke.S_FALSE;
         }
 
         *pvarEndUpAt = result;
@@ -397,7 +397,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
 
         *ppdispChild = GetChild((int)varChild);
 
-        return *ppdispChild is null ? HRESULT.S_FALSE : HRESULT.S_OK;
+        return *ppdispChild is null ? PInvoke.S_FALSE : HRESULT.S_OK;
     }
 
     /// <summary>
@@ -418,7 +418,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         // For OBJID_CLIENT this is the result of WM_GETOBJECT with OBJID_WINDOW
 
         *ppdispParent = GetParent();
-        return *ppdispParent is null ? HRESULT.S_FALSE : HRESULT.S_OK;
+        return *ppdispParent is null ? PInvoke.S_FALSE : HRESULT.S_OK;
     }
 
     public virtual IDispatch* GetParent() => null;
@@ -454,7 +454,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         }
 
         *pvarChild = HitTest(new(xLeft, yTop));
-        return pvarChild->vt == VARENUM.VT_EMPTY ? HRESULT.S_FALSE : HRESULT.S_OK;
+        return pvarChild->vt == VARENUM.VT_EMPTY ? PInvoke.S_FALSE : HRESULT.S_OK;
     }
 
     /// <summary>
@@ -478,12 +478,12 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
             return HRESULT.E_INVALIDARG;
         }
 
-        if ((int)varChild != Interop.CHILDID_SELF)
+        if ((int)varChild != PInvoke.CHILDID_SELF)
         {
-            return _childHandler?.accDoDefaultAction(varChild) ?? HRESULT.S_FALSE;
+            return _childHandler?.accDoDefaultAction(varChild) ?? PInvoke.S_FALSE;
         }
 
-        return !DoDefaultAction() ? HRESULT.DISP_E_MEMBERNOTFOUND : HRESULT.S_OK;
+        return !DoDefaultAction() ? PInvoke.DISP_E_MEMBERNOTFOUND : HRESULT.S_OK;
     }
 
     /// <summary>
@@ -506,16 +506,16 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
 
         // OBJID_WINDOW defers to OJBID_CLIENT, which uses WM_GETTEXT as the name.
 
-        if ((int)varChild != Interop.CHILDID_SELF)
+        if ((int)varChild != PInvoke.CHILDID_SELF)
         {
             *pszName = default;
-            return _childHandler?.get_accName(varChild, pszName) ?? HRESULT.S_FALSE;
+            return _childHandler?.get_accName(varChild, pszName) ?? PInvoke.S_FALSE;
         }
 
         if (Name is not { } name)
         {
             *pszName = default;
-            return HRESULT.S_FALSE;
+            return PInvoke.S_FALSE;
         }
 
         *pszName = new(name);
@@ -525,7 +525,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
     HRESULT IAccessible.Interface.put_accName(VARIANT varChild, BSTR szName)
     {
         // No longer supported and should return E_NOTIMPL per documentation.
-        return HRESULT.E_NOTIMPL;
+        return PInvoke.E_NOTIMPL;
     }
 
     public virtual string? Name => null;
@@ -542,16 +542,16 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
             return HRESULT.E_INVALIDARG;
         }
 
-        if ((int)varChild != Interop.CHILDID_SELF)
+        if ((int)varChild != PInvoke.CHILDID_SELF)
         {
             *pszValue = default;
-            return _childHandler?.get_accValue(varChild, pszValue) ?? HRESULT.S_FALSE;
+            return _childHandler?.get_accValue(varChild, pszValue) ?? PInvoke.S_FALSE;
         }
 
         if (GetValue() is not { } value)
         {
             *pszValue = default;
-            return HRESULT.S_FALSE;
+            return PInvoke.S_FALSE;
         }
 
         *pszValue = new(value);
@@ -565,12 +565,12 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
             return HRESULT.E_INVALIDARG;
         }
 
-        if ((int)varChild != Interop.CHILDID_SELF)
+        if ((int)varChild != PInvoke.CHILDID_SELF)
         {
-            return _childHandler?.put_accValue(varChild, szValue) ?? HRESULT.S_FALSE;
+            return _childHandler?.put_accValue(varChild, szValue) ?? PInvoke.S_FALSE;
         }
 
-        return !SetValue(szValue) ? HRESULT.S_FALSE : HRESULT.S_OK;
+        return !SetValue(szValue) ? PInvoke.S_FALSE : HRESULT.S_OK;
     }
 
     /// <summary>
@@ -596,7 +596,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         // OBJID_CLIENT returns OBJID_SELF or OBJID_WINDOW through AccessibleObjectFromWindow for child windows.
 
         *pvarChild = GetFocus();
-        return pvarChild->IsEmpty ? HRESULT.S_FALSE : HRESULT.S_OK;
+        return pvarChild->IsEmpty ? PInvoke.S_FALSE : HRESULT.S_OK;
     }
 
     /// <summary>
@@ -615,7 +615,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         if (!SupportsSelection)
         {
             // Per documentation
-            return HRESULT.DISP_E_MEMBERNOTFOUND;
+            return PInvoke.DISP_E_MEMBERNOTFOUND;
         }
 
         // OBJID_WINDOW and OBJID_CLIENT both return S_FALSE for this. This is meant for things like listbox and
@@ -632,12 +632,12 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
             return HRESULT.E_INVALIDARG;
         }
 
-        if ((int)varChild != Interop.CHILDID_SELF)
+        if ((int)varChild != PInvoke.CHILDID_SELF)
         {
-            return _childHandler?.accSelect(flagsSelect, varChild) ?? HRESULT.S_FALSE;
+            return _childHandler?.accSelect(flagsSelect, varChild) ?? PInvoke.S_FALSE;
         }
 
-        return !SupportsSelection ? HRESULT.DISP_E_MEMBERNOTFOUND : SetSelection((SelectionFlags)flagsSelect);
+        return !SupportsSelection ? PInvoke.DISP_E_MEMBERNOTFOUND : SetSelection((SelectionFlags)flagsSelect);
     }
 
     /// <summary>

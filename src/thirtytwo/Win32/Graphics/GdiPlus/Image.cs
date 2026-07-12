@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -16,7 +16,7 @@ public unsafe class Image : DisposableBase.Finalizable, IPointer<GpImage>
 
     protected override void Dispose(bool disposing)
     {
-        Status status = Interop.GdipDisposeImage(_pointer);
+        Status status = PInvoke.GdipDisposeImage(_pointer);
         if (disposing)
         {
             status.ThrowIfFailed();
@@ -30,7 +30,7 @@ public unsafe class Image : DisposableBase.Finalizable, IPointer<GpImage>
         get
         {
             PixelFormat format;
-            Interop.GdipGetImagePixelFormat(Pointer, (int*)&format).ThrowIfFailed();
+            PInvoke.GdipGetImagePixelFormat(Pointer, (int*)&format).ThrowIfFailed();
             GC.KeepAlive(this);
             return format;
         }
@@ -41,7 +41,7 @@ public unsafe class Image : DisposableBase.Finalizable, IPointer<GpImage>
         get
         {
             Guid format;
-            Interop.GdipGetImageRawFormat(Pointer, &format).ThrowIfFailed();
+            PInvoke.GdipGetImageRawFormat(Pointer, &format).ThrowIfFailed();
             GC.KeepAlive(this);
             return format;
         }
@@ -52,7 +52,7 @@ public unsafe class Image : DisposableBase.Finalizable, IPointer<GpImage>
         get
         {
             ImageFlags flags;
-            Interop.GdipGetImageFlags(Pointer, (uint*)&flags).ThrowIfFailed();
+            PInvoke.GdipGetImageFlags(Pointer, (uint*)&flags).ThrowIfFailed();
             GC.KeepAlive(this);
             return flags;
         }
@@ -67,7 +67,7 @@ public unsafe class Image : DisposableBase.Finalizable, IPointer<GpImage>
         {
             RectangleF bounds;
             Unit unit;
-            Interop.GdipGetImageBounds(Pointer, (RectF*)&bounds, &unit).ThrowIfFailed();
+            PInvoke.GdipGetImageBounds(Pointer, (RectF*)&bounds, &unit).ThrowIfFailed();
 
             // GdipGetImageBounds is hardcoded to return Unit.Pixel
             Debug.Assert(unit == Unit.UnitPixel);

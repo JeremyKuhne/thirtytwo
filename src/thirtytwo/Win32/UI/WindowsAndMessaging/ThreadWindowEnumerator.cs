@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.CompilerServices;
@@ -13,7 +13,7 @@ internal readonly ref struct ThreadWindowEnumerator
     public unsafe ThreadWindowEnumerator(uint threadId, Func<HWND, bool> callback)
     {
         _callback = GCHandle.Alloc(callback, GCHandleType.Normal);
-        Interop.EnumThreadWindows(threadId, &CallBack, (nint)_callback);
+        PInvoke.EnumThreadWindows(threadId, &CallBack, (nint)_callback);
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -27,7 +27,7 @@ public partial struct UiaRect
         VARIANT variant = default;
         fixed (UiaRect* u = &this)
         {
-            Interop.InitVariantFromDoubleArray((double*)u, 4, &variant).ThrowOnFailure();
+            PInvoke.InitVariantFromDoubleArray((double*)u, 4, &variant).ThrowOnFailure();
         }
 
         return variant;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -16,9 +16,9 @@ public partial class RichEditControl : EditBase
     static RichEditControl()
     {
         // Ensure RichEdit 4.1 is loaded
-        if (Interop.LoadLibrary("Msftedit.dll").IsNull)
+        if (PInvoke.LoadLibrary("Msftedit.dll").IsNull)
         {
-            Error.ThrowLastError();
+            Error.GetLastError().ThrowThirtyTwoException();
         }
 
         s_richEditClass = new("RICHEDIT50W");

@@ -91,7 +91,7 @@ public ref struct ValueBuffer<T> where T : unmanaged
                 Span.CopyTo(newSpan);
             }
 
-            if (_buffer != null)
+            if (_buffer is not null)
             {
                 ArrayPool<byte>.Shared.Return(_buffer);
             }

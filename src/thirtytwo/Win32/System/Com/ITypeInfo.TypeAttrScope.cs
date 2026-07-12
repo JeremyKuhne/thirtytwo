@@ -3,27 +3,24 @@
 
 namespace Windows.Win32.System.Com;
 
-public unsafe partial struct ITypeInfo
+public readonly unsafe ref struct ITypeInfoTypeAttrScope
 {
-    public readonly unsafe ref struct TypeAttrScope
+    private readonly ITypeInfo* _typeInfo;
+    private readonly TYPEATTR* _typeAttr;
+
+    public ITypeInfoTypeAttrScope(ITypeInfo* typeInfo, TYPEATTR* typeAttr)
     {
-        private readonly ITypeInfo* _typeInfo;
-        private readonly TYPEATTR* _typeAttr;
+        _typeInfo = typeInfo;
+        _typeAttr = typeAttr;
+    }
 
-        public TypeAttrScope(ITypeInfo* typeInfo, TYPEATTR* typeAttr)
+    public TYPEATTR* Value => _typeAttr;
+
+    public void Dispose()
+    {
+        if (_typeAttr is not null)
         {
-            _typeInfo = typeInfo;
-            _typeAttr = typeAttr;
-        }
-
-        public TYPEATTR* Value => _typeAttr;
-
-        public readonly void Dispose()
-        {
-            if (_typeAttr is not null)
-            {
-                _typeInfo->ReleaseTypeAttr(_typeAttr);
-            }
+            _typeInfo->ReleaseTypeAttr(_typeAttr);
         }
     }
 }

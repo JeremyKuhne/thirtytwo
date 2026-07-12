@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.Foundation;
@@ -16,7 +16,7 @@ public unsafe class LoadRegTypeLibTests
     public void LoadRegTypeLib_Accessibility()
     {
         using ComScope<ITypeLib> typelib = new(null);
-        Interop.LoadRegTypeLib(s_accessibilityTypeLib, 1, 1, 0, typelib);
+        PInvoke.LoadRegTypeLib(s_accessibilityTypeLib, 1, 1, 0, typelib);
         typelib.IsNull.Should().BeFalse();
 
         using ComScope<ITypeInfo> typeinfo = new(null);

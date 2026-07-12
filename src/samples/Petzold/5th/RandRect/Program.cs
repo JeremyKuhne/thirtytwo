@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -25,7 +25,7 @@ internal unsafe static class Program
 
         WindowProcedure wndProc = WindowProcedure;
         HMODULE module;
-        Interop.GetModuleHandleEx(0, (PCWSTR)null, &module);
+        PInvoke.GetModuleHandleEx(0, (PCWSTR)null, &module);
 
         HWND hwnd;
 
@@ -38,20 +38,20 @@ internal unsafe static class Program
                 style = WNDCLASS_STYLES.CS_HREDRAW | WNDCLASS_STYLES.CS_VREDRAW,
                 lpfnWndProc = (WNDPROC)Marshal.GetFunctionPointerForDelegate(wndProc),
                 hInstance = module,
-                hIcon = Interop.LoadIcon(default, Interop.IDI_APPLICATION),
-                hCursor = Interop.LoadCursor(default, Interop.IDC_ARROW),
-                hbrBackground = (HBRUSH)Interop.GetStockObject(GET_STOCK_OBJECT_FLAGS.WHITE_BRUSH),
+                hIcon = PInvoke.LoadIcon(default, PInvoke.IDI_APPLICATION),
+                hCursor = PInvoke.LoadCursor(default, PInvoke.IDC_ARROW),
+                hbrBackground = (HBRUSH)PInvoke.GetStockObject(GET_STOCK_OBJECT_FLAGS.WHITE_BRUSH),
                 lpszClassName = appName
             };
 
-            ATOM atom = Interop.RegisterClassEx(&wndClass);
+            ATOM atom = PInvoke.RegisterClassEx(&wndClass);
 
-            hwnd = Interop.CreateWindowEx(
+            hwnd = PInvoke.CreateWindowEx(
                 WINDOW_EX_STYLE.WS_EX_OVERLAPPEDWINDOW,
                 appName,
                 title,
                 WINDOW_STYLE.WS_OVERLAPPEDWINDOW,
-                Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT,
+                PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT,
                 HWND.Null,
                 HMENU.Null,
                 module,
@@ -60,20 +60,20 @@ internal unsafe static class Program
 
         }
 
-        Interop.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWDEFAULT);
-        Interop.UpdateWindow(hwnd);
+        PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOWDEFAULT);
+        PInvoke.UpdateWindow(hwnd);
 
         while (true)
         {
-            if (Interop.PeekMessage(out MSG message, HWND.Null, 0, uint.MaxValue, PEEK_MESSAGE_REMOVE_TYPE.PM_REMOVE))
+            if (PInvoke.PeekMessage(out MSG message, HWND.Null, 0, uint.MaxValue, PEEK_MESSAGE_REMOVE_TYPE.PM_REMOVE))
             {
-                if (message.message == Interop.WM_QUIT)
+                if (message.message == PInvoke.WM_QUIT)
                 {
                     break;
                 }
 
-                Interop.TranslateMessage(message);
-                Interop.DispatchMessage(message);
+                PInvoke.TranslateMessage(message);
+                PInvoke.DispatchMessage(message);
             }
 
             // We're crazy fast over 25 years past the source sample,
@@ -95,11 +95,11 @@ internal unsafe static class Program
                 s_cyClient = lParam.HIWORD;
                 return (LRESULT)0;
             case MessageType.Destroy:
-                Interop.PostQuitMessage(0);
+                PInvoke.PostQuitMessage(0);
                 return (LRESULT)0;
         }
 
-        return Interop.DefWindowProc(window, message, wParam, lParam);
+        return PInvoke.DefWindowProc(window, message, wParam, lParam);
     }
 
     private static void DrawRectangle(HWND window)

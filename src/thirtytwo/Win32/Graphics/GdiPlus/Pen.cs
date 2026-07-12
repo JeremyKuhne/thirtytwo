@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Support;
@@ -15,13 +15,13 @@ public unsafe class Pen : DisposableBase.Finalizable, IPointer<GpPen>
     {
         GdiPlus.Init();
         GpPen* pointer;
-        Interop.GdipCreatePen1(color, width, Unit.UnitPixel, &pointer).ThrowIfFailed();
+        PInvoke.GdipCreatePen1(color, width, Unit.UnitPixel, &pointer).ThrowIfFailed();
         _pointer = pointer;
     }
 
     protected override void Dispose(bool disposing)
     {
-        Status status = Interop.GdipDeletePen(_pointer);
+        Status status = PInvoke.GdipDeletePen(_pointer);
         if (disposing)
         {
             status.ThrowIfFailed();

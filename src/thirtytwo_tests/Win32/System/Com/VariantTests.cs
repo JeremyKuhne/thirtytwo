@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -34,7 +34,7 @@ public unsafe class VariantTests
     {
         // Create a managed object that marshals through `object`
         LegacyVariantObject legacy = new();
-        using ComScope<IUnknown> unknown = ComScope<IUnknown>.GetComCallableWrapper(legacy);
+        using ComScope<IUnknown> unknown = new(legacy.GetComPointer<IUnknown>());
         using ComScope<ITestVariant> testVariant = unknown.QueryInterface<ITestVariant>();
         legacy.Variant = new Rectangle();
 
@@ -196,15 +196,15 @@ public unsafe class VariantTests
 
         [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static HRESULT GetVariant(ITestVariant* @this, VARIANT* variant)
-            => ComHelpers.UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.GetVariant(variant));
+            => ComExtensions.UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.GetVariant(variant));
 
         [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static HRESULT SetVariant(ITestVariant* @this, VARIANT variant)
-            => ComHelpers.UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.SetVariant(variant));
+            => ComExtensions.UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.SetVariant(variant));
 
         [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static HRESULT SetVariantByRef(ITestVariant* @this, VARIANT* variant)
-            => ComHelpers.UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.SetVariantByRef(variant));
+            => ComExtensions.UnwrapAndInvoke<ITestVariant, Interface>(@this, o => o.SetVariantByRef(variant));
 
         [ComImport]
         [Guid("3BE9EE32-26FB-4E7A-B8A8-25795A7EFB53")]

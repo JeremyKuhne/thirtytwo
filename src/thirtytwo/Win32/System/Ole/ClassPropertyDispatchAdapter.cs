@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Reflection;
@@ -56,7 +56,7 @@ public unsafe class ClassPropertyDispatchAdapter
 
     private int GetUnusedDispId(int desiredId)
     {
-        if (desiredId != Interop.DISPID_UNKNOWN && !_members.ContainsKey(desiredId))
+        if (desiredId != PInvoke.DISPID_UNKNOWN && !_members.ContainsKey(desiredId))
         {
             return desiredId;
         }
@@ -123,7 +123,7 @@ public unsafe class ClassPropertyDispatchAdapter
 
         if (!_members.TryGetValue(dispId, out var entry))
         {
-            return HRESULT.DISP_E_MEMBERNOTFOUND;
+            return PInvoke.DISP_E_MEMBERNOTFOUND;
         }
 
         if (!_instance.TryGetTarget(out object? target))
@@ -137,7 +137,7 @@ public unsafe class ClassPropertyDispatchAdapter
         {
             if (parameters->cArgs != 1)
             {
-                return HRESULT.DISP_E_BADPARAMCOUNT;
+                return PInvoke.DISP_E_BADPARAMCOUNT;
             }
 
             try
@@ -194,7 +194,7 @@ public unsafe class ClassPropertyDispatchAdapter
     /// <returns><see langword="true"/> if the next DISPID after <paramref name="dispId"/> is found.</returns>
     public bool TryGetNextDispId(int dispId, out int nextDispId)
     {
-        bool foundLast = dispId == Interop.DISPID_STARTENUM;
+        bool foundLast = dispId == PInvoke.DISPID_STARTENUM;
 
         foreach (int currentId in _members.Keys)
         {
@@ -207,7 +207,7 @@ public unsafe class ClassPropertyDispatchAdapter
             foundLast = dispId == currentId;
         }
 
-        nextDispId = Interop.DISPID_UNKNOWN;
+        nextDispId = PInvoke.DISPID_UNKNOWN;
         return false;
     }
 
@@ -238,7 +238,7 @@ public unsafe class ClassPropertyDispatchAdapter
 
     // private static (string Name, int Dispid, FDEX_PROP_FLAGS Flags) GetFieldInfo(FieldInfo info)
     // {
-    //     int dispid = info.GetCustomAttribute<DispIdAttribute>()?.Value ?? Interop.DISPID_UNKNOWN;
+    //     int dispid = info.GetCustomAttribute<DispIdAttribute>()?.Value ?? PInvoke.DISPID_UNKNOWN;
     //     string name = info.Name;
     //     FDEX_PROP_FLAGS flags =
     //         FDEX_PROP_FLAGS.fdexPropCanGet
@@ -253,7 +253,7 @@ public unsafe class ClassPropertyDispatchAdapter
 
     private static (string Name, int DispId, FDEX_PROP_FLAGS Flags) GetPropertyInfo(PropertyInfo info)
     {
-        int dispid = info.GetCustomAttribute<DispIdAttribute>()?.Value ?? Interop.DISPID_UNKNOWN;
+        int dispid = info.GetCustomAttribute<DispIdAttribute>()?.Value ?? PInvoke.DISPID_UNKNOWN;
         string name = info.Name;
         FDEX_PROP_FLAGS flags =
             (info.CanRead ? FDEX_PROP_FLAGS.fdexPropCanGet : FDEX_PROP_FLAGS.fdexPropCannotGet)
@@ -270,7 +270,7 @@ public unsafe class ClassPropertyDispatchAdapter
     {
         BindingFlags bindingFlags = default;
 
-        if (dispatchFlags.HasFlag((DISPATCH_FLAGS)Interop.DISPATCH_CONSTRUCT))
+        if (dispatchFlags.HasFlag((DISPATCH_FLAGS)PInvoke.DISPATCH_CONSTRUCT))
         {
             bindingFlags |= BindingFlags.CreateInstance;
         }

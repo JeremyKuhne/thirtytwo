@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.Foundation;
@@ -16,7 +16,7 @@ public unsafe class CreateStdAccessibleProxyTests
     public void CreateStdAccessibleProxy_Button()
     {
         using Window window = new(Window.DefaultBounds);
-        HRESULT hr = Interop.CreateStdAccessibleProxy(
+        HRESULT hr = PInvoke.CreateStdAccessibleProxy(
             window.Handle,
             "BUTTON",
             (int)OBJECT_IDENTIFIER.OBJID_CLIENT,
@@ -31,7 +31,7 @@ public unsafe class CreateStdAccessibleProxyTests
     public void CreateStdAccessibleProxy_GetIdsOfNames()
     {
         using Window window = new(Window.DefaultBounds);
-        HRESULT hr = Interop.CreateStdAccessibleProxy(
+        HRESULT hr = PInvoke.CreateStdAccessibleProxy(
             window.Handle,
             "BUTTON",
             (int)OBJECT_IDENTIFIER.OBJID_CLIENT,
@@ -45,45 +45,45 @@ public unsafe class CreateStdAccessibleProxyTests
         // Get a member name, capitalized correctly
         int[] result = dispatch->GetIdsOfNames("accDoDefaultAction");
         result.Should().HaveCount(1);
-        result[0].Should().Be(Interop.DISPID_ACC_DODEFAULTACTION);
+        result[0].Should().Be(PInvoke.DISPID_ACC_DODEFAULTACTION);
 
         // Case insensitive
         result = dispatch->GetIdsOfNames("ACCDoDefaultAction");
         result.Should().HaveCount(1);
-        result[0].Should().Be(Interop.DISPID_ACC_DODEFAULTACTION);
+        result[0].Should().Be(PInvoke.DISPID_ACC_DODEFAULTACTION);
 
         // With argument
         result = dispatch->GetIdsOfNames("accDoDefaultAction", "varChild");
         result.Should().HaveCount(2);
-        result[0].Should().Be(Interop.DISPID_ACC_DODEFAULTACTION);
+        result[0].Should().Be(PInvoke.DISPID_ACC_DODEFAULTACTION);
         result[1].Should().Be(0);
 
         // With argument, casing
         result = dispatch->GetIdsOfNames("accDoDefaultAction", "VARChild");
         result.Should().HaveCount(2);
-        result[0].Should().Be(Interop.DISPID_ACC_DODEFAULTACTION);
+        result[0].Should().Be(PInvoke.DISPID_ACC_DODEFAULTACTION);
         result[1].Should().Be(0);
 
         // With invalid argument
         result = dispatch->GetIdsOfNames("accDoDefaultAction", "FLOOP");
         result.Should().HaveCount(2);
-        result[0].Should().Be(Interop.DISPID_ACC_DODEFAULTACTION);
-        result[1].Should().Be(Interop.DISPID_UNKNOWN);
+        result[0].Should().Be(PInvoke.DISPID_ACC_DODEFAULTACTION);
+        result[1].Should().Be(PInvoke.DISPID_UNKNOWN);
 
         // Args are sequentially numbered, return value is not recognized as parameter
         result = dispatch->GetIdsOfNames("accHitTest", "xLeft", "yTop", "pvarChild");
         result.Should().HaveCount(4);
-        result[0].Should().Be(Interop.DISPID_ACC_HITTEST);
+        result[0].Should().Be(PInvoke.DISPID_ACC_HITTEST);
         result[1].Should().Be(0);
         result[2].Should().Be(1);
-        result[3].Should().Be(Interop.DISPID_UNKNOWN);
+        result[3].Should().Be(PInvoke.DISPID_UNKNOWN);
     }
 
     [STATestMethod]
     public void CreateStdAccessibleProxy_GetTypeInfo()
     {
         using Window window = new(Window.DefaultBounds);
-        HRESULT hr = Interop.CreateStdAccessibleProxy(
+        HRESULT hr = PInvoke.CreateStdAccessibleProxy(
             window.Handle,
             "BUTTON",
             (int)OBJECT_IDENTIFIER.OBJID_CLIENT,

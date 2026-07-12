@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.System.Com;
@@ -30,7 +30,7 @@ public unsafe partial class ActiveXControl
             //
             // WinForms does not implement this.
 
-            return HRESULT.E_NOTIMPL;
+            return PInvoke.E_NOTIMPL;
         }
 
         HRESULT IOleContainer.Interface.EnumObjects(uint grfFlags, IEnumUnknown** ppenum)
@@ -55,12 +55,12 @@ public unsafe partial class ActiveXControl
                 });
             }
 
-            *ppenum = ComHelpers.TryGetComPointer<IEnumUnknown>(new ActiveXControlEnum(activeXControls), out HRESULT hr);
+            *ppenum = new ActiveXControlEnum(activeXControls).TryGetComPointer<IEnumUnknown>(out HRESULT hr);
             return hr;
         }
 
         // Not needed, see ParseDisplayName comments.
-        HRESULT IOleContainer.Interface.LockContainer(BOOL fLock) => HRESULT.E_NOTIMPL;
+        HRESULT IOleContainer.Interface.LockContainer(BOOL fLock) => PInvoke.E_NOTIMPL;
 
         HRESULT IParseDisplayName.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut)
             => ((IOleContainer.Interface)this).ParseDisplayName(pbc, pszDisplayName, pchEaten, ppmkOut);
@@ -97,15 +97,15 @@ public unsafe partial class ActiveXControl
         // These IOleInPlaceFrame interfaces are not required per 1995 OLE Control Container Guidelines. None are
         // supported by WinForms.
         HRESULT IOleInPlaceFrame.Interface.ContextSensitiveHelp(BOOL fEnterMode) => HRESULT.S_OK;
-        HRESULT IOleInPlaceFrame.Interface.GetBorder(RECT* lprectBorder) => HRESULT.E_NOTIMPL;
-        HRESULT IOleInPlaceFrame.Interface.RequestBorderSpace(RECT* pborderwidths) => HRESULT.E_NOTIMPL;
-        HRESULT IOleInPlaceFrame.Interface.SetBorderSpace(RECT* pborderwidths) => HRESULT.E_NOTIMPL;
-        HRESULT IOleInPlaceFrame.Interface.InsertMenus(HMENU hmenuShared, OLEMENUGROUPWIDTHS* lpMenuWidths) => HRESULT.E_NOTIMPL;
-        HRESULT IOleInPlaceFrame.Interface.SetMenu(HMENU hmenuShared, nint holemenu, HWND hwndActiveObject) => HRESULT.E_NOTIMPL;
-        HRESULT IOleInPlaceFrame.Interface.RemoveMenus(HMENU hmenuShared) => HRESULT.E_NOTIMPL;
-        HRESULT IOleInPlaceFrame.Interface.SetStatusText(PCWSTR pszStatusText) => HRESULT.E_NOTIMPL;
-        HRESULT IOleInPlaceFrame.Interface.EnableModeless(BOOL fEnable) => HRESULT.E_NOTIMPL;
-        HRESULT IOleInPlaceFrame.Interface.TranslateAccelerator(MSG* lpmsg, ushort wID) => HRESULT.S_FALSE;
+        HRESULT IOleInPlaceFrame.Interface.GetBorder(RECT* lprectBorder) => PInvoke.E_NOTIMPL;
+        HRESULT IOleInPlaceFrame.Interface.RequestBorderSpace(RECT* pborderwidths) => PInvoke.E_NOTIMPL;
+        HRESULT IOleInPlaceFrame.Interface.SetBorderSpace(RECT* pborderwidths) => PInvoke.E_NOTIMPL;
+        HRESULT IOleInPlaceFrame.Interface.InsertMenus(HMENU hmenuShared, OLEMENUGROUPWIDTHS* lpMenuWidths) => PInvoke.E_NOTIMPL;
+        HRESULT IOleInPlaceFrame.Interface.SetMenu(HMENU hmenuShared, nint holemenu, HWND hwndActiveObject) => PInvoke.E_NOTIMPL;
+        HRESULT IOleInPlaceFrame.Interface.RemoveMenus(HMENU hmenuShared) => PInvoke.E_NOTIMPL;
+        HRESULT IOleInPlaceFrame.Interface.SetStatusText(PCWSTR pszStatusText) => PInvoke.E_NOTIMPL;
+        HRESULT IOleInPlaceFrame.Interface.EnableModeless(BOOL fEnable) => PInvoke.E_NOTIMPL;
+        HRESULT IOleInPlaceFrame.Interface.TranslateAccelerator(MSG* lpmsg, ushort wID) => PInvoke.S_FALSE;
 
         HRESULT IOleInPlaceUIWindow.Interface.GetWindow(HWND* phwnd)
             => ((IOleInPlaceFrame.Interface)this).GetWindow(phwnd);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Concurrent;
@@ -15,7 +15,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     private static readonly WindowClass s_defaultWindowClass = new(className: $"DefaultWindowClass_{Guid.NewGuid()}");
 
     public static Rectangle DefaultBounds { get; }
-        = new(Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT);
+        = new(PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT);
 
     // Default fonts for each DPI
     private static readonly ConcurrentDictionary<int, HFONT> s_defaultFonts = new();
@@ -288,7 +288,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
             result = WindowProcedure(window, (MessageType)message, wParam, lParam);
         }
 
-        if (message == Interop.WM_PAINT && IsDirect2dEnabled())
+        if (message == PInvoke.WM_PAINT && IsDirect2dEnabled())
         {
             _renderTarget.EndDraw(out bool recreateTarget);
             if (recreateTarget)
@@ -410,7 +410,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         return _priorWindowProcedure.IsNull
             // Still creating the window.
             ? (LRESULT)(-1)
-            : Interop.CallWindowProc(_priorWindowProcedure, window, (uint)message, wParam, lParam);
+            : PInvoke.CallWindowProc(_priorWindowProcedure, window, (uint)message, wParam, lParam);
     }
 
     private void HandleDpiChanged(Message.DpiChanged dpiChanged)
@@ -434,7 +434,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
             var logfont = currentFont.GetLogicalFont();
             float scale = (float)newDpi / lastDpi;
             logfont.lfHeight = (int)(logfont.lfHeight * scale);
-            HFONT newFont = Interop.CreateFontIndirect(&logfont);
+            HFONT newFont = PInvoke.CreateFontIndirect(&logfont);
             this.SetFontHandle(newFont);
             _lastCreatedFont = newFont;
             lastCreatedFont.Dispose();
@@ -487,7 +487,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
             return null;
         }
 
-        hwnd = Interop.GetAncestor(hwnd, GET_ANCESTOR_FLAGS.GA_PARENT);
+        hwnd = PInvoke.GetAncestor(hwnd, GET_ANCESTOR_FLAGS.GA_PARENT);
         return hwnd.IsNull ? null : FromHandle(hwnd, walkParents: true);
     }
 
@@ -561,9 +561,9 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
     private static WNDPROC GetDefaultWindowProcedure()
     {
-        HMODULE module = Interop.LoadLibrary("user32.dll");
+        HMODULE module = PInvoke.LoadLibrary("user32.dll");
         Debug.Assert(!module.IsNull);
-        FARPROC address = Interop.GetProcAddress(module, "DefWindowProcW");
+        FARPROC address = PInvoke.GetProcAddress(module, "DefWindowProcW");
         Debug.Assert(!address.IsNull);
         return (WNDPROC)(void*)address.Value;
     }

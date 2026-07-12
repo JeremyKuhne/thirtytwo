@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.System.Ole;
@@ -15,9 +15,9 @@ namespace Windows.Win32.System.Com;
 ///   yet that validates that everything in <see cref="IDispatch"/> should be available in <see cref="IDispatchEx"/>.
 ///  </para>
 /// </devdoc>
-public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchEx.Interface
+public unsafe class DispatchExAdapter(IDispatchCcw.Interface dispatch) : IDispatchEx.Interface
 {
-    private readonly IDispatch.Interface _dispatch = dispatch;
+    private readonly IDispatchCcw.Interface _dispatch = dispatch;
 
     public virtual HRESULT GetDispID(BSTR bstrName, uint grfdex, int* pid)
     {
@@ -28,10 +28,10 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
 
         HRESULT hr = _dispatch.GetIDsOfNames(IID.Empty(), (PWSTR*)bstrName.Value, 1, 0, pid);
 
-        if (hr == HRESULT.DISP_E_UNKNOWNNAME && (grfdex & Interop.fdexNameEnsure) != 0)
+        if (hr == PInvoke.DISP_E_UNKNOWNNAME && (grfdex & PInvoke.fdexNameEnsure) != 0)
         {
             // Can't create a new member.
-            return HRESULT.E_NOTIMPL;
+            return PInvoke.E_NOTIMPL;
         }
 
         return hr;
@@ -61,7 +61,7 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
             return HRESULT.E_POINTER;
         }
 
-        if (id == Interop.DISPID_UNKNOWN)
+        if (id == PInvoke.DISPID_UNKNOWN)
         {
             return HRESULT.E_INVALIDARG;
         }
@@ -85,13 +85,13 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
 
         // Presuming these won't come up for now.
         Debug.Assert(typeAttr->cVars == 0);
-        Debug.Assert(typeAttr->memidConstructor == Interop.MEMBERID_NIL);
-        Debug.Assert(typeAttr->memidDestructor == Interop.MEMBERID_NIL);
+        Debug.Assert(typeAttr->memidConstructor == PInvoke.MEMBERID_NIL);
+        Debug.Assert(typeAttr->memidDestructor == PInvoke.MEMBERID_NIL);
 
-        HRESULT result = HRESULT.DISP_E_UNKNOWNNAME;
+        HRESULT result = PInvoke.DISP_E_UNKNOWNNAME;
 
         FUNCDESC* funcdesc;
-        for (uint i = 0; result == HRESULT.DISP_E_UNKNOWNNAME && i < functionCount; i++)
+        for (uint i = 0; result == PInvoke.DISP_E_UNKNOWNNAME && i < functionCount; i++)
         {
             hr = typeInfo.Pointer->GetFuncDesc(i, &funcdesc);
             if (hr.Failed)
@@ -126,7 +126,8 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
             return hr;
         }
 
-        hr = typeInfo.Pointer->GetNames(id, pbstrName, 1, out uint count);
+        uint count;
+        hr = typeInfo.Pointer->GetNames(id, pbstrName, 1, &count);
         return hr;
     }
 
@@ -137,9 +138,9 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
             return HRESULT.E_POINTER;
         }
 
-        *pid = Interop.DISPID_UNKNOWN;
+        *pid = PInvoke.DISPID_UNKNOWN;
 
-        if ((grfdex & ~(Interop.fdexEnumDefault | Interop.fdexEnumAll)) != 0)
+        if ((grfdex & ~(PInvoke.fdexEnumDefault | PInvoke.fdexEnumAll)) != 0)
         {
             // fdexEnumDefault and fdexEnumAll are the only valid options
             return HRESULT.E_INVALIDARG;
@@ -162,10 +163,10 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
 
         // Presuming these won't come up for now.
         Debug.Assert(typeAttr->cVars == 0);
-        Debug.Assert(typeAttr->memidConstructor == Interop.MEMBERID_NIL);
-        Debug.Assert(typeAttr->memidDestructor == Interop.MEMBERID_NIL);
+        Debug.Assert(typeAttr->memidConstructor == PInvoke.MEMBERID_NIL);
+        Debug.Assert(typeAttr->memidDestructor == PInvoke.MEMBERID_NIL);
 
-        bool next = id == Interop.DISPID_STARTENUM;
+        bool next = id == PInvoke.DISPID_STARTENUM;
 
         FUNCDESC* funcdesc;
         for (uint i = 0; i < functionCount; i++)
@@ -189,11 +190,11 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
             next = id == currentId;
         }
 
-        return HRESULT.S_FALSE;
+        return PInvoke.S_FALSE;
     }
 
-    public virtual HRESULT DeleteMemberByName(BSTR bstrName, uint grfdex) => HRESULT.E_NOTIMPL;
-    public virtual HRESULT DeleteMemberByDispID(int id) => HRESULT.E_NOTIMPL;
+    public virtual HRESULT DeleteMemberByName(BSTR bstrName, uint grfdex) => PInvoke.E_NOTIMPL;
+    public virtual HRESULT DeleteMemberByDispID(int id) => PInvoke.E_NOTIMPL;
 
     public virtual HRESULT GetNameSpaceParent(IUnknown** ppunk)
     {
@@ -203,7 +204,7 @@ public unsafe class DispatchExAdapter(IDispatch.Interface dispatch) : IDispatchE
         }
 
         *ppunk = null;
-        return HRESULT.E_NOTIMPL;
+        return PInvoke.E_NOTIMPL;
     }
 
     private static FDEX_PROP_FLAGS GetFuncDescProperties(FUNCDESC* funcdesc)

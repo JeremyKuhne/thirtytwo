@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 // Original license (from https://github.com/dotnet/winforms):
@@ -46,11 +46,11 @@ internal unsafe class ComClassFactory : IDisposable
         //   [out] LPVOID* ppv
         // );
 
-        FARPROC proc = Interop.GetProcAddress(module, ExportMethodName);
+        FARPROC proc = PInvoke.GetProcAddress(module, ExportMethodName);
 
         if (proc.IsNull)
         {
-            Error.ThrowLastError();
+            Error.GetLastError().ThrowThirtyTwoException();
         }
 
         IClassFactory* classFactory;
@@ -81,7 +81,7 @@ internal unsafe class ComClassFactory : IDisposable
         _classFactory->Release();
         if (_unloadModule && !_module.IsNull)
         {
-            Interop.FreeLibrary(_module);
+            PInvoke.FreeLibrary(_module);
         }
     }
 }

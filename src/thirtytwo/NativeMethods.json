@@ -1,8 +1,9 @@
 ﻿{
     "$schema": "https://aka.ms/CsWin32.schema.json",
     "allowMarshaling": false,
-    "className" : "Interop",
+    "className": "Interop",
     "emitSingleFile": false,
+    "extensionReceiver": "PInvoke",
     "public": true,
     "useSafeHandles": false,
     "comInterop": {

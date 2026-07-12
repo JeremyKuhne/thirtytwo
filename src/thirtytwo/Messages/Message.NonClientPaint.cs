@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Windows;
@@ -41,7 +41,7 @@ public static partial class Message
             // GetDC (as opposed to GetDCEx) will call GetDCEx with a special flag that will set flags based
             // on the window's style. WS_CLIPCHILDREN will set DCX_CLIPCHILDREN for example.
 
-            return Interop.GetDCEx(
+            return PInvoke.GetDCEx(
                 window,
                 region,
                 region.IsNull ? GET_DCX_FLAGS.DCX_WINDOW : GET_DCX_FLAGS.DCX_WINDOW | GET_DCX_FLAGS.DCX_INTERSECTRGN);

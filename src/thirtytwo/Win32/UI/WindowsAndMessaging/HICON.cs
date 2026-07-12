@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.CompilerServices;
@@ -13,23 +13,37 @@ public unsafe partial struct HICON : IHandle<HICON>, IDisposable
 
     public static HICON Invalid => new(-1);
 
-    public static implicit operator HICON(IconId id) => Interop.LoadIcon(default, (PCWSTR)(char*)(uint)id);
+    public static implicit operator HICON(IconId id) => PInvoke.LoadIcon(default, (PCWSTR)(char*)(uint)id);
     public static implicit operator HANDLE(HICON handle) => (HANDLE)handle.Value;
     public static explicit operator HICON(HANDLE handle) => (HICON)handle.Value;
 
     public static HICON ExtractIcon(string file, int id, bool large = true)
     {
         HICON icon = default;
-        HRESULT result = Interop.SHDefExtractIcon(file, id, 0, large ? &icon : null, large ? null : &icon, 0);
-        result.ThrowOnFailure();
+        HICON* largeIcon = large ? &icon : null;
+        HICON* smallIcon = large ? null : &icon;
+        fixed (char* filePath = file)
+        {
+            PInvoke.SHDefExtractIcon(new PCWSTR(filePath), id, 0, largeIcon, smallIcon, 0).ThrowOnFailure();
+        }
+
         return icon;
     }
 
     public static HICON ExtractIcon(string file, int id, ushort size)
     {
         HICON icon = default;
-        HRESULT result = Interop.SHDefExtractIcon(file, id, 0, &icon, null, Conversion.HighLowToInt(size, size));
-        result.ThrowOnFailure();
+        fixed (char* filePath = file)
+        {
+            PInvoke.SHDefExtractIcon(
+                new PCWSTR(filePath),
+                id,
+                0,
+                &icon,
+                null,
+                Conversion.HighLowToInt(size, size)).ThrowOnFailure();
+        }
+
         return icon;
     }
 
@@ -40,10 +54,10 @@ public unsafe partial struct HICON : IHandle<HICON>, IDisposable
             cbSize = (uint)sizeof(SHSTOCKICONINFO)
         };
 
-        Interop.SHGetStockIconInfo(id, SHGSI_FLAGS.SHGSI_ICONLOCATION, &info).ThrowOnFailure();
+        PInvoke.SHGetStockIconInfo(id, SHGSI_FLAGS.SHGSI_ICONLOCATION, &info).ThrowOnFailure();
 
         HICON icon = default;
-        Interop.SHDefExtractIcon(
+        PInvoke.SHDefExtractIcon(
             (PCWSTR)info.szPath.Value,
             info.iIcon,
             0,
@@ -56,10 +70,15 @@ public unsafe partial struct HICON : IHandle<HICON>, IDisposable
 
     public static int GetFileIconCount(string file)
     {
-        uint result = Interop.ExtractIconEx(file, -1, null, null, 0);
+        uint result;
+        fixed (char* filePath = file)
+        {
+            result = PInvoke.ExtractIconEx(new PCWSTR(filePath), -1, null, null, 0);
+        }
+
         if (result == uint.MaxValue)
         {
-            Error.ThrowLastError();
+            Error.GetLastError().ThrowThirtyTwoException();
         }
 
         return (int)result;
@@ -69,7 +88,7 @@ public unsafe partial struct HICON : IHandle<HICON>, IDisposable
     {
         if (!IsNull)
         {
-            Interop.DestroyIcon(this);
+            PInvoke.DestroyIcon(this);
         }
 
         Unsafe.AsRef(in this) = default;

@@ -15,6 +15,7 @@ namespace Windows.Support;
 ///   make the data in the buffer point to random stack data.
 ///  </para>
 /// </remarks>
+[NonCopyable]
 public unsafe ref struct StackBufferScope16<T> where T : unmanaged
 {
     private const int StackSpace = 16;

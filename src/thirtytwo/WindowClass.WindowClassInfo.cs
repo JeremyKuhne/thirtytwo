@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.InteropServices;
@@ -89,10 +89,10 @@ public partial class WindowClass
                     lpszMenuName = mn is null ? (PCWSTR)(char*)MenuId : mn
                 };
 
-                ATOM result = Interop.RegisterClassEx(&wndclass);
+                ATOM result = PInvoke.RegisterClassEx(&wndclass);
                 if (!result.IsValid)
                 {
-                    Error.GetLastError().Throw();
+                    Error.GetLastError().ThrowThirtyTwoException();
                 }
 
                 return result;

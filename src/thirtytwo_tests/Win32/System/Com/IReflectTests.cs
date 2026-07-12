@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Diagnostics;
@@ -39,7 +39,7 @@ public unsafe class IReflectTests
         // Can not query it for IDispatchEx when it is public
         IDispatchEx* dispatchEx;
         hr = ((IUnknown*)unknown)->QueryInterface(IID.Get<IDispatchEx>(), (void**)&dispatchEx);
-        hr.Should().Be(HRESULT.E_NOINTERFACE);
+        hr.Should().Be(PInvoke.E_NOINTERFACE);
 
         InteropMarshal.Release(unknown);
     }
@@ -51,7 +51,7 @@ public unsafe class IReflectTests
 
         using ComScope<IDispatch> dispatch = new((IDispatch*)InteropMarshal.GetIDispatchForObject(publicSimple));
         using ComScope<ITypeInfo> typeInfo = new(null);
-        HRESULT hr = dispatch.Pointer->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
+        HRESULT hr = dispatch.Pointer->GetTypeInfo(0, PInvoke.GetThreadLocale(), typeInfo);
         hr.Should().Be(HRESULT.TLBX_E_LIBNOTREGISTERED);
     }
 
@@ -67,12 +67,12 @@ public unsafe class IReflectTests
         // Can not query it for IDispatch when it is private
         IDispatch* dispatch;
         HRESULT hr = ((IUnknown*)unknown)->QueryInterface(IID.Get<IDispatch>(), (void**)&dispatch);
-        hr.Should().Be(HRESULT.E_NOINTERFACE);
+        hr.Should().Be(PInvoke.E_NOINTERFACE);
 
         // Can not query it for IDispatchEx when it is private
         IDispatchEx* dispatchEx;
         hr = ((IUnknown*)unknown)->QueryInterface(IID.Get<IDispatchEx>(), (void**)&dispatchEx);
-        hr.Should().Be(HRESULT.E_NOINTERFACE);
+        hr.Should().Be(PInvoke.E_NOINTERFACE);
 
         InteropMarshal.Release(unknown);
     }
@@ -119,7 +119,7 @@ public unsafe class IReflectTests
         // Exceptions support IErrorInfo itself
         IErrorInfo* errorInfo;
         hr = ((IUnknown*)unknown)->QueryInterface(IID.Get<IErrorInfo>(), (void**)&errorInfo);
-        hr.Should().Be(HRESULT.E_NOINTERFACE);
+        hr.Should().Be(PInvoke.E_NOINTERFACE);
     }
 
     [TestMethod]
@@ -221,7 +221,7 @@ public unsafe class IReflectTests
 
         IProvideClassInfo2* provideClassInfo2;
         hr = ((IUnknown*)unknown)->QueryInterface(IID.Get<IProvideClassInfo2>(), (void**)&provideClassInfo2);
-        hr.Should().Be(HRESULT.E_NOINTERFACE);
+        hr.Should().Be(PInvoke.E_NOINTERFACE);
 
         // The Assembly needs to have a registered TypeLib to get anything.
         ITypeInfo* typeInfo;
@@ -239,7 +239,7 @@ public unsafe class IReflectTests
         // don't exist in .NET Core: IObjectSafety, IWeakReferenceSource, ICustomPropertyProvider, ICCW, and IStringTable.
         IManagedObject* managedObject;
         HRESULT hr = ((IUnknown*)unknown)->QueryInterface(IID.Get<IManagedObject>(), (void**)&managedObject);
-        hr.Should().Be(HRESULT.E_NOINTERFACE);
+        hr.Should().Be(PInvoke.E_NOINTERFACE);
     }
 
     [TestMethod]
@@ -264,7 +264,7 @@ public unsafe class IReflectTests
         using ComScope<IDispatchEx> dispatchEx = dispatch.TryQueryInterface<IDispatchEx>(out HRESULT hr);
 
         using ComScope<ITypeInfo> typeInfo = new(null);
-        hr = dispatchEx.Pointer->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
+        hr = dispatchEx.Pointer->GetTypeInfo(0, PInvoke.GetThreadLocale(), typeInfo);
         hr.Succeeded.Should().Be(true);
 
         using BSTR findName = new("Foo");
@@ -374,7 +374,7 @@ public unsafe class IReflectTests
         using BSTR helpFile = default;
         uint helpContext;
         hr = typeInfo.Pointer->GetDocumentation(dispatchIds["ToString"], &name, &doc, &helpContext, &helpFile);
-        hr.Should().Be(HRESULT.TYPE_E_ELEMENTNOTFOUND);
+        hr.Should().Be(PInvoke.TYPE_E_ELEMENTNOTFOUND);
     }
 
     public static IEnumerable<object?[]> ObjectBehaviorTestData =>
@@ -462,7 +462,7 @@ public unsafe class IReflectTests
         // While we can *get* the color, we can't set it as there is no way (afaik) to match the passed in uint parameter.
         value = (VARIANT)(uint)0x000000FF;
         hr = dispatch.Pointer->TrySetPropertyValue(dispatchIds["Color"], value);
-        hr.Should().Be(HRESULT.DISP_E_MEMBERNOTFOUND);
+        hr.Should().Be(PInvoke.DISP_E_MEMBERNOTFOUND);
 
         dispatch.Pointer->GetMemberProperties(dispatchIds["Color"], uint.MaxValue, out var flags);
         flags.Should().Be(fdexPropCanGet | fdexPropCanPut | fdexPropCannotPutRef
@@ -519,7 +519,7 @@ public unsafe class IReflectTests
         count.Should().Be(1);
 
         using ComScope<ITypeInfo> typeInfo = new(null);
-        hr = dispatch.Pointer->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
+        hr = dispatch.Pointer->GetTypeInfo(0, PInvoke.GetThreadLocale(), typeInfo);
         hr.Should().Be(HRESULT.S_OK);
 
         TYPEATTR* attr;
@@ -548,7 +548,7 @@ public unsafe class IReflectTests
 
         VARDESC* vardesc;
         hr = typeInfo.Pointer->GetVarDesc(1, &vardesc);
-        hr.Should().Be(HRESULT.TYPE_E_ELEMENTNOTFOUND);
+        hr.Should().Be(PInvoke.TYPE_E_ELEMENTNOTFOUND);
 
         FUNCDESC* funcdesc;
         hr = typeInfo.Pointer->GetFuncDesc(0, &funcdesc);

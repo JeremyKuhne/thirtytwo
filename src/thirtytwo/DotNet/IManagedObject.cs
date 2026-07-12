@@ -1,10 +1,10 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Win32.System.Com;
-using static Windows.Win32.ComHelpers;
+using static Windows.Win32.ComExtensions;
 
 namespace Windows.DotNet;
 

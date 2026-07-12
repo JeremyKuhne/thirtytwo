@@ -12,11 +12,11 @@ internal static unsafe class ManagedWrapperExtensions
     /// </summary>
     public static ComScope<TInterface> GetComCallableWrapper<TInterface>(this IManagedWrapper wrapper)
         where TInterface : unmanaged, IComIID
-        => ComScope<TInterface>.GetComCallableWrapper(wrapper);
+        => new(wrapper.GetComPointer<TInterface>());
 
     /// <summary>
     ///  Gets a COM callable wrapper (CCW).
     /// </summary>
     public static ComScope<IUnknown> GetComCallableWrapper(this IManagedWrapper wrapper)
-        => ComScope<IUnknown>.GetComCallableWrapper(wrapper);
+        => new(wrapper.GetComPointer<IUnknown>());
 }

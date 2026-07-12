@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -42,7 +42,7 @@ internal class Program
                 parameters,
                 menuHandle)
         {
-            Interop.SetLayeredWindowAttributes(Handle, default, 128, LAYERED_WINDOW_ATTRIBUTES_FLAGS.LWA_ALPHA);
+            PInvoke.SetLayeredWindowAttributes(Handle, default, 128, LAYERED_WINDOW_ATTRIBUTES_FLAGS.LWA_ALPHA);
         }
     }
 
@@ -109,7 +109,7 @@ internal class Program
                         using HRGN windowRegion = HRGN.FromRectangle(new(new(0,0), bounds.Size));
                         using HRGN clientRegion = HRGN.FromRectangle(clientRect);
                         HRGN newRegion = HRGN.CreateEmpty();
-                        Interop.CombineRgn(newRegion, windowRegion, clientRegion, RGN_COMBINE_MODE.RGN_DIFF);
+                        PInvoke.CombineRgn(newRegion, windowRegion, clientRegion, RGN_COMBINE_MODE.RGN_DIFF);
                         window.SetWindowRegion(newRegion, redraw: true);
                     }
 

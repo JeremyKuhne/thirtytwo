@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Support;
@@ -15,7 +15,7 @@ public unsafe class Brush : DisposableBase.Finalizable, IPointer<GpBrush>
 
     protected override void Dispose(bool disposing)
     {
-        Status status = Interop.GdipDeleteBrush(_pointer);
+        Status status = PInvoke.GdipDeleteBrush(_pointer);
         if (disposing)
         {
             status.ThrowIfFailed();

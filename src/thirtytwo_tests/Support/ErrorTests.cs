@@ -57,7 +57,7 @@ public class ErrorTests
         ]
     public void ErrorsMapToExceptions(WIN32_ERROR error, Type exceptionType)
     {
-        error.GetException().Should().BeOfType(exceptionType);
+            error.GetThirtyTwoException().Should().BeOfType(exceptionType);
     }
 
     [TestMethod,
@@ -67,6 +67,6 @@ public class ErrorTests
         ]
     public void WindowsErrorTextIsAsExpected(uint error, string expected)
     {
-        Error.ErrorToString((WIN32_ERROR)error).Should().Be(expected);
+        ((WIN32_ERROR)error).ErrorToString().Should().Be(expected);
     }
 }

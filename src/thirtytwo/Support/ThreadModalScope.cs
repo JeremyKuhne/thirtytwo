@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Windows.Support;
@@ -11,16 +11,16 @@ public readonly ref struct ThreadModalScope
 
     public ThreadModalScope()
     {
-        _focusedWindow = Interop.GetFocus();
-        _activeWindow = Interop.GetActiveWindow();
+        _focusedWindow = PInvoke.GetFocus();
+        _activeWindow = PInvoke.GetActiveWindow();
 
         List<HWND> windows = [];
 
         Application.EnumerateThreadWindows((HWND hwnd) =>
         {
-            if (Interop.IsWindowVisible(hwnd) && Interop.IsWindowEnabled(hwnd))
+            if (PInvoke.IsWindowVisible(hwnd) && PInvoke.IsWindowEnabled(hwnd))
             {
-                Interop.EnableWindow(hwnd, false);
+                PInvoke.EnableWindow(hwnd, false);
                 windows.Add(hwnd);
             }
 
@@ -34,17 +34,17 @@ public readonly ref struct ThreadModalScope
     {
         foreach (HWND hwnd in _windows)
         {
-            Interop.EnableWindow(hwnd, true);
+            PInvoke.EnableWindow(hwnd, true);
         }
 
         if (!_activeWindow.IsNull)
         {
-            Interop.SetActiveWindow(_activeWindow);
+            PInvoke.SetActiveWindow(_activeWindow);
         }
 
         if (!_focusedWindow.IsNull)
         {
-            Interop.SetFocus(_focusedWindow);
+            PInvoke.SetFocus(_focusedWindow);
         }
     }
 }

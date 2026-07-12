@@ -4,6 +4,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Windows</RootNamespace>
     <Win32Manifest>Resources\comctl6.manifest</Win32Manifest>
+
+    <!-- CsWin32 extensionReceiver output emits cross-assembly XML crefs that Roslyn cannot resolve. -->
+    <NoWarn>$(NoWarn);CS1574;CS1580</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="KlutzyNinja.Touki"/>
+    <PackageReference Include="KlutzyNinja.Madowaku" />
+    <PackageReference Include="KlutzyNinja.Touki" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

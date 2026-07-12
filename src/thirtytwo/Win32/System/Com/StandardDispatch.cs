@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.System.Ole;
@@ -9,7 +9,7 @@ namespace Windows.Win32.System.Com;
 /// <summary>
 ///  Base class for providing <see cref="IDispatch"/> services around an existing <see cref="ITypeInfo"/>.
 /// </summary>
-public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx.Interface, IDisposable
+public unsafe abstract class StandardDispatch : IDispatchCcw.Interface, IDispatchEx.Interface, IDisposable
 {
     private ITypeInfo* _typeInfo;
 
@@ -42,7 +42,7 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
         _typeInfo->AddRef();
     }
 
-    HRESULT IDispatch.Interface.GetTypeInfoCount(uint* pctinfo)
+    HRESULT IDispatchCcw.Interface.GetTypeInfoCount(uint* pctinfo)
     {
         if (pctinfo is null)
         {
@@ -53,7 +53,7 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
         return HRESULT.S_OK;
     }
 
-    HRESULT IDispatch.Interface.GetTypeInfo(uint iTInfo, uint lcid, ITypeInfo** ppTInfo)
+    HRESULT IDispatchCcw.Interface.GetTypeInfo(uint iTInfo, uint lcid, ITypeInfo** ppTInfo)
     {
         if (ppTInfo is null)
         {
@@ -63,7 +63,7 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
         if (iTInfo != 0)
         {
             *ppTInfo = null;
-            return HRESULT.DISP_E_BADINDEX;
+            return PInvoke.DISP_E_BADINDEX;
         }
 
         _typeInfo->AddRef();
@@ -71,18 +71,18 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
         return HRESULT.S_OK;
     }
 
-    HRESULT IDispatch.Interface.GetIDsOfNames(Guid* riid, PWSTR* rgszNames, uint cNames, uint lcid, int* rgDispId)
+    HRESULT IDispatchCcw.Interface.GetIDsOfNames(Guid* riid, PWSTR* rgszNames, uint cNames, uint lcid, int* rgDispId)
     {
         // This must bee IID_NULL
         if (riid != IID.Empty())
         {
-            return HRESULT.DISP_E_UNKNOWNINTERFACE;
+            return PInvoke.DISP_E_UNKNOWNINTERFACE;
         }
 
         return _typeInfo->GetIDsOfNames(rgszNames, cNames, rgDispId);
     }
 
-    HRESULT IDispatch.Interface.Invoke(
+    HRESULT IDispatchCcw.Interface.Invoke(
         int dispIdMember,
         Guid* riid,
         uint lcid,
@@ -95,7 +95,7 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
         // This must bee IID_NULL
         if (riid != IID.Empty())
         {
-            return HRESULT.DISP_E_UNKNOWNINTERFACE;
+            return PInvoke.DISP_E_UNKNOWNINTERFACE;
         }
 
         HRESULT hr = MapDotNetHRESULTs(Invoke(
@@ -108,7 +108,7 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
             serviceProvider: null,
             pArgErr));
 
-        if (hr != HRESULT.DISP_E_MEMBERNOTFOUND)
+        if (hr != PInvoke.DISP_E_MEMBERNOTFOUND)
         {
             return hr;
         }
@@ -132,12 +132,12 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
             return HRESULT.E_POINTER;
         }
 
-        *pid = Interop.DISPID_UNKNOWN;
+        *pid = PInvoke.DISPID_UNKNOWN;
         return bstrName.IsNull ? HRESULT.E_POINTER : GetDispID(bstrName, grfdex, pid);
     }
 
     /// <summary>
-    ///  Override to provide a dispatch id for the given name. Return <see cref="HRESULT.DISP_E_UNKNOWNNAME"/>
+    ///  Override to provide a dispatch id for the given name. Return <see cref="Interop.DISP_E_UNKNOWNNAME"/>
     ///  if the name isn't supported.
     /// </summary>
     /// <remarks>
@@ -147,13 +147,13 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
     ///   </see>
     ///  </para>
     /// </remarks>
-    protected virtual HRESULT GetDispID(BSTR bstrName, uint grfdex, int* pid) => HRESULT.DISP_E_UNKNOWNNAME;
+    protected virtual HRESULT GetDispID(BSTR bstrName, uint grfdex, int* pid) => PInvoke.DISP_E_UNKNOWNNAME;
 
     HRESULT IDispatchEx.Interface.GetMemberName(int id, BSTR* pbstrName)
         => pbstrName is null ? HRESULT.E_POINTER : GetMemberName(id, pbstrName);
 
     /// <summary>
-    ///  Override to provide the name for a given dispatch id. Return <see cref="HRESULT.DISP_E_UNKNOWNNAME"/> if the
+    ///  Override to provide the name for a given dispatch id. Return <see cref="Interop.DISP_E_UNKNOWNNAME"/> if the
     ///  name isn't known.
     /// </summary>
     /// <remarks>
@@ -163,7 +163,7 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
     ///   </see>
     ///  </para>
     /// </remarks>
-    protected virtual HRESULT GetMemberName(int id, BSTR* pbstrName) => HRESULT.DISP_E_UNKNOWNNAME;
+    protected virtual HRESULT GetMemberName(int id, BSTR* pbstrName) => PInvoke.DISP_E_UNKNOWNNAME;
 
     HRESULT IDispatchEx.Interface.GetNextDispID(uint grfdex, int id, int* pid)
     {
@@ -172,7 +172,7 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
             return HRESULT.E_POINTER;
         }
 
-        *pid = Interop.DISPID_UNKNOWN;
+        *pid = PInvoke.DISPID_UNKNOWN;
 
         return GetNextDispID(grfdex, id, pid);
     }
@@ -182,8 +182,8 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
     ///  <see cref="GetNextDispID(uint, int, int*)"/>.
     /// </param>
     /// <param name="pid">The next dispatch id.</param>
-    /// <returns>The next dispatch id, or <see cref="HRESULT.S_FALSE"/> if there are no more.</returns>
-    protected virtual HRESULT GetNextDispID(uint grfdex, int id, int* pid) => HRESULT.S_FALSE;
+    /// <returns>The next dispatch id, or <see cref="Interop.S_FALSE"/> if there are no more.</returns>
+    protected virtual HRESULT GetNextDispID(uint grfdex, int id, int* pid) => PInvoke.S_FALSE;
 
     HRESULT IDispatchEx.Interface.InvokeEx(
         int id,
@@ -204,7 +204,7 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
             pspCaller,
             argumentError: null));
 
-        if (hr != HRESULT.DISP_E_MEMBERNOTFOUND)
+        if (hr != PInvoke.DISP_E_MEMBERNOTFOUND)
         {
             return hr;
         }
@@ -223,7 +223,7 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
         EXCEPINFO* exceptionInfo,
         IServiceProvider* serviceProvider,
         uint* argumentError)
-        => HRESULT.DISP_E_MEMBERNOTFOUND;
+        => PInvoke.DISP_E_MEMBERNOTFOUND;
 
     HRESULT IDispatchEx.Interface.GetMemberProperties(int id, uint grfdexFetch, FDEX_PROP_FLAGS* pgrfdex)
     {
@@ -232,7 +232,7 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
             return HRESULT.E_POINTER;
         }
 
-        if (id == Interop.DISPID_UNKNOWN)
+        if (id == PInvoke.DISPID_UNKNOWN)
         {
             return HRESULT.E_INVALIDARG;
         }
@@ -256,13 +256,13 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
     protected virtual HRESULT GetMemberProperties(int dispId, out FDEX_PROP_FLAGS properties)
     {
         properties = default;
-        return HRESULT.E_NOTIMPL;
+        return PInvoke.E_NOTIMPL;
     }
 
     // .NET COM Interop returns E_NOTIMPL for these three.
 
-    HRESULT IDispatchEx.Interface.DeleteMemberByName(BSTR bstrName, uint grfdex) => HRESULT.E_NOTIMPL;
-    HRESULT IDispatchEx.Interface.DeleteMemberByDispID(int id) => HRESULT.E_NOTIMPL;
+    HRESULT IDispatchEx.Interface.DeleteMemberByName(BSTR bstrName, uint grfdex) => PInvoke.E_NOTIMPL;
+    HRESULT IDispatchEx.Interface.DeleteMemberByDispID(int id) => PInvoke.E_NOTIMPL;
 
     HRESULT IDispatchEx.Interface.GetNameSpaceParent(IUnknown** ppunk)
     {
@@ -272,18 +272,18 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
         }
 
         *ppunk = null;
-        return HRESULT.E_NOTIMPL;
+        return PInvoke.E_NOTIMPL;
     }
 
     private static HRESULT MapDotNetHRESULTs(HRESULT hr)
     {
         if (hr == HRESULT.COR_E_OVERFLOW)
         {
-            return HRESULT.DISP_E_OVERFLOW;
+            return PInvoke.DISP_E_OVERFLOW;
         }
         else if (hr == HRESULT.COR_E_INVALIDOLEVARIANTTYPE)
         {
-            return HRESULT.DISP_E_BADVARTYPE;
+            return PInvoke.DISP_E_BADVARTYPE;
         }
         else if (hr == HRESULT.COR_E_ARGUMENT)
         {
@@ -291,11 +291,11 @@ public unsafe abstract class StandardDispatch : IDispatch.Interface, IDispatchEx
         }
         else if (hr == HRESULT.COR_E_SAFEARRAYTYPEMISMATCH)
         {
-            return HRESULT.DISP_E_TYPEMISMATCH;
+            return PInvoke.DISP_E_TYPEMISMATCH;
         }
         else if (hr == HRESULT.COR_E_MISSINGMEMBER || hr == HRESULT.COR_E_MISSINGMETHOD)
         {
-            return HRESULT.DISP_E_MEMBERNOTFOUND;
+            return PInvoke.DISP_E_MEMBERNOTFOUND;
         }
 
         // .NET maps this, we would need to populate EXCEPINFO to do the same

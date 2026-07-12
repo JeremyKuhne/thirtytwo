@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.ComponentModel;
@@ -38,7 +38,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
 
         using BSTR name = default;
         HRESULT hr = typeInfo.Pointer->GetDocumentation(
-            Interop.MEMBERID_NIL,
+            PInvoke.MEMBERID_NIL,
             &name,
             null,
             null,
@@ -65,7 +65,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
             }
         }
 
-        using (VARIANT value = dispatch.Pointer->GetPropertyValue(Interop.DISPID_Name))
+        using (VARIANT value = dispatch.Pointer->GetPropertyValue(PInvoke.DISPID_Name))
         {
             if (value.vt == VARENUM.VT_BSTR)
             {
@@ -161,7 +161,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
             }
 
             using BSTR name = default;
-            hr = typeInfo.Pointer->GetDocumentation(Interop.MEMBERID_NIL, &name, null, null, null);
+            hr = typeInfo.Pointer->GetDocumentation(PInvoke.MEMBERID_NIL, &name, null, null, null);
             if (hr.Failed)
             {
                 continue;
@@ -180,7 +180,13 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
                 }
 
                 using BSTR documentation = default;
-                HRESULT hr = typeInfo->GetDocumentation(description->memid, null, &documentation, out _, null);
+                uint helpContext;
+                HRESULT hr = typeInfo->GetDocumentation(
+                    description->memid,
+                    null,
+                    &documentation,
+                    &helpContext,
+                    null);
 
                 _events.Add(new ComEventDescriptor(
                     names[0].ToString(),
@@ -239,7 +245,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
             }
 
             ComScope<ITypeInfo> typeInfo = new(null);
-            hr = dispatch.Pointer->GetTypeInfo(0, Interop.GetThreadLocale(), typeInfo);
+            hr = dispatch.Pointer->GetTypeInfo(0, PInvoke.GetThreadLocale(), typeInfo);
             return typeInfo;
         }
 
@@ -261,7 +267,7 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
 
     private void EnumerateFunctionDescriptions(ITypeInfo* typeInfo, EnumerateFunctionDescriptionDelegate func)
     {
-        if (typeInfo == null)
+        if (typeInfo is null)
         {
             return;
         }

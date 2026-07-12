@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Support;
@@ -16,7 +16,7 @@ public unsafe class SolidBrush : Brush, IPointer<GpSolidFill>
     private static GpBrush* CreateBrush(ARGB color)
     {
         GpBrush* brush;
-        Interop.GdipCreateSolidFill(color, (GpSolidFill**)&brush).ThrowIfFailed();
+        PInvoke.GdipCreateSolidFill(color, (GpSolidFill**)&brush).ThrowIfFailed();
         return brush;
     }
 }

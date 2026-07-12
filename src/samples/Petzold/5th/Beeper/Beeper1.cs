@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -25,7 +25,7 @@ internal class Beeper1 : MainWindow
                 _timerId = window.SetTimer(1000);
                 return (LRESULT)0;
             case MessageType.Timer:
-                Interop.MessageBeep(MESSAGEBOX_STYLE.MB_OK);
+                PInvoke.MessageBeep(MESSAGEBOX_STYLE.MB_OK);
                 _flipFlop = !_flipFlop;
                 window.Invalidate();
                 return (LRESULT)0;

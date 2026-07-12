@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 // Based on https://github.com/dotnet/winforms/blob/main/src/System.Windows.Forms.Primitives/src/Windows/Win32/Foundation/GlobalInterfaceTable.cs
@@ -23,7 +23,7 @@ internal static unsafe class GlobalInterfaceTable
         Guid clsid = CLSID.StdGlobalInterfaceTable;
         fixed (IGlobalInterfaceTable** git = &s_globalInterfaceTable)
         {
-            Interop.CoCreateInstance(
+            PInvoke.CoCreateInstance(
                 &clsid,
                 pUnkOuter: null,
                 CLSCTX.CLSCTX_INPROC_SERVER,

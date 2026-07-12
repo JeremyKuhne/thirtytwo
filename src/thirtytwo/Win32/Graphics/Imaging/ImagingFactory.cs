@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.Graphics.Imaging.D2D;
@@ -17,8 +17,8 @@ public unsafe class ImagingFactory : DirectDrawBase<IWICImagingFactory2>
 
     private static IWICImagingFactory2* Create()
     {
-        Interop.CoCreateInstance(
-            Interop.CLSID_WICImagingFactory2,
+        PInvoke.CoCreateInstance(
+            PInvoke.CLSID_WICImagingFactory2,
             null,
             CLSCTX.CLSCTX_INPROC_SERVER,
             out IWICImagingFactory2* factory).ThrowOnFailure();

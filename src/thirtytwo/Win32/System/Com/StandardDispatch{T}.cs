@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Windows.Win32.System.Com;
@@ -14,5 +14,5 @@ public unsafe abstract class StandardDispatch<T> : StandardDispatch
     {
     }
 
-    protected override ComScope GetComCallableWrapper() => new(ComHelpers.GetComPointer<T>(this));
+    protected override ComScope GetComCallableWrapper() => new(this.GetComPointer<T>());
 }

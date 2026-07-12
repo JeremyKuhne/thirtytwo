@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Windows.Win32.Foundation;
@@ -17,10 +17,10 @@ public unsafe class UiaProviderForNonClientTests
         using Window window = new(Window.DefaultBounds);
 
         using ComScope<IRawElementProviderSimple> provider = new(null);
-        HRESULT hr = Interop.UiaProviderForNonClient(
+        HRESULT hr = PInvoke.UiaProviderForNonClient(
             window,
             (int)OBJECT_IDENTIFIER.OBJID_WINDOW,
-            (int)Interop.CHILDID_SELF,
+            (int)PInvoke.CHILDID_SELF,
             provider);
 
         hr.Succeeded.Should().BeTrue();

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -158,7 +158,7 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
         }
         finally
         {
-            Interop.DestroyWindow(window);
+            PInvoke.DestroyWindow(window);
         }
     }
 
@@ -218,7 +218,7 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
 
         if (bounds == default)
         {
-            bounds = new(Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT, Interop.CW_USEDEFAULT);
+            bounds = new(PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT);
         }
 
         fixed (char* wn = windowName)
@@ -231,7 +231,7 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
             {
                 t_initializeProcedure = windowProcedure;
 
-                HWND hwnd = Interop.CreateWindowEx(
+                HWND hwnd = PInvoke.CreateWindowEx(
                     (WINDOW_EX_STYLE)extendedStyle,
                     Atom.IsValid ? (char*)Atom.Value : cn,
                     wn,
@@ -247,7 +247,7 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
 
                 if (hwnd.IsNull)
                 {
-                    Error.ThrowLastError();
+                    Error.GetLastError().ThrowThirtyTwoException();
                 }
 
                 if (!Atom.IsValid)
@@ -269,7 +269,7 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
         if (Disposed)
         {
             // In the middle of disposing, we've flipped the flag, but haven't unregistered the class yet.
-            return Interop.DefWindowProc(window, message, wParam, lParam);
+            return PInvoke.DefWindowProc(window, message, wParam, lParam);
         }
 
         if (t_initializeProcedure is not null
@@ -303,8 +303,8 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
 
     protected virtual LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam) =>
         _priorClassProcedure.IsNull
-            ? Interop.DefWindowProc(window, (uint)message, wParam, lParam)
-            : Interop.CallWindowProc(_priorClassProcedure, window, (uint)message, wParam, lParam);
+            ? PInvoke.DefWindowProc(window, (uint)message, wParam, lParam)
+            : PInvoke.CallWindowProc(_priorClassProcedure, window, (uint)message, wParam, lParam);
 
     protected override void Dispose(bool disposing)
     {
@@ -316,7 +316,7 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
         // Free the memory for the window class and prevent further callbacks.
         // (Presuming that we don't have to set the default WNDPROC back via SetClassLong, if we do
         //  we can follow along with what Window does.)
-        if (Interop.UnregisterClass((char*)Atom.Value, ModuleInstance))
+        if (PInvoke.UnregisterClass((char*)Atom.Value, ModuleInstance))
         {
             Atom = default;
         }
@@ -325,7 +325,7 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
             WIN32_ERROR error = Error.GetLastError();
             if (disposing)
             {
-                error.Throw();
+                error.ThrowThirtyTwoException();
             }
             else
             {
