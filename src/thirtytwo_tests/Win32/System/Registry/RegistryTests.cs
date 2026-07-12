@@ -7,6 +7,28 @@ namespace Windows.Win32.System.Registry;
 public class RegistryTests
 {
     [TestMethod]
+    public void QueryKeyName_NameExceedsInitialBuffer_ReturnsFullName()
+    {
+        string testRoot = $@"Software\ThirtyTwo.Tests\{Guid.NewGuid():N}";
+        string subKeyName = $@"{testRoot}\{new string('a', 200)}\{new string('b', 200)}";
+
+        try
+        {
+            using global::Microsoft.Win32.RegistryKey managedKey =
+                global::Microsoft.Win32.Registry.CurrentUser.CreateSubKey(subKeyName);
+            using HKEY key = Registry.OpenKey(HKEY.HKEY_CURRENT_USER, subKeyName);
+
+            string name = Registry.QueryKeyName(key);
+
+            name.Should().EndWith(subKeyName);
+        }
+        finally
+        {
+            global::Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(testRoot, throwOnMissingSubKey: false);
+        }
+    }
+
+    [TestMethod]
     public void Registry_OpenKey_UserKey()
     {
         using HKEY key = Registry.OpenKey(HKEY.HKEY_CURRENT_USER, null);

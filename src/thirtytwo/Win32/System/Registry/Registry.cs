@@ -46,23 +46,26 @@ public static unsafe partial class Registry
         while (true) fixed (char* b = buffer)
         {
             uint length;
+            uint bufferSizeInBytes = checked((uint)buffer.Length * sizeof(char));
             NTSTATUS status = Wdk.Interop.NtQueryKey(
                 key,
                 KEY_INFORMATION_CLASS.KeyNameInformation,
                 b,
-                (uint)buffer.Length,
+                bufferSizeInBytes,
                 &length);
 
             if (status == PInvoke.STATUS_BUFFER_TOO_SMALL || status == PInvoke.STATUS_BUFFER_OVERFLOW)
             {
-                buffer.EnsureCapacity((int)length);
+                int requiredCharacterCapacity = checked((int)(((ulong)length + sizeof(char) - 1) / sizeof(char)));
+                buffer.EnsureCapacity(requiredCharacterCapacity);
                 continue;
             }
 
             status.ThrowIfFailed();
 
             KEY_NAME_INFORMATION* nameInfo = (KEY_NAME_INFORMATION*)b;
-            return nameInfo->Name.AsSpan((int)nameInfo->NameLength / sizeof(char)).ToString();
+            int nameLength = checked((int)(nameInfo->NameLength / sizeof(char)));
+            return nameInfo->Name.AsSpan(nameLength).ToString();
         }
     }
 

@@ -14,9 +14,33 @@ public static unsafe class PInvokeExtensions
         public static ComScope<IShellItem> SHCreateShellItem(string path)
         {
             ComScope<IShellItem> shellItem = new(null);
-            PInvoke.SHParseDisplayName(path, pbc: null, out ITEMIDLIST* ppidl, sfgaoIn: 0).ThrowOnFailure();
-            PInvoke.SHCreateShellItem(pidlParent: null, psfParent: null, ppidl, shellItem).ThrowOnFailure();
-            return shellItem;
+            ITEMIDLIST* itemIdList = null;
+            HRESULT result;
+
+            fixed (char* pathPointer = path)
+            {
+                result = PInvoke.SHParseDisplayName(
+                    pathPointer,
+                    pbc: null,
+                    &itemIdList,
+                    sfgaoIn: 0,
+                    psfgaoOut: null);
+            }
+
+            try
+            {
+                result.ThrowOnFailure();
+                PInvoke.SHCreateShellItem(
+                    pidlParent: null,
+                    psfParent: null,
+                    itemIdList,
+                    shellItem).ThrowOnFailure();
+                return shellItem;
+            }
+            finally
+            {
+                PInvoke.CoTaskMemFree(itemIdList);
+            }
         }
     }
 }
