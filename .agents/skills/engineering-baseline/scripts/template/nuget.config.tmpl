@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <!--
+      Clear inherited sources so the build only ever resolves from nuget.org,
+      regardless of machine-level NuGet configuration.
+    -->
+    <clear />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+  </packageSources>
+  <!--
+    Source mapping pins every package id to nuget.org. This is the primary
+    defense against dependency-confusion: a package can never be silently
+    served from an unexpected feed.
+  -->
+  <packageSourceMapping>
+    <packageSource key="nuget.org">
+      <package pattern="*" />
+    </packageSource>
+  </packageSourceMapping>
+</configuration>

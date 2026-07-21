@@ -1,0 +1,30 @@
+name: Agent files
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - AGENTS.md
+      - .github/copilot-instructions.md
+      - .github/workflows/agent-files.yml
+      - tools/Sync-AgentInstructions.ps1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  mirror-check:
+    name: copilot-instructions mirror
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@<SHA> # v6.0.3
+
+      - name: Verify .github/copilot-instructions.md mirrors AGENTS.md
+        shell: pwsh
+        run: ./tools/Sync-AgentInstructions.ps1 -Check

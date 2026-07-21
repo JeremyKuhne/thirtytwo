@@ -1,0 +1,12 @@
+<Project>
+
+  <!--
+    MinVer derives the package version from the nearest git tag.
+    Create a tag "v0.1.0" to release; CI produces "0.1.0-alpha.0.N" until then.
+    See https://github.com/adamralph/minver
+  -->
+  <PropertyGroup>
+    <MinVerTagPrefix Condition="'$(MinVerTagPrefix)' == ''">v</MinVerTagPrefix>
+  </PropertyGroup>
+
+</Project>

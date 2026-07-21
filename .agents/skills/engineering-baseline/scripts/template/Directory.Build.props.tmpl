@@ -1,0 +1,76 @@
+<Project>
+
+  <PropertyGroup Label="Target frameworks">
+    <MainTfm>{{FRAMEWORK}}</MainTfm>{{LEGACY_TFM_LINE}}
+  </PropertyGroup>
+
+  <PropertyGroup Label="Output layout">
+    <!-- Keep all build output under a single top-level artifacts/ directory. -->
+    <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
+    <BaseOutputPath>$(ArtifactsDir)bin\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(ArtifactsDir)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Language and analysis">
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!--
+      NuGet audit advisories (NU190x) warn but must not block an otherwise green
+      build; a newly published advisory should not break CI until the bump lands.
+    -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Deterministic build">
+    <Deterministic>true</Deterministic>
+    <!--
+      GitHub Actions sets CI=true; enables deterministic source-path
+      normalization in PDBs so the package is reproducible.
+    -->
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Supply chain">
+    <!--
+      Commit packages.lock.json so the full dependency graph (including
+      transitives, where compromises usually hide) is pinned; CI restores in
+      locked mode to fail on any drift.
+    -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode Condition="'$(CI)' == 'true'">true</RestoreLockedMode>
+    <!--
+      Audit direct AND transitive packages against the GitHub Advisory DB on
+      every restore (NU1901-1904). Kept as warnings via WarningsNotAsErrors so
+      a newly disclosed advisory surfaces without breaking the build.
+    -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package metadata (shared)">
+    <Authors>{{OWNER}}</Authors>
+    <Copyright>Copyright (c) {{YEAR}} {{OWNER}} and contributors</Copyright>
+    <PackageLicenseExpression>{{LICENSE}}</PackageLicenseExpression>
+    <PackageProjectUrl>{{REPO_URL}}</PackageProjectUrl>
+    <RepositoryUrl>{{REPO_URL}}</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <!--
+      Source Link embeds the exact commit in the PDB so debuggers can fetch
+      source on demand.
+    -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Documentation">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+</Project>

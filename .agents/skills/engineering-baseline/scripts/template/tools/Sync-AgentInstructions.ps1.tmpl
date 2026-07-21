@@ -1,0 +1,60 @@
+<#
+.SYNOPSIS
+    Keeps .github/copilot-instructions.md in sync with AGENTS.md.
+
+.DESCRIPTION
+    AGENTS.md is the single source of truth for agent instructions. GitHub Copilot
+    reads .github/copilot-instructions.md, so this script regenerates that file as
+    a mirror with a "do not edit" header.
+
+    Default: rewrite the mirror from AGENTS.md. With -Check: verify only and fail
+    if the mirror is missing or stale (used by the agent-files CI workflow);
+    nothing is written in -Check mode.
+
+.PARAMETER Check
+    Verify the mirror is current without modifying it. Fails on drift.
+
+.EXAMPLE
+    ./tools/Sync-AgentInstructions.ps1
+    Regenerate the mirror after editing AGENTS.md.
+
+.EXAMPLE
+    ./tools/Sync-AgentInstructions.ps1 -Check
+    Fail if the mirror is out of date (CI).
+#>
+
+#Requires -Version 7.0
+[CmdletBinding()]
+param(
+    [switch] $Check
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+# tools/ sits one level under the repository root.
+$repoRoot = Split-Path $PSScriptRoot -Parent
+$source   = Join-Path $repoRoot 'AGENTS.md'
+$mirror   = Join-Path $repoRoot '.github/copilot-instructions.md'
+
+if (-not (Test-Path $source)) { throw "Source not found: $source" }
+
+# The expected mirror is a do-not-edit header over the verbatim source. Line
+# endings are normalized to LF so the check is stable across platforms and the
+# `* text=auto` .gitattributes policy.
+$header   = '<!-- DO NOT EDIT. Generated mirror of /AGENTS.md. -->'
+$body     = (Get-Content -LiteralPath $source -Raw) -replace "`r`n", "`n"
+$expected = "$header`n$body"
+
+if ($Check) {
+    $current = if (Test-Path $mirror) { (Get-Content -LiteralPath $mirror -Raw) -replace "`r`n", "`n" } else { '' }
+    if ($current -ne $expected) {
+        throw "'.github/copilot-instructions.md' is out of sync with AGENTS.md. Run tools/Sync-AgentInstructions.ps1 and commit the result."
+    }
+    Write-Host '.github/copilot-instructions.md is in sync with AGENTS.md.'
+    return
+}
+
+New-Item -ItemType Directory (Split-Path $mirror -Parent) -Force | Out-Null
+Set-Content -LiteralPath $mirror -Value $expected -Encoding utf8NoBOM -NoNewline
+Write-Host 'Regenerated .github/copilot-instructions.md from AGENTS.md.'

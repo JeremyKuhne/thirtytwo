@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  merge_group:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.merge_group.head_sha || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: build
+    runs-on: {{CI_RUNNER}}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@<SHA> # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/cache@<SHA> # v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/packages.lock.json', '**/Directory.Packages.props', '**/Directory.Build.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-${{ runner.arch }}-
+
+      - uses: actions/setup-dotnet@<SHA> # v5.3.0
+        # SDK version comes from global.json
+
+      - run: dotnet restore --locked-mode
+      - run: dotnet build --configuration Release --no-restore
+      # The global.json MTP runner treats --no-build as a test-app argument and
+      # exits 5 with zero tests. CI=true keeps this implicit restore locked.
+      - run: dotnet test --configuration Release

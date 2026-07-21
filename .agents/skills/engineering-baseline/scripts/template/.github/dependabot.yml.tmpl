@@ -1,0 +1,24 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    # Collapse every NuGet update into ONE grouped PR so the repo never opens a
+    # long list of individual bump PRs (day one or later).
+    groups:
+      nuget:
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    # Collapse every GitHub Actions update into ONE grouped PR (same reason).
+    groups:
+      github-actions:
+        patterns:
+          - "*"

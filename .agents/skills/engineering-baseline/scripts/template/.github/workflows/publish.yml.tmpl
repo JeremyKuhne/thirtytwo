@@ -1,0 +1,47 @@
+name: publish
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: pack and push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # OIDC trusted publishing
+    steps:
+      - name: Validate SemVer tag
+        shell: bash
+        run: |
+          if [[ ! "${GITHUB_REF_NAME}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Tag '${GITHUB_REF_NAME}' is not a valid SemVer tag." && exit 1
+          fi
+
+      - uses: actions/checkout@<SHA> # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@<SHA> # v5.3.0
+
+      - run: dotnet restore --locked-mode
+      - run: dotnet pack src/{{NAME}}/{{NAME}}.csproj --configuration Release --no-restore --output artifacts/packages
+
+      # Exchange the workflow OIDC token for a short-lived NuGet API key.
+      # Requires a trusted-publishing policy registered on nuget.org (see the
+      # remote setup checklist the scaffold script prints).
+      - name: Authenticate to NuGet
+        id: nuget-login
+        uses: NuGet/login@<SHA> # v1.2.0
+        with:
+          user: {{OWNER}}
+
+      - run: >
+          dotnet nuget push artifacts/packages/*.nupkg
+          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
