@@ -1,0 +1,32 @@
+# Agent guidance for {{NAME_TITLE}}
+
+<!--
+Single source of truth for AI agent instructions. After editing this file, run
+tools/Sync-AgentInstructions.ps1 to regenerate the mirror
+.github/copilot-instructions.md; do not edit the mirror directly. CI
+(agent-files.yml) verifies the two stay in sync.
+-->
+
+## Project overview
+
+{{DESCRIPTION}}
+
+**Archetype:** {{ARCHETYPE}} | **Target frameworks:** {{FRAMEWORKS_DISPLAY}}
+
+## Repository layout
+
+| Directory | Purpose |
+| --------- | ------- |
+| `src/{{NAME}}/` | Main project |
+| `tests/{{NAME}}.tests/` | Tests |
+
+## Build and test
+
+```shell
+dotnet build
+dotnet test -c Release
+```
+
+## Conventions
+
+*TODO: document coding style, naming, and design conventions.*

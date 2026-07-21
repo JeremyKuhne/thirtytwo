@@ -1,0 +1,17 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <!--
+    Central Package Management pins one version per package for every project.
+    Dependabot (.github/dependabot.yml) proposes updates; review and merge them
+    deliberately.
+  -->
+  <ItemGroup>
+{{PACKAGE_VERSIONS}}
+  </ItemGroup>
+
+</Project>
