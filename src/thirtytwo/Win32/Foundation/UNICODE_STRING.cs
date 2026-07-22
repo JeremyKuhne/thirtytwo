@@ -6,7 +6,7 @@ namespace Windows.Win32.Foundation;
 public unsafe partial struct UNICODE_STRING
 {
     public readonly int LengthInChars => Length / sizeof(char);
-    public readonly int MaximumLengthInChars => Length / sizeof(char);
+    public readonly int MaximumLengthInChars => MaximumLength / sizeof(char);
 
     [UnscopedRef]
     public readonly ReadOnlySpan<char> CurrentValue => new(Buffer, LengthInChars);

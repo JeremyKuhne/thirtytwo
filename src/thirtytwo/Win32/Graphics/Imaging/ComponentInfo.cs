@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Windows.Support;
+
 namespace Windows.Win32.Graphics.Imaging;
 
 public unsafe class ComponentInfo : DirectDrawBase<IWICComponentInfo>
@@ -26,9 +28,19 @@ public unsafe class ComponentInfo : DirectDrawBase<IWICComponentInfo>
         {
             uint length;
             Pointer->GetFriendlyName(0, null, &length).ThrowOnFailure();
-            char* name = stackalloc char[(int)length];
-            Pointer->GetFriendlyName(length, name, &length).ThrowOnFailure();
-            return new string(name);
+            using BufferScope<char> name = new(stackalloc char[256]);
+            name.EnsureCapacity(checked((int)length));
+            fixed (char* namePointer = name)
+            {
+                Pointer->GetFriendlyName((uint)name.Length, namePointer, &length).ThrowOnFailure();
+                int characterCount = checked((int)length);
+                if (characterCount == 0 || name[characterCount - 1] != '\0')
+                {
+                    throw new InvalidDataException("The WIC component returned an invalid friendly name.");
+                }
+
+                return name[..(characterCount - 1)].ToString();
+            }
         }
     }
 

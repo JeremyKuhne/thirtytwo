@@ -6,6 +6,11 @@ namespace Windows.Win32.System.Registry;
 [TestClass]
 public class RegistryTests
 {
+    private delegate object ReadValueDelegate(ReadOnlySpan<byte> buffer, REG_VALUE_TYPE valueType);
+
+    private static readonly ReadValueDelegate s_readValue =
+        typeof(Registry).TestAccessor.CreateDelegate<ReadValueDelegate>("ReadValue");
+
     [TestMethod]
     public void QueryKeyName_NameExceedsInitialBuffer_ReturnsFullName()
     {
@@ -162,5 +167,29 @@ public class RegistryTests
             @"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
         object? productName = Registry.QueryValue(key, "ProductName");
         productName.Should().BeOfType<string>().Which.Should().StartWith("Windows");
+    }
+
+    [TestMethod]
+    public void ReadValue_ZeroBytesStringData_ReturnsEmptyString()
+    {
+        s_readValue([], REG_VALUE_TYPE.REG_SZ).Should().Be(string.Empty);
+    }
+
+    [TestMethod]
+    public void ReadValue_NullOnlyStringData_ReturnsEmptyString()
+    {
+        s_readValue(new byte[sizeof(char)], REG_VALUE_TYPE.REG_SZ).Should().Be(string.Empty);
+    }
+
+    [TestMethod]
+    public void ReadValue_UnterminatedStringData_ReturnsCompleteString()
+    {
+        s_readValue([(byte)'A', 0], REG_VALUE_TYPE.REG_SZ).Should().Be("A");
+    }
+
+    [TestMethod]
+    public void ReadValue_TerminatedStringData_StripsTerminator()
+    {
+        s_readValue([(byte)'A', 0, 0, 0], REG_VALUE_TYPE.REG_SZ).Should().Be("A");
     }
 }
