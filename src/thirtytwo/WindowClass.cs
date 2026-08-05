@@ -68,7 +68,7 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
     /// <exception cref="ArgumentException">
     ///  <paramref name="menuName"/> and <paramref name="menuId"/> were both specified.
     /// </exception>
-    public unsafe WindowClass(
+    public WindowClass(
         string? className = default,
         HMODULE moduleInstance = default,
         ClassStyle classStyle = ClassStyle.HorizontalRedraw | ClassStyle.VerticalRedraw,

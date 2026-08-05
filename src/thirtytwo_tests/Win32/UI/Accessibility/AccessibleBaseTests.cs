@@ -64,7 +64,7 @@ public unsafe class AccessibleBaseTests
 
         public int ChildRequested { get; private set; } = -1;
 
-        protected override unsafe IDispatch* GetChild(int childId)
+        protected override IDispatch* GetChild(int childId)
         {
             ChildRequested = childId;
             return null;

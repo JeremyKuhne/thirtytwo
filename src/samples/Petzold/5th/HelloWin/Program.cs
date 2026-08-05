@@ -8,7 +8,6 @@ using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.Media.Audio;
 using System.Runtime.InteropServices;
 using Windows;
-using System.Drawing;
 
 namespace HelloWin;
 
@@ -17,7 +16,7 @@ namespace HelloWin;
 ///  Original (c) Charles Petzold, 1998
 ///  Figure 3-1, Pages 44-46.
 /// </summary>
-internal unsafe static class Program
+internal unsafe static partial class Program
 {
     // Windows metadata doesn't currently define this as it is a macro.
     const uint SND_ALIAS_SYSTEMHAND = 'S' | (((uint)'H') << 8);
@@ -118,36 +117,5 @@ internal unsafe static class Program
         }
 
         return PInvoke.DefWindowProc(window, message, wParam, lParam);
-    }
-
-    private class HelloWindow : MainWindow
-    {
-        public HelloWindow(string title) : base(title: title, backgroundColor: Color.White)
-        {
-        }
-
-        protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
-        {
-            switch (message)
-            {
-                case MessageType.Create:
-                    PInvoke.PlaySound(
-                        (char*)SND_ALIAS_SYSTEMHAND,
-                        HMODULE.Null,
-                        SND_FLAGS.SND_ASYNC | SND_FLAGS.SND_NODEFAULT | SND_FLAGS.SND_ALIAS_ID);
-                    return (LRESULT)0;
-                case MessageType.Paint:
-                    using (DeviceContext dc = window.BeginPaint())
-                    {
-                        dc.DrawText(
-                            "Hello, Windows 98!",
-                            window.GetClientRectangle(),
-                            DrawTextFormat.SingleLine | DrawTextFormat.Center | DrawTextFormat.VerticallyCenter);
-                    }
-                    return (LRESULT)0;
-            }
-
-            return base.WindowProcedure(window, message, wParam, lParam);
-        }
     }
 }

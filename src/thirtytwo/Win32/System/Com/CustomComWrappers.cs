@@ -24,7 +24,7 @@ internal sealed unsafe partial class CustomComWrappers : ComWrappers
         return result;
     }
 
-    protected override unsafe ComInterfaceEntry* ComputeVtables(object obj, CreateComInterfaceFlags flags, out int count)
+    protected override ComInterfaceEntry* ComputeVtables(object obj, CreateComInterfaceFlags flags, out int count)
     {
         if (obj is not IManagedWrapper wrapper)
         {

@@ -7,7 +7,7 @@ namespace Windows.Win32.Graphics.Direct2D;
 
 public unsafe class Image : Resource, IPointer<ID2D1Image>
 {
-    public unsafe new ID2D1Image* Pointer => (ID2D1Image*)base.Pointer;
+    public new ID2D1Image* Pointer => (ID2D1Image*)base.Pointer;
 
     public Image(ID2D1Image* image) : base((ID2D1Resource*)image)
     {

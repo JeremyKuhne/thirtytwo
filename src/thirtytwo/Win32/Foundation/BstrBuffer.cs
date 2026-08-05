@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.CompilerServices;
-using Windows.Support;
 
 namespace Windows.Win32.Foundation;
 
@@ -17,7 +16,7 @@ namespace Windows.Win32.Foundation;
 ///  </para>
 /// </remarks>
 [NonCopyable]
-public unsafe ref struct BstrBuffer
+public unsafe ref partial struct BstrBuffer
 {
     private const int StackSpace = 16;
 
@@ -49,11 +48,5 @@ public unsafe ref struct BstrBuffer
     {
         Clear();
         _bufferScope.Dispose();
-    }
-
-    [InlineArray(StackSpace)]
-    private struct StackBuffer
-    {
-        internal BSTR _element0;
     }
 }

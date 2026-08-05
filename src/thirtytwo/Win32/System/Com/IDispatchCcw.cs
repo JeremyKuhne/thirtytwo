@@ -7,7 +7,7 @@ using Windows.Win32.System.Variant;
 
 namespace Windows.Win32.System.Com;
 
-public unsafe struct IDispatchCcw : IComIID, IVTable<IDispatchCcw, IDispatchCcw.Vtbl>
+public unsafe partial struct IDispatchCcw : IComIID, IVTable<IDispatchCcw, IDispatchCcw.Vtbl>
 {
     private static readonly Guid s_iid = IDispatch.IID_Guid;
 
@@ -50,50 +50,4 @@ public unsafe struct IDispatchCcw : IComIID, IVTable<IDispatchCcw, IDispatchCcw.
             @this,
             o => o.Invoke(dispIdMember, riid, lcid, dwFlags, pDispParams, pVarResult, pExcepInfo, pArgErr));
 
-    [ComImport]
-    [Guid("00020400-0000-0000-C000-000000000046")]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface Interface
-    {
-        [PreserveSig]
-        HRESULT GetTypeInfoCount(uint* pctinfo);
-
-        [PreserveSig]
-        HRESULT GetTypeInfo(uint iTInfo, uint lcid, ITypeInfo** ppTInfo);
-
-        [PreserveSig]
-        HRESULT GetIDsOfNames(Guid* riid, PWSTR* rgszNames, uint cNames, uint lcid, int* rgDispId);
-
-        [PreserveSig]
-        HRESULT Invoke(
-            int dispIdMember,
-            Guid* riid,
-            uint lcid,
-            DISPATCH_FLAGS wFlags,
-            DISPPARAMS* pDispParams,
-            VARIANT* pVarResult,
-            EXCEPINFO* pExcepInfo,
-            uint* pArgErr);
-    }
-
-    public struct Vtbl
-    {
-        internal delegate* unmanaged[Stdcall]<IUnknown*, Guid*, void**, HRESULT> QueryInterface_1;
-        internal delegate* unmanaged[Stdcall]<IUnknown*, uint> AddRef_2;
-        internal delegate* unmanaged[Stdcall]<IUnknown*, uint> Release_3;
-        internal delegate* unmanaged[Stdcall]<IDispatch*, uint*, HRESULT> GetTypeInfoCount_4;
-        internal delegate* unmanaged[Stdcall]<IDispatch*, uint, uint, ITypeInfo**, HRESULT> GetTypeInfo_5;
-        internal delegate* unmanaged[Stdcall]<IDispatch*, Guid*, PWSTR*, uint, uint, int*, HRESULT> GetIDsOfNames_6;
-        internal delegate* unmanaged[Stdcall]<
-            IDispatch*,
-            int,
-            Guid*,
-            uint,
-            DISPATCH_FLAGS,
-            DISPPARAMS*,
-            VARIANT*,
-            EXCEPINFO*,
-            uint*,
-            HRESULT> Invoke_7;
-    }
 }

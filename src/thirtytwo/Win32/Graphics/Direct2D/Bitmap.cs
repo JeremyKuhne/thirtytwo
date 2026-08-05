@@ -7,7 +7,7 @@ namespace Windows.Win32.Graphics.Direct2D;
 
 public unsafe class Bitmap : Image, IPointer<ID2D1Bitmap>
 {
-    public unsafe new ID2D1Bitmap* Pointer => (ID2D1Bitmap*)base.Pointer;
+    public new ID2D1Bitmap* Pointer => (ID2D1Bitmap*)base.Pointer;
 
     public Bitmap(ID2D1Bitmap* bitmap) : base((ID2D1Image*)bitmap)
     {

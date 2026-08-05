@@ -9,7 +9,7 @@ namespace Windows.Win32.Graphics.DirectWrite;
 ///  Specifies a range of text positions where format is applied.
 ///  [<see cref="DWRITE_TEXT_RANGE"/>]
 /// </summary>
-public unsafe readonly struct TextRange
+public readonly struct TextRange
 {
     /// <summary>
     ///  The start text position of the range.

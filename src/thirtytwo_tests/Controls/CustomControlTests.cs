@@ -21,7 +21,7 @@ public unsafe class CustomControlTests
     }
 
     [TestMethod]
-    public unsafe void SetTextMessage_UpdatesText()
+    public void SetTextMessage_UpdatesText()
     {
         using Window window = new(Window.DefaultBounds);
         using CustomControl control = new(Window.DefaultBounds, parentWindow: window);
@@ -37,7 +37,7 @@ public unsafe class CustomControlTests
     }
 
     [TestMethod]
-    public unsafe void GetTextMessage_ReturnsText()
+    public void GetTextMessage_ReturnsText()
     {
         using Window window = new(Window.DefaultBounds);
         using CustomControl control = new(Window.DefaultBounds, text: "Hello", parentWindow: window);
@@ -55,7 +55,7 @@ public unsafe class CustomControlTests
     }
 
     [TestMethod]
-    public unsafe void GetTextMessage_BufferSmallerThanTextTruncates()
+    public void GetTextMessage_BufferSmallerThanTextTruncates()
     {
         using Window window = new(Window.DefaultBounds);
         using CustomControl control = new(Window.DefaultBounds, text: "HelloWorld", parentWindow: window);

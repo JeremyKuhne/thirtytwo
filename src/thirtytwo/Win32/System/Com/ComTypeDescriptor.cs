@@ -7,7 +7,7 @@ using Windows.Win32.System.Variant;
 
 namespace Windows.Win32.System.Com;
 
-internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
+internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
 {
     private string? _className;
     private readonly IComPointer _comObject;
@@ -263,8 +263,6 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
         }
     }
 
-    private delegate void EnumerateFunctionDescriptionDelegate(ITypeInfo* typeInfo, FUNCDESC* function, ReadOnlySpan<BSTR> names);
-
     private void EnumerateFunctionDescriptions(ITypeInfo* typeInfo, EnumerateFunctionDescriptionDelegate func)
     {
         if (typeInfo is null)
@@ -384,11 +382,4 @@ internal unsafe sealed class ComTypeDescriptor : ICustomTypeDescriptor
         }
     }
 
-    private struct PropertyInfo
-    {
-        public string? Name { get; set; }
-        public int DispatchId { get; set; }
-        public bool HasSetter { get; set; }
-        public VARENUM Type { get; set; }
-    }
 }

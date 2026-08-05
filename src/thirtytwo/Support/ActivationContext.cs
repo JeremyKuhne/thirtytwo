@@ -9,13 +9,13 @@ internal unsafe class ActivationContext
 {
     private readonly HANDLE _activationContext;
 
-    public unsafe nuint Activate()
+    public nuint Activate()
     {
         nuint cookie;
         return PInvoke.ActivateActCtx(_activationContext, &cookie) ? cookie : 0;
     }
 
-    public static unsafe void Deactivate(nuint cookie)
+    public static void Deactivate(nuint cookie)
     {
         PInvoke.DeactivateActCtx(0, cookie);
     }

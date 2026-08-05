@@ -3,7 +3,7 @@
 
 namespace Windows.Win32.UI.WindowsAndMessaging;
 
-public unsafe partial struct HCURSOR
+public partial struct HCURSOR
 {
     public readonly struct SetScope : IDisposable
     {

@@ -3,7 +3,7 @@
 
 namespace Windows.Win32.Graphics.Gdi;
 
-public unsafe partial struct HGDIOBJ
+public partial struct HGDIOBJ
 {
     public OBJ_TYPE GetObjectType() => (OBJ_TYPE)PInvoke.GetObjectType(this);
 

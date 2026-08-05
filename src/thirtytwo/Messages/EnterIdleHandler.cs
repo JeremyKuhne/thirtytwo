@@ -3,7 +3,7 @@
 
 namespace Windows.Messages;
 
-public class EnterIdleHandler
+public partial class EnterIdleHandler
 {
     public event EnterIdleEvent? IdleEntered;
 
@@ -12,7 +12,7 @@ public class EnterIdleHandler
         window.MessageHandler += Window_MessageHandler;
     }
 
-    private unsafe LRESULT? Window_MessageHandler(
+    private LRESULT? Window_MessageHandler(
         object sender,
         HWND window,
         MessageType message,
@@ -28,13 +28,6 @@ public class EnterIdleHandler
 
         return null;
     }
-
-    /// <summary>
-    ///  Delegate for processing idle events.
-    /// </summary>
-    /// <param name="isDialog"><see langword="true"/> if dialog is displayed, otherwise a menu is displayed.</param>
-    /// <param name="handle">Dialog handle if is <see langword="true"/>, or parent window handle.</param>
-    public delegate void EnterIdleEvent(bool isDialog, HWND handle);
 
     public static void Attach(Window window, EnterIdleEvent eventHandler)
     {

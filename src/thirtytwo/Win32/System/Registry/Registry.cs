@@ -4,7 +4,6 @@
 using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using Windows.Support;
-using Windows.Wdk;
 using Windows.Wdk.System.Registry;
 using Windows.Wdk.System.SystemServices;
 
@@ -148,7 +147,7 @@ public static unsafe partial class Registry
     /// <summary>
     ///  Gets all value names for the given registry key.
     /// </summary>
-    public static unsafe IEnumerable<string> GetValueNames(HKEY key)
+    public static IEnumerable<string> GetValueNames(HKEY key)
     {
         uint valueCount;
         uint maxValueNameLength;
@@ -202,7 +201,7 @@ public static unsafe partial class Registry
         }
     }
 
-    private static unsafe object ReadValue(ReadOnlySpan<byte> buffer, REG_VALUE_TYPE valueType)
+    private static object ReadValue(ReadOnlySpan<byte> buffer, REG_VALUE_TYPE valueType)
     {
         switch (valueType)
         {

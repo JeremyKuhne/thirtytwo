@@ -1,0 +1,4 @@
+# Test fixtures intentionally colocate their helper types with the tests that use them.
+
+[*.cs]
+dotnet_diagnostic.TOUKI0020.severity = none

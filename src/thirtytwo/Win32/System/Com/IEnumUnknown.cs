@@ -3,6 +3,6 @@
 
 namespace Windows.Win32.System.Com;
 
-public unsafe partial struct IEnumUnknown : IVTable<IEnumUnknown, IEnumUnknown.Vtbl>
+public partial struct IEnumUnknown : IVTable<IEnumUnknown, IEnumUnknown.Vtbl>
 {
 }

@@ -15,12 +15,12 @@ public static unsafe class GraphicsExtensions
         GC.KeepAlive(graphics);
     }
 
-    public static unsafe void DrawLines<TGraphics, TPen>(this TGraphics graphics, TPen pen, ReadOnlySpan<Drawing.Point> points)
+    public static void DrawLines<TGraphics, TPen>(this TGraphics graphics, TPen pen, ReadOnlySpan<Drawing.Point> points)
         where TGraphics : IPointer<GpGraphics>
         where TPen : IPointer<GpPen> =>
         DrawLines(graphics, pen, MemoryMarshal.Cast<Drawing.Point, Point>(points));
 
-    public static unsafe void DrawLines<TGraphics, TPen>(this TGraphics graphics, TPen pen, ReadOnlySpan<Point> points)
+    public static void DrawLines<TGraphics, TPen>(this TGraphics graphics, TPen pen, ReadOnlySpan<Point> points)
         where TGraphics : IPointer<GpGraphics>
         where TPen : IPointer<GpPen>
     {
@@ -33,12 +33,12 @@ public static unsafe class GraphicsExtensions
         GC.KeepAlive(pen);
     }
 
-    public static unsafe void DrawLines<TGraphics, TPen>(this TGraphics graphics, TPen pen, ReadOnlySpan<Drawing.PointF> points)
+    public static void DrawLines<TGraphics, TPen>(this TGraphics graphics, TPen pen, ReadOnlySpan<Drawing.PointF> points)
         where TGraphics : IPointer<GpGraphics>
         where TPen : IPointer<GpPen> =>
         DrawLines(graphics, pen, MemoryMarshal.Cast<Drawing.PointF, PointF>(points));
 
-    public static unsafe void DrawLines<TGraphics, TPen>(this TGraphics graphics, TPen pen, ReadOnlySpan<PointF> points)
+    public static void DrawLines<TGraphics, TPen>(this TGraphics graphics, TPen pen, ReadOnlySpan<PointF> points)
         where TGraphics : IPointer<GpGraphics>
         where TPen : IPointer<GpPen>
     {

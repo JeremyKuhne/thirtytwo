@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 namespace Windows.Win32.System.Com;
 
 /// <inheritdoc cref="Interface"/>
-public unsafe struct IComCallableWrapper : IComIID, IVTable<IComCallableWrapper, IComCallableWrapper.Vtbl>
+public unsafe partial struct IComCallableWrapper : IComIID, IVTable<IComCallableWrapper, IComCallableWrapper.Vtbl>
 {
     private readonly void** _vtbl;
 
@@ -29,7 +29,7 @@ public unsafe struct IComCallableWrapper : IComIID, IVTable<IComCallableWrapper,
         }
     }
 
-    public unsafe HRESULT QueryInterface(in Guid riid, out void* ppvObject)
+    public HRESULT QueryInterface(in Guid riid, out void* ppvObject)
     {
         fixed (void** ppvObjectLocal = &ppvObject)
         fixed (Guid* riidLocal = &riid)
@@ -38,7 +38,7 @@ public unsafe struct IComCallableWrapper : IComIID, IVTable<IComCallableWrapper,
         }
     }
 
-    public unsafe HRESULT QueryInterface(Guid* riid, void** ppvObject)
+    public HRESULT QueryInterface(Guid* riid, void** ppvObject)
     {
         fixed (IComCallableWrapper* pThis = &this)
             return ((delegate* unmanaged[Stdcall]<IComCallableWrapper*, Guid*, void**, HRESULT>)_vtbl[0])(pThis, riid, ppvObject);
@@ -54,23 +54,6 @@ public unsafe struct IComCallableWrapper : IComIID, IVTable<IComCallableWrapper,
     {
         fixed (IComCallableWrapper* pThis = &this)
             return ((delegate* unmanaged[Stdcall]<IComCallableWrapper*, uint>)_vtbl[2])(pThis);
-    }
-
-    public struct Vtbl
-    {
-        internal delegate* unmanaged[Stdcall]<IEnumUnknown*, Guid*, void**, HRESULT> QueryInterface_1;
-        internal delegate* unmanaged[Stdcall]<IEnumUnknown*, uint> AddRef_2;
-        internal delegate* unmanaged[Stdcall]<IEnumUnknown*, uint> Release_3;
-    }
-
-    /// <summary>
-    ///  Used to flag that the COM object is a <see cref="ComWrappers"/> generated object.
-    /// </summary>
-    [ComImport,
-        InterfaceType(ComInterfaceType.InterfaceIsIUnknown),
-        Guid("73B17DAF-0480-4702-AF7C-AF3BD4715D71")]
-    public interface Interface
-    {
     }
 
     static void IVTable<IComCallableWrapper, Vtbl>.PopulateVTable(Vtbl* vtable) { }

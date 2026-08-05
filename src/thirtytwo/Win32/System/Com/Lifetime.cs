@@ -25,10 +25,10 @@ public unsafe struct Lifetime<TVTable, TObject> where TVTable : unmanaged
     public IUnknown* Handle;
     public uint RefCount;
 
-    public static unsafe uint AddRef(IUnknown* @this)
+    public static uint AddRef(IUnknown* @this)
         => Interlocked.Increment(ref ((Lifetime<TVTable, TObject>*)@this)->RefCount);
 
-    public static unsafe uint Release(IUnknown* @this)
+    public static uint Release(IUnknown* @this)
     {
         var lifetime = (Lifetime<TVTable, TObject>*)@this;
         Debug.Assert(lifetime->RefCount > 0);
@@ -56,7 +56,7 @@ public unsafe struct Lifetime<TVTable, TObject> where TVTable : unmanaged
     ///   include the "this" pointer as the first argument.
     ///  </para>
     /// </remarks>
-    public static unsafe Lifetime<TVTable, TObject>* Allocate(TObject @object, TVTable* vtable)
+    public static Lifetime<TVTable, TObject>* Allocate(TObject @object, TVTable* vtable)
     {
         GCHandle handle = GCHandle.Alloc(@object);
 

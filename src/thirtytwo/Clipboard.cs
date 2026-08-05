@@ -22,7 +22,7 @@ public unsafe class Clipboard
     /// <summary>
     ///  Gets the formats that are currently available on the clipboard.
     /// </summary>
-    public static unsafe uint[] GetAvailableClipboardFormats()
+    public static uint[] GetAvailableClipboardFormats()
     {
         uint count = (uint)PInvoke.CountClipboardFormats();
         if (count == 0)
@@ -115,7 +115,7 @@ public unsafe class Clipboard
     }
 
     /// <inheritdoc cref="SetClipboardData{T}(ReadOnlySpan{T}, string)"/>
-    public static unsafe void SetClipboardData<T>(ReadOnlySpan<T> data, uint format)
+    public static void SetClipboardData<T>(ReadOnlySpan<T> data, uint format)
         where T : unmanaged
     {
         int bufferLength = checked(data.Length + 1);

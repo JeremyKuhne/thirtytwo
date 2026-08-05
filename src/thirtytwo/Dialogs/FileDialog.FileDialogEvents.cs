@@ -13,7 +13,7 @@ public unsafe partial class FileDialog
 
         public FileDialogEvents(FileDialog dialog) => _dialog = dialog;
 
-        public unsafe HRESULT OnFileOk(IFileDialog* pfd)
+        public HRESULT OnFileOk(IFileDialog* pfd)
         {
             if (_dialog.OkClicked is { } clicked)
             {
@@ -25,16 +25,16 @@ public unsafe partial class FileDialog
             return HRESULT.S_OK;
         }
 
-        public unsafe HRESULT OnSelectionChange(IFileDialog* pfd)
+        public HRESULT OnSelectionChange(IFileDialog* pfd)
         {
             _dialog.SelectionChanged?.Invoke(_dialog, EventArgs.Empty);
             return HRESULT.S_OK;
         }
 
-        public unsafe HRESULT OnFolderChanging(IFileDialog* pfd, IShellItem* psiFolder) => HRESULT.S_OK;
-        public unsafe HRESULT OnFolderChange(IFileDialog* pfd) => HRESULT.S_OK;
-        public unsafe HRESULT OnShareViolation(IFileDialog* pfd, IShellItem* psi, FDE_SHAREVIOLATION_RESPONSE* pResponse) => HRESULT.S_OK;
-        public unsafe HRESULT OnTypeChange(IFileDialog* pfd) => throw new NotImplementedException();
-        public unsafe HRESULT OnOverwrite(IFileDialog* pfd, IShellItem* psi, FDE_OVERWRITE_RESPONSE* pResponse) => HRESULT.S_OK;
+        public HRESULT OnFolderChanging(IFileDialog* pfd, IShellItem* psiFolder) => HRESULT.S_OK;
+        public HRESULT OnFolderChange(IFileDialog* pfd) => HRESULT.S_OK;
+        public HRESULT OnShareViolation(IFileDialog* pfd, IShellItem* psi, FDE_SHAREVIOLATION_RESPONSE* pResponse) => HRESULT.S_OK;
+        public HRESULT OnTypeChange(IFileDialog* pfd) => throw new NotImplementedException();
+        public HRESULT OnOverwrite(IFileDialog* pfd, IShellItem* psi, FDE_OVERWRITE_RESPONSE* pResponse) => HRESULT.S_OK;
     }
 }

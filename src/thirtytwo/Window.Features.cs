@@ -3,7 +3,7 @@
 
 namespace Windows;
 
-public unsafe partial class Window
+public partial class Window
 {
     [Flags]
     public enum Features

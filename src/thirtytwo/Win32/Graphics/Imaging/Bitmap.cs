@@ -7,7 +7,7 @@ namespace Windows.Win32.Graphics.Imaging;
 
 public unsafe class Bitmap : BitmapSource, IPointer<IWICBitmap>
 {
-    public unsafe new IWICBitmap* Pointer => (IWICBitmap*)base.Pointer;
+    public new IWICBitmap* Pointer => (IWICBitmap*)base.Pointer;
 
     public Bitmap(IWICBitmap* bitmap) : base((IWICBitmapSource*)bitmap)
     {
