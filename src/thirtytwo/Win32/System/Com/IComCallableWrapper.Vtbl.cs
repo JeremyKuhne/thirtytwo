@@ -7,8 +7,8 @@ public unsafe partial struct IComCallableWrapper
 {
     public struct Vtbl
     {
-        internal delegate* unmanaged[Stdcall]<IEnumUnknown*, Guid*, void**, HRESULT> QueryInterface_1;
-        internal delegate* unmanaged[Stdcall]<IEnumUnknown*, uint> AddRef_2;
-        internal delegate* unmanaged[Stdcall]<IEnumUnknown*, uint> Release_3;
+        internal delegate* unmanaged[Stdcall]<IComCallableWrapper*, Guid*, void**, HRESULT> QueryInterface_1;
+        internal delegate* unmanaged[Stdcall]<IComCallableWrapper*, uint> AddRef_2;
+        internal delegate* unmanaged[Stdcall]<IComCallableWrapper*, uint> Release_3;
     }
 }
