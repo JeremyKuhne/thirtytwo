@@ -118,16 +118,57 @@ public unsafe class Clipboard
     public static unsafe void SetClipboardData<T>(ReadOnlySpan<T> data, uint format)
         where T : unmanaged
     {
+        int bufferLength = checked(data.Length + 1);
         HGLOBAL global = PInvoke.GlobalAlloc(
             GLOBAL_ALLOC_FLAGS.GMEM_MOVEABLE,
-            (nuint)((data.Length + 1) * sizeof(T)));
+            checked((nuint)bufferLength * (nuint)sizeof(T)));
 
-        Span<T> buffer = new(PInvoke.GlobalLock(global), data.Length + 1);
-        data.CopyTo(buffer);
-        buffer[^1] = default;
+        if (global.IsNull)
+        {
+            Error.GetLastError().ThrowThirtyTwoException();
+        }
 
-        PInvoke.GlobalUnlock(global);
-        PInvoke.SetClipboardData(format, (HANDLE)(nint)global);
+        bool ownershipTransferred = false;
+        try
+        {
+            void* memory = PInvoke.GlobalLock(global);
+            if (memory is null)
+            {
+                Error.GetLastError().ThrowThirtyTwoException();
+            }
+
+            try
+            {
+                Span<T> buffer = new(memory, bufferLength);
+                data.CopyTo(buffer);
+                buffer[^1] = default;
+            }
+            catch
+            {
+                PInvoke.GlobalUnlock(global);
+                throw;
+            }
+
+            if (!PInvoke.GlobalUnlock(global))
+            {
+                WIN32_ERROR.ERROR_SUCCESS.ThrowIfLastErrorNot();
+            }
+
+            HANDLE result = PInvoke.SetClipboardData(format, (HANDLE)(nint)global);
+            if (result.IsNull)
+            {
+                Error.GetLastError().ThrowThirtyTwoException();
+            }
+
+            ownershipTransferred = true;
+        }
+        finally
+        {
+            if (!ownershipTransferred)
+            {
+                PInvoke.GlobalFree(global);
+            }
+        }
     }
 
     /// <summary>

@@ -58,12 +58,19 @@ public unsafe struct Lifetime<TVTable, TObject> where TVTable : unmanaged
     /// </remarks>
     public static unsafe Lifetime<TVTable, TObject>* Allocate(TObject @object, TVTable* vtable)
     {
+        GCHandle handle = GCHandle.Alloc(@object);
+
         // Manually allocate a native instance of this struct.
         var wrapper = (Lifetime<TVTable, TObject>*)PInvoke.CoTaskMemAlloc((nuint)sizeof(Lifetime<TVTable, TObject>));
+        if (wrapper is null)
+        {
+            handle.Free();
+            throw new OutOfMemoryException();
+        }
 
-        // Assign a pointer to the vtable, allocate a GCHandle for the related object, and set the initial ref count.
+        // Assign a pointer to the vtable, store the GCHandle for the related object, and set the initial ref count.
         wrapper->VTable = vtable;
-        wrapper->Handle = (IUnknown*)GCHandle.ToIntPtr(GCHandle.Alloc(@object));
+        wrapper->Handle = (IUnknown*)GCHandle.ToIntPtr(handle);
         wrapper->RefCount = 1;
 
         return wrapper;

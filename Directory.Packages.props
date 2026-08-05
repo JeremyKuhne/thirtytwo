@@ -16,5 +16,6 @@
     <PackageVersion Include="MSTest" Version="4.2.3" />
     <PackageVersion Include="KlutzyNinja.Madowaku" Version="0.4.0-alpha.1" />
     <PackageVersion Include="KlutzyNinja.Touki" Version="0.4.0-alpha.1" />
+    <PackageVersion Include="KlutzyNinja.Touki.TestSupport" Version="0.4.0-alpha.1" />
   </ItemGroup>
 </Project>

@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="KlutzyNinja.Touki.TestSupport" PrivateAssets="all" />
     <PackageReference Include="MSTest" />
     <PackageReference Include="coverlet.collector">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

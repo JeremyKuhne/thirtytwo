@@ -209,8 +209,13 @@ public static unsafe partial class Registry
             case REG_VALUE_TYPE.REG_SZ:
             case REG_VALUE_TYPE.REG_EXPAND_SZ:
             case REG_VALUE_TYPE.REG_LINK:
-                // Size includes the null
-                return MemoryMarshal.Cast<byte, char>(buffer)[..^1].ToString();
+                ReadOnlySpan<char> stringCharacters = MemoryMarshal.Cast<byte, char>(buffer);
+                if (!stringCharacters.IsEmpty && stringCharacters[^1] == '\0')
+                {
+                    stringCharacters = stringCharacters[..^1];
+                }
+
+                return stringCharacters.ToString();
             case REG_VALUE_TYPE.REG_MULTI_SZ:
                 ReadOnlySpan<char> characters = MemoryMarshal.Cast<byte, char>(buffer);
                 List<string> values = [];
