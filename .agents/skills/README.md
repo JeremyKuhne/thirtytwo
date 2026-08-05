@@ -2,7 +2,7 @@
 
 This repository carries 13 portable skill cores from the
 [JeremyKuhne/agent-skills](https://github.com/JeremyKuhne/agent-skills)
-commons, pinned to the immutable `v0.11.0` release. The installed core files
+commons, pinned to the immutable `v0.14.0` release. The installed core files
 carry `metadata.github-*` provenance injected by `gh skill install` and must
 remain exact upstream mirrors. Repository-specific paths and conventions live
 in each sibling `overlay.md`.
@@ -20,9 +20,9 @@ in each sibling `overlay.md`.
 | [engineering-baseline](engineering-baseline/SKILL.md) | Audit repository engineering and supply-chain practices. | Assesses the existing Windows-only repository; it does not scaffold over it. |
 | [github-actions-cost-optimization](github-actions-cost-optimization/SKILL.md) | Analyze GitHub Actions cost without weakening required checks. | Preserves the Windows runner required by product and test behavior. |
 | [il-copy-inspection](il-copy-inspection/SKILL.md) | Inspect emitted IL for copies and boxing of structs and ref structs. | Focuses on handles, COM scopes, message views, and buffer scopes. |
-| [manage-skills](manage-skills/SKILL.md) | Find, add, update, and reconcile skills. | Owns the pinned-core plus local-overlay lifecycle for this catalog. |
+| [manage-skills](manage-skills/SKILL.md) | Find, build, review, update, retire, and reconcile skills. | Owns the pinned-core plus local-overlay lifecycle for this catalog. |
 | [pre-pr-self-review](pre-pr-self-review/SKILL.md) | Review the working diff before publishing. | Runs Debug and Release checks and invokes security review for unsafe changes. |
-| [scratch-buffer-strategy](scratch-buffer-strategy/SKILL.md) | Choose among stack, pooled, and heap scratch buffers. | Binds to `StackBufferScope16<T>`, `ValueBuffer<T>`, and the modern-only TFM. |
+| [scratch-buffer-strategy](scratch-buffer-strategy/SKILL.md) | Choose among stack, pooled, and heap scratch buffers. | Binds to `BstrBuffer`, `ValueBuffer<T>`, and the modern-only TFM. |
 | [security-review](security-review/SKILL.md) | Audit unsafe code, native boundaries, malformed input, and resource ownership. | Uses the mirrored product/test layout and Windows interop threat surface. |
 
 ## Selection boundary
@@ -84,9 +84,10 @@ overlay:
 gh skill install JeremyKuhne/agent-skills skills/<name> --pin vX.Y.Z --agent github-copilot --scope project --force
 ```
 
-Install `cswin32-interop` before `cswin32-com`, update every affected
-overlay's `core-pin`, and review the resulting diff. Never hand-edit a vendored
-core to resolve drift.
+Install hard dependencies before their consumers: `agent-files-review` before
+`manage-skills`, and `cswin32-interop` before `cswin32-com`. Update every
+affected overlay's `core-pin` and review the resulting diff. Never hand-edit a
+vendored core to resolve drift.
 
 ## Validation
 

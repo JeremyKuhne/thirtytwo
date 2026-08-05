@@ -52,8 +52,8 @@ outside. Specialized fast paths often bypass the affected code
 - Do buffers rent from `ArrayPool<T>.Shared` (good), allocate fresh
   per call (acceptable if bounded), or grow without limit (red flag)?
 
-**Tests:** a "large but legitimate" input completes within a
-`Stopwatch` bound (`Should().BeLessThan(TimeSpan.FromSeconds(2))`).
+**Tests:** a "large but legitimate" input completes within a `Stopwatch`
+bound (`Assert.IsTrue(stopwatch.Elapsed < TimeSpan.FromSeconds(2))`).
 Reach for BenchmarkDotNet's `MemoryDiagnoser` only to pin a specific
 allocation count.
 
@@ -73,17 +73,17 @@ allocation count.
 **Tests** (pin the safe property):
 
 ```csharp
-[Fact]
+[TestMethod]
 public void Method_PathologicalInput_TerminatesPromptly()
 {
-    /* construct adversarial pattern + input */
+    /* construct adversarial pattern, input, matcher, and expected result */
 
-    Stopwatch sw = Stopwatch.StartNew();
-    bool result = m.IsMatch(input);
-    sw.Stop();
+    Stopwatch stopwatch = Stopwatch.StartNew();
+    bool result = matcher.IsMatch(input);
+    stopwatch.Stop();
 
-    result.Should().Be(/* expected */);
-    sw.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(2));
+    Assert.AreEqual(expectedResult, result);
+    Assert.IsTrue(stopwatch.Elapsed < TimeSpan.FromSeconds(2));
 }
 ```
 

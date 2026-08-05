@@ -1,6 +1,6 @@
 ---
 core: create-pr
-core-pin: v0.11.0
+core-pin: v0.14.0
 ---
 
 # Create PR overlay

@@ -6,8 +6,8 @@ metadata:
     applicability: dotnet
     binding: optional-overlay
     github-path: skills/engineering-baseline
-    github-pinned: v0.11.0
-    github-ref: refs/tags/v0.11.0
+    github-pinned: v0.14.0
+    github-ref: refs/tags/v0.14.0
     github-repo: https://github.com/JeremyKuhne/agent-skills
     github-tree-sha: b0e52e484192142c2b3083ee181b4f7a5b61b0d6
     maturity: canary

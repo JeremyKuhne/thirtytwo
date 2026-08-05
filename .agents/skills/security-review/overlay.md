@@ -1,6 +1,6 @@
 ---
 core: security-review
-core-pin: v0.11.0
+core-pin: v0.14.0
 ---
 
 # Security review overlay

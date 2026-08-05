@@ -1,14 +1,14 @@
 ---
 core: scratch-buffer-strategy
-core-pin: v0.11.0
+core-pin: v0.14.0
 ---
 
 # Scratch buffer strategy overlay
 
 Repository-specific bindings for thirtytwo.
 
-- [StackBufferScope16<T>](../../../src/thirtytwo/Support/StackBufferScope16.cs)
-  provides 16 inline elements and falls back through `BufferScope<T>`.
+- [BstrBuffer](../../../src/thirtytwo/Win32/Foundation/BstrBuffer.cs) seeds a
+  `BufferScope<BSTR>` from inline storage and disposes each populated element.
 - [ValueBuffer<T>](../../../src/thirtytwo/Support/ValueBuffer.cs) grows from a
   caller-supplied span into an `ArrayPool<byte>` rental and is explicitly
   experimental.
