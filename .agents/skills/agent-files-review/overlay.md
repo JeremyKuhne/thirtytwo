@@ -1,6 +1,6 @@
 ---
 core: agent-files-review
-core-pin: v0.11.0
+core-pin: v0.14.0
 ---
 
 # Agent files review overlay

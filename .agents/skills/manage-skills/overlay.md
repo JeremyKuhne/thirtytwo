@@ -1,6 +1,6 @@
 ---
 core: manage-skills
-core-pin: v0.11.0
+core-pin: v0.14.0
 ---
 
 # Manage skills overlay
@@ -15,7 +15,7 @@ Repository-specific bindings for thirtytwo.
 - Put thirtytwo paths, commands, examples, and cross-skill links in
   `overlay.md`. The local [catalog](../README.md) and
   [format contract](../FORMAT.md) are also downstream-owned.
-- The current portfolio is reviewed against the immutable `v0.11.0` release.
+- The current portfolio is reviewed against the immutable `v0.14.0` release.
 
 ## Pulling a commons release
 
@@ -25,9 +25,10 @@ Use the exact source path and an immutable pin:
 gh skill install JeremyKuhne/agent-skills skills/<name> --pin vX.Y.Z --agent github-copilot --scope project --force
 ```
 
-Install `cswin32-interop` before its required consumer `cswin32-com`. Preserve
-the local overlay, update its `core-pin`, update the catalog when the portfolio
-changes, and review the normal diff.
+Install hard dependencies before their consumers: `agent-files-review` before
+`manage-skills`, and `cswin32-interop` before `cswin32-com`. Preserve the local
+overlay, update its `core-pin`, update the catalog when the portfolio changes,
+and review the normal diff.
 
 ## Validation
 
