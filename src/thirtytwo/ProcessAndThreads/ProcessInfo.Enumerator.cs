@@ -6,7 +6,7 @@ using Windows.Win32.System.WindowsProgramming;
 
 namespace Windows.ProcessAndThreads;
 
-public sealed unsafe partial class ProcessInfo
+public sealed partial class ProcessInfo
 {
     public ref struct Enumerator
     {

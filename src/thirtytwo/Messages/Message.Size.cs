@@ -5,37 +5,9 @@ namespace Windows;
 
 public static partial class Message
 {
-    public readonly ref struct Size(WPARAM wParam, LPARAM lParam)
+    public readonly ref partial struct Size(WPARAM wParam, LPARAM lParam)
     {
         public System.Drawing.Size NewSize { get; } = new System.Drawing.Size(lParam.LOWORD, lParam.HIWORD);
         public SizeType Type { get; } = (SizeType)(int)wParam;
-
-        public enum SizeType
-        {
-            /// <summary>
-            ///  [SIZE_RESTORED]
-            /// </summary>
-            Restored = 0,
-
-            /// <summary>
-            ///  [SIZE_MINIMIZED]
-            /// </summary>
-            Minimized = 1,
-
-            /// <summary>
-            ///  [SIZE_MAXIMIZED]
-            /// </summary>
-            Maximized = 2,
-
-            /// <summary>
-            ///  [SIZE_MAXSHOW]
-            /// </summary>
-            MaxShow = 3,
-
-            /// <summary>
-            ///  [SIZE_MAXHIDE]
-            /// </summary>
-            MaxHide = 4
-        }
     }
 }

@@ -70,18 +70,18 @@ public unsafe class ManagedWrapperTests
 
     private class OleContainerOne : IOleContainer.Interface, IManagedWrapper<IOleContainer>
     {
-        unsafe HRESULT IOleContainer.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut) => throw new NotImplementedException();
-        unsafe HRESULT IOleContainer.Interface.EnumObjects(uint grfFlags, IEnumUnknown** ppenum) => throw new NotImplementedException();
+        HRESULT IOleContainer.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut) => throw new NotImplementedException();
+        HRESULT IOleContainer.Interface.EnumObjects(uint grfFlags, IEnumUnknown** ppenum) => throw new NotImplementedException();
         HRESULT IOleContainer.Interface.LockContainer(BOOL fLock) => throw new NotImplementedException();
-        unsafe HRESULT IParseDisplayName.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut) => throw new NotImplementedException();
+        HRESULT IParseDisplayName.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut) => throw new NotImplementedException();
     }
 
     private class OleContainerTwo : IOleContainer.Interface, IManagedWrapper<IOleContainer>
     {
-        unsafe HRESULT IOleContainer.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut) => throw new NotImplementedException();
-        unsafe HRESULT IOleContainer.Interface.EnumObjects(uint grfFlags, IEnumUnknown** ppenum) => throw new NotImplementedException();
+        HRESULT IOleContainer.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut) => throw new NotImplementedException();
+        HRESULT IOleContainer.Interface.EnumObjects(uint grfFlags, IEnumUnknown** ppenum) => throw new NotImplementedException();
         HRESULT IOleContainer.Interface.LockContainer(BOOL fLock) => throw new NotImplementedException();
-        unsafe HRESULT IParseDisplayName.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut) => throw new NotImplementedException();
+        HRESULT IParseDisplayName.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut) => throw new NotImplementedException();
     }
 
     private class OleClientSite : IOleClientSite.Interface, IManagedWrapper<IOleClientSite>

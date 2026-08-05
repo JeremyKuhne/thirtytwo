@@ -3,7 +3,7 @@
 
 namespace Windows.Dialogs;
 
-public unsafe partial class FileDialog
+public partial class FileDialog
 {
     [Flags]
     public enum Options : uint

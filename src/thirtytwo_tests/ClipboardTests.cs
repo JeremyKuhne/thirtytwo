@@ -9,7 +9,7 @@ namespace Windows;
 
 [DoNotParallelize]
 [TestClass]
-public unsafe class ClipboardTests
+public class ClipboardTests
 {
     [TestMethod]
     [Retry(5, MillisecondsDelayBetweenRetries = 100, BackoffType = DelayBackoffType.Exponential)]

@@ -98,12 +98,12 @@ public unsafe class ComTests
 
     public static class UnknownCCW
     {
-        public static unsafe IUnknown* CreateInstance(IUnkownTest @object)
+        public static IUnknown* CreateInstance(IUnkownTest @object)
             => (IUnknown*)Lifetime<UnknownVtable, IUnkownTest>.Allocate(@object, CCWVTable);
 
         private static readonly UnknownVtable* CCWVTable = AllocateVTable();
 
-        private static unsafe UnknownVtable* AllocateVTable()
+        private static UnknownVtable* AllocateVTable()
         {
             // Allocate and create a static VTable for this type projection.
             var vtable = (UnknownVtable*)RuntimeHelpers.AllocateTypeAssociatedMemory(

@@ -8,7 +8,7 @@ public static partial class Message
     /// <summary>
     ///  Wrapper for the <see href="https://learn.microsoft.com/windows/win32/gdi/wm-ncpaint">frame painting message</see>.
     /// </summary>
-    public readonly unsafe ref struct NonClientPaint(WPARAM wParam)
+    public readonly ref struct NonClientPaint(WPARAM wParam)
     {
         /// <summary>
         ///  Update region clipped to the window frame.

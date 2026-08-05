@@ -666,10 +666,3 @@ public static unsafe partial class WindowExtensions
     public static ExtendedWindowStyles GetExtendedWindowStyle<T>(this T window) where T : IHandle<HWND> =>
         (ExtendedWindowStyles)window.GetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
 }
-
-/// <docs>https://learn.microsoft.com/windows/win32/api/winuser/nc-winuser-timerproc</docs>
-public delegate void TimerProcedure(
-    HWND hwnd,
-    MessageType uMsg,
-    nuint idEvent,
-    uint dwTime);

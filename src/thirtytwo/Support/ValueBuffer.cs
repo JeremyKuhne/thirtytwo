@@ -7,12 +7,6 @@ using System.Runtime.InteropServices;
 
 namespace Windows.Support;
 
-public delegate void BufferAction<T>(ref ValueBuffer<T> buffer)
-    where T : unmanaged;
-
-public delegate TResult BufferFunc<TBuffer, TResult>(ref ValueBuffer<TBuffer> buffer)
-    where TBuffer : unmanaged;
-
 /// <summary>
 ///  Growable Span(T) buffer wrapper.
 /// </summary>

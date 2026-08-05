@@ -12,7 +12,7 @@ namespace Windows.Win32.System.Ole;
 /// <summary>
 ///  Provides an <see cref="IDispatchEx"/> friendly view of a given class' public properties.
 /// </summary>
-public unsafe class ClassPropertyDispatchAdapter
+public unsafe partial class ClassPropertyDispatchAdapter
 {
     private const int StartingDispId = 0x00010000;
     private int _nextDispId = StartingDispId;
@@ -300,10 +300,4 @@ public unsafe class ClassPropertyDispatchAdapter
         return bindingFlags;
     }
 
-    private struct DispatchEntry
-    {
-        public string Name;
-        public FDEX_PROP_FLAGS Flags;
-        public int DispId;
-    }
 }

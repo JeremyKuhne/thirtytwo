@@ -9,7 +9,7 @@ namespace Windows.Win32.Graphics.GdiPlus;
 
 public unsafe class Bitmap : Image, IPointer<GpBitmap>
 {
-    public unsafe new GpBitmap* Pointer => (GpBitmap*)base.Pointer;
+    public new GpBitmap* Pointer => (GpBitmap*)base.Pointer;
 
     public Bitmap(GpBitmap* bitmap) : base((GpImage*)bitmap) { }
     public Bitmap(string filename) : this(Create(filename)) { }

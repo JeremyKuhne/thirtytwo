@@ -43,7 +43,7 @@ public static unsafe partial class DeviceContextExtensions
     }
 
     /// <inheritdoc cref="Interop.GetWorldTransform(HDC, XFORM*)"/>
-    public static unsafe bool GetWorldTransform<T>(this T context, ref Matrix3x2 transform)
+    public static bool GetWorldTransform<T>(this T context, ref Matrix3x2 transform)
         where T : IHandle<HDC>
     {
         fixed (Matrix3x2* t = &transform)
@@ -55,7 +55,7 @@ public static unsafe partial class DeviceContextExtensions
     }
 
     /// <inheritdoc cref="Interop.SetWorldTransform(HDC, XFORM*)"/>
-    public static unsafe bool SetWorldTransform<T>(this T context, ref Matrix3x2 transform)
+    public static bool SetWorldTransform<T>(this T context, ref Matrix3x2 transform)
         where T : IHandle<HDC>
     {
         fixed (Matrix3x2* t = &transform)
@@ -141,7 +141,7 @@ public static unsafe partial class DeviceContextExtensions
     }
 
     /// <inheritdoc cref="DrawText{TDeviceContext, HFONT}(TDeviceContext, ReadOnlySpan{char}, Rectangle, DrawTextFormat, HFONT, Color, Color)"/>
-    public static unsafe (int Height, uint LengthDrawn, Rectangle Bounds) DrawText<TDeviceContext>(
+    public static (int Height, uint LengthDrawn, Rectangle Bounds) DrawText<TDeviceContext>(
         this TDeviceContext context,
         ReadOnlySpan<char> text,
         Rectangle bounds,
@@ -159,7 +159,7 @@ public static unsafe partial class DeviceContextExtensions
     /// <param name="bounds">The bounds to render in.</param>
     /// <param name="foreColor">The foreground color for the text, or black by default.</param>
     /// <param name="backColor">The background color to use, or paint transparently.</param>
-    public static unsafe (int Height, uint LengthDrawn, Rectangle Bounds) DrawText<TDeviceContext, TFont>(
+    public static (int Height, uint LengthDrawn, Rectangle Bounds) DrawText<TDeviceContext, TFont>(
         this TDeviceContext context,
         ReadOnlySpan<char> text,
         Rectangle bounds,
@@ -320,21 +320,21 @@ public static unsafe partial class DeviceContextExtensions
         return Bitmap.Create(hbitmap, ownsHandle: true);
     }
 
-    public static unsafe bool OffsetWindowOrigin<T>(this T context, int x, int y) where T : IHandle<HDC>
+    public static bool OffsetWindowOrigin<T>(this T context, int x, int y) where T : IHandle<HDC>
     {
         bool success = PInvoke.OffsetWindowOrgEx(context.Handle, x, y, null);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
 
-    public static unsafe bool OffsetViewportOrigin<T>(this T context, int x, int y) where T : IHandle<HDC>
+    public static bool OffsetViewportOrigin<T>(this T context, int x, int y) where T : IHandle<HDC>
     {
         bool success = PInvoke.OffsetViewportOrgEx(context.Handle, x, y, null);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
 
-    public static unsafe bool GetWindowExtents<T>(this T context, out Size size) where T : IHandle<HDC>
+    public static bool GetWindowExtents<T>(this T context, out Size size) where T : IHandle<HDC>
     {
         fixed (Size* s = &size)
         {
@@ -347,14 +347,14 @@ public static unsafe partial class DeviceContextExtensions
     /// <summary>
     ///  Sets the logical ("window") dimensions of the device context.
     /// </summary>
-    public static unsafe bool SetWindowExtents<T>(this T context, Size size) where T : IHandle<HDC>
+    public static bool SetWindowExtents<T>(this T context, Size size) where T : IHandle<HDC>
     {
         bool success = PInvoke.SetWindowExtEx(context.Handle, size.Width, size.Height, null);
         GC.KeepAlive(context.Wrapper);
         return success;
     }
 
-    public static unsafe bool GetViewportExtents<T>(this T context, out Size size) where T : IHandle<HDC>
+    public static bool GetViewportExtents<T>(this T context, out Size size) where T : IHandle<HDC>
     {
         fixed (Size* s = &size)
         {
@@ -364,7 +364,7 @@ public static unsafe partial class DeviceContextExtensions
         }
     }
 
-    public static unsafe bool SetViewportExtents<T>(this T context, Size size) where T : IHandle<HDC>
+    public static bool SetViewportExtents<T>(this T context, Size size) where T : IHandle<HDC>
     {
         bool success = PInvoke.SetViewportExtEx(context.Handle, size.Width, size.Height, null);
         GC.KeepAlive(context.Wrapper);
@@ -385,7 +385,7 @@ public static unsafe partial class DeviceContextExtensions
         return result;
     }
 
-    public static unsafe Point GetViewportOrigin<T>(this T context, out bool success)
+    public static Point GetViewportOrigin<T>(this T context, out bool success)
         where T : IHandle<HDC>
     {
         Point point;
@@ -394,7 +394,7 @@ public static unsafe partial class DeviceContextExtensions
         return point;
     }
 
-    public static unsafe bool SetViewportOrigin<T>(this T context, Point point)
+    public static bool SetViewportOrigin<T>(this T context, Point point)
         where T : IHandle<HDC>
     {
         bool result = PInvoke.SetViewportOrgEx(context.Handle, point.X, point.Y, null);

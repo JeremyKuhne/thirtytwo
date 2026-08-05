@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Text;
+using System.Globalization;
+using Touki.Text;
 
 namespace Windows.ProcessAndThreads;
 
@@ -12,7 +13,7 @@ public class ProcessInfoTests
     public void BasicFunctionality()
     {
         ProcessInfo info = new();
-        StringBuilder builder = new(4096);
+        using ValueStringBuilder builder = new(stackalloc char[256], CultureInfo.CurrentCulture);
 
         int totalThreads = 0;
 

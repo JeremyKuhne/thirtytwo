@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
-using Windows.Support;
 
 namespace Windows;
 
@@ -21,7 +20,7 @@ namespace Windows;
 ///    Matrix3x2 transform = Matrix3x2.CreateScale((dpi / 96.0f) * 5.0f);
 ///    deviceContext.SetWorldTransform(ref transform);
 /// </devdoc>
-public unsafe readonly struct DeviceContext : IDisposable, IHandle<HDC>
+public unsafe readonly partial struct DeviceContext : IDisposable, IHandle<HDC>
 {
     public HDC Handle { get; private init; }
     object? IHandle<HDC>.Wrapper => null;
@@ -103,7 +102,7 @@ public unsafe readonly struct DeviceContext : IDisposable, IHandle<HDC>
         };
     }
 
-    public unsafe void Dispose()
+    public void Dispose()
     {
         if (State.HasFlag(ContextState.RestoreDc))
         {
@@ -143,15 +142,5 @@ public unsafe readonly struct DeviceContext : IDisposable, IHandle<HDC>
     }
 
     public static implicit operator HDC(DeviceContext context) => context.Handle;
-    public static unsafe explicit operator DeviceContext(WPARAM wparam) => Create(new((nint)wparam));
-
-    [Flags]
-    private enum ContextState
-    {
-        UseDelete           = 0b00000000_00000001,
-        UseRelease          = 0b00000000_00000010,
-        UseEndPaint         = 0b00000000_00000100,
-        RestoreDc           = 0b00000000_00001000,
-        DoNotRelease        = 0b00000000_00010000,
-    }
+    public static explicit operator DeviceContext(WPARAM wparam) => Create(new((nint)wparam));
 }

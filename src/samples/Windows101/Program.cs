@@ -7,7 +7,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 namespace Windows101;
 
-internal class Program
+internal partial class Program
 {
     // To create a Windows Application in .NET Core you must do the following things:
     //
@@ -43,46 +43,6 @@ internal class Program
         // The simplest way, however, is to derive from "Window", which wraps up the registration of a window class
         // and the creation of a window instance, with the ability to set other appearance properties.
         Application.Run(new HelloWindow());
-    }
-
-    private class HelloWindowClass : WindowClass
-    {
-        // Overriding the callback method will allow us to provide our own custom behavior
-        protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
-        {
-            switch (message)
-            {
-                // The Paint message is sent when the Window contents need drawn.
-                case MessageType.Paint:
-
-                    PaintMessage(window, "Hello .NET and Win32!");
-
-                    // Return 0 to indicate we've handled the message
-                    return (LRESULT)0;
-            }
-
-            // Let the base class handle any other messages
-            return base.WindowProcedure(window, message, wParam, lParam);
-        }
-    }
-
-    private class HelloWindow : MainWindow
-    {
-        public HelloWindow() : base(title: "HelloWindow")
-        {
-        }
-
-        protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
-        {
-            switch (message)
-            {
-                case MessageType.Paint:
-                    PaintMessage(window, "Hello again!");
-                    return (LRESULT)0;
-            }
-
-            return base.WindowProcedure(window, message, wParam, lParam);
-        }
     }
 
     private static void PaintMessage(HWND window, string text)
