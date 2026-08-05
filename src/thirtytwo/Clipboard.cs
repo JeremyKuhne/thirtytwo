@@ -143,10 +143,15 @@ public unsafe class Clipboard
                 data.CopyTo(buffer);
                 buffer[^1] = default;
             }
-            finally
+            catch
             {
-                // FALSE with NO_ERROR is expected when the lock count reaches zero.
                 PInvoke.GlobalUnlock(global);
+                throw;
+            }
+
+            if (!PInvoke.GlobalUnlock(global))
+            {
+                WIN32_ERROR.ERROR_SUCCESS.ThrowIfLastErrorNot();
             }
 
             HANDLE result = PInvoke.SetClipboardData(format, (HANDLE)(nint)global);
