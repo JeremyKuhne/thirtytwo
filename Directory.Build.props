@@ -67,6 +67,9 @@
   <!-- Other settings -->
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
+
+    <!-- LibraryImport cannot consume CsWin32-generated types without disabling runtime marshalling. -->
+    <NoWarn>$(NoWarn);SYSLIB1054</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

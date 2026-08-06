@@ -33,6 +33,11 @@
       <Platform Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/Samples/WinUI/">
+    <Project Path="src/samples/WinUI/ControlHost/ControlHost.csproj">
+      <Platform Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/Samples/Petzold/">
     <Project Path="src/samples/Petzold/5th/AltWind/AltWind.csproj">
       <Platform Project="x64" />
