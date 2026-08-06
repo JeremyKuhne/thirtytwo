@@ -2,12 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.InteropServices;
+using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace ControlHost;
 
-internal static unsafe partial class WindowsAppSdkInterop
+internal static unsafe class WindowsAppSdkInterop
 {
-    [LibraryImport("Microsoft.UI.Windowing.Core.dll")]
-    internal static partial int ContentPreTranslateMessage(MSG* message);
+    [DllImport("Microsoft.UI.Windowing.Core.dll", ExactSpelling = true)]
+    internal static extern BOOL ContentPreTranslateMessage(MSG* message);
 }

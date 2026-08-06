@@ -111,7 +111,7 @@ internal static unsafe class Program
                     break;
                 }
 
-                if (WindowsAppSdkInterop.ContentPreTranslateMessage(&message) != 0)
+                if (WindowsAppSdkInterop.ContentPreTranslateMessage(&message))
                 {
                     continue;
                 }
