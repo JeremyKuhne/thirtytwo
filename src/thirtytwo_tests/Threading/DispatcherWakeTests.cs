@@ -182,9 +182,10 @@ public class DispatcherWakeTests
     [TestMethod]
     public void BeginShutdown_CancelsTokenBeforeDisposeCompletesTask()
     {
-        ThreadContext context = ThreadingTestAccessors.CreateThreadContext(
+        using ThreadContext context = ThreadingTestAccessors.CreateThreadContext(
             wakeFactory: dispatcher => new FakeDispatcherWake(dispatcher));
         Dispatcher dispatcher = context.Dispatcher;
+        CancellationTokenSource shutdownSource = ThreadingTestAccessors.GetShutdownSource(dispatcher);
         CancellationToken shutdownToken = dispatcher.ShutdownToken;
         Task completion = dispatcher.Completion;
         dispatcher.Start();
@@ -198,6 +199,11 @@ public class DispatcherWakeTests
         context.Dispose();
 
         dispatcher.ShutdownToken.IsCancellationRequested.Should().BeTrue();
+        Action getSourceToken = () => _ = shutdownSource.Token;
+        getSourceToken.Should().Throw<ObjectDisposedException>();
+        bool shutdownObserved = false;
+        using CancellationTokenRegistration registration = dispatcher.ShutdownToken.Register(() => shutdownObserved = true);
+        shutdownObserved.Should().BeTrue();
         completion.IsCompletedSuccessfully.Should().BeTrue();
     }
 

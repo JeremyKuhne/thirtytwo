@@ -1292,7 +1292,14 @@ public sealed class Dispatcher
         }
         finally
         {
-            _completion.TrySetResult();
+            try
+            {
+                _shutdownSource.Dispose();
+            }
+            finally
+            {
+                _completion.TrySetResult();
+            }
         }
 
         if (cleanupException is not null)

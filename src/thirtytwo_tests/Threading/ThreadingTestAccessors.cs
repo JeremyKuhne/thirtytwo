@@ -55,6 +55,9 @@ internal static class ThreadingTestAccessors
     internal static void RequestExit(this ThreadContext context)
         => context.TestAccessor.CreateDelegate<Action>("RequestExit")();
 
+    internal static CancellationTokenSource GetShutdownSource(Dispatcher dispatcher)
+        => dispatcher.TestAccessor.Dynamic._shutdownSource;
+
     private static void ConfigureDispatcher(
         Dispatcher dispatcher,
         TimeProvider? timeProvider,
