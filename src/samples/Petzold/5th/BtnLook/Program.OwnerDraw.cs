@@ -16,8 +16,8 @@ internal static partial class Program
         private int _cxClient, _cyClient;
         private int _btnWidth, _btnHeight;
         private Size _baseUnits;
-        private const int ID_SMALLER = 1;
-        private const int ID_LARGER = 2;
+        private const int SmallerId = 1;
+        private const int LargerId = 2;
 
         public OwnerDraw(string title) : base(title: title)
         {
@@ -38,12 +38,12 @@ internal static partial class Program
                         style: WindowStyles.Child | WindowStyles.Visible,
                         buttonStyle: ButtonControl.Styles.OwnerDrawn,
                         parentWindow: this,
-                        buttonId: ID_SMALLER);
+                        buttonId: SmallerId);
                     _hwndLarger = new ButtonControl(
                         style: WindowStyles.Child | WindowStyles.Visible,
                         buttonStyle: ButtonControl.Styles.OwnerDrawn,
                         parentWindow: this,
-                        buttonId: ID_LARGER);
+                        buttonId: LargerId);
 
                     return (LRESULT)0;
 
@@ -66,10 +66,10 @@ internal static partial class Program
                     // Make the window 10% smaller or larger
                     switch ((int)(uint)wParam)
                     {
-                        case ID_SMALLER:
+                        case SmallerId:
                             rc.Inflate(rc.Width / -10, rc.Height / -10);
                             break;
-                        case ID_LARGER:
+                        case LargerId:
                             rc.Inflate(rc.Width / 10, rc.Height / 10);
                             break;
                     }
@@ -97,7 +97,7 @@ internal static partial class Program
 
                         switch ((int)drawItemMessage.ControlId)
                         {
-                            case ID_SMALLER:
+                            case SmallerId:
                                 pt[0].X = 3 * cx / 8; pt[0].Y = 1 * cy / 8;
                                 pt[1].X = 5 * cx / 8; pt[1].Y = 1 * cy / 8;
                                 pt[2].X = 4 * cx / 8; pt[2].Y = 3 * cy / 8;
@@ -115,7 +115,7 @@ internal static partial class Program
                                 pt[2].X = 3 * cx / 8; pt[2].Y = 4 * cy / 8;
                                 Triangle(dc, pt);
                                 break;
-                            case ID_LARGER:
+                            case LargerId:
                                 pt[0].X = 5 * cx / 8; pt[0].Y = 3 * cy / 8;
                                 pt[1].X = 3 * cx / 8; pt[1].Y = 3 * cy / 8;
                                 pt[2].X = 4 * cx / 8; pt[2].Y = 1 * cy / 8;

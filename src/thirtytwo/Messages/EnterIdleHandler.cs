@@ -9,10 +9,10 @@ public partial class EnterIdleHandler
 
     public EnterIdleHandler(Window window)
     {
-        window.MessageHandler += Window_MessageHandler;
+        window.MessageHandler += WindowMessageHandler;
     }
 
-    private LRESULT? Window_MessageHandler(
+    private LRESULT? WindowMessageHandler(
         object sender,
         HWND window,
         MessageType message,

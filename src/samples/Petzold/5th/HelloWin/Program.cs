@@ -19,7 +19,7 @@ namespace HelloWin;
 internal unsafe static partial class Program
 {
     // Windows metadata doesn't currently define this as it is a macro.
-    const uint SND_ALIAS_SYSTEMHAND = 'S' | (((uint)'H') << 8);
+    const uint SoundAliasSystemHand = 'S' | (((uint)'H') << 8);
 
     [STAThread]
     private static void Main()
@@ -86,7 +86,7 @@ internal unsafe static partial class Program
         {
             case Interop.WM_CREATE:
                 PInvoke.PlaySound(
-                    (char*)SND_ALIAS_SYSTEMHAND,
+                    (char*)SoundAliasSystemHand,
                     HMODULE.Null,
                     SND_FLAGS.SND_ASYNC | SND_FLAGS.SND_NODEFAULT | SND_FLAGS.SND_ALIAS_ID);
                 return (LRESULT)0;

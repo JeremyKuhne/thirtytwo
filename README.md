@@ -30,6 +30,11 @@ The solution includes Win32 sample applications under `src/samples/`. Some
 tests interact with desktop resources such as the clipboard and therefore
 require an interactive Windows session.
 
+## Documentation
+
+Start with [Writing a thirtytwo Application](docs/writing-a-thirtytwo-application.md)
+for guides to creating an application and dispatching work to its UI thread.
+
 ## Contributing and security
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a change. Report

@@ -65,10 +65,10 @@ internal partial class Program
                     (.3f, Layout.FixedPercent(.5f, _buttonControl))))));
 
             MouseHandler handler = new(_buttonControl);
-            handler.MouseUp += Handler_MouseUp;
+            handler.MouseUp += MouseUpHandler;
         }
 
-        private void Handler_MouseUp(Window window, Point position, MouseButton button, MouseKey mouseState)
+        private void MouseUpHandler(Window window, Point position, MouseButton button, MouseKey mouseState)
         {
             if (_replaceableLayout.Handler == _staticControl)
             {

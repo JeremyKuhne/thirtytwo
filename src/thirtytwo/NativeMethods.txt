@@ -191,6 +191,7 @@ GetWindowRect
 GetWindowRgn
 GetWindowText
 GetWindowTextLength
+GetWindowThreadProcessId
 GetWorldTransform
 GlobalAlloc
 GlobalFree
@@ -201,6 +202,7 @@ GUID_WICPixelFormat32bppPBGRA
 HFONT
 HKEY_*
 HRESULT
+HWND_MESSAGE
 IAccessible
 IAccessibleEx
 IAccIdentity
@@ -306,6 +308,7 @@ PolyBezier
 Polygon
 Polyline
 PostMessage
+PostThreadMessage
 PostQuitMessage
 PROPVARIANT
 PropVariantClear

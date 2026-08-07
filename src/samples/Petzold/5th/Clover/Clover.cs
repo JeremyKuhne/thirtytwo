@@ -12,7 +12,7 @@ internal class Clover : MainWindow
 {
     private int _cxClient, _cyClient;
     private HRGN _hrgnClip;
-    private const double TWO_PI = Math.PI * 2;
+    private const double TwoPi = Math.PI * 2;
 
     public Clover() : base(title: "Draw a Clover", backgroundColor: Color.White) { }
 
@@ -47,7 +47,7 @@ internal class Clover : MainWindow
 
                     double fRadius = Hypotenuse(_cxClient / 2.0, _cyClient / 2.0);
 
-                    for (double fAngle = 0.0; fAngle < TWO_PI; fAngle += TWO_PI / 360)
+                    for (double fAngle = 0.0; fAngle < TwoPi; fAngle += TwoPi / 360)
                     {
                         dc.MoveTo(default);
                         dc.LineTo(

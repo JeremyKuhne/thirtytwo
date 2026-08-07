@@ -14,11 +14,11 @@ public class MouseHandler : IMouseMessageHandler
 
     public MouseHandler(Window window)
     {
-        window.MessageHandler += Window_MessageHandler;
+        window.MessageHandler += WindowMessageHandler;
         _attachedWindow = window;
     }
 
-    private unsafe LRESULT? Window_MessageHandler(
+    private unsafe LRESULT? WindowMessageHandler(
         object sender,
         HWND window,
         MessageType message,

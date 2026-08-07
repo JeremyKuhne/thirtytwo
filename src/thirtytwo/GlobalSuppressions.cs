@@ -14,7 +14,7 @@
 [assembly: SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "Matches Windows", Scope = "type", Target = "~T:Windows.VirtualKey")]
 [assembly: SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "Matches Windows", Scope = "type", Target = "~T:Windows.Win32.Graphics.GdiPlus.PixelFormat")]
 [assembly: SuppressMessage("Usage", "CA2231:Overload operator equals on overriding value type Equals", Justification = "CsWin32", Scope = "type", Target = "~T:Windows.Win32.Foundation.PCWSTR")]
-[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Thread Local", Scope = "member", Target = "~F:Windows.WindowClass.t_initializeProcedure")]
+[assembly: SuppressMessage("Naming", "TOUKI0041:Naming rule violation", Justification = "Mirrors the native IManagedObject interface shape.", Scope = "type", Target = "~T:Windows.DotNet.IManagedObject.Interface")]
 [assembly: SuppressMessage("Maintainability", "TOUKI0020:Declare one type per file", Justification = "Generic arities intentionally share one conceptual interface family.", Scope = "type", Target = "~T:Windows.Win32.System.Com.IManagedWrapper`1")]
 [assembly: SuppressMessage("Maintainability", "TOUKI0020:Declare one type per file", Justification = "Generic arities intentionally share one conceptual interface family.", Scope = "type", Target = "~T:Windows.Win32.System.Com.IManagedWrapper`2")]
 [assembly: SuppressMessage("Maintainability", "TOUKI0020:Declare one type per file", Justification = "Generic arities intentionally share one conceptual interface family.", Scope = "type", Target = "~T:Windows.Win32.System.Com.IManagedWrapper`3")]
