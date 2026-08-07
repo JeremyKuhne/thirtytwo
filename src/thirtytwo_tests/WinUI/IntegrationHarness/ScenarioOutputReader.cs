@@ -16,55 +16,90 @@ internal sealed class ScenarioOutputReader(string expectedScenario, int expected
     private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web);
     private readonly List<WinUIIntegrationEvent> _events = [];
     private readonly List<string> _lines = [];
+    private readonly Lock _lock = new();
     private readonly List<string> _protocolErrors = [];
     private readonly TaskCompletionSource<WinUIIntegrationEvent> _readySource =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
     private int _retainedOutputLength;
     private bool _outputLimitReported;
 
-    internal IReadOnlyList<WinUIIntegrationEvent> Events => _events;
+    internal IReadOnlyList<WinUIIntegrationEvent> Events
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return [.. _events];
+            }
+        }
+    }
 
-    internal IReadOnlyList<string> ProtocolErrors => _protocolErrors;
+    internal IReadOnlyList<string> ProtocolErrors
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return [.. _protocolErrors];
+            }
+        }
+    }
 
     internal Task<WinUIIntegrationEvent> Ready => _readySource.Task;
 
-    internal string StandardOutput => string.Join(Environment.NewLine, _lines);
+    internal string StandardOutput
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return string.Join(Environment.NewLine, _lines);
+            }
+        }
+    }
 
-    internal async Task ReadAsync(StreamReader reader)
+    internal async Task ReadAsync(StreamReader reader, CancellationToken cancellationToken = default)
     {
         char[] readBuffer = new char[ReadBufferLength];
         char[] lineBuffer = new char[MaximumLineLength];
         int lineLength = 0;
         bool lineTooLong = false;
 
-        while (true)
+        try
         {
-            int read = await reader.ReadAsync(readBuffer).ConfigureAwait(false);
-            if (read == 0)
+            while (true)
             {
-                break;
-            }
-
-            for (int index = 0; index < read; index++)
-            {
-                char character = readBuffer[index];
-                if (character == '\n')
+                int read = await reader.ReadAsync(readBuffer, cancellationToken).ConfigureAwait(false);
+                if (read == 0)
                 {
-                    ProcessBufferedLine(lineBuffer, lineLength, lineTooLong);
-                    lineLength = 0;
-                    lineTooLong = false;
-                    continue;
+                    break;
                 }
 
-                if (lineLength < lineBuffer.Length)
+                for (int index = 0; index < read; index++)
                 {
-                    lineBuffer[lineLength++] = character;
-                }
-                else
-                {
-                    lineTooLong = true;
+                    char character = readBuffer[index];
+                    if (character == '\n')
+                    {
+                        ProcessBufferedLine(lineBuffer, lineLength, lineTooLong);
+                        lineLength = 0;
+                        lineTooLong = false;
+                        continue;
+                    }
+
+                    if (lineLength < lineBuffer.Length)
+                    {
+                        lineBuffer[lineLength++] = character;
+                    }
+                    else
+                    {
+                        lineTooLong = true;
+                    }
                 }
             }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return;
         }
 
         if (lineLength > 0 || lineTooLong)
@@ -74,6 +109,14 @@ internal sealed class ScenarioOutputReader(string expectedScenario, int expected
     }
 
     private void ProcessBufferedLine(char[] lineBuffer, int lineLength, bool lineTooLong)
+    {
+        lock (_lock)
+        {
+            ProcessBufferedLineCore(lineBuffer, lineLength, lineTooLong);
+        }
+    }
+
+    private void ProcessBufferedLineCore(char[] lineBuffer, int lineLength, bool lineTooLong)
     {
         if (lineTooLong)
         {

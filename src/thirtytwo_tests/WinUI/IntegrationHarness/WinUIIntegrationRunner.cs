@@ -15,6 +15,7 @@ internal sealed class WinUIIntegrationRunner
 {
     private const int MaximumWindowHandleCount = 512;
     private const int MaximumStandardErrorLength = 1024 * 1024;
+    private static readonly TimeSpan s_cleanupTimeout = TimeSpan.FromSeconds(5);
 
     private static readonly JsonSerializerOptions s_resultJsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -89,10 +90,11 @@ internal sealed class WinUIIntegrationRunner
         }
 
         int processId = process.Id;
+        using CancellationTokenSource streamCancellation = new();
         ScenarioOutputReader outputReader = new(scenarioName, processId);
-        Task outputTask = outputReader.ReadAsync(process.StandardOutput);
-        Task<(string Text, bool Truncated)> errorTask =
-            BoundedTextReader.ReadAsync(process.StandardError, MaximumStandardErrorLength);
+        BoundedTextReader errorReader = new(MaximumStandardErrorLength);
+        Task outputTask = outputReader.ReadAsync(process.StandardOutput, streamCancellation.Token);
+        Task errorTask = errorReader.ReadAsync(process.StandardError, streamCancellation.Token);
         Task exitTask = process.WaitForExitAsync(CancellationToken.None);
         Task timeoutTask = Task.Delay(timeout, CancellationToken.None);
         Task cancellationTask = cancellationToken.CanBeCanceled
@@ -104,6 +106,7 @@ internal sealed class WinUIIntegrationRunner
         UiaSnapshot? uia = null;
         ScreenshotSnapshot? screenshot = null;
         Exception? captureFailure = null;
+        List<string> cleanupErrors = [];
 
         try
         {
@@ -117,10 +120,10 @@ internal sealed class WinUIIntegrationRunner
             else if (first == outputReader.Ready)
             {
                 WinUIIntegrationEvent ready = await outputReader.Ready.ConfigureAwait(false);
-                WindowHandleValidation.Validate(ready.WindowHandle, processId, ready.ThreadId);
-                windowHandles = CaptureWindowHandles(ready.WindowHandle, processId);
                 try
                 {
+                    WindowHandleValidation.Validate(ready.WindowHandle, processId, ready.ThreadId);
+                    windowHandles = CaptureWindowHandles(ready.WindowHandle, processId);
                     switch (scenario)
                     {
                         case WinUIIntegrationScenario.UiaTree:
@@ -171,23 +174,73 @@ internal sealed class WinUIIntegrationRunner
         {
             if (timedOut || captureFailure is not null || cancellationToken.IsCancellationRequested)
             {
-                await TerminateProcessTreeAsync(process).ConfigureAwait(false);
+                TryTerminateProcessTree(process, cleanupErrors);
             }
 
-            await exitTask.WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-            await outputTask.WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+            bool processExited = await WaitForCleanupAsync(
+                exitTask,
+                s_cleanupTimeout,
+                "Process exit",
+                cleanupErrors).ConfigureAwait(false);
+            if (!processExited)
+            {
+                TryTerminateProcessTree(process, cleanupErrors);
+                await WaitForCleanupAsync(
+                    exitTask,
+                    s_cleanupTimeout,
+                    "Process exit after termination",
+                    cleanupErrors).ConfigureAwait(false);
+            }
+
+            if (!processExited)
+            {
+                streamCancellation.Cancel();
+            }
+
+            bool outputDrained = await WaitForCleanupAsync(
+                outputTask,
+                s_cleanupTimeout,
+                "Standard output drain",
+                cleanupErrors).ConfigureAwait(false);
+            bool errorDrained = await WaitForCleanupAsync(
+                errorTask,
+                s_cleanupTimeout,
+                "Standard error drain",
+                cleanupErrors).ConfigureAwait(false);
+            if (!outputDrained || !errorDrained)
+            {
+                streamCancellation.Cancel();
+                if (!outputDrained)
+                {
+                    await WaitForCleanupAsync(
+                        outputTask,
+                        s_cleanupTimeout,
+                        "Standard output drain after cancellation",
+                        cleanupErrors).ConfigureAwait(false);
+                }
+
+                if (!errorDrained)
+                {
+                    await WaitForCleanupAsync(
+                        errorTask,
+                        s_cleanupTimeout,
+                        "Standard error drain after cancellation",
+                        cleanupErrors).ConfigureAwait(false);
+                }
+            }
         }
 
-        (string standardError, bool standardErrorTruncated) = await errorTask.ConfigureAwait(false);
+        string standardError = errorReader.Text;
         string standardOutput = outputReader.StandardOutput;
         WinUIIntegrationEvent[] eventSnapshot = [.. outputReader.Events];
         List<string> protocolErrorSnapshot = [.. outputReader.ProtocolErrors];
-        if (standardErrorTruncated)
+        if (errorReader.Truncated)
         {
             protocolErrorSnapshot.Add(
                 $"Standard error exceeded {MaximumStandardErrorLength} retained characters.");
         }
 
+        int? exitCode = GetExitCode(process);
         WinUIIntegrationEvent? readyEvent = eventSnapshot.FirstOrDefault(entry => entry.Event == "ready");
         WinUIIntegrationEvent? lastEvent = eventSnapshot.LastOrDefault();
         if (windowHandles.Count == 0 && readyEvent is not null)
@@ -204,9 +257,10 @@ internal sealed class WinUIIntegrationRunner
             lastEvent,
             timeout,
             timedOut,
-            process.ExitCode,
+            exitCode,
             captureFailure,
             protocolErrorSnapshot,
+            cleanupErrors,
             dumpPath);
 
         WinUIIntegrationResult result = new(
@@ -215,7 +269,7 @@ internal sealed class WinUIIntegrationRunner
             readyEvent?.ThreadId ?? 0,
             readyEvent?.WindowHandle ?? 0,
             windowHandles,
-            process.ExitCode,
+            exitCode,
             timedOut,
             stopwatch.Elapsed,
             eventSnapshot,
@@ -264,7 +318,7 @@ internal sealed class WinUIIntegrationRunner
             TaskScheduler.Default);
     }
 
-    private static async Task TerminateProcessTreeAsync(Process process)
+    private static void TryTerminateProcessTree(Process process, List<string> cleanupErrors)
     {
         try
         {
@@ -276,8 +330,45 @@ internal sealed class WinUIIntegrationRunner
         catch (InvalidOperationException)
         {
         }
+        catch (Exception exception)
+        {
+            cleanupErrors.Add($"Process-tree termination failed: {exception}");
+        }
+    }
 
-        await process.WaitForExitAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+    internal static async Task<bool> WaitForCleanupAsync(
+        Task task,
+        TimeSpan timeout,
+        string operation,
+        List<string> cleanupErrors)
+    {
+        try
+        {
+            await task.WaitAsync(timeout).ConfigureAwait(false);
+            return true;
+        }
+        catch (TimeoutException)
+        {
+            cleanupErrors.Add($"{operation} did not complete within {timeout}.");
+            return false;
+        }
+        catch (Exception exception)
+        {
+            cleanupErrors.Add($"{operation} failed: {exception}");
+            return false;
+        }
+    }
+
+    internal static int? GetExitCode(Process process)
+    {
+        try
+        {
+            return process.HasExited ? process.ExitCode : null;
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
     }
 
     private static unsafe void RequestClose(long windowHandle, int expectedProcessId)
@@ -297,9 +388,10 @@ internal sealed class WinUIIntegrationRunner
         WinUIIntegrationEvent? last,
         TimeSpan timeout,
         bool timedOut,
-        int exitCode,
+        int? exitCode,
         Exception? captureFailure,
         IReadOnlyList<string> protocolErrors,
+        IReadOnlyList<string> cleanupErrors,
         string? dumpPath)
     {
         string handles = windowHandles.Count == 0
@@ -308,30 +400,38 @@ internal sealed class WinUIIntegrationRunner
         string identity = $"process {processId}, thread {ready?.ThreadId ?? 0}, HWNDs [{handles}]";
         string lastEvent = last?.Event ?? "<none>";
         string dump = dumpPath ?? "<none>";
+        string cleanup = cleanupErrors.Count == 0
+            ? string.Empty
+            : $" Cleanup: {string.Join(" | ", cleanupErrors)}";
 
         if (timedOut)
         {
-            return $"Scenario '{scenario}' ({identity}) timed out after {timeout}. Last event: '{lastEvent}'. Dump: '{dump}'.";
+            return $"Scenario '{scenario}' ({identity}) timed out after {timeout}. Last event: '{lastEvent}'. Dump: '{dump}'.{cleanup}";
         }
 
         if (captureFailure is not null)
         {
-            return $"Scenario '{scenario}' ({identity}) capture failed after event '{lastEvent}': {captureFailure}";
+            return $"Scenario '{scenario}' ({identity}) capture failed after event '{lastEvent}': {captureFailure}{cleanup}";
         }
 
         if (protocolErrors.Count > 0)
         {
-            return $"Scenario '{scenario}' ({identity}) emitted invalid JSON: {string.Join(" | ", protocolErrors)}";
+            return $"Scenario '{scenario}' ({identity}) emitted invalid JSON: {string.Join(" | ", protocolErrors)}{cleanup}";
+        }
+
+        if (cleanupErrors.Count > 0)
+        {
+            return $"Scenario '{scenario}' ({identity}) cleanup was incomplete after event '{lastEvent}'.{cleanup}";
         }
 
         if (ready is null)
         {
-            return $"Scenario '{scenario}' (process {processId}) exited with code {exitCode} before reporting ready. Last event: '{lastEvent}'.";
+            return $"Scenario '{scenario}' (process {processId}) exited with code {FormatExitCode(exitCode)} before reporting ready. Last event: '{lastEvent}'.";
         }
 
-        if (exitCode != 0)
+        if (exitCode is not 0)
         {
-            return $"Scenario '{scenario}' ({identity}) exited with code {exitCode}. Last event: '{lastEvent}'.";
+            return $"Scenario '{scenario}' ({identity}) exited with code {FormatExitCode(exitCode)}. Last event: '{lastEvent}'.";
         }
 
         return null;
@@ -339,6 +439,9 @@ internal sealed class WinUIIntegrationRunner
 
     private static string FormatHandle(long windowHandle)
         => $"0x{windowHandle.ToString("x", CultureInfo.InvariantCulture)}";
+
+    private static string FormatExitCode(int? exitCode)
+        => exitCode?.ToString(CultureInfo.InvariantCulture) ?? "<unavailable>";
 
     private static unsafe IReadOnlyList<long> CaptureWindowHandles(long rootWindowHandle, int expectedProcessId)
     {

@@ -16,12 +16,25 @@ public class BoundedTextReaderTests
         using MemoryStream stream = new(Encoding.UTF8.GetBytes(input));
         using StreamReader reader = new(stream, Encoding.UTF8);
 
-        (string text, bool truncated) = BoundedTextReader.ReadAsync(reader, MaximumLength)
-            .GetAwaiter()
-            .GetResult();
+        BoundedTextReader boundedReader = new(MaximumLength);
+        boundedReader.ReadAsync(reader).GetAwaiter().GetResult();
 
-        text.Should().HaveLength(MaximumLength);
-        truncated.Should().BeTrue();
+        boundedReader.Text.Should().HaveLength(MaximumLength);
+        boundedReader.Truncated.Should().BeTrue();
         stream.Position.Should().Be(stream.Length);
+    }
+
+    [TestMethod]
+    public void ReadAsync_CanceledToken_DoesNotThrow()
+    {
+        using MemoryStream stream = new(Encoding.UTF8.GetBytes("ignored"));
+        using StreamReader reader = new(stream, Encoding.UTF8);
+        using CancellationTokenSource cancellationSource = new();
+        cancellationSource.Cancel();
+        BoundedTextReader boundedReader = new(1024);
+
+        Action read = () => boundedReader.ReadAsync(reader, cancellationSource.Token).GetAwaiter().GetResult();
+
+        read.Should().NotThrow();
     }
 }

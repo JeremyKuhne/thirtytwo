@@ -55,6 +55,20 @@ public class ScenarioOutputReaderTests
         reader.Ready.IsCompleted.Should().BeFalse();
     }
 
+    [TestMethod]
+    public void ReadAsync_CanceledToken_DoesNotThrow()
+    {
+        using MemoryStream stream = new(Encoding.UTF8.GetBytes("ignored"));
+        using StreamReader reader = new(stream, Encoding.UTF8);
+        using CancellationTokenSource cancellationSource = new();
+        cancellationSource.Cancel();
+        ScenarioOutputReader outputReader = new("startup", 42);
+
+        Action read = () => outputReader.ReadAsync(reader, cancellationSource.Token).GetAwaiter().GetResult();
+
+        read.Should().NotThrow();
+    }
+
     private static ScenarioOutputReader Read(string input, int expectedProcessId = 42)
     {
         ScenarioOutputReader outputReader = new("startup", expectedProcessId);
