@@ -28,6 +28,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\thirtytwo\thirtytwo.csproj" />
+    <ProjectReference Include="..\samples\WinUI\ControlHost\ControlHost.csproj"
+                      PrivateAssets="all"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WPF" />
   </ItemGroup>
 
 </Project>

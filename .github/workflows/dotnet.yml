@@ -11,6 +11,7 @@ on:
 
 jobs:
   build:
+    name: ".NET / build"
 
     runs-on: windows-latest
 
@@ -42,5 +43,6 @@ jobs:
         name: mtp-logs
         path: |
           artifacts/test-results/**/*.trx
+          artifacts/test-results/WinUIIntegrationHarness/**/*
         if-no-files-found: warn
         retention-days: 14

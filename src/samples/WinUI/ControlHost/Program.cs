@@ -23,20 +23,51 @@ internal static unsafe class Program
     private static DesktopWindowXamlSource? s_xamlSource;
     private static Grid? s_root;
     private static ColorPicker? s_colorPicker;
+    private static ScenarioReporter? s_reporter;
+    private static ControlHostScenario s_scenario;
 
     [STAThread]
-    private static void Main()
+    private static int Main(string[] arguments)
     {
-        DispatcherQueueController dispatcher = DispatcherQueueController.CreateOnCurrentThread();
         try
         {
-            using XamlApplication application = new();
-            RunMessageLoop();
-            GC.KeepAlive(application);
+            s_scenario = ScenarioArguments.Parse(arguments);
         }
-        finally
+        catch (ArgumentException exception)
         {
-            dispatcher.ShutdownQueue();
+            Console.Error.WriteLine(exception.Message);
+            return 2;
+        }
+
+        s_reporter = s_scenario == ControlHostScenario.Interactive ? null : new(s_scenario);
+        s_reporter?.Write("process-started");
+
+        try
+        {
+            DispatcherQueueController dispatcher = DispatcherQueueController.CreateOnCurrentThread();
+            s_reporter?.Write("dispatcher-queue-created");
+            try
+            {
+                using XamlApplication application = new();
+                s_reporter?.Write("xaml-application-created");
+                RunMessageLoop();
+                GC.KeepAlive(application);
+            }
+            finally
+            {
+                s_reporter?.Write("dispatcher-queue-shutdown-started");
+                dispatcher.ShutdownQueue();
+                s_reporter?.Write("dispatcher-queue-shutdown-completed");
+            }
+
+            s_reporter?.Write("scenario-completed");
+            return 0;
+        }
+        catch (Exception exception) when (s_reporter is not null)
+        {
+            s_reporter.Write("scenario-failed", message: exception.ToString());
+            Console.Error.WriteLine(exception);
+            return 1;
         }
     }
 
@@ -97,6 +128,17 @@ internal static unsafe class Program
         {
             PInvoke.ShowWindow(window, SHOW_WINDOW_CMD.SW_SHOWDEFAULT);
             PInvoke.UpdateWindow(window);
+            s_reporter?.Write("ready", window);
+
+            if (s_scenario == ControlHostScenario.Startup)
+            {
+                if (!PInvoke.PostMessage(window, Interop.WM_CLOSE, default, default))
+                {
+                    throw new Win32Exception(Marshal.GetLastPInvokeError());
+                }
+
+                s_reporter?.Write("close-requested", window);
+            }
 
             while (true)
             {
@@ -133,6 +175,7 @@ internal static unsafe class Program
         switch (message)
         {
             case Interop.WM_CREATE:
+                s_reporter?.Write("window-created", window);
                 s_xamlSource = new DesktopWindowXamlSource();
                 s_xamlSource.Initialize(Win32Interop.GetWindowIdFromWindow((nint)window.Value));
                 s_xamlSource.ShouldConstrainPopupsToWorkArea = true;
@@ -158,8 +201,24 @@ internal static unsafe class Program
                 PInvoke.EndPaint(window, &paint);
                 return (LRESULT)0;
 
+            case Interop.WM_CLOSE:
+                if (s_scenario == ControlHostScenario.ShutdownTimeout)
+                {
+                    s_reporter?.Write("close-ignored", window);
+                    return (LRESULT)0;
+                }
+
+                s_reporter?.Write("close-received", window);
+                if (!PInvoke.DestroyWindow(window))
+                {
+                    throw new Win32Exception(Marshal.GetLastPInvokeError());
+                }
+
+                return (LRESULT)0;
+
             case Interop.WM_DESTROY:
                 DisposeIsland();
+                s_reporter?.Write("window-destroyed", window);
                 PInvoke.PostQuitMessage(0);
                 return (LRESULT)0;
         }
@@ -179,5 +238,6 @@ internal static unsafe class Program
         s_xamlSource = null;
         s_root = null;
         s_colorPicker = null;
+        s_reporter?.Write("island-disposed");
     }
 }
