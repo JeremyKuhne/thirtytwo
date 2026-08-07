@@ -11,6 +11,7 @@ on:
 
 jobs:
   build:
+    name: ".NET / build"
 
     runs-on: windows-latest
 
@@ -23,6 +24,35 @@ jobs:
         dotnet-quality: 'preview'
     - name: Restore dependencies
       run: dotnet restore
+    - name: Install Windows App Runtime
+      shell: pwsh
+      run: |
+        $assets = Get-Content 'artifacts/obj/ControlHost/project.assets.json' -Raw | ConvertFrom-Json
+        $runtimeLibraries = @(
+          $assets.libraries.PSObject.Properties |
+            Where-Object Name -Like 'Microsoft.WindowsAppSDK.Runtime/*'
+        )
+
+        if ($runtimeLibraries.Count -ne 1) {
+          throw "Expected one Windows App Runtime package, found $($runtimeLibraries.Count)."
+        }
+
+        $relativePath = "$($runtimeLibraries[0].Value.path)/tools/MSIX/win10-x64"
+        $runtimeDirectories = @(
+          $assets.packageFolders.PSObject.Properties.Name |
+            ForEach-Object { Join-Path $_ $relativePath } |
+            Where-Object { Test-Path $_ }
+        )
+
+        if ($runtimeDirectories.Count -ne 1) {
+          throw "Expected one restored x64 runtime payload, found $($runtimeDirectories.Count)."
+        }
+
+        $runtimeDirectory = $runtimeDirectories[0]
+        Get-Content (Join-Path $runtimeDirectory 'MSIX.inventory') | ForEach-Object {
+          $fileName = ($_ -split '=', 2)[0]
+          Add-AppxPackage -Path (Join-Path $runtimeDirectory $fileName)
+        }
     - name: Build
       run: dotnet build --no-restore
     - name: Build Release
@@ -42,5 +72,6 @@ jobs:
         name: mtp-logs
         path: |
           artifacts/test-results/**/*.trx
+          artifacts/test-results/WinUIIntegrationHarness/**/*
         if-no-files-found: warn
         retention-days: 14
