@@ -22,6 +22,23 @@ dotnet test --configuration Release --no-build --report-trx
 The file-dialog manual test is skipped during automated runs. Clipboard and
 other desktop-resource tests require an interactive Windows session.
 
+## Design principles
+
+### No test-only production code
+
+Never add a member, overload, factory, branch, dependency-injection hook, or
+abstraction to production code solely for testing, regardless of whether it is
+private, internal, or public. Production structure and member visibility are
+determined only by product behavior and product call sites.
+
+Tests should exercise the public contract when possible. When a focused test
+must reach existing non-public implementation, use `TestAccessor` from
+`KlutzyNinja.Touki.TestSupport`; do not create a production seam for it.
+
+Test-only production code creates unintended coupling for later product
+changes, obscures the real production surface during review, and leaves
+shipping code that has no product responsibility.
+
 ## Submitting changes
 
 1. Fork the repository and create a focused branch from `main`.

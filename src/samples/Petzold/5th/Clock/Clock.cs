@@ -44,8 +44,8 @@ internal class Clock : MainWindow
         {
             pt[i] = new Point
             (
-                (int)(pt[i].X * Math.Cos(TWOPI * iAngle / 360) + pt[i].Y * Math.Sin(TWOPI * iAngle / 360)),
-                (int)(pt[i].Y * Math.Cos(TWOPI * iAngle / 360) - pt[i].X * Math.Sin(TWOPI * iAngle / 360))
+                (int)(pt[i].X * Math.Cos(TwoPi * iAngle / 360) + pt[i].Y * Math.Sin(TwoPi * iAngle / 360)),
+                (int)(pt[i].Y * Math.Cos(TwoPi * iAngle / 360) - pt[i].X * Math.Sin(TwoPi * iAngle / 360))
             );
         }
     }
@@ -120,8 +120,8 @@ internal class Clock : MainWindow
         }
     }
 
-    private const int ID_TIMER = 1;
-    private const double TWOPI = Math.PI * 2;
+    private const int TimerId = 1;
+    private const double TwoPi = Math.PI * 2;
     private Size _clientSize;
     private SYSTEMTIME _previousTime;
 
@@ -130,7 +130,7 @@ internal class Clock : MainWindow
         switch (message)
         {
             case MessageType.Create:
-                window.SetTimer(ID_TIMER, 1000);
+                window.SetTimer(TimerId, 1000);
                 PInvoke.GetLocalTime(out _previousTime);
                 return (LRESULT)0;
             case MessageType.Size:

@@ -19,7 +19,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
     // Default fonts for each DPI
     private static readonly ConcurrentDictionary<int, HFONT> s_defaultFonts = new();
-    internal static WNDPROC DefaultWindowProcedure { get; } = GetDefaultWindowProcedure();
+    private static WNDPROC DefaultWindowProcedure { get; } = GetDefaultWindowProcedure();
 
     // High precision metric units are .01mm each
     private const int HiMetricUnitsPerInch = 2540;
@@ -30,6 +30,12 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     private readonly WindowProcedure _windowProcedure;
     private readonly WNDPROC _priorWindowProcedure;
     protected readonly WindowClass _windowClass;
+
+    // Identifies the managed thread that owns the HWND without querying a handle after destruction.
+    private readonly Thread _thread = Thread.CurrentThread;
+
+    // Retains the dispatcher affinity after the dispatcher stops and the HWND is destroyed.
+    private Threading.Dispatcher? _dispatcher;
     private bool _destroyed;
     private HWND _handle;
 
@@ -69,6 +75,35 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     /// </summary>
     public HWND Handle => _handle;
 
+    /// <summary>
+    ///  Gets the dispatcher associated with the thread that owns this window.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   Once associated, the dispatcher remains available from this property after shutdown or handle destruction.
+    ///   Queue admission determines whether each operation is accepted; callers do not need to check dispatcher state
+    ///   before invoking it. A later <see cref="Application.Run(Window, bool)"/> on the same owning thread associates
+    ///   a surviving window with that run's fresh dispatcher after the previous dispatcher completes.
+    ///  </para>
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">The window has not been associated with a dispatcher.</exception>
+    public Threading.Dispatcher Dispatcher
+    {
+        get
+        {
+            Threading.Dispatcher? dispatcher = Volatile.Read(ref _dispatcher);
+            if (dispatcher is not null)
+            {
+                return dispatcher;
+            }
+
+            dispatcher = Threading.Dispatcher.FromHandle(this)
+                ?? throw new InvalidOperationException("The window has not been associated with a dispatcher.");
+            AttachDispatcher(dispatcher);
+            return dispatcher;
+        }
+    }
+
     object? IHandle<HWND>.Wrapper => this;
 
     public event WindowsMessageEvent? MessageHandler;
@@ -85,6 +120,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         Color backgroundColor = default,
         Features features = default)
     {
+        _dispatcher = parentWindow?._dispatcher ?? Threading.Dispatcher.Current;
         _windowClass = windowClass ?? s_defaultWindowClass;
 
         if (bounds.IsEmpty)
@@ -126,6 +162,49 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         {
             // Default system font is applied, use a nicer (ClearType) font
             this.SetFontHandle(GetDefaultFontForDpi((int)_lastDpi));
+        }
+    }
+
+    /// <summary>
+    ///  Associates this window with its owning thread's dispatcher.
+    /// </summary>
+    /// <param name="dispatcher">The dispatcher to associate with the window.</param>
+    internal void AttachDispatcher(Threading.Dispatcher dispatcher)
+    {
+        while (true)
+        {
+            Threading.Dispatcher? existing = Volatile.Read(ref _dispatcher);
+            if (ReferenceEquals(existing, dispatcher))
+            {
+                return;
+            }
+
+            if (existing is not null && !existing.Completion.IsCompleted)
+            {
+                throw new InvalidOperationException("The window is already associated with another active dispatcher.");
+            }
+
+            if (ReferenceEquals(Interlocked.CompareExchange(ref _dispatcher, dispatcher, existing), existing))
+            {
+                return;
+            }
+        }
+    }
+
+    /// <summary>
+    ///  Associates existing managed windows owned by the current thread with its dispatcher.
+    /// </summary>
+    /// <param name="dispatcher">The current thread's dispatcher.</param>
+    internal static void AttachDispatcherToCurrentThread(Threading.Dispatcher dispatcher)
+    {
+        dispatcher.VerifyAccess();
+
+        foreach (WeakReference<Window> reference in s_windows.Values)
+        {
+            if (reference.TryGetTarget(out Window? window) && ReferenceEquals(window._thread, Thread.CurrentThread))
+            {
+                window.AttachDispatcher(dispatcher);
+            }
         }
     }
 

@@ -20,10 +20,10 @@ public class LayoutBinder
     public LayoutBinder(Window window, ILayoutHandler handler)
     {
         _handler = handler;
-        window.MessageHandler += Window_MessageHandler;
+        window.MessageHandler += WindowMessageHandler;
     }
 
-    private LRESULT? Window_MessageHandler(
+    private LRESULT? WindowMessageHandler(
         object sender,
         HWND window,
         MessageType message,

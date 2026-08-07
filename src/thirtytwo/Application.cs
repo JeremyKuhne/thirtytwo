@@ -4,6 +4,7 @@
 using System.Drawing;
 using System.Runtime.InteropServices;
 using Windows.Support;
+using Windows.Threading;
 using Windows.Win32.Graphics.Direct2D;
 using Windows.Win32.Graphics.DirectWrite;
 using Windows.Win32.Graphics.Imaging;
@@ -15,6 +16,13 @@ namespace Windows;
 /// </summary>
 public static unsafe class Application
 {
+    // Keep all framework-owned WM_APP identifiers together so new allocations cannot silently overlap.
+
+    /// <summary>
+    ///  Identifies the dispatcher queue wake message.
+    /// </summary>
+    internal const uint DispatcherWakeMessage = Interop.WM_APP + 1;
+
     private static ActivationContext? s_visualStylesContext;
     private static Direct2dFactory? s_direct2dFactory;
     private static DirectWriteFactory? s_directWriteFactory;
@@ -129,7 +137,7 @@ public static unsafe class Application
         string? windowTitle = null,
         WindowStyles style = WindowStyles.OverlappedWindow,
         ExtendedWindowStyles extendedStyle = ExtendedWindowStyles.Default,
-        HMENU menuHandle = default) => Run(new Window(
+        HMENU menuHandle = default) => Run(() => new Window(
             bounds,
             windowTitle,
             style,
@@ -137,39 +145,67 @@ public static unsafe class Application
             windowClass: windowClass,
             menuHandle: menuHandle));
 
+    /// <summary>
+    ///  Creates the root window with an active dispatcher, then shows it and runs the UI message loop.
+    /// </summary>
+    /// <param name="windowFactory">Creates the root window on the current UI thread.</param>
+    public static void Run(Func<Window> windowFactory)
+    {
+        ArgumentNullException.ThrowIfNull(windowFactory);
+        Run(windowFactory, disposeWindow: true);
+    }
+
+    /// <summary>
+    ///  Associates and shows an existing root window, then runs the UI message loop.
+    /// </summary>
+    /// <param name="window">The root window.</param>
+    /// <param name="disposeWindow">Whether to dispose the window after the message loop exits.</param>
     public static void Run(Window window, bool disposeWindow = true)
     {
+        ArgumentNullException.ThrowIfNull(window);
+        Run(() => window, disposeWindow);
+    }
+
+    private static void Run(Func<Window> windowFactory, bool disposeWindow)
+    {
+        using ThreadContext threadContext = ThreadContext.Create();
+        Window? window = null;
+
         try
         {
-            window.MessageHandler += Window_QuitHandler;
-
-            window.ShowWindow(ShowWindowCommand.Normal);
-            window.UpdateWindow();
-
-            while (PInvoke.GetMessage(out MSG message, HWND.Null, 0, 0))
+            threadContext.RunMessageLoop(() =>
             {
-                if (Window.FromHandle(message.hwnd) is { } target && target.PreProcessMessage(ref message))
-                {
-                    continue;
-                }
+                window = windowFactory()
+                    ?? throw new InvalidOperationException("The window factory returned null.");
+                window.AttachDispatcher(threadContext.Dispatcher);
+                window.MessageHandler += Window_QuitHandler;
 
-                PInvoke.TranslateMessage(&message);
-                PInvoke.DispatchMessage(&message);
-            }
+                window.ShowWindow(ShowWindowCommand.Normal);
+                window.UpdateWindow();
+            });
 
             // Make sure our window doesn't get collected while we're pumping messages
             GC.KeepAlive(window);
         }
         catch
         {
-            PInvoke.DestroyWindow(window);
+            if (window is not null && !window.Handle.IsNull)
+            {
+                PInvoke.DestroyWindow(window);
+            }
+
             throw;
         }
         finally
         {
+            if (window is not null)
+            {
+                window.MessageHandler -= Window_QuitHandler;
+            }
+
             if (disposeWindow)
             {
-                window.Dispose();
+                window?.Dispose();
             }
         }
 
@@ -177,7 +213,7 @@ public static unsafe class Application
         {
             if (message == MessageType.Destroy)
             {
-                PInvoke.PostQuitMessage(0);
+                ThreadContext.RequestExitCurrentThread();
             }
 
             return null;
@@ -195,6 +231,20 @@ public static unsafe class Application
     ///  scope is disposed.
     /// </summary>
     public static ThreadModalScope EnterThreadModalScope() => new();
+
+    /// <summary>
+    ///  Adds a message filter to the current UI thread. Filters run in registration order.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">A message loop is not active on this thread.</exception>
+    public static MessageFilterRegistration AddMessageFilter(IMessageFilter filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+
+        ThreadContext context = ThreadContext.CurrentContext
+            ?? throw new InvalidOperationException("A message loop is not running on this thread.");
+
+        return context.AddMessageFilter(filter);
+    }
 
     /// <summary>
     ///  Enumerates thread windows for the current thread.

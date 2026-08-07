@@ -23,7 +23,7 @@ internal unsafe static partial class Program
             {
                 case MessageType.Create:
                     PInvoke.PlaySound(
-                        (char*)SND_ALIAS_SYSTEMHAND,
+                        (char*)SoundAliasSystemHand,
                         HMODULE.Null,
                         SND_FLAGS.SND_ASYNC | SND_FLAGS.SND_NODEFAULT | SND_FLAGS.SND_ALIAS_ID);
                     return (LRESULT)0;

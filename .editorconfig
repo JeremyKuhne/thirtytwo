@@ -28,9 +28,6 @@ dotnet_diagnostic.SA1307.severity = none
 # SA1313: Parameter names should begin with lower-case letter
 dotnet_diagnostic.SA1313.severity = none
 
-# IDE1006: Naming Styles
-dotnet_diagnostic.IDE1006.severity = none
-
 # CS0649:
 dotnet_diagnostic.CS0649.severity = none
 
@@ -40,6 +37,12 @@ dotnet_diagnostic.SA1313.severity = none
 
 # C# files
 [*.cs]
+
+# IDE1006: Naming Styles (replaced by TOUKI0041)
+dotnet_diagnostic.IDE1006.severity = none
+
+# TOUKI0041: Naming rule violation
+dotnet_diagnostic.TOUKI0041.severity = warning
 
 #### Core EditorConfig Options ####
 
@@ -193,40 +196,52 @@ csharp_space_between_square_brackets = false
 csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = true
 
-# interfaces should being with I
-dotnet_naming_rule.interface_should_be_begins_with_i.severity = suggestion
-dotnet_naming_rule.interface_should_be_begins_with_i.symbols = interface
-dotnet_naming_rule.interface_should_be_begins_with_i.style = begins_with_i
-dotnet_naming_symbols.interface.applicable_kinds = interface
-dotnet_naming_symbols.interface.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.interface.required_modifiers = 
+# interfaces should begin with I
+touki_naming_rule.interface_should_begin_with_i.severity = warning
+touki_naming_rule.interface_should_begin_with_i.symbols = interface
+touki_naming_rule.interface_should_begin_with_i.style = begins_with_i
+touki_naming_symbols.interface.applicable_kinds = interface
+touki_naming_symbols.interface.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+touki_naming_style.begins_with_i.required_prefix = I
+touki_naming_style.begins_with_i.capitalization = pascal_case
 
 # name all constant fields using PascalCase
-dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = warning
-dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols = constant_fields
-dotnet_naming_rule.constant_fields_should_be_pascal_case.style = pascal_case_style
-dotnet_naming_symbols.constant_fields.applicable_kinds = field
-dotnet_naming_symbols.constant_fields.required_modifiers = const
-dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+touki_naming_rule.constant_fields_should_be_pascal_case.severity = warning
+touki_naming_rule.constant_fields_should_be_pascal_case.symbols = constant_fields
+touki_naming_rule.constant_fields_should_be_pascal_case.style = pascal_case_style
+touki_naming_symbols.constant_fields.applicable_kinds = field
+touki_naming_symbols.constant_fields.required_modifiers = const
+touki_naming_style.pascal_case_style.capitalization = pascal_case
+
+# thread-static fields should have t_ prefix
+touki_naming_rule.thread_static_fields_should_have_prefix.severity = warning
+touki_naming_rule.thread_static_fields_should_have_prefix.symbols = thread_static_fields
+touki_naming_rule.thread_static_fields_should_have_prefix.style = thread_static_prefix_style
+touki_naming_symbols.thread_static_fields.applicable_kinds = field
+touki_naming_symbols.thread_static_fields.required_modifiers = static
+touki_naming_symbols.thread_static_fields.required_attributes = System.ThreadStaticAttribute
+touki_naming_symbols.thread_static_fields.applicable_accessibilities = private, internal, private_protected
+touki_naming_style.thread_static_prefix_style.required_prefix = t_
+touki_naming_style.thread_static_prefix_style.capitalization = camel_case
 
 # static fields should have s_ prefix
-dotnet_naming_rule.static_fields_should_have_prefix.severity = warning
-dotnet_naming_rule.static_fields_should_have_prefix.symbols = static_fields
-dotnet_naming_rule.static_fields_should_have_prefix.style = static_prefix_style
-dotnet_naming_symbols.static_fields.applicable_kinds = field
-dotnet_naming_symbols.static_fields.required_modifiers = static
-dotnet_naming_symbols.static_fields.applicable_accessibilities = private, internal, private_protected
-dotnet_naming_style.static_prefix_style.required_prefix = s_
-dotnet_naming_style.static_prefix_style.capitalization = camel_case
+touki_naming_rule.static_fields_should_have_prefix.severity = warning
+touki_naming_rule.static_fields_should_have_prefix.symbols = static_fields
+touki_naming_rule.static_fields_should_have_prefix.style = static_prefix_style
+touki_naming_symbols.static_fields.applicable_kinds = field
+touki_naming_symbols.static_fields.required_modifiers = static
+touki_naming_symbols.static_fields.applicable_accessibilities = private, internal, private_protected
+touki_naming_style.static_prefix_style.required_prefix = s_
+touki_naming_style.static_prefix_style.capitalization = camel_case
 
 # internal and private fields should be _camelCase
-dotnet_naming_rule.camel_case_for_private_internal_fields.severity = warning
-dotnet_naming_rule.camel_case_for_private_internal_fields.symbols  = private_internal_fields
-dotnet_naming_rule.camel_case_for_private_internal_fields.style = camel_case_underscore_style
-dotnet_naming_symbols.private_internal_fields.applicable_kinds = field
-dotnet_naming_symbols.private_internal_fields.applicable_accessibilities = private, internal
-dotnet_naming_style.camel_case_underscore_style.required_prefix = _
-dotnet_naming_style.camel_case_underscore_style.capitalization = camel_case
+touki_naming_rule.camel_case_for_private_internal_fields.severity = warning
+touki_naming_rule.camel_case_for_private_internal_fields.symbols = private_internal_fields
+touki_naming_rule.camel_case_for_private_internal_fields.style = camel_case_underscore_style
+touki_naming_symbols.private_internal_fields.applicable_kinds = field
+touki_naming_symbols.private_internal_fields.applicable_accessibilities = private, internal
+touki_naming_style.camel_case_underscore_style.required_prefix = _
+touki_naming_style.camel_case_underscore_style.capitalization = camel_case
 
 # Analyzer doesn't seem to respect the TFM coming from our Directory.Build.props
 # and complains about using "windows" specific APIs
@@ -449,6 +464,18 @@ dotnet_style_qualification_for_method = false:silent
 # Test .cs files
 [**/*Tests.cs]
 
+# Test names use Method_State_Expected words separated by underscores.
+touki_naming_rule.test_methods_should_use_pascal_words.severity = warning
+touki_naming_rule.test_methods_should_use_pascal_words.symbols = test_methods
+touki_naming_rule.test_methods_should_use_pascal_words.style = test_method_style
+touki_naming_symbols.test_methods.applicable_kinds = method
+touki_naming_style.test_method_style.word_separator = _
+touki_naming_style.test_method_style.capitalization = pascal_case
+
 # This doesn't work well with TheoryData
 # CA1861: Avoid constant arrays as arguments
 dotnet_diagnostic.CA1861.severity = none
+
+# Authored Win32 projections preserve native metadata and ABI names.
+[**/Win32/**/*.cs]
+dotnet_diagnostic.TOUKI0041.severity = none
