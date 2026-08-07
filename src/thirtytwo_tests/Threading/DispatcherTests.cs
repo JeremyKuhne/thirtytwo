@@ -391,11 +391,13 @@ public class DispatcherTests
     public void InvokeAsync_ProducerBurst_AllowsNativeMessageBetweenItems()
     {
         using ThreadContext context = ThreadingTestAccessors.CreateThreadContext();
+        using ManualResetEventSlim burstReady = new(initialState: false);
         Dispatcher dispatcher = context.Dispatcher;
         uint dispatcherThreadId = PInvoke.GetCurrentThreadId();
         int callbacksRun = 0;
         int callbacksAtNativeMessage = -1;
-        _ = Application.AddMessageFilter(new FairnessFilter(() => callbacksAtNativeMessage = callbacksRun));
+        using MessageFilterRegistration fairnessRegistration = Application.AddMessageFilter(
+            new FairnessFilter(burstReady, () => callbacksAtNativeMessage = callbacksRun));
         Task<Task[]> queued = DispatcherTestWorker.Start(() =>
         {
             Task[] operations = Enumerable.Range(0, 100)
@@ -409,7 +411,9 @@ public class DispatcherTests
                 }))
                 .ToArray();
 
-            PInvoke.PostThreadMessage(dispatcherThreadId, FairnessMessage, default, default);
+            bool posted = PInvoke.PostThreadMessage(dispatcherThreadId, FairnessMessage, default, default);
+            burstReady.Set();
+            posted.Should().BeTrue();
             return operations;
         });
 
@@ -463,10 +467,19 @@ public class DispatcherTests
         observedValue.Should().BeNull();
     }
 
-    private sealed class FairnessFilter(Action callback) : IMessageFilter
+    private sealed class FairnessFilter(ManualResetEventSlim burstReady, Action callback) : IMessageFilter
     {
+        private bool _firstWakeObserved;
+
         public bool PreFilterMessage(ref MSG message)
         {
+            if (!_firstWakeObserved && message.message == Application.DispatcherWakeMessage)
+            {
+                _firstWakeObserved = true;
+                burstReady.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
+                return false;
+            }
+
             if (message.message != FairnessMessage)
             {
                 return false;
