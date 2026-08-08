@@ -34,6 +34,8 @@ internal static class ScenarioArguments
             "host-replacement" => EnvironmentScenario.HostReplacement,
             "host-popup-close" => EnvironmentScenario.HostPopupClose,
             "host-shutdown-cleanup" => EnvironmentScenario.HostShutdownCleanup,
+            "focus-traversal" => EnvironmentScenario.FocusTraversal,
+            "input-semantics" => EnvironmentScenario.InputSemantics,
             _ => throw new ArgumentException($"Unknown environment scenario '{arguments[1]}'.")
         };
     }
@@ -59,6 +61,8 @@ internal static class ScenarioArguments
         EnvironmentScenario.HostReplacement => "host-replacement",
         EnvironmentScenario.HostPopupClose => "host-popup-close",
         EnvironmentScenario.HostShutdownCleanup => "host-shutdown-cleanup",
+        EnvironmentScenario.FocusTraversal => "focus-traversal",
+        EnvironmentScenario.InputSemantics => "input-semantics",
         _ => throw new ArgumentOutOfRangeException(nameof(scenario))
     };
 }

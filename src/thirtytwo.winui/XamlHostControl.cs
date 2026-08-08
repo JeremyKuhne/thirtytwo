@@ -41,9 +41,11 @@ public unsafe partial class XamlHostControl : CustomControl
         backgroundBrush: HBRUSH.Invalid);
 
     private readonly XamlThreadAffinity _affinity = new();
+    private XamlHostContext? _context;
     private XamlHostEnvironment? _environment;
     private DesktopWindowXamlSource? _xamlSource;
     private ShutdownRegistration _shutdownRegistration;
+    private Guid _reportedFocusRequestId;
     private bool _xamlStateDisposed;
 
     /// <summary>
@@ -54,13 +56,15 @@ public unsafe partial class XamlHostControl : CustomControl
     public XamlHostControl(Rectangle bounds, Window parentWindow)
         : base(
             bounds,
-            style: WindowStyles.Child | WindowStyles.Visible | WindowStyles.ClipChildren | WindowStyles.ClipSiblings,
+            style: WindowStyles.Child | WindowStyles.Visible | WindowStyles.TabStop
+                | WindowStyles.ClipChildren | WindowStyles.ClipSiblings,
             parentWindow: ValidateParent(parentWindow),
             windowClass: s_windowClass)
     {
         try
         {
             _environment = XamlHostEnvironment.Acquire();
+            _context = new(_environment);
             _xamlSource = CreateXamlSource();
             _shutdownRegistration = Dispatcher.RegisterShutdownCallback(Dispose);
         }
@@ -91,6 +95,41 @@ public unsafe partial class XamlHostControl : CustomControl
         }
     }
 
+    /// <summary>
+    ///  Creates a WinUI host and passes its non-disposable context to the content factory after initialization.
+    /// </summary>
+    /// <param name="bounds">The host bounds in parent-client pixels.</param>
+    /// <param name="parentWindow">The managed parent window.</param>
+    /// <param name="contentFactory">Creates content using services owned by this host.</param>
+    public XamlHostControl(
+        Rectangle bounds,
+        Window parentWindow,
+        Func<XamlHostContext, UIElement> contentFactory)
+        : this(bounds, parentWindow)
+    {
+        try
+        {
+            ArgumentNullException.ThrowIfNull(contentFactory);
+            Content = contentFactory(Context)
+                ?? throw new InvalidOperationException("The WinUI content factory returned null.");
+        }
+        catch (Exception constructionFailure)
+        {
+            ThrowAfterFailedConstruction(constructionFailure);
+        }
+    }
+
+    /// <summary>Gets WinUI services backed by the environment lease owned by this host.</summary>
+    /// <exception cref="ObjectDisposedException">The host or its parent window has been destroyed.</exception>
+    public XamlHostContext Context
+    {
+        get
+        {
+            _ = GetXamlSource();
+            return _context ?? throw new ObjectDisposedException(nameof(XamlHostControl));
+        }
+    }
+
     /// <summary>Gets or sets the WinUI element displayed by this host.</summary>
     /// <remarks>
     ///  <para>
@@ -113,6 +152,9 @@ public unsafe partial class XamlHostControl : CustomControl
             xamlSource.Content = value;
         }
     }
+
+    /// <summary>Occurs when focus enters the hosted XAML content.</summary>
+    public event EventHandler? XamlGotFocus;
 
     /// <summary>Changes the managed host window's parent and reattaches its content through a new XAML source.</summary>
     /// <param name="parentWindow">The new parent window on the host's owner thread.</param>
@@ -232,16 +274,22 @@ public unsafe partial class XamlHostControl : CustomControl
     /// <inheritdoc/>
     protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
     {
-        if (message == MessageType.Destroy)
+        switch (message)
         {
-            try
-            {
-                DisposeXamlState();
-            }
-            catch (Exception exception)
-            {
-                ReportNativeCallbackFailure("Destroy", exception);
-            }
+            case MessageType.SetFocus:
+                NavigateIntoXaml();
+                return (LRESULT)0;
+            case MessageType.Destroy:
+                try
+                {
+                    DisposeXamlState();
+                }
+                catch (Exception exception)
+                {
+                    ReportNativeCallbackFailure("Destroy", exception);
+                }
+
+                break;
         }
 
         return base.WindowProcedure(window, message, wParam, lParam);
@@ -357,12 +405,16 @@ public unsafe partial class XamlHostControl : CustomControl
         {
             xamlSource.Initialize(Win32Interop.GetWindowIdFromWindow((nint)Handle.Value));
             xamlSource.ShouldConstrainPopupsToWorkArea = true;
+            xamlSource.GotFocus += XamlSourceGotFocus;
+            xamlSource.TakeFocusRequested += XamlSourceTakeFocusRequested;
             ResizeSiteBridge(xamlSource, this.GetClientRectangle().Size);
             xamlSource.Content = content;
             return xamlSource;
         }
         catch
         {
+            xamlSource.GotFocus -= XamlSourceGotFocus;
+            xamlSource.TakeFocusRequested -= XamlSourceTakeFocusRequested;
             xamlSource.Dispose();
             throw;
         }
@@ -373,6 +425,9 @@ public unsafe partial class XamlHostControl : CustomControl
         DesktopWindowXamlSource xamlSource = GetXamlSource();
         content = xamlSource.Content;
         _xamlSource = null;
+        _reportedFocusRequestId = Guid.Empty;
+        xamlSource.GotFocus -= XamlSourceGotFocus;
+        xamlSource.TakeFocusRequested -= XamlSourceTakeFocusRequested;
         try
         {
             xamlSource.Content = null;
@@ -402,8 +457,10 @@ public unsafe partial class XamlHostControl : CustomControl
         XamlHostEnvironment? environment = _environment;
         ShutdownRegistration shutdownRegistration = _shutdownRegistration;
         _xamlSource = null;
+        _context = null;
         _environment = null;
         _shutdownRegistration = default;
+        _reportedFocusRequestId = Guid.Empty;
 
         try
         {
@@ -415,6 +472,8 @@ public unsafe partial class XamlHostControl : CustomControl
             {
                 if (xamlSource is not null)
                 {
+                    xamlSource.GotFocus -= XamlSourceGotFocus;
+                    xamlSource.TakeFocusRequested -= XamlSourceTakeFocusRequested;
                     try
                     {
                         xamlSource.Content = null;
@@ -429,6 +488,84 @@ public unsafe partial class XamlHostControl : CustomControl
             {
                 environment?.Dispose();
             }
+        }
+    }
+
+    private void NavigateIntoXaml()
+    {
+        DesktopWindowXamlSource? xamlSource = _xamlSource;
+        if (xamlSource is null)
+        {
+            return;
+        }
+
+        bool forward = XamlFocusNavigation.EntryIsForward;
+        try
+        {
+            XamlSourceFocusNavigationRequest request = new(
+                forward ? XamlSourceFocusNavigationReason.First : XamlSourceFocusNavigationReason.Last);
+            XamlSourceFocusNavigationResult result = xamlSource.NavigateFocus(request);
+            if (result.WasFocusMoved)
+            {
+                ReportXamlGotFocus(request.CorrelationId);
+            }
+            else
+            {
+                _ = XamlFocusNavigation.TryMoveFocus(Handle, forward);
+            }
+        }
+        catch (Exception exception)
+        {
+            ReportNativeCallbackFailure("NavigateFocus", exception);
+        }
+    }
+
+    private void XamlSourceGotFocus(
+        DesktopWindowXamlSource sender,
+        DesktopWindowXamlSourceGotFocusEventArgs eventArgs)
+        => ReportXamlGotFocus(eventArgs.Request.CorrelationId);
+
+    private void ReportXamlGotFocus(Guid correlationId)
+    {
+        if (correlationId != Guid.Empty && correlationId == _reportedFocusRequestId)
+        {
+            return;
+        }
+
+        _reportedFocusRequestId = correlationId;
+        try
+        {
+            XamlGotFocus?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception exception)
+        {
+            ReportNativeCallbackFailure("XamlGotFocus", exception);
+        }
+    }
+
+    private void XamlSourceTakeFocusRequested(
+        DesktopWindowXamlSource sender,
+        DesktopWindowXamlSourceTakeFocusRequestedEventArgs eventArgs)
+    {
+        bool? forward = eventArgs.Request.Reason switch
+        {
+            XamlSourceFocusNavigationReason.First => true,
+            XamlSourceFocusNavigationReason.Last => false,
+            _ => null
+        };
+
+        if (!forward.HasValue)
+        {
+            return;
+        }
+
+        try
+        {
+            _ = XamlFocusNavigation.TryMoveFocus(Handle, forward.Value);
+        }
+        catch (Exception exception)
+        {
+            ReportNativeCallbackFailure("TakeFocusRequested", exception);
         }
     }
 }

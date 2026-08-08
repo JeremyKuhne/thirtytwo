@@ -173,6 +173,8 @@ internal sealed class WinUIIntegrationRunner
                         case WinUIIntegrationScenario.HostReplacement:
                         case WinUIIntegrationScenario.HostPopupClose:
                         case WinUIIntegrationScenario.HostShutdownCleanup:
+                        case WinUIIntegrationScenario.FocusTraversal:
+                        case WinUIIntegrationScenario.InputSemantics:
                             break;
                         default:
                             throw new InvalidOperationException($"Unknown WinUI integration scenario '{scenario}'.");
@@ -508,6 +510,8 @@ internal sealed class WinUIIntegrationRunner
         WinUIIntegrationScenario.HostReplacement => "host-replacement",
         WinUIIntegrationScenario.HostPopupClose => "host-popup-close",
         WinUIIntegrationScenario.HostShutdownCleanup => "host-shutdown-cleanup",
+        WinUIIntegrationScenario.FocusTraversal => "focus-traversal",
+        WinUIIntegrationScenario.InputSemantics => "input-semantics",
         _ => throw new ArgumentOutOfRangeException(nameof(scenario))
     };
 

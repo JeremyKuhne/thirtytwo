@@ -19,21 +19,14 @@ public class HorizontalLayout : ILayoutHandler
     ///  An array of tuples containing the percentage of height to allocate and the handler to layout in that space.
     ///  The sum of all percentages must equal 1.0.
     /// </param>
+    /// <exception cref="ArgumentNullException">The handler array or one of its handlers is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">
-    ///  Thrown when the sum of all percentages does not equal 1.0.
+    ///  A percentage is nonfinite or outside 0.0 through 1.0, or the sum does not equal 1.0 within float precision.
     /// </exception>
     public HorizontalLayout(params (float Percent, ILayoutHandler Handler)[] handlers)
     {
-        float totalPercent = 0f;
-        foreach (var (percent, handler) in handlers)
-        {
-            totalPercent += percent;
-        }
-
-        if (totalPercent != 1.0f)
-            throw new ArgumentOutOfRangeException(nameof(handlers), $"Total percentage must be 1.0f.");
-
-        _handlers = handlers;
+        LayoutValidation.ValidateProportionalHandlers(handlers);
+        _handlers = [.. handlers];
     }
 
     /// <summary>
@@ -52,6 +45,6 @@ public class HorizontalLayout : ILayoutHandler
             top += currentHeight;
         }
 
-        _handlers[last].Handler.Layout(new Rectangle(bounds.X, top, bounds.Width, bounds.Height - top), scale);
+        _handlers[last].Handler.Layout(new Rectangle(bounds.X, top, bounds.Width, bounds.Bottom - top), scale);
     }
 }

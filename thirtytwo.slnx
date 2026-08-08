@@ -34,6 +34,12 @@
     </Project>
   </Folder>
   <Folder Name="/Samples/WinUI/">
+    <Project Path="src/samples/WinUI/AdvancedUsage/AdvancedUsage.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/WinUI/BasicUsage/BasicUsage.csproj">
+      <Platform Project="x64" />
+    </Project>
     <Project Path="src/samples/WinUI/ControlHost/ControlHost.csproj">
       <Platform Project="x64" />
     </Project>
@@ -93,6 +99,9 @@
   <Project Path="src/thirtytwo/thirtytwo.csproj">
     <Platform Project="x64" />
   </Project>
+  <Folder Name="/src/" />
+  <Folder Name="/src/samples/" />
+  <Folder Name="/src/samples/WinUI/" />
   <Project Path="src/thirtytwo.winui/thirtytwo.winui.csproj">
     <Platform Project="x64" />
   </Project>
