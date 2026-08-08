@@ -44,6 +44,7 @@ internal sealed class BasicUsageWindow : MainWindow
 
     private readonly Dictionary<ButtonControl, Action<bool>> _featureBindings = [];
     private readonly TextLabelControl _titleLabel;
+    private readonly ButtonControl _themeButton;
     private readonly WinUIColorPicker _colorPicker;
     private readonly TextLabelControl _statusLabel;
     private readonly StaticControl[] _selectorLabels;
@@ -57,8 +58,7 @@ internal sealed class BasicUsageWindow : MainWindow
     internal BasicUsageWindow()
         : base(
             bounds: new Rectangle(24, 4, 960, 720),
-            title: "thirtytwo WinUI Basic Usage",
-            backgroundColor: Color.White)
+            title: "thirtytwo WinUI Basic Usage")
     {
         List<Window> ownedControls = [];
 
@@ -66,23 +66,23 @@ internal sealed class BasicUsageWindow : MainWindow
         {
             _titleLabel = Track(new TextLabelControl(
                 text: "WinUI ColorPicker",
-                textColor: Color.FromArgb(17, 24, 39),
                 parentWindow: this,
-                backgroundColor: Color.White,
                 features: Features.EnableDirect2d), ownedControls);
             _titleLabel.SetFont("Segoe UI", 20);
+
+            _themeButton = Track(new ButtonControl(
+                text: GetThemeButtonText(),
+                style: WindowStyles.Child | WindowStyles.Visible | WindowStyles.TabStop,
+                parentWindow: this), ownedControls);
 
             _colorPicker = Track(new WinUIColorPicker(default, this)
             {
                 Color = Color.CornflowerBlue,
-                IsAlphaEnabled = true,
-                RequestedTheme = WinUIElementTheme.Light
+                IsAlphaEnabled = true
             }, ownedControls);
 
             _statusLabel = Track(new TextLabelControl(
-                textColor: Color.FromArgb(31, 41, 55),
                 parentWindow: this,
-                backgroundColor: Color.FromArgb(243, 244, 246),
                 features: Features.EnableDirect2d), ownedControls);
             _statusLabel.SetFont("Consolas", 12);
 
@@ -136,6 +136,7 @@ internal sealed class BasicUsageWindow : MainWindow
 
             _ownedControls = [.. ownedControls];
             _colorPicker.ColorChanged += ColorPickerColorChanged;
+            _themeButton.Click += ThemeButtonClick;
             _colorPresetSelector.SelectionChanged += ColorPresetSelectionChanged;
             _spectrumShapeSelector.SelectionChanged += SpectrumShapeSelectionChanged;
             _spectrumComponentsSelector.SelectionChanged += SpectrumComponentsSelectionChanged;
@@ -217,6 +218,10 @@ internal sealed class BasicUsageWindow : MainWindow
 
     private ILayoutHandler CreateWindowLayout()
     {
+        ILayoutHandler titleLayout = Layout.Vertical(
+            (.75f, Layout.Margin((16, 4, 8, 0), Layout.Fill(_titleLabel))),
+            (.25f, Layout.Margin((8, 4, 16, 0), Layout.Fill(_themeButton))));
+
         ILayoutHandler selectorLayout = Layout.Horizontal(
             (.25f, CreateSelectorRow(_selectorLabels[0], _colorPresetSelector)),
             (.25f, CreateSelectorRow(_selectorLabels[1], _spectrumShapeSelector)),
@@ -238,7 +243,7 @@ internal sealed class BasicUsageWindow : MainWindow
             (.625f, Layout.Margin((8, 0, 16, 0), Layout.Fill(_colorPicker))));
 
         return Layout.Horizontal(
-            (.0625f, Layout.Margin((16, 4, 16, 0), Layout.Fill(_titleLabel))),
+            (.0625f, titleLayout),
             (.875f, contentLayout),
             (.0625f, Layout.Margin((16, 4, 16, 8), Layout.Fill(_statusLabel))));
     }
@@ -297,6 +302,20 @@ internal sealed class BasicUsageWindow : MainWindow
         }
     }
 
+    private void ThemeButtonClick(object? sender, EventArgs eventArgs)
+    {
+        Application.ColorMode = Application.ColorMode switch
+        {
+            ApplicationColorMode.System => ApplicationColorMode.Dark,
+            ApplicationColorMode.Dark => ApplicationColorMode.Light,
+            _ => ApplicationColorMode.System
+        };
+
+        _themeButton.Text = GetThemeButtonText();
+    }
+
+    private static string GetThemeButtonText() => $"Theme: {Application.ColorMode}";
+
     private void ColorPickerColorChanged(object? sender, WinUIColorChangedEventArgs eventArgs)
         => SynchronizeSelectedColor(eventArgs.NewColor);
 
@@ -321,6 +340,7 @@ internal sealed class BasicUsageWindow : MainWindow
         if (disposing)
         {
             _colorPicker.ColorChanged -= ColorPickerColorChanged;
+            _themeButton.Click -= ThemeButtonClick;
             _colorPresetSelector.SelectionChanged -= ColorPresetSelectionChanged;
             _spectrumShapeSelector.SelectionChanged -= SpectrumShapeSelectionChanged;
             _spectrumComponentsSelector.SelectionChanged -= SpectrumComponentsSelectionChanged;

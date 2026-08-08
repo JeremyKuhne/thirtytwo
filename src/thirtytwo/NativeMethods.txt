@@ -15,6 +15,9 @@ CallWindowProc
 CB_*
 CBN_*
 CBS_*
+CFE_EFFECTS
+CFM_MASK
+CHARFORMAT2W
 CHILDID_SELF
 CLASS_E_NOTLICENSED
 CLEARTYPE_NATURAL_QUALITY
@@ -71,6 +74,7 @@ DrawFocusRect
 DrawIconEx
 DRAWITEMSTRUCT
 DrawTextEx
+DwmSetWindowAttribute
 DWriteCreateFactory
 E_ACCESSDENIED
 E_FAIL
@@ -147,6 +151,7 @@ GetClipboardData
 GetClipboardFormatName
 GetClipboardOwner
 GetClipRgn
+GetComboBoxInfo
 GetCurrentThread
 GetCurrentThreadId
 GetCursorPos
@@ -179,6 +184,7 @@ GetProcessDpiAwareness
 GetRgnBox
 GetROP2
 GetStockObject
+GetSysColor
 GetSysColorBrush
 GetTextColor
 GetThreadDpiAwarenessContext
@@ -205,6 +211,8 @@ GlobalSize
 GlobalUnlock
 GUID_WICPixelFormat32bppPBGRA
 HFONT
+HIGHCONTRASTW
+HIGHCONTRASTW_FLAGS
 HKEY_*
 HRESULT
 HWND_MESSAGE
@@ -331,6 +339,9 @@ ReleaseDC
 RemoveClipboardFormatListener
 RestoreDC
 ROLE_SYSTEM_*
+RoActivateInstance
+RoInitialize
+RoUninitialize
 RoundRect
 S_FALSE
 S_OK
@@ -340,6 +351,9 @@ SafeArrayGetVartype
 SafeArrayLock
 SafeArrayUnlock
 SaveDC
+SCF_ALL
+SCF_DEFAULT
+SCF_SELECTION
 ScreenToClient
 SelectClipRgn
 SelectObject
@@ -372,6 +386,7 @@ SetWindowLong
 SetWindowLongPtr
 SetWindowRgn
 SetWindowText
+SetWindowTheme
 SetWorldTransform
 SHCreateShellItem
 SHDefExtractIcon
@@ -383,6 +398,7 @@ STATE_SYSTEM_*
 STATIC_STYLES
 STATUS_BUFFER_OVERFLOW
 STATUS_BUFFER_TOO_SMALL
+SystemParametersInfo
 STATUS_INFO_LENGTH_MISMATCH
 STATUS_SUCCESS
 SubtractRect
@@ -412,5 +428,7 @@ VIRTUAL_KEY
 WICComponentEnumerateOptions
 WIN32_ERROR
 WINDOWPOS
+WindowsCreateString
+WindowsDeleteString
 WM_*
 XFORMCOORDS

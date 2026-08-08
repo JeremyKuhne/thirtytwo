@@ -106,6 +106,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
             s_comboBoxClass,
             parameters)
     {
+        ApplyApplicationTheme();
     }
 
     /// <summary>
@@ -314,6 +315,24 @@ public unsafe partial class ComboBoxControl : RegisteredControl
                 OnSelectionCanceled();
                 SelectionCanceled?.Invoke(this, EventArgs.Empty);
                 break;
+        }
+    }
+
+    /// <inheritdoc/>
+    protected override void OnColorModeChanged()
+    {
+        ApplyApplicationTheme();
+        base.OnColorModeChanged();
+    }
+
+    private void ApplyApplicationTheme()
+    {
+        ApplyApplicationDarkModeTheme("CFD");
+
+        COMBOBOXINFO comboBoxInfo = new() { cbSize = (uint)sizeof(COMBOBOXINFO) };
+        if (PInvoke.GetComboBoxInfo(Handle, &comboBoxInfo) && !comboBoxInfo.hwndList.IsNull)
+        {
+            ApplyApplicationDarkModeTheme(comboBoxInfo.hwndList, "DarkMode_Explorer");
         }
     }
 

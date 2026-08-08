@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.Numerics;
+using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.Graphics.Direct2D;
 
 namespace Windows;
@@ -58,6 +59,10 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     private uint _lastDpi;
     private Color _backgroundColor;
     private HBRUSH _backgroundBrush;
+    private Color _backgroundBrushColor;
+    private HBRUSH _controlBackgroundBrush;
+    private Color _controlBackgroundBrushColor;
+    private int _colorModeGeneration = -1;
 
     private readonly Features _features;
 
@@ -133,6 +138,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
         _features = features;
         _backgroundColor = backgroundColor;
+        UndocumentedDarkMode.ConfigureApplication(Application.CurrentColorState);
 
         try
         {
@@ -166,6 +172,8 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
             // Default system font is applied, use a nicer (ClearType) font
             this.SetFontHandle(GetDefaultFontForDpi((int)_lastDpi));
         }
+
+        ApplyApplicationColorMode(invokeCallback: false);
     }
 
     /// <summary>
@@ -207,6 +215,40 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
             if (reference.TryGetTarget(out Window? window) && ReferenceEquals(window._thread, Thread.CurrentThread))
             {
                 window.AttachDispatcher(dispatcher);
+            }
+        }
+    }
+
+    internal static void ApplyApplicationColorModeToWindows()
+    {
+        HashSet<Threading.Dispatcher> postedDispatchers = [];
+        foreach (WeakReference<Window> reference in s_windows.Values)
+        {
+            if (!reference.TryGetTarget(out Window? window) || window.Handle.IsNull)
+            {
+                continue;
+            }
+
+            if (ReferenceEquals(window._thread, Thread.CurrentThread))
+            {
+                window.ApplyApplicationColorMode(invokeCallback: true);
+            }
+            else if (window._dispatcher is { } dispatcher && postedDispatchers.Add(dispatcher))
+            {
+                _ = dispatcher.TryPost(ApplyApplicationColorModeToCurrentThread);
+            }
+        }
+    }
+
+    private static void ApplyApplicationColorModeToCurrentThread()
+    {
+        foreach (WeakReference<Window> reference in s_windows.Values)
+        {
+            if (reference.TryGetTarget(out Window? window)
+                && !window.Handle.IsNull
+                && ReferenceEquals(window._thread, Thread.CurrentThread))
+            {
+                window.ApplyApplicationColorMode(invokeCallback: true);
             }
         }
     }
@@ -328,7 +370,8 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                 {
                     _renderTarget.BeginDraw();
                     _renderTarget.SetTransform(Matrix3x2.Identity);
-                    _renderTarget.Clear(GetBackgroundOwner()?._backgroundColor ?? default);
+                    Window backgroundOwner = GetBackgroundOwner();
+                    _renderTarget.Clear(backgroundOwner.GetEffectiveBackgroundColor(controlSurface: false));
                 }
 
                 break;
@@ -447,13 +490,14 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                 Window control = lParam == 0
                     ? this
                     : FromHandle((HWND)lParam, walkParents: true) ?? this;
-                if (control.GetBackgroundOwner() is { } controlBackgroundOwner)
-                {
-                    ((HDC)wParam).SetBackgroundColor(controlBackgroundOwner._backgroundColor);
-                    return (LRESULT)controlBackgroundOwner.GetBackgroundBrush().Value;
-                }
-
-                break;
+                Window controlBackgroundOwner = control.GetBackgroundOwner();
+                bool controlSurface = message is MessageType.ControlColorEdit
+                    or MessageType.ControlColorListBox
+                    or MessageType.ControlColorScrollBar;
+                DeviceContext controlContext = (DeviceContext)wParam;
+                controlContext.SetBackgroundColor(controlBackgroundOwner.GetEffectiveBackgroundColor(controlSurface));
+                controlContext.SetTextColor(control.GetEffectiveForegroundColor(controlSurface));
+                return (LRESULT)controlBackgroundOwner.GetBackgroundBrush(controlSurface).Value;
 
             case MessageType.GetFont:
                 // We only want to handle fonts if we're not an externally registered class.
@@ -483,6 +527,12 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                 HandleDpiChanged(new(wParam, lParam));
                 break;
 
+            case MessageType.SettingChange:
+            case MessageType.SystemColorChange:
+            case MessageType.ThemeChanged:
+                Application.RefreshSystemColorMode();
+                break;
+
             case MessageType.Command:
                 if (lParam != 0 && FromHandle((HWND)lParam, walkParents: false) is Window child)
                 {
@@ -508,33 +558,172 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
             : PInvoke.CallWindowProc(_priorWindowProcedure, window, (uint)message, wParam, lParam);
     }
 
-    private Window? GetBackgroundOwner()
+    /// <summary>Called after the effective application color state changes.</summary>
+    /// <remarks>
+    ///  <para>
+    ///   This method is called on the window's owning UI thread after <see cref="Application.CurrentColorState"/> is
+    ///   updated. Derived controls should recreate palette-dependent resources here and then call the base method.
+    ///   Initial construction does not invoke this virtual method; initialize those resources in the derived
+    ///   constructor or the relevant creation hook as well.
+    ///  </para>
+    /// </remarks>
+    protected virtual void OnColorModeChanged()
     {
-        Window? current = this;
+    }
+
+    /// <summary>Applies the current application color state to this window using a private dark theme class.</summary>
+    /// <param name="darkThemeName">The private visual-style class name used when dark mode is active.</param>
+    /// <remarks>
+    ///  <para>
+    ///   Call this after the window handle is created and again from <see cref="OnColorModeChanged"/>. The framework
+    ///   applies the private theme only when <see cref="Application.UseUndocumentedDarkModeApis"/> is enabled, Dark
+    ///   mode is resolved, and High Contrast is inactive. Otherwise, it removes the prior private association.
+    ///  </para>
+    /// </remarks>
+    protected void ApplyApplicationDarkModeTheme(string darkThemeName)
+        => ApplyApplicationDarkModeTheme(Handle, darkThemeName);
+
+    /// <summary>Applies the current application color state to an owned native window using a private dark theme class.</summary>
+    /// <param name="window">The owned native window whose visual-style association is updated.</param>
+    /// <param name="darkThemeName">The private visual-style class name used when dark mode is active.</param>
+    /// <remarks>
+    ///  <para>
+    ///   This overload supports unwrapped child or popup windows owned by a derived control. The supplied handle must
+    ///   remain valid for the duration of the call.
+    ///  </para>
+    /// </remarks>
+    protected void ApplyApplicationDarkModeTheme(HWND window, string darkThemeName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(darkThemeName);
+        UndocumentedDarkMode.ApplyWindowTheme(window, Application.CurrentColorState, darkThemeName);
+    }
+
+    private Window GetBackgroundOwner()
+    {
+        Window current = this;
         while (current._backgroundColor.IsEmpty && !current.Handle.IsNull)
         {
             HWND parentHandle = PInvoke.GetParent(current.Handle);
             Window? parent = parentHandle.IsNull ? null : FromHandle(parentHandle, walkParents: true);
             if (parent is null || ReferenceEquals(parent, current))
             {
-                return null;
+                break;
             }
 
             current = parent;
         }
 
-        return current._backgroundColor.IsEmpty ? null : current;
+        return current;
     }
 
-    private HBRUSH GetBackgroundBrush()
+    /// <summary>Gets the effective inherited background color for this window.</summary>
+    /// <param name="controlSurface">
+    ///  <see langword="true"/> to use the semantic interactive-control background when no explicit background is
+    ///  inherited; <see langword="false"/> to use the semantic window background.
+    /// </param>
+    /// <returns>The nearest explicit ancestor background or the current semantic default.</returns>
+    protected Color GetEffectiveBackgroundColor(bool controlSurface = false)
     {
-        Debug.Assert(!_backgroundColor.IsEmpty);
-        if (_backgroundBrush.IsNull)
+        Window backgroundOwner = GetBackgroundOwner();
+        if (!backgroundOwner._backgroundColor.IsEmpty)
         {
-            _backgroundBrush = HBRUSH.CreateSolid(_backgroundColor);
+            return backgroundOwner._backgroundColor;
         }
 
-        return _backgroundBrush;
+        ApplicationColorPalette palette = Application.CurrentColorState.Palette;
+        return controlSurface ? palette.ControlBackground : palette.WindowBackground;
+    }
+
+    /// <summary>Gets the effective enabled or disabled semantic foreground color for this window.</summary>
+    /// <param name="controlSurface">
+    ///  <see langword="true"/> to use the semantic interactive-control foreground; <see langword="false"/> to use
+    ///  the semantic window foreground.
+    /// </param>
+    /// <returns>The current enabled foreground, or the disabled foreground when this window is disabled.</returns>
+    protected Color GetEffectiveForegroundColor(bool controlSurface = true)
+    {
+        ApplicationColorPalette palette = Application.CurrentColorState.Palette;
+        if (!PInvoke.IsWindowEnabled(Handle))
+        {
+            return palette.DisabledForeground;
+        }
+
+        return controlSurface ? palette.ControlForeground : palette.WindowForeground;
+    }
+
+    private HBRUSH GetBackgroundBrush(bool controlSurface = false)
+    {
+        Color color = GetEffectiveBackgroundColor(controlSurface);
+        ref HBRUSH brush = ref controlSurface ? ref _controlBackgroundBrush : ref _backgroundBrush;
+        ref Color brushColor = ref controlSurface ? ref _controlBackgroundBrushColor : ref _backgroundBrushColor;
+        if (brush.IsNull || brushColor != color)
+        {
+            brush.Dispose();
+            brush = HBRUSH.CreateSolid(color);
+            brushColor = color;
+        }
+
+        return brush;
+    }
+
+    private void ApplyApplicationColorMode(bool invokeCallback)
+    {
+        if (Handle.IsNull)
+        {
+            return;
+        }
+
+        ApplicationColorState state = Application.CurrentColorState;
+        if (_colorModeGeneration == state.Generation)
+        {
+            return;
+        }
+
+        _colorModeGeneration = state.Generation;
+        _backgroundBrush.Dispose();
+        _backgroundBrush = default;
+        _backgroundBrushColor = default;
+        _controlBackgroundBrush.Dispose();
+        _controlBackgroundBrush = default;
+        _controlBackgroundBrushColor = default;
+        UndocumentedDarkMode.ConfigureApplication(state);
+        ApplyTitleBarColorMode(state);
+        if (invokeCallback)
+        {
+            OnColorModeChanged();
+        }
+
+        this.Invalidate(erase: true);
+    }
+
+    private void ApplyTitleBarColorMode(ApplicationColorState state)
+    {
+        if (PInvoke.GetAncestor(Handle, GET_ANCESTOR_FLAGS.GA_ROOT) != Handle)
+        {
+            return;
+        }
+
+        BOOL dark = state.IsDark && !state.IsHighContrast;
+        // These attributes are unavailable on older Windows versions. Client-area theming remains functional when
+        // DWM rejects an attribute, so compatibility failures are intentionally nonfatal.
+        _ = PInvoke.DwmSetWindowAttribute(
+            Handle,
+            DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE,
+            &dark,
+            (uint)sizeof(BOOL));
+
+        uint caption = state.IsHighContrast
+            ? uint.MaxValue
+            : ((COLORREF)state.Palette.WindowBackground).Value;
+        uint text = state.IsHighContrast
+            ? uint.MaxValue
+            : ((COLORREF)state.Palette.WindowForeground).Value;
+        uint border = state.IsHighContrast
+            ? uint.MaxValue
+            : ((COLORREF)state.Palette.Border).Value;
+        _ = PInvoke.DwmSetWindowAttribute(Handle, DWMWINDOWATTRIBUTE.DWMWA_CAPTION_COLOR, &caption, sizeof(uint));
+        _ = PInvoke.DwmSetWindowAttribute(Handle, DWMWINDOWATTRIBUTE.DWMWA_TEXT_COLOR, &text, sizeof(uint));
+        _ = PInvoke.DwmSetWindowAttribute(Handle, DWMWINDOWATTRIBUTE.DWMWA_BORDER_COLOR, &border, sizeof(uint));
     }
 
     private void HandleDpiChanged(Message.DpiChanged dpiChanged)
@@ -653,6 +842,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         if (disposing)
         {
             _backgroundBrush.Dispose();
+            _controlBackgroundBrush.Dispose();
             _lastCreatedFont.Dispose();
             _font.Dispose();
             _renderTarget?.Dispose();

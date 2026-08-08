@@ -45,6 +45,7 @@ public unsafe partial class XamlHostControl : CustomControl
     private XamlHostEnvironment? _environment;
     private DesktopWindowXamlSource? _xamlSource;
     private ShutdownRegistration _shutdownRegistration;
+    private ElementTheme? _applicationRequestedTheme;
     private Guid _reportedFocusRequestId;
     private bool _xamlStateDisposed;
 
@@ -149,7 +150,13 @@ public unsafe partial class XamlHostControl : CustomControl
         set
         {
             DesktopWindowXamlSource xamlSource = GetXamlSource();
+            if (!ReferenceEquals(xamlSource.Content, value))
+            {
+                _applicationRequestedTheme = null;
+            }
+
             xamlSource.Content = value;
+            ApplyApplicationTheme(value);
         }
     }
 
@@ -269,6 +276,13 @@ public unsafe partial class XamlHostControl : CustomControl
         }
 
         base.OnSize(size);
+    }
+
+    /// <inheritdoc/>
+    protected override void OnColorModeChanged()
+    {
+        ApplyApplicationTheme(_xamlSource?.Content);
+        base.OnColorModeChanged();
     }
 
     /// <inheritdoc/>
@@ -518,6 +532,35 @@ public unsafe partial class XamlHostControl : CustomControl
         {
             ReportNativeCallbackFailure("NavigateFocus", exception);
         }
+    }
+
+    private void ApplyApplicationTheme(UIElement? content)
+    {
+        if (content is not FrameworkElement element)
+        {
+            _applicationRequestedTheme = null;
+            return;
+        }
+
+        if (_applicationRequestedTheme is null && element.RequestedTheme != ElementTheme.Default)
+        {
+            return;
+        }
+
+        if (_applicationRequestedTheme is { } previousTheme && element.RequestedTheme != previousTheme)
+        {
+            _applicationRequestedTheme = null;
+            return;
+        }
+
+        ElementTheme theme = Application.ColorMode switch
+        {
+            ApplicationColorMode.Dark => ElementTheme.Dark,
+            ApplicationColorMode.Light => ElementTheme.Light,
+            _ => ElementTheme.Default
+        };
+        element.RequestedTheme = theme;
+        _applicationRequestedTheme = theme;
     }
 
     private void XamlSourceGotFocus(
