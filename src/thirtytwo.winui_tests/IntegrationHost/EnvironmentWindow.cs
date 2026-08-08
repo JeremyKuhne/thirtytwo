@@ -265,6 +265,17 @@ internal sealed class EnvironmentWindow : Window
         _xamlHost.Content = replacement;
         Ensure(ReferenceEquals(Window.FromHandle(_xamlHost), _xamlHost), "The managed host HWND was not registered.");
 
+        Application.ColorMode = ApplicationColorMode.Dark;
+        Ensure(replacement.RequestedTheme == Microsoft.UI.Xaml.ElementTheme.Dark, "Dark mode did not reach hosted XAML content.");
+        Application.ColorMode = ApplicationColorMode.Light;
+        Ensure(replacement.RequestedTheme == Microsoft.UI.Xaml.ElementTheme.Light, "Light mode did not reach hosted XAML content.");
+        Application.ColorMode = ApplicationColorMode.System;
+        Ensure(replacement.RequestedTheme == Microsoft.UI.Xaml.ElementTheme.Default, "System mode did not restore the default XAML theme.");
+        replacement.RequestedTheme = Microsoft.UI.Xaml.ElementTheme.Light;
+        Application.ColorMode = ApplicationColorMode.Dark;
+        Ensure(replacement.RequestedTheme == Microsoft.UI.Xaml.ElementTheme.Light, "An explicit XAML theme override was replaced.");
+        Application.ColorMode = ApplicationColorMode.System;
+
         XamlHostContext? disposedContext = null;
         using (XamlHostControl temporaryHost = new(
             new Rectangle(0, 0, 10, 10),

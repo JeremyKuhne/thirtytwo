@@ -3,6 +3,7 @@
 
 using System.Drawing;
 using Windows.Support;
+using Windows.Win32.UI.Controls.RichEdit;
 
 namespace Windows;
 
@@ -40,5 +41,40 @@ public partial class RichEditControl : EditBase
             parentWindow,
             parameters)
     {
+        ApplyApplicationColors();
+    }
+
+    /// <inheritdoc/>
+    protected override void OnColorModeChanged()
+    {
+        ApplyApplicationColors();
+        base.OnColorModeChanged();
+    }
+
+    private unsafe void ApplyApplicationColors()
+    {
+        ApplicationColorState state = Application.CurrentColorState;
+        ApplyApplicationDarkModeTheme("DarkMode_Explorer");
+
+        Color background = state.Palette.ControlBackground;
+        this.SendMessage(
+            (MessageType)PInvoke.EM_SETBKGNDCOLOR,
+            (WPARAM)(BOOL)state.IsHighContrast,
+            (LPARAM)(nint)((COLORREF)background).Value);
+
+        CHARFORMAT2W characterFormat = new();
+        characterFormat.Base.cbSize = (uint)sizeof(CHARFORMAT2W);
+        characterFormat.Base.dwMask = CFM_MASK.CFM_COLOR;
+        characterFormat.Base.dwEffects = state.IsHighContrast ? CFE_EFFECTS.CFE_AUTOCOLOR : default;
+        characterFormat.Base.crTextColor = (COLORREF)state.Palette.ControlForeground;
+
+        this.SendMessage(
+            (MessageType)PInvoke.EM_SETCHARFORMAT,
+            default,
+            (LPARAM)(nint)(&characterFormat));
+        this.SendMessage(
+            (MessageType)PInvoke.EM_SETCHARFORMAT,
+            (WPARAM)PInvoke.SCF_ALL,
+            (LPARAM)(nint)(&characterFormat));
     }
 }

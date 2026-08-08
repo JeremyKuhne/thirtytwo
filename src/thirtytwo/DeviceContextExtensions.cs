@@ -535,4 +535,12 @@ public static unsafe partial class DeviceContextExtensions
         GC.KeepAlive(context.Wrapper);
         return color;
     }
+
+    /// <inheritdoc cref="PInvoke.SetTextColor(HDC, COLORREF)"/>
+    public static Color SetTextColor<T>(this T context, Color color) where T : IHandle<HDC>
+    {
+        COLORREF result = PInvoke.SetTextColor(context.Handle, (COLORREF)color);
+        GC.KeepAlive(context.Wrapper);
+        return result;
+    }
 }

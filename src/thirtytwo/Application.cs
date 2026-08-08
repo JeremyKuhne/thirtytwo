@@ -14,7 +14,7 @@ namespace Windows;
 /// <summary>
 ///  Main application class.
 /// </summary>
-public static unsafe class Application
+public static unsafe partial class Application
 {
     // Keep all framework-owned WM_APP identifiers together so new allocations cannot silently overlap.
 

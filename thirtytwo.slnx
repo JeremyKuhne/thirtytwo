@@ -9,6 +9,9 @@
     <Project Path="src/samples/ClipboardViewer/ClipboardViewer.csproj">
       <Platform Project="x64" />
     </Project>
+    <Project Path="src/samples/DarkMode/DarkMode.csproj">
+      <Platform Project="x64" />
+    </Project>
     <Project Path="src/samples/KeyWatch/KeyWatch.csproj">
       <Platform Project="x64" />
     </Project>

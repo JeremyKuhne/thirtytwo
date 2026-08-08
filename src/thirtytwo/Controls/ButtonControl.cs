@@ -30,6 +30,7 @@ public partial class ButtonControl : RegisteredControl
             parameters,
             (HMENU)buttonId)
     {
+        ApplyApplicationTheme();
     }
 
     /// <summary>Gets or sets the check state of a check box, radio button, or three-state button.</summary>
@@ -53,6 +54,19 @@ public partial class ButtonControl : RegisteredControl
             Click?.Invoke(this, EventArgs.Empty);
         }
     }
+
+    /// <inheritdoc/>
+    protected override void OnColorModeChanged()
+    {
+        ApplyApplicationTheme();
+        base.OnColorModeChanged();
+    }
+
+    private void ApplyApplicationTheme()
+        => ApplyApplicationDarkModeTheme(
+            OperatingSystem.IsWindowsVersionAtLeast(10, 0, 26200)
+                ? "DarkMode_DarkTheme"
+                : "DarkMode_Explorer");
 
     /// <summary>Raises the <see cref="Click"/> event.</summary>
     protected virtual void OnClick()

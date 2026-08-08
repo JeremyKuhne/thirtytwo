@@ -43,14 +43,9 @@ public class TextLabelControl : CustomControl
 
     public Color TextColor
     {
-        get => _textColor;
+        get => _textColor.IsEmpty ? Application.CurrentColorState.Palette.WindowForeground : _textColor;
         set
         {
-            if (value.IsEmpty)
-            {
-                value = Color.Black;
-            }
-
             if (value == _textColor)
             {
                 return;
@@ -101,6 +96,18 @@ public class TextLabelControl : CustomControl
         }
 
         base.OnPaint();
+    }
+
+    /// <inheritdoc/>
+    protected override void OnColorModeChanged()
+    {
+        if (_textBrush is { } brush)
+        {
+            brush.Color = TextColor;
+        }
+
+        this.Invalidate();
+        base.OnColorModeChanged();
     }
 
     protected override LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
