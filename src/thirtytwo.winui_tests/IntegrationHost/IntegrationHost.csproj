@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="KlutzyNinja.Touki.TestSupport" PrivateAssets="all" />
     <ProjectReference Include="..\..\thirtytwo.winui\thirtytwo.winui.csproj" />
     <ProjectReference Include="..\..\samples\WinUI\SampleWinUIClassLibraryA\SampleWinUIClassLibraryA.csproj" />
     <ProjectReference Include="..\..\samples\WinUI\SampleWinUIClassLibraryB\SampleWinUIClassLibraryB.csproj" />

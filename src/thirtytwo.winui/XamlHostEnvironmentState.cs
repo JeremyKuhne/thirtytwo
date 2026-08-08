@@ -179,7 +179,7 @@ internal sealed class XamlHostEnvironmentState
                     nativeThreadId);
             }
 
-                    XamlHostEnvironment.RetainProcessApplication(application);
+                XamlHostEnvironment.RetainProcessApplication(application);
 
             XamlHostEnvironmentState state = new(
                 dispatcher,

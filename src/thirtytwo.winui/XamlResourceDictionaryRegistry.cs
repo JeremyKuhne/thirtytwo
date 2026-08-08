@@ -17,7 +17,7 @@ public sealed class XamlResourceDictionaryRegistry
     private readonly ResourceDictionary _applicationResources;
     private readonly List<ResourceDictionary> _dictionaries = [];
     private readonly HashSet<ResourceDictionary> _registered = new(ReferenceEqualityComparer.Instance);
-    private readonly Dictionary<object, ResourceDictionary> _resourceOwners = [];
+    private Dictionary<object, ResourceDictionary> _resourceOwners = [];
 
     public XamlResourceDictionaryRegistry(ResourceDictionary applicationResources)
     {
@@ -28,7 +28,7 @@ public sealed class XamlResourceDictionaryRegistry
         {
             _dictionaries.Add(dictionary);
             _registered.Add(dictionary);
-            IndexResources(dictionary);
+            IndexResources([.. dictionary], dictionary, _resourceOwners);
         }
     }
 
@@ -77,12 +77,17 @@ public sealed class XamlResourceDictionaryRegistry
 
         try
         {
-            ReportCollisions(dictionary);
+            KeyValuePair<object, object>[] resources = [.. dictionary];
+            ReportCollisions(dictionary, resources);
+
+            Dictionary<object, ResourceDictionary> resourceOwners = new(_resourceOwners, _resourceOwners.Comparer);
+            IndexResources(resources, dictionary, resourceOwners);
+
             _dictionaries.Add(dictionary);
             try
             {
                 _applicationResources.MergedDictionaries.Add(dictionary);
-                IndexResources(dictionary);
+                _resourceOwners = resourceOwners;
                 return true;
             }
             catch
@@ -98,14 +103,16 @@ public sealed class XamlResourceDictionaryRegistry
         }
     }
 
-    private void ReportCollisions(ResourceDictionary winningDictionary)
+    private void ReportCollisions(
+        ResourceDictionary winningDictionary,
+        IReadOnlyList<KeyValuePair<object, object>> resources)
     {
         if (CollisionDetected is null && !XamlHostEventSource.Log.IsEnabled())
         {
             return;
         }
 
-        foreach (KeyValuePair<object, object> resource in winningDictionary)
+        foreach (KeyValuePair<object, object> resource in resources)
         {
             if (_resourceOwners.TryGetValue(resource.Key, out ResourceDictionary? existing))
             {
@@ -117,11 +124,14 @@ public sealed class XamlResourceDictionaryRegistry
         }
     }
 
-    private void IndexResources(ResourceDictionary dictionary)
+    private static void IndexResources(
+        IReadOnlyList<KeyValuePair<object, object>> resources,
+        ResourceDictionary dictionary,
+        Dictionary<object, ResourceDictionary> resourceOwners)
     {
-        foreach (KeyValuePair<object, object> resource in dictionary)
+        foreach (KeyValuePair<object, object> resource in resources)
         {
-            _resourceOwners[resource.Key] = dictionary;
+            resourceOwners[resource.Key] = dictionary;
         }
     }
 }

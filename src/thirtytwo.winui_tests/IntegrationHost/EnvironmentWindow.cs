@@ -7,10 +7,12 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Markup;
 using SampleWinUIClassLibraryA;
 using SampleWinUIClassLibraryB;
+using Touki.TestSupport;
 using Windows;
 using Windows.Threading;
 using Windows.Win32;
 using Windows.WinUI;
+using ResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
 
 namespace IntegrationHost;
 
@@ -148,6 +150,7 @@ internal sealed class EnvironmentWindow : Window
         LibraryBResources resourcesB = new();
         Ensure(resources.Register(resourcesA), "Resources A were not registered.");
         Ensure(!resources.Register(resourcesA), "Resource registration was not idempotent.");
+        VerifyResourceIndexFailureRollsBack(resources);
         EventHandler<XamlResourceCollisionEventArgs> throwingHandler =
             static (_, _) => throw new InvalidOperationException("Expected collision callback failure.");
         resources.CollisionDetected += throwingHandler;
@@ -176,6 +179,53 @@ internal sealed class EnvironmentWindow : Window
         _reporter.Write("resources-composed");
         _reporter.Write("resource-collision-reported");
         _reporter.Write("theme-dictionaries-preserved");
+    }
+
+    private void VerifyResourceIndexFailureRollsBack(XamlResourceDictionaryRegistry resources)
+    {
+        const string indexedBeforeFailure = "SampleWinUI.IndexedBeforeFailure";
+        const string failureKey = "SampleWinUI.IndexFailure";
+        ResourceDictionary failingDictionary = new();
+        failingDictionary[indexedBeforeFailure] = "Expected";
+        failingDictionary[failureKey] = "Expected";
+        DelayedHashCodeFailureComparer comparer = new();
+        dynamic accessor = resources.TestAccessor.Dynamic;
+        Dictionary<object, ResourceDictionary> resourceOwners = accessor._resourceOwners;
+        accessor._resourceOwners = new Dictionary<object, ResourceDictionary>(resourceOwners, comparer);
+        comparer.FailAfterSuccessfulCalls(failureKey, 1);
+        EventHandler<XamlResourceCollisionEventArgs> collisionObserver = static (_, _) => { };
+        resources.CollisionDetected += collisionObserver;
+        int dictionaryCount = resources.Count;
+        int mergedDictionaryCount = _environment!.Application.Resources.MergedDictionaries.Count;
+        bool expectedFailureObserved = false;
+        bool ownerIndexChanged = false;
+
+        try
+        {
+            _ = resources.Register(failingDictionary);
+        }
+        catch (InvalidOperationException exception) when (exception.Message == "Expected resource key hash failure.")
+        {
+            expectedFailureObserved = true;
+        }
+        finally
+        {
+            resources.CollisionDetected -= collisionObserver;
+            comparer.DisableFailure();
+            Dictionary<object, ResourceDictionary> currentResourceOwners = accessor._resourceOwners;
+            ownerIndexChanged = currentResourceOwners.ContainsKey(indexedBeforeFailure);
+            accessor._resourceOwners = resourceOwners;
+        }
+
+        Ensure(expectedFailureObserved, "Resource owner indexing did not fail as expected.");
+        Ensure(!ownerIndexChanged, "Failed resource owner indexing partially updated the owner index.");
+        Ensure(resources.Count == dictionaryCount, "Failed resource owner indexing changed the registry count.");
+        Ensure(!resources.Dictionaries.Contains(failingDictionary), "Failed resource owner indexing retained the dictionary.");
+        Ensure(
+            _environment.Application.Resources.MergedDictionaries.Count == mergedDictionaryCount
+                && !_environment.Application.Resources.MergedDictionaries.Contains(failingDictionary),
+            "Failed resource owner indexing mutated the application resources.");
+        Ensure(resources.Register(failingDictionary), "The dictionary could not be registered after rollback.");
     }
 
     private void VerifyIncompatibleApplication()
