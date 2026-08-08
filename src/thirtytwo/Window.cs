@@ -328,7 +328,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                 {
                     _renderTarget.BeginDraw();
                     _renderTarget.SetTransform(Matrix3x2.Identity);
-                    _renderTarget.Clear(_backgroundColor);
+                    _renderTarget.Clear(GetBackgroundOwner()?._backgroundColor ?? default);
                 }
 
                 break;
@@ -429,15 +429,28 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                     // Direct2D, but pushing that to the paint method is avoids an extra BeginDraw/EndDraw.
                     return (LRESULT)1;
                 }
-                else if (!_backgroundColor.IsEmpty)
+                else if (GetBackgroundOwner() is { } backgroundOwner)
                 {
-                    if (_backgroundBrush.IsNull)
-                    {
-                        _backgroundBrush = HBRUSH.CreateSolid(_backgroundColor);
-                    }
-
-                    ((HDC)wParam).FillRectangle(this.GetClientRectangle(), _backgroundBrush);
+                    ((HDC)wParam).FillRectangle(this.GetClientRectangle(), backgroundOwner.GetBackgroundBrush());
                     return (LRESULT)1;
+                }
+
+                break;
+
+            case MessageType.ControlColorMessageBox:
+            case MessageType.ControlColorEdit:
+            case MessageType.ControlColorListBox:
+            case MessageType.ControlColorButton:
+            case MessageType.ControlColorDialog:
+            case MessageType.ControlColorScrollBar:
+            case MessageType.ControlColorStatic:
+                Window control = lParam == 0
+                    ? this
+                    : FromHandle((HWND)lParam, walkParents: true) ?? this;
+                if (control.GetBackgroundOwner() is { } controlBackgroundOwner)
+                {
+                    ((HDC)wParam).SetBackgroundColor(controlBackgroundOwner._backgroundColor);
+                    return (LRESULT)controlBackgroundOwner.GetBackgroundBrush().Value;
                 }
 
                 break;
@@ -493,6 +506,35 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
             // Still creating the window.
             ? (LRESULT)(-1)
             : PInvoke.CallWindowProc(_priorWindowProcedure, window, (uint)message, wParam, lParam);
+    }
+
+    private Window? GetBackgroundOwner()
+    {
+        Window? current = this;
+        while (current._backgroundColor.IsEmpty && !current.Handle.IsNull)
+        {
+            HWND parentHandle = PInvoke.GetParent(current.Handle);
+            Window? parent = parentHandle.IsNull ? null : FromHandle(parentHandle, walkParents: true);
+            if (parent is null || ReferenceEquals(parent, current))
+            {
+                return null;
+            }
+
+            current = parent;
+        }
+
+        return current._backgroundColor.IsEmpty ? null : current;
+    }
+
+    private HBRUSH GetBackgroundBrush()
+    {
+        Debug.Assert(!_backgroundColor.IsEmpty);
+        if (_backgroundBrush.IsNull)
+        {
+            _backgroundBrush = HBRUSH.CreateSolid(_backgroundColor);
+        }
+
+        return _backgroundBrush;
     }
 
     private void HandleDpiChanged(Message.DpiChanged dpiChanged)

@@ -17,7 +17,7 @@ public static class Layout
         ILayoutHandler handler,
         VerticalAlignment verticalAlignment = VerticalAlignment.Center,
         HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center)
-        => new FixedPercentLayout(handler, widthPercent, heightPercent, verticalAlignment, horizontalAlignment);
+        => new FixedPercentLayout(handler, heightPercent, widthPercent, verticalAlignment, horizontalAlignment);
 
     /// <inheritdoc cref="FixedPercentLayout(ILayoutHandler, float, float, VerticalAlignment, HorizontalAlignment)"/>
     /// <param name="percent">The percentage of available width and height to use.</param>

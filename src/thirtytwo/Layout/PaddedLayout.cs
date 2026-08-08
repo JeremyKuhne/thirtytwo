@@ -36,8 +36,8 @@ public class PaddedLayout(
             int left = (int)MathF.Round(leftPadding * scale);
             int right = (int)MathF.Round(rightPadding * scale);
 
-            int marginWidth = left + right;
-            int remainingWidth = bounds.Width - marginWidth;
+            long marginWidth = (long)left + right;
+            long remainingWidth = bounds.Width - marginWidth;
             if (remainingWidth < 0)
             {
                 if (left > 1 || right > 1)
@@ -49,7 +49,7 @@ public class PaddedLayout(
             else
             {
                 bounds.X += left;
-                bounds.Width -= marginWidth;
+                bounds.Width -= (int)marginWidth;
             }
         }
 
@@ -63,8 +63,8 @@ public class PaddedLayout(
 
             int top = (int)MathF.Round(topPadding * scale);
             int bottom = (int)MathF.Round(bottomPadding * scale);
-            int marginHeight = top + bottom;
-            int remainingHeight = bounds.Height - marginHeight;
+            long marginHeight = (long)top + bottom;
+            long remainingHeight = bounds.Height - marginHeight;
 
             if (remainingHeight < 0)
             {
@@ -77,7 +77,7 @@ public class PaddedLayout(
             else
             {
                 bounds.Y += top;
-                bounds.Height -= marginHeight;
+                bounds.Height -= (int)marginHeight;
             }
         }
     }

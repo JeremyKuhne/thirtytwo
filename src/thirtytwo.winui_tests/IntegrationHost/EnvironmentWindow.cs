@@ -31,6 +31,8 @@ internal sealed class EnvironmentWindow : Window
     private XamlHostControl? _popupHost;
     private Window? _shutdownParent;
     private XamlHostControl? _shutdownHost;
+    private FocusScenario? _focusScenario;
+    private InputScenario? _inputScenario;
 
     internal EnvironmentWindow(EnvironmentScenario scenario, ScenarioReporter reporter)
         : base(DefaultBounds, text: "ThirtyTwo WinUI Environment Host")
@@ -42,9 +44,9 @@ internal sealed class EnvironmentWindow : Window
         if (!Dispatcher.TryPost(() =>
             {
                 ExecuteAfterShow(scenario);
-                if (!PInvoke.DestroyWindow(Handle))
+                if (scenario is not (EnvironmentScenario.FocusTraversal or EnvironmentScenario.InputSemantics))
                 {
-                    throw new Win32Exception(Marshal.GetLastPInvokeError());
+                    DestroyWindow();
                 }
             }))
         {
@@ -137,6 +139,8 @@ internal sealed class EnvironmentWindow : Window
             case EnvironmentScenario.HostLayout:
             case EnvironmentScenario.HostPopupClose:
             case EnvironmentScenario.HostShutdownCleanup:
+            case EnvironmentScenario.FocusTraversal:
+            case EnvironmentScenario.InputSemantics:
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(scenario));
@@ -192,20 +196,66 @@ internal sealed class EnvironmentWindow : Window
             case EnvironmentScenario.HostShutdownCleanup:
                 VerifyHostShutdownCleanup();
                 break;
+            case EnvironmentScenario.FocusTraversal:
+                _focusScenario = new(this, _reporter);
+                if (!Dispatcher.TryPost(() => _focusScenario.Start(DestroyWindow)))
+                {
+                    throw new InvalidOperationException("Failed to schedule focus traversal after XAML content loading.");
+                }
+
+                break;
+            case EnvironmentScenario.InputSemantics:
+                _inputScenario = new(this, _reporter);
+                if (!Dispatcher.TryPost(() => _inputScenario.Start(DestroyWindow)))
+                {
+                    throw new InvalidOperationException("Failed to schedule input validation after XAML content loading.");
+                }
+
+                break;
+        }
+    }
+
+    private void DestroyWindow()
+    {
+        if (!PInvoke.DestroyWindow(Handle))
+        {
+            throw new Win32Exception(Marshal.GetLastPInvokeError());
         }
     }
 
     private void VerifyHostBasic()
     {
         bool contentFactoryCalled = false;
-        _xamlHost = new(new Rectangle(20, 30, 320, 240), this, () =>
+        XamlHostContext? hostContext = null;
+        _xamlHost = new(new Rectangle(20, 30, 320, 240), this, context =>
         {
             Ensure(XamlHostEnvironment.Current?.LeaseCount == 1, "The content factory ran before host initialization.");
+            hostContext = context;
             contentFactoryCalled = true;
             return new Grid();
         });
 
         Ensure(contentFactoryCalled, "The host content factory did not run.");
+        XamlHostContext createdContext = hostContext
+            ?? throw new InvalidOperationException("The content factory did not receive the host context.");
+        Ensure(ReferenceEquals(_xamlHost.Context, createdContext), "The content factory received a different host context.");
+        Ensure(
+            ReferenceEquals(createdContext.Application, Microsoft.UI.Xaml.Application.Current),
+            "The host context returned the wrong process application.");
+        XamlHostEnvironmentInfo environmentInfo = XamlHostEnvironment.Current
+            ?? throw new InvalidOperationException("The host context has no active environment.");
+        Ensure(createdContext.OwnsApplication == environmentInfo.OwnsApplication, "The host context returned the wrong application ownership.");
+        Ensure(createdContext.OwnsDispatcherQueue == environmentInfo.OwnsDispatcherQueue, "The host context returned the wrong queue ownership.");
+        Ensure(
+            ReferenceEquals(createdContext.DispatcherQueue, DispatcherQueue.GetForCurrentThread()),
+            "The host context returned the wrong dispatcher queue.");
+        IXamlHostApplication hostApplication = (IXamlHostApplication)createdContext.Application;
+        Ensure(
+            ReferenceEquals(createdContext.MetadataProviders, hostApplication.MetadataProviders),
+            "The host context returned the wrong metadata registry.");
+        Ensure(
+            ReferenceEquals(createdContext.ResourceDictionaries, hostApplication.ResourceDictionaries),
+            "The host context returned the wrong resource registry.");
         Ensure(_xamlHost.Content is Grid, "The host did not retain its factory content.");
         Grid replacement = new();
         _xamlHost.Content = replacement;
@@ -214,6 +264,33 @@ internal sealed class EnvironmentWindow : Window
         Ensure(_xamlHost.Content is null, "The host did not clear its content.");
         _xamlHost.Content = replacement;
         Ensure(ReferenceEquals(Window.FromHandle(_xamlHost), _xamlHost), "The managed host HWND was not registered.");
+
+        XamlHostContext? disposedContext = null;
+        using (XamlHostControl temporaryHost = new(
+            new Rectangle(0, 0, 10, 10),
+            this,
+            context =>
+            {
+                disposedContext = context;
+                return new Grid();
+            }))
+        {
+            XamlHostContext temporaryContext = disposedContext
+                ?? throw new InvalidOperationException("The temporary content factory did not receive the host context.");
+            Ensure(temporaryContext.OwnsApplication == _xamlHost.Context.OwnsApplication, "Host contexts disagreed on application ownership.");
+        }
+
+        XamlHostContext retainedContext = disposedContext
+            ?? throw new InvalidOperationException("The temporary host context was not retained for disposal validation.");
+
+        try
+        {
+            _ = retainedContext.OwnsApplication;
+            throw new InvalidOperationException("A retained host context remained usable after host disposal.");
+        }
+        catch (ObjectDisposedException)
+        {
+        }
 
         Exception? wrongThreadFailure = null;
         Thread thread = new(() =>
@@ -249,11 +326,67 @@ internal sealed class EnvironmentWindow : Window
         WinUIColorChangedEventArgs? observedChange = null;
         _colorPickerHost.ColorChanged += (_, eventArgs) => observedChange = eventArgs;
         _colorPickerHost.IsAlphaEnabled = true;
+        _colorPickerHost.IsColorSpectrumVisible = false;
+        _colorPickerHost.IsColorPreviewVisible = false;
+        _colorPickerHost.IsColorSliderVisible = false;
+        _colorPickerHost.IsColorChannelTextInputVisible = false;
+        _colorPickerHost.IsAlphaSliderVisible = false;
+        _colorPickerHost.IsAlphaTextInputVisible = false;
+        _colorPickerHost.IsHexInputVisible = false;
+        foreach (WinUIColorSpectrumShape shape in Enum.GetValues<WinUIColorSpectrumShape>())
+        {
+            _colorPickerHost.ColorSpectrumShape = shape;
+            Ensure(_colorPickerHost.ColorSpectrumShape == shape, $"The {shape} spectrum shape did not round-trip.");
+        }
+
+        foreach (WinUIColorSpectrumComponents components in Enum.GetValues<WinUIColorSpectrumComponents>())
+        {
+            _colorPickerHost.ColorSpectrumComponents = components;
+            Ensure(_colorPickerHost.ColorSpectrumComponents == components, $"The {components} spectrum mapping did not round-trip.");
+        }
+
+        foreach (WinUIColorPickerOrientation orientation in Enum.GetValues<WinUIColorPickerOrientation>())
+        {
+            _colorPickerHost.Orientation = orientation;
+            Ensure(_colorPickerHost.Orientation == orientation, $"The {orientation} orientation did not round-trip.");
+        }
+
+        foreach (WinUIElementTheme theme in Enum.GetValues<WinUIElementTheme>())
+        {
+            _colorPickerHost.RequestedTheme = theme;
+            Ensure(_colorPickerHost.RequestedTheme == theme, $"The {theme} requested theme did not round-trip.");
+        }
+
+        EnsureThrows<ArgumentOutOfRangeException>(
+            () => _colorPickerHost.ColorSpectrumShape = (WinUIColorSpectrumShape)int.MaxValue,
+            "The color picker accepted an unknown spectrum shape.");
+        EnsureThrows<ArgumentOutOfRangeException>(
+            () => _colorPickerHost.ColorSpectrumComponents = (WinUIColorSpectrumComponents)int.MaxValue,
+            "The color picker accepted an unknown spectrum mapping.");
+        EnsureThrows<ArgumentOutOfRangeException>(
+            () => _colorPickerHost.Orientation = (WinUIColorPickerOrientation)int.MaxValue,
+            "The color picker accepted an unknown orientation.");
+        EnsureThrows<ArgumentOutOfRangeException>(
+            () => _colorPickerHost.RequestedTheme = (WinUIElementTheme)int.MaxValue,
+            "The color picker accepted an unknown requested theme.");
         Color expected = Color.FromArgb(128, 12, 34, 56);
 
         _colorPickerHost.Color = expected;
 
         Ensure(_colorPickerHost.IsAlphaEnabled, "The alpha-enabled setting was not retained.");
+        Ensure(!_colorPickerHost.IsColorSpectrumVisible, "The color-spectrum visibility setting was not retained.");
+        Ensure(!_colorPickerHost.IsColorPreviewVisible, "The color-preview visibility setting was not retained.");
+        Ensure(!_colorPickerHost.IsColorSliderVisible, "The color-slider visibility setting was not retained.");
+        Ensure(!_colorPickerHost.IsColorChannelTextInputVisible, "The channel-input visibility setting was not retained.");
+        Ensure(!_colorPickerHost.IsAlphaSliderVisible, "The alpha-slider visibility setting was not retained.");
+        Ensure(!_colorPickerHost.IsAlphaTextInputVisible, "The alpha-input visibility setting was not retained.");
+        Ensure(!_colorPickerHost.IsHexInputVisible, "The hexadecimal-input visibility setting was not retained.");
+        Ensure(_colorPickerHost.ColorSpectrumShape == WinUIColorSpectrumShape.Ring, "The spectrum shape was not retained.");
+        Ensure(
+            _colorPickerHost.ColorSpectrumComponents == WinUIColorSpectrumComponents.ValueSaturation,
+            "The spectrum-component mapping was not retained.");
+        Ensure(_colorPickerHost.Orientation == WinUIColorPickerOrientation.Horizontal, "The orientation was not retained.");
+        Ensure(_colorPickerHost.RequestedTheme == WinUIElementTheme.Dark, "The requested theme was not retained.");
         Ensure(_colorPickerHost.Color == expected, "The selected color did not round-trip through the wrapper.");
         Ensure(observedChange?.NewColor == expected, "The projected color-change event reported the wrong color.");
         try
@@ -277,7 +410,7 @@ internal sealed class EnvironmentWindow : Window
             _ = new XamlHostControl(
                 new Rectangle(0, 0, 10, 10),
                 this,
-                static () => throw new InvalidOperationException("Expected content factory failure."));
+                static context => throw new InvalidOperationException("Expected content factory failure."));
             throw new InvalidOperationException("A throwing content factory did not fail host construction.");
         }
         catch (InvalidOperationException exception) when (exception.Message == "Expected content factory failure.")
@@ -286,7 +419,10 @@ internal sealed class EnvironmentWindow : Window
 
         try
         {
-            _ = new XamlHostControl(new Rectangle(0, 0, 10, 10), this, null!);
+            _ = new XamlHostControl(
+                new Rectangle(0, 0, 10, 10),
+                this,
+                (Func<XamlHostContext, Microsoft.UI.Xaml.UIElement>)null!);
             throw new InvalidOperationException("A null content factory did not fail host construction.");
         }
         catch (ArgumentNullException exception) when (exception.ParamName == "contentFactory")
@@ -683,10 +819,27 @@ internal sealed class EnvironmentWindow : Window
         }
     }
 
+    private static void EnsureThrows<TException>(Action action, string message)
+        where TException : Exception
+    {
+        try
+        {
+            action();
+        }
+        catch (TException)
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(message);
+    }
+
     protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
+            _inputScenario?.Dispose();
+            _focusScenario?.Dispose();
             _popupHost?.Dispose();
             _colorPickerHost?.Dispose();
             _xamlHost?.Dispose();

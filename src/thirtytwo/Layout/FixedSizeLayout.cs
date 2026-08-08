@@ -6,7 +6,7 @@ using System.Drawing;
 namespace Windows;
 
 /// <summary>
-///  Uses a fixed size for the layout, aligning within as specified.
+///  Uses a fixed logical size, scaled by the layout scale, and aligns it within the available bounds.
 /// </summary>
 /// <param name="handler">The handler to layout within the specified space.</param>
 /// <param name="size">The fixed size to use.</param>
@@ -20,22 +20,26 @@ public class FixedSizeLayout(
 {
     public void Layout(Rectangle bounds, float scale)
     {
+        Size scaledSize = new(
+            (int)MathF.Round(size.Width * scale),
+            (int)MathF.Round(size.Height * scale));
+
         int x = horizontalAlignment switch
         {
             HorizontalAlignment.Left => bounds.Left,
-            HorizontalAlignment.Right => bounds.Right - size.Width,
-            HorizontalAlignment.Center => (bounds.Width - size.Width) / 2,
+            HorizontalAlignment.Right => bounds.Right - scaledSize.Width,
+            HorizontalAlignment.Center => bounds.X + ((bounds.Width - scaledSize.Width) / 2),
             _ => bounds.Left,
         };
 
         int y = verticalAlignment switch
         {
             VerticalAlignment.Top => bounds.Top,
-            VerticalAlignment.Bottom => bounds.Bottom - size.Height,
-            VerticalAlignment.Center => (bounds.Height - size.Height) / 2,
+            VerticalAlignment.Bottom => bounds.Bottom - scaledSize.Height,
+            VerticalAlignment.Center => bounds.Y + ((bounds.Height - scaledSize.Height) / 2),
             _ => bounds.Top,
         };
 
-        handler.Layout(new Rectangle(new Point(x, y), size), scale);
+        handler.Layout(new Rectangle(new Point(x, y), scaledSize), scale);
     }
 }

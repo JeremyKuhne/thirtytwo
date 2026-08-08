@@ -8,6 +8,8 @@ BeginPaint
 BitBlt
 BITMAP
 BOOLEAN
+BM_*
+BN_*
 BS_*
 CallWindowProc
 CB_*
@@ -158,13 +160,16 @@ GetDlgCtrlID
 GetDlgItem
 GetDpiForWindow
 GetFocus
+GetKeyState
 GetGraphicsMode
 GetIconInfo
 GetIconInfoEx
+GetKeyboardState
 GetLocalTime
 GetMapMode
 GetMessage
 GetModuleHandleEx
+GetNextDlgTabItem
 GetObject
 GetObjectType
 GetOpenClipboardWindow
@@ -278,6 +283,7 @@ LOGFONTW
 LPtoDP
 LsaNtStatusToWinError
 MapDialogRect
+MapVirtualKey
 MapWindowPoints
 MEMBERID_NIL
 MessageBeep
@@ -353,6 +359,7 @@ SetFocus
 SetGraphicsMode
 SetLayeredWindowAttributes
 SetMapMode
+SetKeyboardState
 SetParent
 SetPolyFillMode
 SetROP2

@@ -13,6 +13,7 @@ namespace Windows.WinUI;
 internal sealed class XamlHostEnvironmentState
 {
     private readonly XamlThreadAffinity _affinity = new();
+    private readonly MessageFilterRegistration _messageFilterRegistration;
     private readonly DispatcherQueueController? _queueController;
     private readonly WindowsXamlManager _xamlManager;
     private ShutdownRegistration _shutdownRegistration;
@@ -25,6 +26,7 @@ internal sealed class XamlHostEnvironmentState
         WindowsXamlManager xamlManager,
         Microsoft.UI.Xaml.Application application,
         IXamlHostApplication hostApplication,
+        MessageFilterRegistration messageFilterRegistration,
         bool ownsApplication)
     {
         Dispatcher = dispatcher;
@@ -33,6 +35,7 @@ internal sealed class XamlHostEnvironmentState
         _xamlManager = xamlManager;
         Application = application;
         HostApplication = hostApplication;
+        _messageFilterRegistration = messageFilterRegistration;
         OwnsApplication = ownsApplication;
         LeaseCount = 1;
     }
@@ -88,6 +91,7 @@ internal sealed class XamlHostEnvironmentState
             ?? throw CreateThreadValidationException(nativeThreadId);
 
         DispatcherQueueController? queueController = null;
+        MessageFilterRegistration messageFilterRegistration = default;
         WindowsXamlManager? xamlManager = null;
         Microsoft.UI.Xaml.Application? preexistingApplication = Microsoft.UI.Xaml.Application.Current;
         XamlApplication? createdApplication = null;
@@ -179,7 +183,8 @@ internal sealed class XamlHostEnvironmentState
                     nativeThreadId);
             }
 
-                XamlHostEnvironment.RetainProcessApplication(application);
+            XamlHostEnvironment.RetainProcessApplication(application);
+            messageFilterRegistration = Windows.Application.AddMessageFilter(new ContentPreTranslateMessageFilter());
 
             XamlHostEnvironmentState state = new(
                 dispatcher,
@@ -188,9 +193,11 @@ internal sealed class XamlHostEnvironmentState
                 xamlManager,
                 application,
                 hostApplication,
+                messageFilterRegistration,
                 ownsApplication);
             state._shutdownRegistration = dispatcher.RegisterShutdownCallback(
                 () => XamlHostEnvironment.Shutdown(state));
+            messageFilterRegistration = default;
             queueController = null;
             xamlManager = null;
             XamlHostEventSource.Log.EnvironmentCreated(
@@ -210,6 +217,7 @@ internal sealed class XamlHostEnvironmentState
                 (int)stage,
                 exception.HResult,
                 exception.GetType().FullName ?? exception.GetType().Name);
+            messageFilterRegistration.Dispose();
             xamlManager?.Dispose();
             queueController?.ShutdownQueue();
             throw;
@@ -255,18 +263,25 @@ internal sealed class XamlHostEnvironmentState
         LeaseCount = 0;
         try
         {
-            _xamlManager.Dispose();
+            _messageFilterRegistration.Dispose();
         }
         finally
         {
             try
             {
-                _queueController?.ShutdownQueue();
+                _xamlManager.Dispose();
             }
             finally
             {
-                _shutdownRegistration.Dispose();
-                XamlHostEventSource.Log.EnvironmentStopped(OwnerNativeThreadId);
+                try
+                {
+                    _queueController?.ShutdownQueue();
+                }
+                finally
+                {
+                    _shutdownRegistration.Dispose();
+                    XamlHostEventSource.Log.EnvironmentStopped(OwnerNativeThreadId);
+                }
             }
         }
     }

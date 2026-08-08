@@ -8,6 +8,10 @@ using System.Runtime.ExceptionServices;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Win32.Foundation;
 using WinUIColor = Windows.UI.Color;
+using XamlColorSpectrumComponents = Microsoft.UI.Xaml.Controls.ColorSpectrumComponents;
+using XamlColorSpectrumShape = Microsoft.UI.Xaml.Controls.ColorSpectrumShape;
+using XamlElementTheme = Microsoft.UI.Xaml.ElementTheme;
+using XamlOrientation = Microsoft.UI.Xaml.Controls.Orientation;
 
 namespace Windows.WinUI;
 
@@ -45,7 +49,7 @@ public sealed class WinUIColorPicker : XamlHostControl
     /// <remarks>
     ///  <para>
     ///   The typed wrapper fixes its content during construction. Assigning another element would detach the picker
-    ///   controlled by <see cref="Color"/> and <see cref="IsAlphaEnabled"/> and is therefore rejected.
+    ///   controlled by this wrapper and is therefore rejected.
     ///  </para>
     /// </remarks>
     /// <exception cref="InvalidOperationException"><paramref name="value"/> is not the hosted color picker.</exception>
@@ -94,6 +98,221 @@ public sealed class WinUIColorPicker : XamlHostControl
         {
             VerifyUsable();
             _colorPicker!.IsAlphaEnabled = value;
+        }
+    }
+
+    /// <summary>Gets or sets whether the color spectrum is visible.</summary>
+    public bool IsColorSpectrumVisible
+    {
+        get
+        {
+            VerifyUsable();
+            return _colorPicker!.IsColorSpectrumVisible;
+        }
+        set
+        {
+            VerifyUsable();
+            _colorPicker!.IsColorSpectrumVisible = value;
+        }
+    }
+
+    /// <summary>Gets or sets whether the color preview bar is visible.</summary>
+    public bool IsColorPreviewVisible
+    {
+        get
+        {
+            VerifyUsable();
+            return _colorPicker!.IsColorPreviewVisible;
+        }
+        set
+        {
+            VerifyUsable();
+            _colorPicker!.IsColorPreviewVisible = value;
+        }
+    }
+
+    /// <summary>Gets or sets whether the color-value slider is visible.</summary>
+    public bool IsColorSliderVisible
+    {
+        get
+        {
+            VerifyUsable();
+            return _colorPicker!.IsColorSliderVisible;
+        }
+        set
+        {
+            VerifyUsable();
+            _colorPicker!.IsColorSliderVisible = value;
+        }
+    }
+
+    /// <summary>Gets or sets whether the color-channel text inputs are visible.</summary>
+    public bool IsColorChannelTextInputVisible
+    {
+        get
+        {
+            VerifyUsable();
+            return _colorPicker!.IsColorChannelTextInputVisible;
+        }
+        set
+        {
+            VerifyUsable();
+            _colorPicker!.IsColorChannelTextInputVisible = value;
+        }
+    }
+
+    /// <summary>Gets or sets whether the alpha slider is visible when alpha is enabled.</summary>
+    public bool IsAlphaSliderVisible
+    {
+        get
+        {
+            VerifyUsable();
+            return _colorPicker!.IsAlphaSliderVisible;
+        }
+        set
+        {
+            VerifyUsable();
+            _colorPicker!.IsAlphaSliderVisible = value;
+        }
+    }
+
+    /// <summary>Gets or sets whether the alpha text input is visible when alpha is enabled.</summary>
+    public bool IsAlphaTextInputVisible
+    {
+        get
+        {
+            VerifyUsable();
+            return _colorPicker!.IsAlphaTextInputVisible;
+        }
+        set
+        {
+            VerifyUsable();
+            _colorPicker!.IsAlphaTextInputVisible = value;
+        }
+    }
+
+    /// <summary>Gets or sets whether the hexadecimal color input is visible.</summary>
+    public bool IsHexInputVisible
+    {
+        get
+        {
+            VerifyUsable();
+            return _colorPicker!.IsHexInputVisible;
+        }
+        set
+        {
+            VerifyUsable();
+            _colorPicker!.IsHexInputVisible = value;
+        }
+    }
+
+    /// <summary>Gets or sets the shape of the color spectrum.</summary>
+    public WinUIColorSpectrumShape ColorSpectrumShape
+    {
+        get
+        {
+            VerifyUsable();
+            return _colorPicker!.ColorSpectrumShape switch
+            {
+                XamlColorSpectrumShape.Box => WinUIColorSpectrumShape.Box,
+                XamlColorSpectrumShape.Ring => WinUIColorSpectrumShape.Ring,
+                _ => throw new InvalidOperationException("The color picker returned an unknown spectrum shape.")
+            };
+        }
+        set
+        {
+            VerifyUsable();
+            _colorPicker!.ColorSpectrumShape = value switch
+            {
+                WinUIColorSpectrumShape.Box => XamlColorSpectrumShape.Box,
+                WinUIColorSpectrumShape.Ring => XamlColorSpectrumShape.Ring,
+                _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown color spectrum shape.")
+            };
+        }
+    }
+
+    /// <summary>Gets or sets how HSV components map to the color spectrum axes.</summary>
+    public WinUIColorSpectrumComponents ColorSpectrumComponents
+    {
+        get
+        {
+            VerifyUsable();
+            return _colorPicker!.ColorSpectrumComponents switch
+            {
+                XamlColorSpectrumComponents.HueSaturation => WinUIColorSpectrumComponents.HueSaturation,
+                XamlColorSpectrumComponents.HueValue => WinUIColorSpectrumComponents.HueValue,
+                XamlColorSpectrumComponents.SaturationHue => WinUIColorSpectrumComponents.SaturationHue,
+                XamlColorSpectrumComponents.SaturationValue => WinUIColorSpectrumComponents.SaturationValue,
+                XamlColorSpectrumComponents.ValueHue => WinUIColorSpectrumComponents.ValueHue,
+                XamlColorSpectrumComponents.ValueSaturation => WinUIColorSpectrumComponents.ValueSaturation,
+                _ => throw new InvalidOperationException("The color picker returned an unknown spectrum-component mapping.")
+            };
+        }
+        set
+        {
+            VerifyUsable();
+            _colorPicker!.ColorSpectrumComponents = value switch
+            {
+                WinUIColorSpectrumComponents.HueSaturation => XamlColorSpectrumComponents.HueSaturation,
+                WinUIColorSpectrumComponents.HueValue => XamlColorSpectrumComponents.HueValue,
+                WinUIColorSpectrumComponents.SaturationHue => XamlColorSpectrumComponents.SaturationHue,
+                WinUIColorSpectrumComponents.SaturationValue => XamlColorSpectrumComponents.SaturationValue,
+                WinUIColorSpectrumComponents.ValueHue => XamlColorSpectrumComponents.ValueHue,
+                WinUIColorSpectrumComponents.ValueSaturation => XamlColorSpectrumComponents.ValueSaturation,
+                _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown color spectrum-component mapping.")
+            };
+        }
+    }
+
+    /// <summary>Gets or sets the orientation of the color picker's editing controls.</summary>
+    public WinUIColorPickerOrientation Orientation
+    {
+        get
+        {
+            VerifyUsable();
+            return _colorPicker!.Orientation switch
+            {
+                XamlOrientation.Vertical => WinUIColorPickerOrientation.Vertical,
+                XamlOrientation.Horizontal => WinUIColorPickerOrientation.Horizontal,
+                _ => throw new InvalidOperationException("The color picker returned an unknown orientation.")
+            };
+        }
+        set
+        {
+            VerifyUsable();
+            _colorPicker!.Orientation = value switch
+            {
+                WinUIColorPickerOrientation.Vertical => XamlOrientation.Vertical,
+                WinUIColorPickerOrientation.Horizontal => XamlOrientation.Horizontal,
+                _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown color picker orientation.")
+            };
+        }
+    }
+
+    /// <summary>Gets or sets the theme requested for the hosted color picker.</summary>
+    public WinUIElementTheme RequestedTheme
+    {
+        get
+        {
+            VerifyUsable();
+            return _colorPicker!.RequestedTheme switch
+            {
+                XamlElementTheme.Default => WinUIElementTheme.Default,
+                XamlElementTheme.Light => WinUIElementTheme.Light,
+                XamlElementTheme.Dark => WinUIElementTheme.Dark,
+                _ => throw new InvalidOperationException("The color picker returned an unknown requested theme.")
+            };
+        }
+        set
+        {
+            VerifyUsable();
+            _colorPicker!.RequestedTheme = value switch
+            {
+                WinUIElementTheme.Default => XamlElementTheme.Default,
+                WinUIElementTheme.Light => XamlElementTheme.Light,
+                WinUIElementTheme.Dark => XamlElementTheme.Dark,
+                _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown WinUI element theme.")
+            };
         }
     }
 

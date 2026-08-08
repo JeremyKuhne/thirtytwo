@@ -27,5 +27,7 @@ internal enum WinUIIntegrationScenario
     HostReparent,
     HostReplacement,
     HostPopupClose,
-    HostShutdownCleanup
+    HostShutdownCleanup,
+    FocusTraversal,
+    InputSemantics
 }

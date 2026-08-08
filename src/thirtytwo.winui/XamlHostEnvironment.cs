@@ -11,6 +11,11 @@ namespace Windows.WinUI;
 /// </summary>
 /// <remarks>
 ///  <para>
+///   <see cref="XamlHostControl"/> and typed wrappers acquire their own environment leases. Applications using those
+///   controls do not need to acquire another lease. Acquire directly only when WinUI services are needed independently
+///   of a host control.
+///  </para>
+///  <para>
 ///   Acquire the environment from the window factory passed to <see cref="Application.Run(Window, bool)"/>, typically
 ///   at the start of the primary window's construction. At that point the thirtytwo dispatcher is active on the STA
 ///   thread. Acquire it before creating or loading WinUI content and before registering metadata providers or resource

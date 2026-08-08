@@ -23,5 +23,7 @@ internal enum EnvironmentScenario
     HostReparent,
     HostReplacement,
     HostPopupClose,
-    HostShutdownCleanup
+    HostShutdownCleanup,
+    FocusTraversal,
+    InputSemantics
 }

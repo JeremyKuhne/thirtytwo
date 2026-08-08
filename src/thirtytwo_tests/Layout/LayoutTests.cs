@@ -34,6 +34,20 @@ public class LayoutTests
     }
 
     [TestMethod]
+    public void FixedPercent_ForwardsWidthAndHeightInDeclaredOrder()
+    {
+        LastLayoutHandler handler = new();
+        ILayoutHandler layout = Layout.FixedPercent(
+            widthPercent: 0.8f,
+            heightPercent: 0.4f,
+            handler);
+
+        layout.Layout(new Rectangle(10, 20, 100, 200), 1.0f);
+
+        handler.LastBounds.Should().Be(new Rectangle(20, 80, 80, 80));
+    }
+
+    [TestMethod]
     public void FixedSizeLayout_PositionsCorrectly()
     {
         LastLayoutHandler handler = new();
@@ -45,6 +59,29 @@ public class LayoutTests
         Rectangle bounds = new(0, 0, 200, 100);
         layout.Layout(bounds, 1.0f);
         handler.LastBounds.Should().Be(new Rectangle(150, 70, 50, 30));
+    }
+
+    [TestMethod]
+    public void FixedSizeLayout_CenterAlignment_UsesBoundsOrigin()
+    {
+        LastLayoutHandler handler = new();
+        FixedSizeLayout layout = new(handler, new Size(50, 30));
+
+        layout.Layout(new Rectangle(10, 20, 200, 100), 1.0f);
+
+        handler.LastBounds.Should().Be(new Rectangle(85, 55, 50, 30));
+    }
+
+    [TestMethod]
+    public void FixedSizeLayout_ScalesDimensions()
+    {
+        LastLayoutHandler handler = new();
+        FixedSizeLayout layout = new(handler, new Size(50, 30));
+
+        layout.Layout(new Rectangle(10, 20, 200, 120), 2.0f);
+
+        handler.LastBounds.Should().Be(new Rectangle(60, 50, 100, 60));
+        handler.LastScale.Should().Be(2.0f);
     }
 
     [TestMethod]
@@ -63,10 +100,10 @@ public class LayoutTests
         LastLayoutHandler handler1 = new();
         LastLayoutHandler handler2 = new();
         HorizontalLayout layout = new((0.3f, handler1), (0.7f, handler2));
-        Rectangle bounds = new(0, 0, 100, 200);
+        Rectangle bounds = new(10, 20, 100, 200);
         layout.Layout(bounds, 1.0f);
-        handler1.LastBounds.Should().Be(new Rectangle(0, 0, 100, 60));
-        handler2.LastBounds.Should().Be(new Rectangle(0, 60, 100, 140));
+        handler1.LastBounds.Should().Be(new Rectangle(10, 20, 100, 60));
+        handler2.LastBounds.Should().Be(new Rectangle(10, 80, 100, 140));
     }
 
     [TestMethod]
@@ -75,10 +112,10 @@ public class LayoutTests
         LastLayoutHandler handler1 = new();
         LastLayoutHandler handler2 = new();
         VerticalLayout layout = new((0.4f, handler1), (0.6f, handler2));
-        Rectangle bounds = new(0, 0, 100, 200);
+        Rectangle bounds = new(10, 20, 100, 200);
         layout.Layout(bounds, 1.0f);
-        handler1.LastBounds.Should().Be(new Rectangle(0, 0, 40, 200));
-        handler2.LastBounds.Should().Be(new Rectangle(40, 0, 60, 200));
+        handler1.LastBounds.Should().Be(new Rectangle(10, 20, 40, 200));
+        handler2.LastBounds.Should().Be(new Rectangle(50, 20, 60, 200));
     }
 
     [TestMethod]
@@ -275,19 +312,16 @@ public class LayoutTests
     }
 
     [TestMethod]
-    public void PaddedLayout_DeepRecursion()
+    public void PaddedLayout_LargePadding_ConvergesWithinBounds()
     {
         LastLayoutHandler handler = new();
-
-        // Create extremely large padding values
         PaddedLayout layout = new((int.MaxValue / 4, 0, int.MaxValue / 4, 0), handler);
-
-        // Tiny bounds that can't possibly accommodate the padding
         Rectangle bounds = new(0, 0, 10, 100);
 
-        // This will cause infinite recursion in ApplyLeftAndRightPadding
-        // because even at half scale repeatedly, the padding will still be too large
         layout.Layout(bounds, 1.0f);
+
+        handler.LastBounds.Should().Be(new Rectangle(4, 0, 2, 100));
+        handler.LastScale.Should().Be(1.0f);
     }
 
 
