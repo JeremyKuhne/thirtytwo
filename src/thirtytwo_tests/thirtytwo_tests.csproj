@@ -32,6 +32,10 @@
                       PrivateAssets="all"
                       ReferenceOutputAssembly="false"
                       SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="..\thirtytwo.winui_tests\IntegrationHost\IntegrationHost.csproj"
+              PrivateAssets="all"
+              ReferenceOutputAssembly="false"
+              SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <ItemGroup>

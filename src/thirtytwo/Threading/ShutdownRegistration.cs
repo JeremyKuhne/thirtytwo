@@ -4,16 +4,16 @@
 namespace Windows.Threading;
 
 /// <summary>
-///  Represents a shutdown callback registered with a thread context.
+///  Represents a callback registered for dispatcher shutdown.
 /// </summary>
 /// <remarks>
 ///  <para>
-///   <see cref="ThreadContext.RegisterShutdownCallback"/> adds the callback and returns this handle. Disposing the
-///   handle before shutdown begins removes that registration. Once shutdown begins, the callback set is fixed and
-///   disposal has no effect.
+///   <see cref="Dispatcher.RegisterShutdownCallback"/> adds the callback and returns this handle. Disposing the handle
+///   before shutdown begins removes that registration. Once shutdown begins, the callback set is fixed and disposal
+///   has no effect. Repeated disposal is safe. A non-default registration must be disposed on its owning thread.
 ///  </para>
 /// </remarks>
-internal readonly struct ShutdownRegistration : IDisposable
+public readonly struct ShutdownRegistration : IDisposable
 {
     private readonly ThreadContext? _context;
     private readonly long _id;
@@ -31,7 +31,7 @@ internal readonly struct ShutdownRegistration : IDisposable
 
     /// <summary>
     ///  Removes the represented callback registration when shutdown has not begun. Disposal from a different thread
-    ///  throws.
+    ///  throws; repeated disposal has no effect.
     /// </summary>
     public void Dispose() => _context?.RemoveShutdownCallback(_id);
 }

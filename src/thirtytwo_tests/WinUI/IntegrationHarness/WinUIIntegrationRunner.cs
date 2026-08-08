@@ -23,7 +23,7 @@ internal sealed class WinUIIntegrationRunner
     };
 
     private readonly string _artifactRoot;
-    private readonly string _controlHostExecutable;
+    private readonly string? _scenarioExecutableOverride;
 
     internal WinUIIntegrationRunner()
         : this(Path.Combine(
@@ -35,16 +35,17 @@ internal sealed class WinUIIntegrationRunner
     }
 
     internal WinUIIntegrationRunner(string artifactRoot)
-        : this(FindControlHostExecutable(), artifactRoot)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(artifactRoot);
+        _artifactRoot = Path.GetFullPath(artifactRoot);
     }
 
-    internal WinUIIntegrationRunner(string controlHostExecutable, string artifactRoot)
+    internal WinUIIntegrationRunner(string scenarioExecutable, string artifactRoot)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(controlHostExecutable);
+        ArgumentException.ThrowIfNullOrWhiteSpace(scenarioExecutable);
         ArgumentException.ThrowIfNullOrWhiteSpace(artifactRoot);
 
-        _controlHostExecutable = Path.GetFullPath(controlHostExecutable);
+        _scenarioExecutableOverride = Path.GetFullPath(scenarioExecutable);
         _artifactRoot = Path.GetFullPath(artifactRoot);
     }
 
@@ -58,9 +59,10 @@ internal sealed class WinUIIntegrationRunner
             throw new ArgumentOutOfRangeException(nameof(timeout));
         }
 
-        if (!File.Exists(_controlHostExecutable))
+        string scenarioExecutable = _scenarioExecutableOverride ?? FindScenarioExecutable(scenario);
+        if (!File.Exists(scenarioExecutable))
         {
-            throw new FileNotFoundException("The ControlHost scenario executable was not built.", _controlHostExecutable);
+            throw new FileNotFoundException("The WinUI scenario executable was not built.", scenarioExecutable);
         }
 
         string scenarioName = GetScenarioName(scenario);
@@ -72,8 +74,8 @@ internal sealed class WinUIIntegrationRunner
 
         ProcessStartInfo startInfo = new()
         {
-            FileName = _controlHostExecutable,
-            WorkingDirectory = Path.GetDirectoryName(_controlHostExecutable)!,
+            FileName = scenarioExecutable,
+            WorkingDirectory = Path.GetDirectoryName(scenarioExecutable)!,
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -152,6 +154,16 @@ internal sealed class WinUIIntegrationRunner
                             break;
                         case WinUIIntegrationScenario.Startup:
                         case WinUIIntegrationScenario.ShutdownTimeout:
+                        case WinUIIntegrationScenario.EnvironmentOwned:
+                        case WinUIIntegrationScenario.EnvironmentBorrowed:
+                        case WinUIIntegrationScenario.EnvironmentComposition:
+                        case WinUIIntegrationScenario.EnvironmentMultipleLeases:
+                        case WinUIIntegrationScenario.EnvironmentCompatibleApplication:
+                        case WinUIIntegrationScenario.EnvironmentIncompatibleApplication:
+                        case WinUIIntegrationScenario.EnvironmentMtaRejected:
+                        case WinUIIntegrationScenario.EnvironmentWrongThreadRejected:
+                        case WinUIIntegrationScenario.EnvironmentSecondThreadRejected:
+                        case WinUIIntegrationScenario.EnvironmentFinalRelease:
                             break;
                         default:
                             throw new InvalidOperationException($"Unknown WinUI integration scenario '{scenario}'.");
@@ -371,7 +383,7 @@ internal sealed class WinUIIntegrationRunner
         }
     }
 
-    private static unsafe void RequestClose(long windowHandle, int expectedProcessId)
+    private static void RequestClose(long windowHandle, int expectedProcessId)
     {
         HWND window = WindowHandleValidation.Validate(windowHandle, expectedProcessId);
         if (!PInvoke.PostMessage(window, Interop.WM_CLOSE, default, default))
@@ -468,31 +480,46 @@ internal sealed class WinUIIntegrationRunner
         WinUIIntegrationScenario.UiaTree => "uia-tree",
         WinUIIntegrationScenario.NormalClose => "normal-close",
         WinUIIntegrationScenario.ShutdownTimeout => "shutdown-timeout",
+        WinUIIntegrationScenario.EnvironmentOwned => "environment-owned",
+        WinUIIntegrationScenario.EnvironmentBorrowed => "environment-borrowed",
+        WinUIIntegrationScenario.EnvironmentComposition => "environment-composition",
+        WinUIIntegrationScenario.EnvironmentMultipleLeases => "environment-multiple-leases",
+        WinUIIntegrationScenario.EnvironmentCompatibleApplication => "environment-compatible-application",
+        WinUIIntegrationScenario.EnvironmentIncompatibleApplication => "environment-incompatible-application",
+        WinUIIntegrationScenario.EnvironmentMtaRejected => "environment-mta-rejected",
+        WinUIIntegrationScenario.EnvironmentWrongThreadRejected => "environment-wrong-thread-rejected",
+        WinUIIntegrationScenario.EnvironmentSecondThreadRejected => "environment-second-thread-rejected",
+        WinUIIntegrationScenario.EnvironmentFinalRelease => "environment-final-release",
         _ => throw new ArgumentOutOfRangeException(nameof(scenario))
     };
 
-    private static string FindControlHostExecutable()
+    private static string FindScenarioExecutable(WinUIIntegrationScenario scenario)
+        => scenario <= WinUIIntegrationScenario.ShutdownTimeout
+            ? FindExecutable("ControlHost", "ControlHost.exe")
+            : FindExecutable("IntegrationHost", "IntegrationHost.exe");
+
+    private static string FindExecutable(string projectName, string executableName)
     {
         DirectoryInfo artifacts = GetArtifactsDirectory();
-        string controlHostDirectory = Path.Combine(
+        string outputDirectory = Path.Combine(
             artifacts.FullName,
             "x64",
             GetConfigurationName(),
-            "ControlHost");
-        if (!Directory.Exists(controlHostDirectory))
+            projectName);
+        if (!Directory.Exists(outputDirectory))
         {
-            throw new DirectoryNotFoundException($"ControlHost output directory '{controlHostDirectory}' does not exist.");
+            throw new DirectoryNotFoundException($"Scenario output directory '{outputDirectory}' does not exist.");
         }
 
         string[] candidates = Directory.GetFiles(
-            controlHostDirectory,
-            "ControlHost.exe",
+            outputDirectory,
+            executableName,
             SearchOption.AllDirectories);
         return candidates.Length switch
         {
             1 => candidates[0],
-            0 => throw new FileNotFoundException($"ControlHost.exe was not found under '{controlHostDirectory}'."),
-            _ => throw new InvalidOperationException($"Multiple ControlHost executables were found under '{controlHostDirectory}'.")
+            0 => throw new FileNotFoundException($"{executableName} was not found under '{outputDirectory}'."),
+            _ => throw new InvalidOperationException($"Multiple {executableName} files were found under '{outputDirectory}'.")
         };
     }
 

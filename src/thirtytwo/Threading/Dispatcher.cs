@@ -203,6 +203,31 @@ public sealed class Dispatcher
     }
 
     /// <summary>
+    ///  Registers synchronous cleanup to run on the owning thread after admission closes and before native dispatcher
+    ///  resources are released. Registrations run in reverse order.
+    /// </summary>
+    /// <param name="callback">The cleanup callback.</param>
+    /// <returns>A registration that removes the callback when disposed before shutdown.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="callback"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">
+    ///  The calling thread does not own this dispatcher, no active message loop owns it, or shutdown has started.
+    /// </exception>
+    public ShutdownRegistration RegisterShutdownCallback(Action callback)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+        VerifyAccess();
+
+        ThreadContext context = ThreadContext.CurrentContext
+            ?? throw new InvalidOperationException("A message loop is not running on this thread.");
+        if (!ReferenceEquals(context.Dispatcher, this))
+        {
+            throw new InvalidOperationException("The current message loop does not own this dispatcher.");
+        }
+
+        return context.RegisterShutdownCallback(callback);
+    }
+
+    /// <summary>
     ///  Queues a synchronous callback. The callback is deferred even when called by the owning thread.
     /// </summary>
     /// <remarks>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.17763.0</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationManifest>..\..\samples\WinUI\ControlHost\app.manifest</ApplicationManifest>
+    <WindowsPackageType>None</WindowsPackageType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\thirtytwo.winui\thirtytwo.winui.csproj" />
+    <ProjectReference Include="..\..\samples\WinUI\SampleWinUIClassLibraryA\SampleWinUIClassLibraryA.csproj" />
+    <ProjectReference Include="..\..\samples\WinUI\SampleWinUIClassLibraryB\SampleWinUIClassLibraryB.csproj" />
+  </ItemGroup>
+
+</Project>
