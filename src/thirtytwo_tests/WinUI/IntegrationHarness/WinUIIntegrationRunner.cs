@@ -164,6 +164,15 @@ internal sealed class WinUIIntegrationRunner
                         case WinUIIntegrationScenario.EnvironmentWrongThreadRejected:
                         case WinUIIntegrationScenario.EnvironmentSecondThreadRejected:
                         case WinUIIntegrationScenario.EnvironmentFinalRelease:
+                        case WinUIIntegrationScenario.HostBasic:
+                        case WinUIIntegrationScenario.HostColorPicker:
+                        case WinUIIntegrationScenario.HostStress:
+                        case WinUIIntegrationScenario.HostMultiple:
+                        case WinUIIntegrationScenario.HostLayout:
+                        case WinUIIntegrationScenario.HostReparent:
+                        case WinUIIntegrationScenario.HostReplacement:
+                        case WinUIIntegrationScenario.HostPopupClose:
+                        case WinUIIntegrationScenario.HostShutdownCleanup:
                             break;
                         default:
                             throw new InvalidOperationException($"Unknown WinUI integration scenario '{scenario}'.");
@@ -490,6 +499,15 @@ internal sealed class WinUIIntegrationRunner
         WinUIIntegrationScenario.EnvironmentWrongThreadRejected => "environment-wrong-thread-rejected",
         WinUIIntegrationScenario.EnvironmentSecondThreadRejected => "environment-second-thread-rejected",
         WinUIIntegrationScenario.EnvironmentFinalRelease => "environment-final-release",
+        WinUIIntegrationScenario.HostBasic => "host-basic",
+        WinUIIntegrationScenario.HostColorPicker => "host-color-picker",
+        WinUIIntegrationScenario.HostStress => "host-stress",
+        WinUIIntegrationScenario.HostMultiple => "host-multiple",
+        WinUIIntegrationScenario.HostLayout => "host-layout",
+        WinUIIntegrationScenario.HostReparent => "host-reparent",
+        WinUIIntegrationScenario.HostReplacement => "host-replacement",
+        WinUIIntegrationScenario.HostPopupClose => "host-popup-close",
+        WinUIIntegrationScenario.HostShutdownCleanup => "host-shutdown-cleanup",
         _ => throw new ArgumentOutOfRangeException(nameof(scenario))
     };
 

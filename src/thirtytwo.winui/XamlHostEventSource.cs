@@ -36,4 +36,8 @@ internal sealed class XamlHostEventSource : EventSource
     [Event(6, Level = EventLevel.Warning)]
     public void ResourceCollision(string key)
         => WriteEvent(6, key);
+
+    [Event(7, Level = EventLevel.Error)]
+    public void HostCallbackFailed(uint nativeThreadId, string operation, int hresult, string exceptionType)
+        => WriteEvent(7, nativeThreadId, operation, hresult, exceptionType);
 }

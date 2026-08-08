@@ -25,6 +25,15 @@ internal static class ScenarioArguments
             "environment-wrong-thread-rejected" => EnvironmentScenario.WrongThreadRejected,
             "environment-second-thread-rejected" => EnvironmentScenario.SecondThreadRejected,
             "environment-final-release" => EnvironmentScenario.FinalRelease,
+            "host-basic" => EnvironmentScenario.HostBasic,
+            "host-color-picker" => EnvironmentScenario.HostColorPicker,
+            "host-stress" => EnvironmentScenario.HostStress,
+            "host-multiple" => EnvironmentScenario.HostMultiple,
+            "host-layout" => EnvironmentScenario.HostLayout,
+            "host-reparent" => EnvironmentScenario.HostReparent,
+            "host-replacement" => EnvironmentScenario.HostReplacement,
+            "host-popup-close" => EnvironmentScenario.HostPopupClose,
+            "host-shutdown-cleanup" => EnvironmentScenario.HostShutdownCleanup,
             _ => throw new ArgumentException($"Unknown environment scenario '{arguments[1]}'.")
         };
     }
@@ -41,6 +50,15 @@ internal static class ScenarioArguments
         EnvironmentScenario.WrongThreadRejected => "environment-wrong-thread-rejected",
         EnvironmentScenario.SecondThreadRejected => "environment-second-thread-rejected",
         EnvironmentScenario.FinalRelease => "environment-final-release",
+        EnvironmentScenario.HostBasic => "host-basic",
+        EnvironmentScenario.HostColorPicker => "host-color-picker",
+        EnvironmentScenario.HostStress => "host-stress",
+        EnvironmentScenario.HostMultiple => "host-multiple",
+        EnvironmentScenario.HostLayout => "host-layout",
+        EnvironmentScenario.HostReparent => "host-reparent",
+        EnvironmentScenario.HostReplacement => "host-replacement",
+        EnvironmentScenario.HostPopupClose => "host-popup-close",
+        EnvironmentScenario.HostShutdownCleanup => "host-shutdown-cleanup",
         _ => throw new ArgumentOutOfRangeException(nameof(scenario))
     };
 }

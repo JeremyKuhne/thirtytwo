@@ -6,4 +6,8 @@ namespace WinUIConsumer;
 public static class Consumer
 {
     public static Type EnvironmentType => typeof(Windows.WinUI.XamlHostEnvironment);
+
+    public static Type HostControlType => typeof(Windows.WinUI.XamlHostControl);
+
+    public static Type ColorPickerType => typeof(Windows.WinUI.WinUIColorPicker);
 }

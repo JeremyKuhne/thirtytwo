@@ -2,8 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.ComponentModel;
+using System.Drawing;
 using System.Runtime.InteropServices;
+using Microsoft.UI;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Markup;
 using SampleWinUIClassLibraryA;
 using SampleWinUIClassLibraryB;
@@ -11,6 +15,7 @@ using Touki.TestSupport;
 using Windows;
 using Windows.Threading;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.WinUI;
 using ResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
 
@@ -21,6 +26,11 @@ internal sealed class EnvironmentWindow : Window
     private readonly ScenarioReporter _reporter;
     private XamlHostEnvironment? _environment;
     private XamlHostEnvironment? _secondEnvironment;
+    private XamlHostControl? _xamlHost;
+    private WinUIColorPicker? _colorPickerHost;
+    private XamlHostControl? _popupHost;
+    private Window? _shutdownParent;
+    private XamlHostControl? _shutdownHost;
 
     internal EnvironmentWindow(EnvironmentScenario scenario, ScenarioReporter reporter)
         : base(DefaultBounds, text: "ThirtyTwo WinUI Environment Host")
@@ -31,6 +41,7 @@ internal sealed class EnvironmentWindow : Window
 
         if (!Dispatcher.TryPost(() =>
             {
+                ExecuteAfterShow(scenario);
                 if (!PInvoke.DestroyWindow(Handle))
                 {
                     throw new Win32Exception(Marshal.GetLastPInvokeError());
@@ -105,10 +116,350 @@ internal sealed class EnvironmentWindow : Window
                 Ensure(application.TryGetTarget(out _), "The process application was not retained.");
                 _reporter.Write("application-retained");
                 break;
+            case EnvironmentScenario.HostBasic:
+                VerifyHostBasic();
+                break;
+            case EnvironmentScenario.HostColorPicker:
+                VerifyHostColorPicker();
+                break;
+            case EnvironmentScenario.HostStress:
+                VerifyHostStress();
+                break;
+            case EnvironmentScenario.HostMultiple:
+                VerifyHostMultiple();
+                break;
+            case EnvironmentScenario.HostReparent:
+                VerifyHostReparent();
+                break;
+            case EnvironmentScenario.HostReplacement:
+                VerifyHostReplacement();
+                break;
+            case EnvironmentScenario.HostLayout:
+            case EnvironmentScenario.HostPopupClose:
+            case EnvironmentScenario.HostShutdownCleanup:
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(scenario));
         }
     }
+
+    internal void VerifyAfterRun(EnvironmentScenario scenario)
+    {
+        XamlHostControl? xamlHost = scenario switch
+        {
+            EnvironmentScenario.HostBasic => _xamlHost,
+            EnvironmentScenario.HostPopupClose => _popupHost,
+            EnvironmentScenario.HostShutdownCleanup => _shutdownHost,
+            _ => null
+        };
+
+        if (xamlHost is null)
+        {
+            return;
+        }
+
+        Ensure(xamlHost.Handle.IsNull, "Parent destruction left the managed host HWND alive.");
+        DesktopWindowXamlSource? xamlSource = xamlHost.TestAccessor.Dynamic._xamlSource;
+        Ensure(xamlSource is null, "Parent destruction left the XAML source alive.");
+        if (scenario == EnvironmentScenario.HostShutdownCleanup)
+        {
+            Window shutdownParent = _shutdownParent
+                ?? throw new InvalidOperationException("The shutdown parent was not created.");
+            Ensure(!shutdownParent.Handle.IsNull, "The shutdown parent was destroyed with the root window.");
+            shutdownParent.Dispose();
+            _shutdownParent = null;
+        }
+
+        string eventName = scenario switch
+        {
+            EnvironmentScenario.HostPopupClose => "popup-parent-destroyed",
+            EnvironmentScenario.HostShutdownCleanup => "host-shutdown-cleaned",
+            _ => "host-parent-destroyed"
+        };
+        _reporter.Write(eventName);
+    }
+
+    private void ExecuteAfterShow(EnvironmentScenario scenario)
+    {
+        switch (scenario)
+        {
+            case EnvironmentScenario.HostLayout:
+                VerifyHostLayout();
+                break;
+            case EnvironmentScenario.HostPopupClose:
+                VerifyHostPopupClose();
+                break;
+            case EnvironmentScenario.HostShutdownCleanup:
+                VerifyHostShutdownCleanup();
+                break;
+        }
+    }
+
+    private void VerifyHostBasic()
+    {
+        bool contentFactoryCalled = false;
+        _xamlHost = new(new Rectangle(20, 30, 320, 240), this, () =>
+        {
+            Ensure(XamlHostEnvironment.Current?.LeaseCount == 1, "The content factory ran before host initialization.");
+            contentFactoryCalled = true;
+            return new Grid();
+        });
+
+        Ensure(contentFactoryCalled, "The host content factory did not run.");
+        Ensure(_xamlHost.Content is Grid, "The host did not retain its factory content.");
+        Grid replacement = new();
+        _xamlHost.Content = replacement;
+        Ensure(ReferenceEquals(_xamlHost.Content, replacement), "The host did not replace its content.");
+        _xamlHost.Content = null;
+        Ensure(_xamlHost.Content is null, "The host did not clear its content.");
+        _xamlHost.Content = replacement;
+        Ensure(ReferenceEquals(Window.FromHandle(_xamlHost), _xamlHost), "The managed host HWND was not registered.");
+
+        Exception? wrongThreadFailure = null;
+        Thread thread = new(() =>
+        {
+            try
+            {
+                _ = _xamlHost.Content;
+            }
+            catch (Exception exception)
+            {
+                wrongThreadFailure = exception;
+            }
+        });
+        thread.Start();
+        thread.Join();
+        Ensure(wrongThreadFailure is InvalidOperationException, "Wrong-thread host access was not rejected.");
+        Ensure(ReferenceEquals(_xamlHost.Content, replacement), "Wrong-thread access changed the hosted content.");
+
+        DesktopWindowXamlSource xamlSource = _xamlHost.TestAccessor.Dynamic._xamlSource;
+        HWND siteBridge = (HWND)Win32Interop.GetWindowFromWindowId(xamlSource.SiteBridge.WindowId);
+        Ensure(!siteBridge.IsNull, "The XAML source did not create a site-bridge HWND.");
+        Ensure(Window.FromHandle(siteBridge) is null, "The WinUI-owned site bridge was registered as a managed window.");
+        Ensure(PInvoke.GetParent(siteBridge) == _xamlHost.Handle, "The site bridge is not parented to the managed host.");
+        _reporter.Write("host-attached", _xamlHost.Handle);
+        _reporter.Write("site-bridge-owned-by-winui", siteBridge);
+        _reporter.Write("host-content-created");
+        _reporter.Write("host-wrong-thread-rejected");
+    }
+
+    private void VerifyHostColorPicker()
+    {
+        _colorPickerHost = new(new Rectangle(20, 30, 400, 300), this);
+        WinUIColorChangedEventArgs? observedChange = null;
+        _colorPickerHost.ColorChanged += (_, eventArgs) => observedChange = eventArgs;
+        _colorPickerHost.IsAlphaEnabled = true;
+        Color expected = Color.FromArgb(128, 12, 34, 56);
+
+        _colorPickerHost.Color = expected;
+
+        Ensure(_colorPickerHost.IsAlphaEnabled, "The alpha-enabled setting was not retained.");
+        Ensure(_colorPickerHost.Color == expected, "The selected color did not round-trip through the wrapper.");
+        Ensure(observedChange?.NewColor == expected, "The projected color-change event reported the wrong color.");
+        try
+        {
+            _colorPickerHost.Content = new Grid();
+            throw new InvalidOperationException("The typed wrapper accepted replacement content.");
+        }
+        catch (InvalidOperationException exception) when (exception.Message == "WinUIColorPicker content cannot be replaced.")
+        {
+        }
+
+        Ensure(_colorPickerHost.Color == expected, "Rejected content replacement changed the selected color.");
+        _reporter.Write("color-picker-projected", _colorPickerHost.Handle);
+    }
+
+    private void VerifyHostStress()
+    {
+        int initialChildCount = CountChildWindows();
+        try
+        {
+            _ = new XamlHostControl(
+                new Rectangle(0, 0, 10, 10),
+                this,
+                static () => throw new InvalidOperationException("Expected content factory failure."));
+            throw new InvalidOperationException("A throwing content factory did not fail host construction.");
+        }
+        catch (InvalidOperationException exception) when (exception.Message == "Expected content factory failure.")
+        {
+        }
+
+        try
+        {
+            _ = new XamlHostControl(new Rectangle(0, 0, 10, 10), this, null!);
+            throw new InvalidOperationException("A null content factory did not fail host construction.");
+        }
+        catch (ArgumentNullException exception) when (exception.ParamName == "contentFactory")
+        {
+        }
+
+        Ensure(CountChildWindows() == initialChildCount, "Failed host construction left native child windows behind.");
+        Ensure(XamlHostEnvironment.Current?.LeaseCount == 0, "Failed host construction retained an environment lease.");
+        _reporter.Write("host-constructor-failure-cleaned");
+
+        for (int iteration = 0; iteration < 1_000; iteration++)
+        {
+            using XamlHostControl host = new(new Rectangle(0, 0, 1 + (iteration % 7), 1 + (iteration % 11)), this);
+            HWND handle = host.Handle;
+            Ensure(XamlHostEnvironment.Current?.LeaseCount == 1, "A stress host did not acquire one lease.");
+
+            host.Dispose();
+
+            Ensure(host.Handle.IsNull, "A stress host retained its managed HWND after disposal.");
+            Ensure(Window.FromHandle(handle) is null, "A disposed stress host remained in managed HWND lookup.");
+            Ensure(XamlHostEnvironment.Current?.LeaseCount == 0, "A stress host retained its environment lease.");
+        }
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        Ensure(CountChildWindows() == initialChildCount, "Host stress left native child windows behind.");
+        _reporter.Write("host-stress-completed");
+    }
+
+    private void VerifyHostMultiple()
+    {
+        using XamlHostControl first = new(new Rectangle(0, 0, 80, 60), this, static () => new Grid());
+        using XamlHostControl second = new(new Rectangle(80, 0, 80, 60), this, static () => new Grid());
+        using XamlHostControl third = new(new Rectangle(160, 0, 80, 60), this, static () => new Grid());
+        Ensure(XamlHostEnvironment.Current?.LeaseCount == 3, "Three hosts did not acquire three leases.");
+
+        second.Dispose();
+        Ensure(XamlHostEnvironment.Current?.LeaseCount == 2, "Disposing the middle host did not release one lease.");
+        Ensure(first.Content is Grid && third.Content is Grid, "Disposing one host invalidated another host.");
+        first.Dispose();
+        Ensure(XamlHostEnvironment.Current?.LeaseCount == 1, "Disposing the first host did not release one lease.");
+        third.Dispose();
+        Ensure(XamlHostEnvironment.Current?.LeaseCount == 0, "Disposing all hosts retained a lease.");
+
+        using XamlHostControl fourth = new(new Rectangle(0, 60, 80, 60), this);
+        using XamlHostControl fifth = new(new Rectangle(80, 60, 80, 60), this);
+        fifth.Dispose();
+        fourth.Dispose();
+        Ensure(XamlHostEnvironment.Current?.LeaseCount == 0, "Reverse-order disposal retained a lease.");
+        _reporter.Write("multiple-host-disposal-completed");
+    }
+
+    private void VerifyHostLayout()
+    {
+        using XamlHostControl host = new(new Rectangle(0, 0, 1, 1), this, static () => new Grid());
+        DesktopWindowXamlSource xamlSource = GetXamlSource(host);
+        HWND siteBridge = GetSiteBridge(xamlSource);
+
+        host.MoveWindow(Rectangle.Empty, repaint: false);
+        Ensure(host.GetClientRectangle().Size == Size.Empty, "The managed host did not accept zero size.");
+        Ensure(siteBridge.GetClientRectangle().Size == Size.Empty, "The site bridge did not accept zero size.");
+        _reporter.Write("host-zero-size");
+
+        host.MoveWindow(new Rectangle(10, 10, 120, 90), repaint: false);
+        host.ShowWindow(ShowWindowCommand.Hide);
+        Ensure(!PInvoke.IsWindowVisible(host.Handle), "The managed host remained visible after hide.");
+        Ensure(!PInvoke.IsWindowVisible(siteBridge), "The site bridge remained visible after its host was hidden.");
+        host.ShowWindow(ShowWindowCommand.Show);
+        Ensure(PInvoke.IsWindowVisible(host.Handle), "The managed host did not become visible.");
+        Ensure(PInvoke.IsWindowVisible(siteBridge), "The site bridge did not become visible with its host.");
+        _reporter.Write("host-visibility-synchronized");
+
+        Size expectedSize = default;
+        for (int iteration = 1; iteration <= 250; iteration++)
+        {
+            expectedSize = new(1 + ((iteration * 17) % 480), 1 + ((iteration * 29) % 320));
+            host.MoveWindow(new Rectangle(iteration % 31, iteration % 23, expectedSize.Width, expectedSize.Height), repaint: false);
+        }
+
+        Ensure(siteBridge.GetClientRectangle().Size == expectedSize, "The site bridge did not track the resize storm.");
+        Ensure(ReferenceEquals(GetXamlSource(host), xamlSource), "Resizing replaced the XAML source.");
+        _reporter.Write("host-resize-storm-completed");
+    }
+
+    private void VerifyHostReparent()
+    {
+        using CustomControl firstParent = new(new Rectangle(0, 0, 300, 220), parentWindow: this);
+        using CustomControl secondParent = new(new Rectangle(300, 0, 300, 220), parentWindow: this);
+        using XamlHostControl host = new(new Rectangle(5, 7, 180, 140), firstParent, static () => new Grid());
+        DesktopWindowXamlSource xamlSource = GetXamlSource(host);
+        HWND siteBridge = GetSiteBridge(xamlSource);
+        using CustomControl destroyedParent = new(new Rectangle(0, 220, 100, 80), parentWindow: this);
+        destroyedParent.Dispose();
+
+        try
+        {
+            host.Reparent(destroyedParent);
+            throw new InvalidOperationException("A destroyed reparent target was accepted.");
+        }
+        catch (InvalidOperationException exception) when (exception.Message == "The new parent window has been destroyed.")
+        {
+        }
+
+        Ensure(PInvoke.GetParent(host.Handle) == firstParent.Handle, "Rejected reparenting changed the native parent.");
+        Ensure(ReferenceEquals(GetXamlSource(host), xamlSource), "Rejected reparenting replaced the XAML source.");
+        Ensure(host.Content is Grid, "Rejected reparenting lost the hosted content.");
+        _reporter.Write("destroyed-reparent-target-rejected");
+
+        host.Reparent(secondParent);
+        host.MoveWindow(new Rectangle(11, 13, 200, 150), repaint: false);
+
+        Ensure(PInvoke.GetParent(host.Handle) == secondParent.Handle, "The host did not move to the new parent.");
+        HWND reattachedSiteBridge = GetSiteBridge(GetXamlSource(host));
+        Ensure(PInvoke.GetParent(reattachedSiteBridge) == host.Handle, "Reparenting detached the site bridge from its host.");
+        Ensure(!ReferenceEquals(GetXamlSource(host), xamlSource), "Reparenting reused the source attached to the old parent.");
+        Ensure(reattachedSiteBridge != siteBridge, "Reparenting reused the site bridge attached to the old parent.");
+        Ensure(host.Content is Grid, "Reparenting lost the hosted content.");
+        _reporter.Write("host-reparented");
+    }
+
+    private void VerifyHostReplacement()
+    {
+        DesktopWindowXamlSource firstSource;
+        using (XamlHostControl first = new(new Rectangle(0, 0, 160, 120), this, static () => new Grid()))
+        {
+            firstSource = GetXamlSource(first);
+        }
+
+        using XamlHostControl replacement = new(new Rectangle(0, 0, 160, 120), this, static () => new Grid());
+        Ensure(!ReferenceEquals(GetXamlSource(replacement), firstSource), "A replacement host reused a disposed XAML source.");
+        Ensure(replacement.Content is Grid, "The replacement host did not create content.");
+        _reporter.Write("host-replacement-created");
+    }
+
+    private void VerifyHostPopupClose()
+    {
+        ComboBox? comboBox = null;
+        _popupHost = new(new Rectangle(20, 30, 240, 80), this, () => comboBox = new());
+        ComboBox createdComboBox = comboBox
+            ?? throw new InvalidOperationException("The popup content factory did not run.");
+        createdComboBox.Items.Add("First");
+        createdComboBox.Items.Add("Second");
+        createdComboBox.IsDropDownOpen = true;
+        Ensure(createdComboBox.IsDropDownOpen, "The hosted popup did not open.");
+        _reporter.Write("host-popup-open", _popupHost.Handle);
+    }
+
+    private void VerifyHostShutdownCleanup()
+    {
+        _shutdownParent = new(new Rectangle(0, 0, 320, 240), text: "Shutdown cleanup parent");
+        _shutdownHost = new(new Rectangle(20, 30, 200, 150), _shutdownParent, static () => new Grid());
+        Ensure(XamlHostEnvironment.Current?.LeaseCount == 1, "The shutdown-cleanup host did not acquire a lease.");
+        _reporter.Write("host-left-for-shutdown", _shutdownHost.Handle);
+    }
+
+    private int CountChildWindows()
+    {
+        int count = 0;
+        this.EnumerateChildWindows(_ =>
+        {
+            count++;
+            return true;
+        });
+        return count;
+    }
+
+    private static DesktopWindowXamlSource GetXamlSource(XamlHostControl host)
+        => host.TestAccessor.Dynamic._xamlSource
+            ?? throw new InvalidOperationException("The host has no XAML source.");
+
+    private static HWND GetSiteBridge(DesktopWindowXamlSource xamlSource)
+        => (HWND)Win32Interop.GetWindowFromWindowId(xamlSource.SiteBridge.WindowId);
 
     private void AcquireAndReport()
     {
@@ -336,6 +687,9 @@ internal sealed class EnvironmentWindow : Window
     {
         if (disposing)
         {
+            _popupHost?.Dispose();
+            _colorPickerHost?.Dispose();
+            _xamlHost?.Dispose();
             _secondEnvironment?.Dispose();
             _environment?.Dispose();
         }
