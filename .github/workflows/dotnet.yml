@@ -57,6 +57,9 @@ jobs:
       run: dotnet build --no-restore
     - name: Build Release
       run: dotnet build --configuration Release --no-restore
+    - name: Verify WinUI package isolation
+      shell: pwsh
+      run: ./eng/verify-winui-package-isolation.ps1 -Configuration Release
     - name: Test
       run: |
         $resultsDir = Join-Path $PWD.Path 'artifacts/test-results'

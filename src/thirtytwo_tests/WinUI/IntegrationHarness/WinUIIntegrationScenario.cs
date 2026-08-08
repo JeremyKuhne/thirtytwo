@@ -8,5 +8,15 @@ internal enum WinUIIntegrationScenario
     Startup,
     UiaTree,
     NormalClose,
-    ShutdownTimeout
+    ShutdownTimeout,
+    EnvironmentOwned,
+    EnvironmentBorrowed,
+    EnvironmentComposition,
+    EnvironmentMultipleLeases,
+    EnvironmentCompatibleApplication,
+    EnvironmentIncompatibleApplication,
+    EnvironmentMtaRejected,
+    EnvironmentWrongThreadRejected,
+    EnvironmentSecondThreadRejected,
+    EnvironmentFinalRelease
 }

@@ -37,6 +37,12 @@
     <Project Path="src/samples/WinUI/ControlHost/ControlHost.csproj">
       <Platform Project="x64" />
     </Project>
+    <Project Path="src/samples/WinUI/SampleWinUIClassLibraryA/SampleWinUIClassLibraryA.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/samples/WinUI/SampleWinUIClassLibraryB/SampleWinUIClassLibraryB.csproj">
+      <Platform Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/Samples/Petzold/">
     <Project Path="src/samples/Petzold/5th/AltWind/AltWind.csproj">
@@ -87,7 +93,13 @@
   <Project Path="src/thirtytwo/thirtytwo.csproj">
     <Platform Project="x64" />
   </Project>
+  <Project Path="src/thirtytwo.winui/thirtytwo.winui.csproj">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="src/thirtytwo_tests/thirtytwo_tests.csproj">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="src/thirtytwo.winui_tests/IntegrationHost/IntegrationHost.csproj">
     <Platform Project="x64" />
   </Project>
 </Solution>
