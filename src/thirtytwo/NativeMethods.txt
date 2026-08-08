@@ -353,6 +353,7 @@ SetFocus
 SetGraphicsMode
 SetLayeredWindowAttributes
 SetMapMode
+SetParent
 SetPolyFillMode
 SetROP2
 SetTextColor

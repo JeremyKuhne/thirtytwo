@@ -14,5 +14,14 @@ internal enum EnvironmentScenario
     MtaRejected,
     WrongThreadRejected,
     SecondThreadRejected,
-    FinalRelease
+    FinalRelease,
+    HostBasic,
+    HostColorPicker,
+    HostStress,
+    HostMultiple,
+    HostLayout,
+    HostReparent,
+    HostReplacement,
+    HostPopupClose,
+    HostShutdownCleanup
 }

@@ -18,5 +18,14 @@ internal enum WinUIIntegrationScenario
     EnvironmentMtaRejected,
     EnvironmentWrongThreadRejected,
     EnvironmentSecondThreadRejected,
-    EnvironmentFinalRelease
+    EnvironmentFinalRelease,
+    HostBasic,
+    HostColorPicker,
+    HostStress,
+    HostMultiple,
+    HostLayout,
+    HostReparent,
+    HostReplacement,
+    HostPopupClose,
+    HostShutdownCleanup
 }

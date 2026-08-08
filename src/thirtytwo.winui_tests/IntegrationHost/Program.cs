@@ -68,6 +68,7 @@ internal static class Program
                 return createdWindow;
             });
 
+            window?.VerifyAfterRun(scenario);
             Ensure(XamlHostEnvironment.Current is null, "The environment survived core dispatcher shutdown.");
             reporter.Write("environment-stopped");
             if (environmentApplication is not null)

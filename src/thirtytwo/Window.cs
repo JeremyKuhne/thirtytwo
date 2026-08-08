@@ -8,6 +8,9 @@ using Windows.Win32.Graphics.Direct2D;
 
 namespace Windows;
 
+/// <summary>
+///  Represents a managed wrapper around a native Win32 window.
+/// </summary>
 public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandler
 {
     private static readonly object s_lock = new();
@@ -595,9 +598,12 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                 }
                 else
                 {
-                    Handle.SendMessage(MessageType.Close);
-                    bool success = s_windows.TryRemove(Handle, out _);
+                    HWND handle = Handle;
+                    handle.SendMessage(MessageType.Close);
+                    bool success = s_windows.TryRemove(handle, out _);
                     Debug.Assert(success);
+                    _handle = default;
+                    _destroyed = true;
                 }
             }
         }
