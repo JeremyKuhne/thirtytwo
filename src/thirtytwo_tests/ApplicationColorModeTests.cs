@@ -208,9 +208,9 @@ public class ApplicationColorModeTests
     }
 
     [STATestMethod]
-    public unsafe void ColorMode_RadioButton_UsesDarkControlForeground()
+    public unsafe void ColorMode_RadioButton_UsesWindowSurfaceColors()
     {
-        Application.ColorMode = ApplicationColorMode.Dark;
+        Application.ColorMode = ApplicationColorMode.Light;
         using MainWindow window = new(Window.DefaultBounds);
         using ButtonControl radioButton = new(
             text: "Radio button",
@@ -223,6 +223,25 @@ public class ApplicationColorModeTests
             (WPARAM)(nuint)context.Handle.Value,
             (LPARAM)radioButton.Handle);
 
+        context.GetBackgroundColor().Should().Be(Application.CurrentColorState.Palette.WindowBackground);
+        context.GetTextColor().ToArgb().Should().Be(
+            Application.CurrentColorState.Palette.WindowForeground.ToArgb());
+    }
+
+    [STATestMethod]
+    public unsafe void ColorMode_Edit_UsesControlSurfaceColors()
+    {
+        Application.ColorMode = ApplicationColorMode.Light;
+        using MainWindow window = new(Window.DefaultBounds);
+        using EditControl edit = new(text: "Edit", parentWindow: window);
+        using DeviceContext context = edit.GetDeviceContext();
+
+        _ = window.SendMessage(
+            MessageType.ControlColorEdit,
+            (WPARAM)(nuint)context.Handle.Value,
+            (LPARAM)edit.Handle);
+
+        context.GetBackgroundColor().Should().Be(Application.CurrentColorState.Palette.ControlBackground);
         context.GetTextColor().ToArgb().Should().Be(
             Application.CurrentColorState.Palette.ControlForeground.ToArgb());
     }

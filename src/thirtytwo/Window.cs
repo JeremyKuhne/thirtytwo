@@ -496,7 +496,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                     or MessageType.ControlColorScrollBar;
                 DeviceContext controlContext = (DeviceContext)wParam;
                 controlContext.SetBackgroundColor(controlBackgroundOwner.GetEffectiveBackgroundColor(controlSurface));
-                controlContext.SetTextColor(control.GetEffectiveForegroundColor());
+                controlContext.SetTextColor(control.GetEffectiveForegroundColor(controlSurface));
                 return (LRESULT)controlBackgroundOwner.GetBackgroundBrush(controlSurface).Value;
 
             case MessageType.GetFont:
