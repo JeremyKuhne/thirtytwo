@@ -247,6 +247,46 @@ public class ApplicationColorModeTests
     }
 
     [STATestMethod]
+    public void ColorMode_EditScrollBarTheme_TracksEligibleStyles()
+    {
+        using MainWindow window = new(Window.DefaultBounds);
+        using EditControl plainEdit = new(parentWindow: window);
+        using EditControl verticalEdit = new(
+            style: WindowStyles.Child | WindowStyles.VerticalScroll,
+            parentWindow: window);
+        using EditControl horizontalEdit = new(
+            style: WindowStyles.Child | WindowStyles.HorizontalScroll,
+            parentWindow: window);
+
+        ((bool)plainEdit.TestAccessor.Dynamic._usesApplicationScrollBarTheme).Should().BeFalse();
+        ((bool)verticalEdit.TestAccessor.Dynamic._usesApplicationScrollBarTheme).Should().BeTrue();
+        ((bool)horizontalEdit.TestAccessor.Dynamic._usesApplicationScrollBarTheme).Should().BeTrue();
+    }
+
+    [STATestMethod]
+    public void ColorMode_EditScrollBarTheme_PreservesScrollPosition()
+    {
+        Application.ColorMode = ApplicationColorMode.Light;
+        using MainWindow window = new(Window.DefaultBounds);
+        using EditControl edit = new(
+            bounds: new(0, 0, 200, 60),
+            text: string.Join("\r\n", Enumerable.Range(1, 20).Select(lineNumber => $"Line {lineNumber}")),
+            editStyle: EditControl.Styles.Multiline | EditControl.Styles.AutoVerticalScroll,
+            style: WindowStyles.Child | WindowStyles.Visible | WindowStyles.VerticalScroll,
+            parentWindow: window);
+
+        edit.SendMessage((MessageType)PInvoke.EM_LINESCROLL, default, (LPARAM)5);
+        int firstVisibleLine = (int)edit.SendMessage((MessageType)PInvoke.EM_GETFIRSTVISIBLELINE);
+        firstVisibleLine.Should().BeGreaterThan(0);
+
+        Application.ColorMode = ApplicationColorMode.Dark;
+        ((int)edit.SendMessage((MessageType)PInvoke.EM_GETFIRSTVISIBLELINE)).Should().Be(firstVisibleLine);
+
+        Application.UseUndocumentedDarkModeApis = false;
+        ((int)edit.SendMessage((MessageType)PInvoke.EM_GETFIRSTVISIBLELINE)).Should().Be(firstVisibleLine);
+    }
+
+    [STATestMethod]
     public void ColorMode_Change_NotifiesRadioButton()
     {
         Application.ColorMode = ApplicationColorMode.Light;
@@ -310,11 +350,40 @@ public class ApplicationColorModeTests
     }
 
     [STATestMethod]
+    public void ApplyApplicationDarkModeTheme_RequiresAThemeIdentifier()
+    {
+        Application.ColorMode = ApplicationColorMode.Light;
+        using MainWindow window = new(Window.DefaultBounds);
+        using PublicColorControl control = new(window);
+
+        Action missingIdentifiers = () => control.ApplyNativeTheme(null, null);
+        Action emptySubAppName = () => control.ApplyNativeTheme(string.Empty, null);
+        Action emptySubIdList = () => control.ApplyNativeTheme(null, string.Empty);
+        Action subAppName = () => control.ApplyNativeTheme("DarkMode_Explorer", null);
+        Action subIdList = () => control.ApplyNativeTheme(null, "DarkMode_Explorer::ScrollBar");
+        Action bothIdentifiers = () => control.ApplyNativeTheme(
+            "DarkMode_Explorer",
+            "DarkMode_Explorer::ScrollBar");
+
+        missingIdentifiers.Should().Throw<ArgumentException>();
+        emptySubAppName.Should().Throw<ArgumentException>();
+        emptySubIdList.Should().Throw<ArgumentException>();
+        subAppName.Should().NotThrow();
+        subIdList.Should().NotThrow();
+        bothIdentifiers.Should().NotThrow();
+    }
+
+    [STATestMethod]
     public unsafe void ColorMode_RichEdit_UpdatesBackgroundAndTextColors()
     {
         Application.ColorMode = ApplicationColorMode.Dark;
         using MainWindow window = new(Window.DefaultBounds);
-        using RichEditControl richEdit = new(new(0, 0, 200, 100), text: "Rich text", parentWindow: window);
+        using RichEditControl richEdit = new(
+            new(0, 0, 200, 60),
+            text: string.Join("\r\n", Enumerable.Range(1, 20).Select(lineNumber => $"Line {lineNumber}")),
+            editStyle: RichEditControl.Styles.Multiline | RichEditControl.Styles.AutoVerticalScroll,
+            style: WindowStyles.Child | WindowStyles.Visible | WindowStyles.VerticalScroll,
+            parentWindow: window);
 
         ApplicationColorPalette palette = Application.CurrentColorState.Palette;
         COLORREF expectedBackground = (COLORREF)palette.ControlBackground;
@@ -330,6 +399,19 @@ public class ApplicationColorModeTests
         richEdit.SetSelection(0, -1);
         GetCharacterFormat(richEdit, PInvoke.SCF_SELECTION).Base.crTextColor
             .Should().Be((COLORREF)palette.ControlForeground);
+
+        richEdit.SendMessage((MessageType)PInvoke.EM_LINESCROLL, default, (LPARAM)5);
+        int firstVisibleLine = (int)richEdit.SendMessage((MessageType)PInvoke.EM_GETFIRSTVISIBLELINE);
+        firstVisibleLine.Should().BeGreaterThan(0);
+
+        Application.ColorMode = ApplicationColorMode.Light;
+        ((int)richEdit.SendMessage((MessageType)PInvoke.EM_GETFIRSTVISIBLELINE)).Should().Be(firstVisibleLine);
+
+        Application.ColorMode = ApplicationColorMode.Dark;
+        ((int)richEdit.SendMessage((MessageType)PInvoke.EM_GETFIRSTVISIBLELINE)).Should().Be(firstVisibleLine);
+
+        Application.UseUndocumentedDarkModeApis = false;
+        ((int)richEdit.SendMessage((MessageType)PInvoke.EM_GETFIRSTVISIBLELINE)).Should().Be(firstVisibleLine);
 
         static CHARFORMAT2W GetCharacterFormat(RichEditControl richEdit, uint scope)
         {
@@ -401,6 +483,9 @@ public class ApplicationColorModeTests
             ApplyApplicationDarkModeTheme("DarkMode_Explorer");
             ApplyApplicationDarkModeTheme(Handle, "DarkMode_Explorer");
         }
+
+        internal void ApplyNativeTheme(string? darkSubAppName, string? darkSubIdList)
+            => ApplyApplicationDarkModeTheme(darkSubAppName, darkSubIdList);
 
         protected override void OnColorModeChanged()
         {

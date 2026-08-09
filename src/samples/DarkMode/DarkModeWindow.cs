@@ -64,21 +64,48 @@ internal sealed class DarkModeWindow : MainWindow
                 staticStyle: StaticControl.Styles.Left | StaticControl.Styles.CenterImage,
                 parentWindow: this), ownedControls);
             _edit = Track(new EditControl(
-                text: "Editable text",
-                style: WindowStyles.Child | WindowStyles.Visible | WindowStyles.TabStop | WindowStyles.Border,
+                text: string.Join("\r\n",
+                [
+                    "Editable text with a deliberately long first line that keeps the horizontal scrollbar visible.",
+                    "Second line",
+                    "Third line",
+                    "Fourth line"
+                ]),
+                editStyle: EditControl.Styles.Multiline | EditControl.Styles.AutoHorizontalScroll
+                    | EditControl.Styles.AutoVerticalScroll | EditControl.Styles.WantReturn,
+                style: WindowStyles.Child | WindowStyles.Visible | WindowStyles.TabStop | WindowStyles.Border
+                    | WindowStyles.HorizontalScroll | WindowStyles.VerticalScroll,
                 parentWindow: this), ownedControls);
+            _edit.SetSelection(0, 0);
             _comboBox = Track(new ComboBoxControl(
                 comboBoxStyle: ComboBoxControl.Styles.DropDownList,
                 style: WindowStyles.Child | WindowStyles.Visible | WindowStyles.TabStop | WindowStyles.VerticalScroll,
                 parentWindow: this), ownedControls);
-            _comboBox.AddItems(["Combo box item", "Second item", "Third item"]);
+            for (int itemNumber = 1; itemNumber <= 40; itemNumber++)
+            {
+                _comboBox.AddItem($"Combo box item {itemNumber}");
+            }
+
             _comboBox.SelectedIndex = 0;
             _richEdit = Track(new RichEditControl(
                 default,
-                text: "Rich edit text\r\nSelection and scrollbars remain part of the compatibility review.",
-                editStyle: RichEditControl.Styles.Multiline | RichEditControl.Styles.AutoVerticalScroll,
+                text: string.Join("\r\n",
+                [
+                    "Rich edit text with a deliberately long first line that keeps the horizontal scrollbar visible.",
+                    "Second line",
+                    "Third line",
+                    "Fourth line",
+                    "Fifth line",
+                    "Sixth line",
+                    "Seventh line",
+                    "Eighth line",
+                    "Ninth line",
+                    "Tenth line"
+                ]),
+                editStyle: RichEditControl.Styles.Multiline | RichEditControl.Styles.AutoHorizontalScroll
+                    | RichEditControl.Styles.AutoVerticalScroll,
                 style: WindowStyles.Child | WindowStyles.Visible | WindowStyles.TabStop
-                    | WindowStyles.Border | WindowStyles.VerticalScroll,
+                    | WindowStyles.Border | WindowStyles.HorizontalScroll | WindowStyles.VerticalScroll,
                 parentWindow: this), ownedControls);
             _disabledEdit = Track(new EditControl(
                 text: "Disabled edit text",
@@ -148,7 +175,7 @@ internal sealed class DarkModeWindow : MainWindow
 
         ILayoutHandler textControls = Layout.Horizontal(
             (.15f, Layout.Margin((20, 8, 10, 8), Layout.Fill(_staticLabel))),
-            (.15f, Layout.Margin((20, 8, 10, 8), Layout.FixedPercent(1f, .55f, _edit))),
+            (.15f, Layout.Margin((20, 8, 10, 8), Layout.Fill(_edit))),
             (.15f, Layout.Margin((20, 8, 10, 8), Layout.FixedPercent(1f, .55f, _comboBox))),
             (.4f, Layout.Margin((20, 8, 10, 8), Layout.Fill(_richEdit))),
             (.15f, Layout.Margin((20, 8, 10, 8), Layout.FixedPercent(1f, .55f, _disabledEdit))));

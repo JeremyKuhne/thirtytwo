@@ -11,6 +11,7 @@ namespace Windows;
 public partial class EditControl : EditBase
 {
     private static readonly WindowClass s_editClass = new("Edit");
+    private readonly bool _usesApplicationScrollBarTheme;
 
     public EditControl(
         Rectangle bounds = default,
@@ -28,5 +29,23 @@ public partial class EditControl : EditBase
             parentWindow,
             parameters)
     {
+        _usesApplicationScrollBarTheme = (style
+            & (WindowStyles.HorizontalScroll | WindowStyles.VerticalScroll)) != 0;
+        ApplyApplicationTheme();
+    }
+
+    /// <inheritdoc/>
+    protected override void OnColorModeChanged()
+    {
+        ApplyApplicationTheme();
+        base.OnColorModeChanged();
+    }
+
+    private void ApplyApplicationTheme()
+    {
+        if (_usesApplicationScrollBarTheme)
+        {
+            ApplyApplicationDarkModeTheme("DarkMode_Explorer");
+        }
     }
 }
