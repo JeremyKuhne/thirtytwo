@@ -54,7 +54,9 @@ public partial class RichEditControl : EditBase
     private unsafe void ApplyApplicationColors()
     {
         ApplicationColorState state = Application.CurrentColorState;
-        ApplyApplicationDarkModeTheme("DarkMode_Explorer");
+        ApplyApplicationDarkModeTheme(
+            darkSubAppName: null,
+            darkSubIdList: "DarkMode_Explorer::ScrollBar");
 
         Color background = state.Palette.ControlBackground;
         this.SendMessage(

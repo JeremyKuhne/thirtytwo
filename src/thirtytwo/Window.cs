@@ -612,6 +612,18 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     protected void ApplyApplicationDarkModeTheme(string darkThemeName)
         => ApplyApplicationDarkModeTheme(Handle, darkThemeName);
 
+    /// <summary>Applies the current application color state using private dark visual-style identifiers.</summary>
+    /// <param name="darkSubAppName">The private sub-app name used when dark mode is active, or <see langword="null"/>.</param>
+    /// <param name="darkSubIdList">The private sub-ID list used when dark mode is active, or <see langword="null"/>.</param>
+    /// <remarks>
+    ///  <para>
+    ///   Call this after the window handle is created and again from <see cref="OnColorModeChanged"/>. At least one
+    ///   identifier must be supplied. The framework removes both identifiers when private dark theming is inactive.
+    ///  </para>
+    /// </remarks>
+    protected void ApplyApplicationDarkModeTheme(string? darkSubAppName, string? darkSubIdList)
+        => ApplyApplicationDarkModeTheme(Handle, darkSubAppName, darkSubIdList);
+
     /// <summary>Applies the current application color state to an owned native window using a private dark theme class.</summary>
     /// <param name="window">The owned native window whose visual-style association is updated.</param>
     /// <param name="darkThemeName">The private visual-style class name used when dark mode is active.</param>
@@ -624,7 +636,41 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     protected void ApplyApplicationDarkModeTheme(HWND window, string darkThemeName)
     {
         ArgumentException.ThrowIfNullOrEmpty(darkThemeName);
-        UndocumentedDarkMode.ApplyWindowTheme(window, Application.CurrentColorState, darkThemeName);
+        ApplyApplicationDarkModeTheme(window, darkThemeName, darkSubIdList: null);
+    }
+
+    /// <summary>Applies private dark visual-style identifiers to an owned native window.</summary>
+    /// <param name="window">The owned native window whose visual-style association is updated.</param>
+    /// <param name="darkSubAppName">The private sub-app name used when dark mode is active, or <see langword="null"/>.</param>
+    /// <param name="darkSubIdList">The private sub-ID list used when dark mode is active, or <see langword="null"/>.</param>
+    /// <remarks>
+    ///  <para>
+    ///   This overload supports controls that select a private theme through the sub-ID list and unwrapped child or
+    ///   popup windows owned by a derived control. The supplied handle must remain valid for the duration of the call.
+    ///  </para>
+    /// </remarks>
+    protected void ApplyApplicationDarkModeTheme(HWND window, string? darkSubAppName, string? darkSubIdList)
+    {
+        if (darkSubAppName is not null)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(darkSubAppName);
+        }
+
+        if (darkSubIdList is not null)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(darkSubIdList);
+        }
+
+        if (darkSubAppName is null && darkSubIdList is null)
+        {
+            throw new ArgumentException("A dark theme sub-app name or sub-ID list is required.");
+        }
+
+        UndocumentedDarkMode.ApplyWindowTheme(
+            window,
+            Application.CurrentColorState,
+            darkSubAppName,
+            darkSubIdList);
     }
 
     private Window GetBackgroundOwner()
