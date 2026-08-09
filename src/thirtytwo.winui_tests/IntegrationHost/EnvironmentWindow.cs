@@ -33,6 +33,7 @@ internal sealed class EnvironmentWindow : Window
     private XamlHostControl? _shutdownHost;
     private AirspaceScenario? _airspaceScenario;
     private ScrollingScenario? _scrollingScenario;
+    private AccessibilityScenario? _accessibilityScenario;
     private FocusScenario? _focusScenario;
     private InputScenario? _inputScenario;
 
@@ -49,6 +50,7 @@ internal sealed class EnvironmentWindow : Window
                 if (scenario is not (
                     EnvironmentScenario.HostAirspace
                     or EnvironmentScenario.HostScrolling
+                    or EnvironmentScenario.HostAccessibility
                     or EnvironmentScenario.FocusTraversal
                     or EnvironmentScenario.InputSemantics))
                 {
@@ -145,6 +147,7 @@ internal sealed class EnvironmentWindow : Window
             case EnvironmentScenario.HostLayout:
             case EnvironmentScenario.HostAirspace:
             case EnvironmentScenario.HostScrolling:
+            case EnvironmentScenario.HostAccessibility:
             case EnvironmentScenario.HostPopupClose:
             case EnvironmentScenario.HostShutdownCleanup:
             case EnvironmentScenario.FocusTraversal:
@@ -205,6 +208,9 @@ internal sealed class EnvironmentWindow : Window
             case EnvironmentScenario.HostScrolling:
                 _scrollingScenario = new(this, _reporter);
                 _scrollingScenario.Start();
+                break;
+            case EnvironmentScenario.HostAccessibility:
+                _accessibilityScenario = new(this, _reporter);
                 break;
             case EnvironmentScenario.HostPopupClose:
                 VerifyHostPopupClose();
@@ -882,6 +888,7 @@ internal sealed class EnvironmentWindow : Window
     {
         if (disposing)
         {
+            _accessibilityScenario?.Dispose();
             _scrollingScenario?.Dispose();
             _airspaceScenario?.Dispose();
             _inputScenario?.Dispose();

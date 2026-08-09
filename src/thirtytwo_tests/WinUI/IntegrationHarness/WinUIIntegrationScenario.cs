@@ -28,6 +28,7 @@ internal enum WinUIIntegrationScenario
     HostLayout,
     HostAirspace,
     HostScrolling,
+    HostAccessibility,
     HostReparent,
     HostReplacement,
     HostPopupClose,

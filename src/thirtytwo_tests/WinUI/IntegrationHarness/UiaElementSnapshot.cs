@@ -10,4 +10,7 @@ internal sealed record UiaElementSnapshot(
     string ControlType,
     int NativeWindowHandle,
     bool IsKeyboardFocusable,
-    bool HasKeyboardFocus);
+    bool HasKeyboardFocus,
+    int ParentIndex,
+    string RuntimeId,
+    string[] SupportedPatterns);
