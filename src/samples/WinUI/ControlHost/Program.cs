@@ -24,6 +24,7 @@ internal static unsafe class Program
     private static Grid? s_root;
     private static ColorPicker? s_colorPicker;
     private static RawAirspaceScenario? s_airspaceScenario;
+    private static RawScrollingScenario? s_scrollingScenario;
     private static ScenarioReporter? s_reporter;
     private static ControlHostScenario s_scenario;
 
@@ -134,6 +135,7 @@ internal static unsafe class Program
             PInvoke.UpdateWindow(window);
             s_reporter?.Write("ready", window);
             s_airspaceScenario?.Start();
+            s_scrollingScenario?.Start();
 
             if (s_scenario == ControlHostScenario.Startup)
             {
@@ -189,6 +191,14 @@ internal static unsafe class Program
                     return (LRESULT)0;
                 }
 
+                if (s_scenario == ControlHostScenario.Scrolling)
+                {
+                    s_scrollingScenario = new(
+                        window,
+                        s_reporter ?? throw new InvalidOperationException("The scrolling scenario requires a reporter."));
+                    return (LRESULT)0;
+                }
+
                 s_xamlSource = new DesktopWindowXamlSource();
                 s_xamlSource.Initialize(Win32Interop.GetWindowIdFromWindow((nint)window.Value));
                 s_xamlSource.ShouldConstrainPopupsToWorkArea = true;
@@ -222,9 +232,10 @@ internal static unsafe class Program
                 }
 
                 s_reporter?.Write("close-received", window);
-                if (s_scenario == ControlHostScenario.Airspace)
+                if (s_scenario is ControlHostScenario.Airspace or ControlHostScenario.Scrolling)
                 {
                     s_airspaceScenario?.Dispose();
+                    s_scrollingScenario?.Dispose();
                 }
 
                 if (!PInvoke.DestroyWindow(window))
@@ -248,6 +259,8 @@ internal static unsafe class Program
     {
         s_airspaceScenario?.Dispose();
         s_airspaceScenario = null;
+        s_scrollingScenario?.Dispose();
+        s_scrollingScenario = null;
 
         if (s_xamlSource is null)
         {

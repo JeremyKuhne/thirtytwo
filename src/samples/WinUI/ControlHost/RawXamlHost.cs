@@ -33,6 +33,10 @@ internal sealed unsafe class RawXamlHost : IDisposable
 
     internal FrameworkElement Content { get; }
 
+    internal DesktopWindowXamlSource Source => _source;
+
+    internal HWND SiteBridge => (HWND)Win32Interop.GetWindowFromWindowId(_source.SiteBridge.WindowId);
+
     internal static RawXamlHost Create(
         RawWindowClass windowClass,
         HWND parent,

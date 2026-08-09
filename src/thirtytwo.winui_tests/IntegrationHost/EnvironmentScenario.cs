@@ -21,6 +21,7 @@ internal enum EnvironmentScenario
     HostMultiple,
     HostLayout,
     HostAirspace,
+    HostScrolling,
     HostReparent,
     HostReplacement,
     HostPopupClose,
