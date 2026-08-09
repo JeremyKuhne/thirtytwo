@@ -129,6 +129,7 @@ internal sealed class WinUIIntegrationRunner
                     switch (scenario)
                     {
                         case WinUIIntegrationScenario.UiaTree:
+                        case WinUIIntegrationScenario.HostAccessibility:
                             Task<(UiaSnapshot Uia, ScreenshotSnapshot Screenshot)> captureTask = Task.Run(
                                 () => CaptureArtifactsAsync(
                                     ready.WindowHandle,
@@ -568,6 +569,7 @@ internal sealed class WinUIIntegrationRunner
         WinUIIntegrationScenario.HostLayout => "host-layout",
         WinUIIntegrationScenario.HostAirspace => "host-airspace",
         WinUIIntegrationScenario.HostScrolling => "host-scrolling",
+        WinUIIntegrationScenario.HostAccessibility => "host-accessibility",
         WinUIIntegrationScenario.HostReparent => "host-reparent",
         WinUIIntegrationScenario.HostReplacement => "host-replacement",
         WinUIIntegrationScenario.HostPopupClose => "host-popup-close",

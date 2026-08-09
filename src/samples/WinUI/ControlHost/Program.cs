@@ -203,6 +203,13 @@ internal static unsafe class Program
                 s_xamlSource.Initialize(Win32Interop.GetWindowIdFromWindow((nint)window.Value));
                 s_xamlSource.ShouldConstrainPopupsToWorkArea = true;
 
+                if (s_scenario == ControlHostScenario.UiaTree)
+                {
+                    s_xamlSource.Content = new AccessibilityContent(
+                        s_reporter ?? throw new InvalidOperationException("The UIA scenario requires a reporter."));
+                    return (LRESULT)0;
+                }
+
                 s_colorPicker = new ColorPicker();
                 s_root = new Grid();
                 s_root.Children.Add(s_colorPicker);

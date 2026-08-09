@@ -32,7 +32,7 @@ internal static class UiaCapture
         {
             WindowHandleValidation.Validate(rootWindowHandle, expectedProcessId);
             snapshot = Capture(rootWindowHandle);
-            if (HasColorPickerControls(snapshot))
+            if (HasAccessibilityControls(snapshot))
             {
                 return snapshot;
             }
@@ -49,16 +49,24 @@ internal static class UiaCapture
         AutomationElement root = AutomationElement.FromHandle((nint)rootWindowHandle)
             ?? throw new InvalidOperationException("UI Automation did not return a root element.");
         TreeWalker walker = TreeWalker.ControlViewWalker;
-        Queue<(AutomationElement Element, int Depth)> pending = new();
+        Queue<(AutomationElement Element, int Depth, int ParentIndex)> pending = new();
         List<UiaElementSnapshot> elements = [];
-        pending.Enqueue((root, 0));
+        pending.Enqueue((root, 0, -1));
 
-        while (pending.TryDequeue(out (AutomationElement Element, int Depth) current)
+        while (pending.TryDequeue(out (AutomationElement Element, int Depth, int ParentIndex) current)
             && elements.Count < MaximumElements)
         {
             try
             {
                 AutomationElement.AutomationElementInformation information = current.Element.Current;
+                int elementIndex = elements.Count;
+                int[] runtimeId = current.Element.GetRuntimeId()
+                    ?? throw new InvalidOperationException("A UI Automation element returned a null runtime ID.");
+                string[] supportedPatterns = current.Element.GetSupportedPatterns()
+                    .Select(pattern => pattern.ProgrammaticName
+                        ?? throw new InvalidOperationException("A UI Automation pattern had no programmatic name."))
+                    .OrderBy(pattern => pattern, StringComparer.Ordinal)
+                    .ToArray();
                 elements.Add(new(
                     current.Depth,
                     information.Name ?? string.Empty,
@@ -66,7 +74,10 @@ internal static class UiaCapture
                     information.ControlType?.ProgrammaticName ?? string.Empty,
                     information.NativeWindowHandle,
                     information.IsKeyboardFocusable,
-                    information.HasKeyboardFocus));
+                    information.HasKeyboardFocus,
+                    current.ParentIndex,
+                    string.Join('.', runtimeId),
+                    supportedPatterns));
 
                 if (current.Depth >= MaximumDepth)
                 {
@@ -76,7 +87,7 @@ internal static class UiaCapture
                 AutomationElement? child = walker.GetFirstChild(current.Element);
                 while (child is not null && pending.Count + elements.Count < MaximumElements)
                 {
-                    pending.Enqueue((child, current.Depth + 1));
+                    pending.Enqueue((child, current.Depth + 1, elementIndex));
                     child = walker.GetNextSibling(child);
                 }
             }
@@ -88,19 +99,22 @@ internal static class UiaCapture
         return new(rootWindowHandle, elements);
     }
 
-    private static bool HasColorPickerControls(UiaSnapshot snapshot)
+    private static bool HasAccessibilityControls(UiaSnapshot snapshot)
     {
-        bool hasSlider = false;
-        bool hasComboBox = false;
-        bool hasEdit = false;
+        bool hasColorPicker = false;
+        bool hasFocusedAction = false;
+        bool hasRange = false;
+        bool hasValue = false;
 
         foreach (UiaElementSnapshot element in snapshot.Elements)
         {
-            hasSlider |= element.ControlType == ControlType.Slider.ProgrammaticName;
-            hasComboBox |= element.ControlType == ControlType.ComboBox.ProgrammaticName;
-            hasEdit |= element.ControlType == ControlType.Edit.ProgrammaticName;
+            hasColorPicker |= element.AutomationId == UiaAccessibilityAssertions.ColorPickerAutomationId;
+            hasFocusedAction |= element.AutomationId == UiaAccessibilityAssertions.ActionAutomationId
+                && element.HasKeyboardFocus;
+            hasRange |= element.AutomationId == UiaAccessibilityAssertions.RangeAutomationId;
+            hasValue |= element.AutomationId == UiaAccessibilityAssertions.ValueAutomationId;
         }
 
-        return hasSlider && hasComboBox && hasEdit;
+        return hasColorPicker && hasFocusedAction && hasRange && hasValue;
     }
 }

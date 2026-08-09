@@ -43,7 +43,7 @@ public class WinUIIntegrationHarnessTests
 
     [TestMethod]
     [Timeout(30_000)]
-    public void RunAsync_UiaTree_CapturesColorPickerAndNonblankScreenshot()
+    public void RunAsync_UiaTree_CapturesAccessibilityHierarchyPatternsAndScreenshot()
     {
         WinUIIntegrationResult result = CreateRunner()
             .RunAsync(WinUIIntegrationScenario.UiaTree, TimeSpan.FromSeconds(20))
@@ -53,11 +53,19 @@ public class WinUIIntegrationHarnessTests
         result.DiagnosticMessage.Should().BeNull();
         result.ExitCode.Should().Be(0);
         result.Uia.Should().NotBeNull();
-        result.Uia!.RootWindowHandle.Should().Be(result.WindowHandle);
-        result.Uia.Elements.Should().HaveCountGreaterThan(10);
-        result.Uia.Elements.Select(element => element.ControlType).Should().Contain("ControlType.Slider");
-        result.Uia.Elements.Select(element => element.ControlType).Should().Contain("ControlType.ComboBox");
-        result.Uia.Elements.Select(element => element.ControlType).Should().Contain("ControlType.Edit");
+        UiaSnapshot uia = result.Uia!;
+        UiaAccessibilityAssertions.Assert(uia, result.WindowHandle);
+        uia.Elements.Should().HaveCountGreaterThan(10);
+        uia.Elements.Select(element => element.ControlType).Should().Contain("ControlType.Slider");
+        uia.Elements.Select(element => element.ControlType).Should().Contain("ControlType.ComboBox");
+        uia.Elements.Select(element => element.ControlType).Should().Contain("ControlType.Edit");
+        result.Events.Select(entry => entry.Event).Should().ContainInOrder(
+            "ready",
+            "theme-light-applied",
+            "theme-dark-applied",
+            "theme-system-applied",
+            "accessibility-ready",
+            "close-received");
         result.Screenshot.Should().NotBeNull();
         result.Screenshot!.Width.Should().BePositive();
         result.Screenshot.Height.Should().BePositive();
