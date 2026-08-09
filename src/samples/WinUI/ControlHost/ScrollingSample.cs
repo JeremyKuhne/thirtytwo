@@ -3,13 +3,4 @@
 
 namespace ControlHost;
 
-internal enum ControlHostScenario
-{
-    Interactive,
-    Startup,
-    UiaTree,
-    NormalClose,
-    ShutdownTimeout,
-    Airspace,
-    Scrolling
-}
+internal sealed record ScrollingSample(int X, int Y);

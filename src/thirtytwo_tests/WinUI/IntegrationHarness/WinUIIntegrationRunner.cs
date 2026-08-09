@@ -150,7 +150,9 @@ internal sealed class WinUIIntegrationRunner
                             RequestClose(ready.WindowHandle, processId);
                             break;
                         case WinUIIntegrationScenario.RawAirspace:
+                        case WinUIIntegrationScenario.RawScrolling:
                         case WinUIIntegrationScenario.HostAirspace:
+                        case WinUIIntegrationScenario.HostScrolling:
                             Task<WinUIIntegrationEvent> captureReadyTask = outputReader.CaptureReady;
                             Task captureReadyCompletion = await Task.WhenAny(
                                 captureReadyTask,
@@ -171,14 +173,14 @@ internal sealed class WinUIIntegrationRunner
                                     entry => entry.Event == "capture-failed");
                                 captureFailure = new InvalidOperationException(
                                     captureFailed?.Message
-                                        ?? "The airspace scenario exited before reporting capture-ready.");
+                                        ?? "The capture scenario exited before reporting capture-ready.");
                                 break;
                             }
 
                             if (captureReadyCompletion == outputReader.ProtocolFailure)
                             {
                                 captureFailure = new InvalidOperationException(
-                                    $"The airspace capture protocol failed: {await outputReader.ProtocolFailure.ConfigureAwait(false)}");
+                                    $"The capture protocol failed: {await outputReader.ProtocolFailure.ConfigureAwait(false)}");
                                 break;
                             }
 
@@ -548,6 +550,7 @@ internal sealed class WinUIIntegrationRunner
         WinUIIntegrationScenario.NormalClose => "normal-close",
         WinUIIntegrationScenario.ShutdownTimeout => "shutdown-timeout",
         WinUIIntegrationScenario.RawAirspace => "airspace",
+        WinUIIntegrationScenario.RawScrolling => "scrolling",
         WinUIIntegrationScenario.EnvironmentOwned => "environment-owned",
         WinUIIntegrationScenario.EnvironmentBorrowed => "environment-borrowed",
         WinUIIntegrationScenario.EnvironmentComposition => "environment-composition",
@@ -564,6 +567,7 @@ internal sealed class WinUIIntegrationRunner
         WinUIIntegrationScenario.HostMultiple => "host-multiple",
         WinUIIntegrationScenario.HostLayout => "host-layout",
         WinUIIntegrationScenario.HostAirspace => "host-airspace",
+        WinUIIntegrationScenario.HostScrolling => "host-scrolling",
         WinUIIntegrationScenario.HostReparent => "host-reparent",
         WinUIIntegrationScenario.HostReplacement => "host-replacement",
         WinUIIntegrationScenario.HostPopupClose => "host-popup-close",
@@ -574,7 +578,7 @@ internal sealed class WinUIIntegrationRunner
     };
 
     private static string FindScenarioExecutable(WinUIIntegrationScenario scenario)
-        => scenario <= WinUIIntegrationScenario.RawAirspace
+        => scenario <= WinUIIntegrationScenario.RawScrolling
             ? FindExecutable("ControlHost", "ControlHost.exe")
             : FindExecutable("IntegrationHost", "IntegrationHost.exe");
 
