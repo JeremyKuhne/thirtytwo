@@ -2,10 +2,11 @@
 
 This repository carries 13 portable skill cores from the
 [JeremyKuhne/agent-skills](https://github.com/JeremyKuhne/agent-skills)
-commons, pinned to the immutable `v0.14.0` release. The installed core files
-carry `metadata.github-*` provenance injected by `gh skill install` and must
-remain exact upstream mirrors. Repository-specific paths and conventions live
-in each sibling `overlay.md`.
+commons, pinned to immutable upstream refs. Most use the `v0.14.0` release;
+`cswin32-com` is pinned to commit `f1dcc2d` for its post-release `IComIID`
+guidance. The installed core files carry `metadata.github-*` provenance injected
+by `gh skill install` and must remain exact upstream mirrors. Repository-specific
+paths and conventions live in each sibling `overlay.md`.
 
 ## Inventory
 
@@ -77,11 +78,11 @@ reviewed prerequisite before vendoring one of those cores.
 
 ## Updating
 
-Reinstall each reviewed core from one immutable release, preserving its local
-overlay:
+Reinstall each reviewed core from an immutable upstream ref, preserving its
+local overlay:
 
 ```pwsh
-gh skill install JeremyKuhne/agent-skills skills/<name> --pin vX.Y.Z --agent github-copilot --scope project --force
+gh skill install JeremyKuhne/agent-skills skills/<name> --pin <tag-or-commit> --agent github-copilot --scope project --force
 ```
 
 Install hard dependencies before their consumers: `agent-files-review` before

@@ -134,7 +134,7 @@ Test more than compilation:
    interface;
 3. call through the owner-generated pointer struct and verify HRESULT behavior;
 4. build all .NET 10 and .NET Framework TFMs so `ComWrappers`-dependent code is
-    absent or explicitly unsupported on .NET Framework;
+   absent or explicitly unsupported on .NET Framework;
 5. pack the owner and extender and compile a consumer that references only the
    extender package.
 

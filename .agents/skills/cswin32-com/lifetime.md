@@ -32,10 +32,10 @@ scope.Pointer->DoThing(...);
 - Access methods via `scope.Pointer->Method(...)`; null-check with
   `scope.IsNull`.
 - Applies to every COM out-param whose contract returns an owned reference -
-    `CoCreateInstance`, `QueryInterface`, many `IEnumXxx::Next` and factory
-    methods, and app-local `STDAPI Get*` functions. Read the contract before
-    scoping an unusual borrowed output. Declare raw outputs with `T**` when the
-    scope's implicit pointer-to-pointer conversion should bind.
+  `CoCreateInstance`, `QueryInterface`, many `IEnumXxx::Next` and factory
+  methods, and app-local `STDAPI Get*` functions. Read the contract before
+  scoping an unusual borrowed output. Declare raw outputs with `T**` when the
+  scope's implicit pointer-to-pointer conversion should bind.
 
 ## Passing pointers to retaining APIs
 
@@ -122,13 +122,13 @@ copy.
 Choose a holder that matches the interface's apartment contract:
 
 - A same-apartment owner may keep an owned pointer only when it enforces access
-    and deterministic disposal on that apartment.
+  and deterministic disposal on that apartment.
 - For cross-apartment access, marshal the interface. A Global Interface Table
-    holder stores one registered reference and retrieves an apartment-appropriate
-    proxy into a short-lived owned scope for each call. The GIT does not make the
-    underlying object agile.
+  holder stores one registered reference and retrieves an apartment-appropriate
+  proxy into a short-lived owned scope for each call. The GIT does not make the
+  underlying object agile.
 - For an interface documented as agile, a holder may use an agile-reference or
-    equivalent strategy, but it must still own and release the correct reference.
+  equivalent strategy, but it must still own and release the correct reference.
 
 When the source pointer is already owned by a `ComScope<T>` that will release,
 register without taking that caller reference; the GIT acquires its own. Take
