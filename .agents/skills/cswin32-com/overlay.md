@@ -1,6 +1,6 @@
 ---
 core: cswin32-com
-core-pin: v0.14.0
+core-pin: f1dcc2d25b8148ecc75c02f33aa05b1f25b83a42
 ---
 
 # CsWin32 COM overlay

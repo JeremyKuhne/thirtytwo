@@ -15,7 +15,8 @@ Repository-specific bindings for thirtytwo.
 - Put thirtytwo paths, commands, examples, and cross-skill links in
   `overlay.md`. The local [catalog](../README.md) and
   [format contract](../FORMAT.md) are also downstream-owned.
-- The current portfolio is reviewed against the immutable `v0.14.0` release.
+- The current portfolio uses the immutable `v0.14.0` release except where the
+  catalog records a reviewed commit pin.
 
 ## Pulling a commons release
 

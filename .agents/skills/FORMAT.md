@@ -31,7 +31,7 @@ metadata:
 ```
 
 The core and its bundled siblings are immutable mirrors of that pin. Do not
-edit them directly. Reinstall from a reviewed immutable release when updating.
+edit them directly. Reinstall from a reviewed immutable ref when updating.
 
 ## Local overlays
 
