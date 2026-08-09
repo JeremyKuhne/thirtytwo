@@ -18,6 +18,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.WinUI;
 using ResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
+using XamlDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 
 namespace IntegrationHost;
 
@@ -28,6 +29,15 @@ internal sealed class EnvironmentWindow : Window
     private XamlHostEnvironment? _secondEnvironment;
     private XamlHostControl? _xamlHost;
     private WinUIColorPicker? _colorPickerHost;
+    private WinUITextBox? _textBoxHost;
+    private WinUIRichEditBox? _richEditBoxHost;
+    private string? _proposedTextBoxText;
+    private int _textBoxChangeCount;
+    private int _richEditChangeCount;
+    private int _loadedEditorCount;
+    private bool _validatingEditorEvents;
+    private bool _editorCompletionScheduled;
+    private bool _selectionCancellationObserved;
     private XamlHostControl? _popupHost;
     private Window? _shutdownParent;
     private XamlHostControl? _shutdownHost;
@@ -51,6 +61,7 @@ internal sealed class EnvironmentWindow : Window
                     EnvironmentScenario.HostAirspace
                     or EnvironmentScenario.HostScrolling
                     or EnvironmentScenario.HostAccessibility
+                    or EnvironmentScenario.HostTextEditors
                     or EnvironmentScenario.FocusTraversal
                     or EnvironmentScenario.InputSemantics))
                 {
@@ -131,6 +142,9 @@ internal sealed class EnvironmentWindow : Window
                 break;
             case EnvironmentScenario.HostColorPicker:
                 VerifyHostColorPicker();
+                break;
+            case EnvironmentScenario.HostTextEditors:
+                VerifyHostTextEditors();
                 break;
             case EnvironmentScenario.HostStress:
                 VerifyHostStress();
@@ -433,6 +447,216 @@ internal sealed class EnvironmentWindow : Window
 
         Ensure(_colorPickerHost.Color == expected, "Rejected content replacement changed the selected color.");
         _reporter.Write("color-picker-projected", _colorPickerHost.Handle);
+    }
+
+    private void VerifyHostTextEditors()
+    {
+        _textBoxHost = new(new Rectangle(20, 30, 320, 120), this);
+        _textBoxHost.BeforeTextChanging += (_, eventArgs) =>
+        {
+            _proposedTextBoxText = eventArgs.NewText;
+            eventArgs.Cancel = eventArgs.NewText == "blocked";
+        };
+        _textBoxHost.SelectionChanging += (_, eventArgs) =>
+        {
+            if (eventArgs.SelectionStart == 1 && eventArgs.SelectionLength == 2)
+            {
+                _selectionCancellationObserved = true;
+                eventArgs.Cancel = true;
+            }
+        };
+        _textBoxHost.TextChanged += TextBoxHostTextChanged;
+        _textBoxHost.PlaceholderText = "Plain text";
+        _textBoxHost.PlaceholderForegroundColor = Color.FromArgb(255, 12, 34, 56);
+        Grid header = new();
+        XamlDataTemplate headerTemplate = new();
+        _textBoxHost.Header = header;
+        _textBoxHost.HeaderTemplate = headerTemplate;
+        _textBoxHost.InputScope =
+        [
+            WinUITextInputScopeName.EmailSmtpAddress,
+            WinUITextInputScopeName.ChatWithoutEmoji
+        ];
+        _textBoxHost.Text = "plain";
+        _textBoxHost.Select(0, _textBoxHost.Text.Length);
+        _textBoxHost.SelectedText = "edited";
+
+        TextBox textBox = _textBoxHost.Content as TextBox
+            ?? throw new InvalidOperationException("The TextBox wrapper did not host a TextBox directly.");
+        textBox.Loaded += TextEditorLoaded;
+        Ensure(ReferenceEquals(_textBoxHost.Header, header), "The TextBox header did not round-trip.");
+        Ensure(ReferenceEquals(textBox.Header, header), "The projected TextBox header did not reach WinUI.");
+        Ensure(
+            ReferenceEquals(_textBoxHost.HeaderTemplate, headerTemplate),
+            "The TextBox header template did not round-trip.");
+        Ensure(
+            ReferenceEquals(textBox.HeaderTemplate, headerTemplate),
+            "The projected TextBox header template did not reach WinUI.");
+        EnsureThrows<ArgumentException>(
+            () => _textBoxHost.HeaderTemplate = new object(),
+            "The TextBox accepted a non-DataTemplate header template.");
+        Ensure(
+            _textBoxHost.InputScope.SequenceEqual(
+                new[] { WinUITextInputScopeName.EmailSmtpAddress, WinUITextInputScopeName.ChatWithoutEmoji }),
+            "The TextBox input scopes did not round-trip.");
+        Ensure(
+            textBox.InputScope.Names[0].NameValue == Microsoft.UI.Xaml.Input.InputScopeNameValue.EmailSmtpAddress
+                && textBox.InputScope.Names[1].NameValue == Microsoft.UI.Xaml.Input.InputScopeNameValue.ChatWithoutEmoji,
+            "The projected input scopes did not map to the WinUI values.");
+        EnsureThrows<ArgumentNullException>(
+            () => _textBoxHost.InputScope = null!,
+            "The TextBox accepted a null input-scope list.");
+        EnsureThrows<ArgumentOutOfRangeException>(
+            () => _textBoxHost.InputScope = [(WinUITextInputScopeName)2],
+            "The TextBox accepted an unknown input-scope value.");
+        Ensure(_textBoxHost.Text == "edited", "TextBox text did not round-trip.");
+        Ensure(
+            _textBoxHost.PlaceholderForegroundColor == Color.FromArgb(255, 12, 34, 56),
+            "The TextBox placeholder color did not round-trip.");
+        EnsureThrows<InvalidOperationException>(
+            () => _textBoxHost.Content = new Grid(),
+            "The TextBox wrapper accepted replacement content.");
+
+        _richEditBoxHost = new(new Rectangle(20, 170, 320, 180), this);
+        _richEditBoxHost.TextChanged += RichEditBoxHostTextChanged;
+        _richEditBoxHost.Text = "rich";
+        _richEditBoxHost.ClipboardCopyFormat = WinUIRichEditClipboardFormat.PlainText;
+        _richEditBoxHost.DisabledFormattingAccelerators = WinUIRichEditDisabledFormattingAccelerators.All;
+        Ensure(
+            _richEditBoxHost.DisabledFormattingAccelerators == WinUIRichEditDisabledFormattingAccelerators.All,
+            "The RichEditBox all-accelerators sentinel did not round-trip.");
+        _richEditBoxHost.DisabledFormattingAccelerators =
+            WinUIRichEditDisabledFormattingAccelerators.Bold
+            | WinUIRichEditDisabledFormattingAccelerators.Italic;
+        EnsureThrows<ArgumentOutOfRangeException>(
+            () => _richEditBoxHost.DisabledFormattingAccelerators =
+                (WinUIRichEditDisabledFormattingAccelerators)8,
+            "The RichEditBox accepted unknown disabled formatting accelerators.");
+
+        RichEditBox richEditBox = _richEditBoxHost.Content as RichEditBox
+            ?? throw new InvalidOperationException("The RichEditBox wrapper did not host a RichEditBox directly.");
+        richEditBox.Loaded += TextEditorLoaded;
+        string richText = _richEditBoxHost.Text;
+        Ensure(richText == "rich", "RichEditBox text did not round-trip.");
+        _richEditBoxHost.Text = "rich\r";
+        Ensure(_richEditBoxHost.Text == "rich\r", "RichEditBox text lost a caller-supplied trailing paragraph.");
+        Ensure(
+            _richEditBoxHost.ClipboardCopyFormat == WinUIRichEditClipboardFormat.PlainText,
+            "The RichEditBox clipboard format did not round-trip.");
+        Ensure(
+            _richEditBoxHost.DisabledFormattingAccelerators
+                == (WinUIRichEditDisabledFormattingAccelerators.Bold
+                    | WinUIRichEditDisabledFormattingAccelerators.Italic),
+            "The RichEditBox disabled accelerators did not round-trip.");
+        Ensure(_richEditBoxHost.Document is not null, "The RichEditBox document was not exposed.");
+        Ensure(_richEditBoxHost.TextDocument is not null, "The RichEditBox text document was not exposed.");
+        EnsureThrows<OverflowException>(
+            () => _richEditBoxHost.Select(int.MaxValue, 1),
+            "The RichEditBox accepted an overflowing selection range.");
+        Ensure(XamlHostEnvironment.Current?.LeaseCount == 2, "The two editor hosts did not own two environment leases.");
+        _reporter.Write("text-editors-projected", _textBoxHost.Handle);
+    }
+
+    private void TextEditorLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs eventArgs)
+    {
+        Microsoft.UI.Xaml.FrameworkElement editor = (Microsoft.UI.Xaml.FrameworkElement)sender;
+        editor.Loaded -= TextEditorLoaded;
+        _loadedEditorCount++;
+        if (_loadedEditorCount == 2)
+        {
+            BeginHostTextEditorEventValidation();
+        }
+    }
+
+    private void BeginHostTextEditorEventValidation()
+    {
+        WinUITextBox textBox = _textBoxHost
+            ?? throw new InvalidOperationException("The TextBox wrapper was not created.");
+        WinUIRichEditBox richEditBox = _richEditBoxHost
+            ?? throw new InvalidOperationException("The RichEditBox wrapper was not created.");
+        _proposedTextBoxText = null;
+        _textBoxChangeCount = 0;
+        _richEditChangeCount = 0;
+        _validatingEditorEvents = true;
+        string originalText = textBox.Text;
+        textBox.Text = "blocked";
+        Ensure(textBox.Text == originalText, "BeforeTextChanging cancellation did not preserve TextBox text.");
+        textBox.Text = "loaded plain text";
+        textBox.Select(0, 0);
+        _selectionCancellationObserved = false;
+        textBox.Select(1, 2);
+        Ensure(_selectionCancellationObserved, "The projected selection-changing event was not raised.");
+        Ensure(
+            textBox.SelectionStart == 0 && textBox.SelectionLength == 0,
+            "SelectionChanging cancellation did not preserve the TextBox selection.");
+        richEditBox.Text = "loaded rich text";
+    }
+
+    private void TextBoxHostTextChanged(object? sender, EventArgs eventArgs)
+    {
+        if (_validatingEditorEvents)
+        {
+            _textBoxChangeCount++;
+            TryCompleteHostTextEditorEventValidation();
+        }
+    }
+
+    private void RichEditBoxHostTextChanged(object? sender, EventArgs eventArgs)
+    {
+        if (_validatingEditorEvents)
+        {
+            _richEditChangeCount++;
+            TryCompleteHostTextEditorEventValidation();
+        }
+    }
+
+    private void TryCompleteHostTextEditorEventValidation()
+    {
+        if (_editorCompletionScheduled || _textBoxChangeCount == 0 || _richEditChangeCount == 0)
+        {
+            return;
+        }
+
+        _editorCompletionScheduled = true;
+        if (!Dispatcher.TryPost(() =>
+            {
+                VerifyHostTextEditorEvents();
+                DestroyWindow();
+                VerifyTextEditorHostsDestroyedBeforeDispose();
+            }))
+        {
+            throw new InvalidOperationException("Failed to schedule text-editor event validation.");
+        }
+    }
+
+    private void VerifyHostTextEditorEvents()
+    {
+        Ensure(
+            _proposedTextBoxText == "loaded plain text",
+            "The projected before-text-changing event reported the wrong text.");
+        Ensure(_textBoxChangeCount > 0, "The projected TextBox text-changed event was not raised after loading.");
+        Ensure(_richEditChangeCount > 0, "The projected RichEditBox text-changed event was not raised after loading.");
+        _reporter.Write("text-editor-events-projected");
+    }
+
+    private void VerifyTextEditorHostsDestroyedBeforeDispose()
+    {
+        WinUITextBox textBox = _textBoxHost
+            ?? throw new InvalidOperationException("The TextBox wrapper was not created.");
+        WinUIRichEditBox richEditBox = _richEditBoxHost
+            ?? throw new InvalidOperationException("The RichEditBox wrapper was not created.");
+        foreach (WinUITextControl editor in new WinUITextControl[] { textBox, richEditBox })
+        {
+            Ensure(editor.Handle.IsNull, "Parent destruction left a text-editor host HWND alive.");
+            XamlHostControl host = editor;
+            DesktopWindowXamlSource? editorSource = host.TestAccessor.Dynamic._xamlSource;
+            Ensure(editorSource is null, "Parent destruction left a text-editor XAML source alive.");
+            object? hostedEditor = editor.TestAccessor.Dynamic._editor;
+            Ensure(hostedEditor is null, "Parent destruction left projected editor state attached.");
+        }
+
+        Ensure(XamlHostEnvironment.Current?.LeaseCount == 0, "Parent destruction retained text-editor host leases.");
+        _reporter.Write("text-editor-hosts-destroyed");
     }
 
     private void VerifyHostStress()
@@ -894,6 +1118,8 @@ internal sealed class EnvironmentWindow : Window
             _inputScenario?.Dispose();
             _focusScenario?.Dispose();
             _popupHost?.Dispose();
+            _richEditBoxHost?.Dispose();
+            _textBoxHost?.Dispose();
             _colorPickerHost?.Dispose();
             _xamlHost?.Dispose();
             _secondEnvironment?.Dispose();

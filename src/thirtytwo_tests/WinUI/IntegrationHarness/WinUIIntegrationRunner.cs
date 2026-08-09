@@ -225,6 +225,7 @@ internal sealed class WinUIIntegrationRunner
                         case WinUIIntegrationScenario.EnvironmentFinalRelease:
                         case WinUIIntegrationScenario.HostBasic:
                         case WinUIIntegrationScenario.HostColorPicker:
+                        case WinUIIntegrationScenario.HostTextEditors:
                         case WinUIIntegrationScenario.HostStress:
                         case WinUIIntegrationScenario.HostMultiple:
                         case WinUIIntegrationScenario.HostLayout:
@@ -564,6 +565,7 @@ internal sealed class WinUIIntegrationRunner
         WinUIIntegrationScenario.EnvironmentFinalRelease => "environment-final-release",
         WinUIIntegrationScenario.HostBasic => "host-basic",
         WinUIIntegrationScenario.HostColorPicker => "host-color-picker",
+        WinUIIntegrationScenario.HostTextEditors => "host-text-editors",
         WinUIIntegrationScenario.HostStress => "host-stress",
         WinUIIntegrationScenario.HostMultiple => "host-multiple",
         WinUIIntegrationScenario.HostLayout => "host-layout",

@@ -39,6 +39,21 @@ public class XamlHostControlIntegrationTests
     }
 
     [TestMethod]
+    [Timeout(30_000)]
+    public void RunAsync_HostTextEditors_ProjectAndDisposeWithParent()
+    {
+        WinUIIntegrationResult result = AssertScenario(WinUIIntegrationScenario.HostTextEditors);
+
+        result.Events.Select(entry => entry.Event).Should().ContainInOrder(
+            "text-editors-projected",
+            "ready",
+            "text-editor-events-projected",
+            "text-editor-hosts-destroyed",
+            "environment-stopped",
+            "scenario-completed");
+    }
+
+    [TestMethod]
     [Timeout(180_000)]
     public void RunAsync_HostStress_CleansUpOneThousandHostsAndConstructorFailures()
     {

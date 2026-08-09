@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.17763.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="KlutzyNinja.Touki.TestSupport" PrivateAssets="all" />
+    <PackageReference Include="MSTest" />
+    <ProjectReference Include="..\thirtytwo.winui\thirtytwo.winui.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="IntegrationHost\**\*.cs" />
+  </ItemGroup>
+
+</Project>
