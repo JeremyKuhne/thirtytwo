@@ -14,7 +14,7 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
     private readonly WindowProcedure _windowProcedure;
     private readonly string _className;
     private readonly WindowClassInfo? _windowClass;
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
 
     [ThreadStatic]
     private static WindowProcedure? t_initializeProcedure;
@@ -25,10 +25,13 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
     public ATOM Atom { get; private set; }
 
     /// <summary>
-    ///  The module instance that this class is registered with. This will be null when this class wraps an
-    ///  existing registered class (such as common control classes).
+    ///  The module instance that this class is registered with. This will be null when <see cref="IsSubclassed"/>
+    ///  is <see langword="true"/>.
     /// </summary>
     public HMODULE ModuleInstance { get; }
+
+    /// <summary>Gets whether this instance subclasses an existing registered window class.</summary>
+    public bool IsSubclassed => !_priorClassProcedure.IsNull;
 
     /// <summary>
     ///  Construct a new <see cref="WindowClass"/>.
@@ -162,7 +165,7 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
         }
     }
 
-    public bool IsRegistered => Atom.IsValid || ModuleInstance == HMODULE.Null;
+    public bool IsRegistered => Atom.IsValid || IsSubclassed;
 
     /// <summary>
     ///  Registers this <see cref="WindowClass"/> so that instances can be created.

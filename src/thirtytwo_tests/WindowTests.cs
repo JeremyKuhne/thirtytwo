@@ -105,6 +105,50 @@ public class WindowTests
         action.Should().Throw<ArgumentNullException>();
     }
 
+    [STATestMethod]
+    public void DpiChanged_NullSuggestedBounds_DoesNotEscapeWindowProcedure()
+    {
+        using DpiTrackingWindow window = new(new Rectangle(40, 50, 320, 240));
+
+        LRESULT result = window.SendMessage(MessageType.DpiChanged);
+
+        result.Value.Should().Be(0);
+        window.DpiChangeCount.Should().Be(0);
+    }
+
+    [STATestMethod]
+    public void DpiChanged_RegisteredControl_ForwardsWithoutEscapingWindowProcedure()
+    {
+        using Window window = new(Window.DefaultBounds);
+        using ButtonControl button = new(parentWindow: window);
+
+        Action action = () =>
+        {
+            _ = button.SendMessage(MessageType.DpiChangedBeforeParent);
+            _ = button.SendMessage(MessageType.DpiChanged);
+            _ = button.SendMessage(MessageType.DpiChangedAfterParent);
+        };
+
+        action.Should().NotThrow();
+    }
+
+    [STATestMethod]
+    public void IsSubclassed_FrameworkOwnedWindow_ReturnsFalse()
+    {
+        using WindowClassTrackingWindow window = new();
+
+        window.IsWindowClassSubclassed.Should().BeFalse();
+    }
+
+    [STATestMethod]
+    public void IsSubclassed_RegisteredControl_ReturnsTrue()
+    {
+        using Window window = new(Window.DefaultBounds);
+        using WindowClassTrackingButton button = new(window);
+
+        button.IsWindowClassSubclassed.Should().BeTrue();
+    }
+
     private sealed class DpiTrackingWindow(Rectangle bounds) : Window(bounds)
     {
         internal uint OldDpi { get; private set; }
@@ -120,6 +164,16 @@ public class WindowTests
             DpiChangeCount++;
             base.OnDpiChanged(oldDpi, newDpi);
         }
+    }
+
+    private sealed class WindowClassTrackingWindow : Window
+    {
+        internal bool IsWindowClassSubclassed => _windowClass.IsSubclassed;
+    }
+
+    private sealed class WindowClassTrackingButton(Window parentWindow) : ButtonControl(parentWindow: parentWindow)
+    {
+        internal bool IsWindowClassSubclassed => _windowClass.IsSubclassed;
     }
 
 }

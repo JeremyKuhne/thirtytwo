@@ -519,7 +519,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
             case MessageType.GetFont:
                 // We only want to handle fonts if we're not an externally registered class.
-                if (!_windowClass.ModuleInstance.IsNull)
+                if (!_windowClass.IsSubclassed)
                 {
                     return (LRESULT)_font.Value;
                 }
@@ -527,7 +527,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                 break;
 
             case MessageType.SetFont:
-                if (!_windowClass.ModuleInstance.IsNull)
+                if (!_windowClass.IsSubclassed)
                 {
                     _font = (HFONT)(nint)wParam.Value;
                     if ((BOOL)lParam.LOWORD)
@@ -541,16 +541,20 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                 break;
 
             case MessageType.DpiChanged:
-                HandleDpiChanged(new(wParam, lParam));
-                return default;
+                if (lParam != 0)
+                {
+                    HandleDpiChanged(new(wParam, lParam));
+                }
+
+                return ForwardDpiMessageToRegisteredClass(window, message, wParam, lParam);
 
             case MessageType.DpiChangedBeforeParent:
                 _dpiBeforeParent = _lastDpi;
-                return default;
+                return ForwardDpiMessageToRegisteredClass(window, message, wParam, lParam);
 
             case MessageType.DpiChangedAfterParent:
                 HandleDpiChangedAfterParent();
-                return default;
+                return ForwardDpiMessageToRegisteredClass(window, message, wParam, lParam);
 
             case MessageType.SettingChange:
             case MessageType.SystemColorChange:
@@ -762,6 +766,15 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         {
             OnDpiChanged(oldDpi, newDpi);
         }
+    }
+
+    private LRESULT ForwardDpiMessageToRegisteredClass(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
+    {
+        // Wrapped system controls retain DPI-specific behavior in their original class procedure. Framework-owned
+        // classes have fully processed the message here and follow the documented zero-result contract.
+        return _windowClass.IsSubclassed && !_priorWindowProcedure.IsNull
+            ? PInvoke.CallWindowProc(_priorWindowProcedure, window, (uint)message, wParam, lParam)
+            : default;
     }
 
     private void HandleDpiChangedAfterParent()
