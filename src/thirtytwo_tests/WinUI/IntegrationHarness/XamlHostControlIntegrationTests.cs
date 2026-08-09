@@ -65,13 +65,14 @@ public class XamlHostControlIntegrationTests
 
     [TestMethod]
     [Timeout(30_000)]
-    public void RunAsync_HostLayout_TracksZeroSizeVisibilityAndResizeStorm()
+    public void RunAsync_HostLayout_TracksSizeVisibilityResizeAndDpi()
         => AssertScenario(WinUIIntegrationScenario.HostLayout)
             .Events.Select(entry => entry.Event).Should().ContainInOrder(
                 "ready",
                 "host-zero-size",
                 "host-visibility-synchronized",
                 "host-resize-storm-completed",
+                "host-dpi-resynchronized",
                 "scenario-completed");
 
     [TestMethod]

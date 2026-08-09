@@ -54,4 +54,72 @@ public class WindowTests
         checkBoxBrush.Value.Should().Be(labelBrush.Value);
     }
 
+    [STATestMethod]
+    public unsafe void OnDpiChanged_Message_UpdatesBoundsCachesAndCallback()
+    {
+        using DpiTrackingWindow window = new(new Rectangle(40, 50, 320, 240));
+        uint oldDpi = window.GetDpi();
+        ushort newDpi = checked((ushort)(oldDpi + 24));
+        Rectangle suggestedBounds = new(40, 50, 400, 300);
+        RECT suggestedRectangle = suggestedBounds;
+        nuint packedDpi = newDpi | ((nuint)newDpi << 16);
+
+        // SendMessage is synchronous, so the stack RECT remains valid until the window procedure returns.
+        LRESULT result = window.SendMessage(
+            MessageType.DpiChanged,
+            (WPARAM)packedDpi,
+            (LPARAM)(nint)(&suggestedRectangle));
+
+        result.Value.Should().Be(0);
+        window.GetWindowRectangle().Should().Be(suggestedBounds);
+        window.OldDpi.Should().Be(oldDpi);
+        window.NewDpi.Should().Be(newDpi);
+        window.DpiChangeCount.Should().Be(1);
+        window.PixelToHiMetric((int)newDpi).Should().Be(2540);
+    }
+
+    [STATestMethod]
+    public void OnDpiChanged_AfterParent_UsesCapturedDpiAndInvokesCallback()
+    {
+        using DpiTrackingWindow window = new(new Rectangle(40, 50, 320, 240));
+        uint newDpi = window.GetDpi();
+        uint oldDpi = newDpi == 96 ? 120u : newDpi - 24;
+        dynamic accessor = ((Window)window).TestAccessor.Dynamic;
+        accessor._lastDpi = oldDpi;
+
+        _ = window.SendMessage(MessageType.DpiChangedBeforeParent);
+        accessor._lastDpi = newDpi;
+        _ = window.SendMessage(MessageType.DpiChangedAfterParent);
+
+        window.OldDpi.Should().Be(oldDpi);
+        window.NewDpi.Should().Be(newDpi);
+        window.DpiChangeCount.Should().Be(1);
+        window.PixelToHiMetric((int)newDpi).Should().Be(2540);
+    }
+
+    [TestMethod]
+    public void DpiChanged_NullSuggestedBounds_Throws()
+    {
+        Action action = static () => _ = new Message.DpiChanged(default, default);
+
+        action.Should().Throw<ArgumentNullException>();
+    }
+
+    private sealed class DpiTrackingWindow(Rectangle bounds) : Window(bounds)
+    {
+        internal uint OldDpi { get; private set; }
+
+        internal uint NewDpi { get; private set; }
+
+        internal int DpiChangeCount { get; private set; }
+
+        protected override void OnDpiChanged(uint oldDpi, uint newDpi)
+        {
+            OldDpi = oldDpi;
+            NewDpi = newDpi;
+            DpiChangeCount++;
+            base.OnDpiChanged(oldDpi, newDpi);
+        }
+    }
+
 }

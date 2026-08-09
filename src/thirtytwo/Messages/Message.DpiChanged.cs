@@ -7,9 +7,21 @@ namespace Windows;
 
 public static partial class Message
 {
-    public unsafe readonly ref struct DpiChanged(WPARAM wParam, LPARAM lParam)
+    public unsafe readonly ref struct DpiChanged
     {
-        public uint Dpi { get; } = wParam.HIWORD;
-        public Rectangle SuggestedBounds { get; } = *(RECT*)lParam;
+        public DpiChanged(WPARAM wParam, LPARAM lParam)
+        {
+            if (lParam == 0)
+            {
+                throw new ArgumentNullException(nameof(lParam));
+            }
+
+            Dpi = wParam.HIWORD;
+            SuggestedBounds = *(RECT*)lParam;
+        }
+
+        public uint Dpi { get; }
+
+        public Rectangle SuggestedBounds { get; }
     }
 }

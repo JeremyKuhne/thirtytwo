@@ -46,6 +46,9 @@
     <Project Path="src/samples/WinUI/ControlHost/ControlHost.csproj">
       <Platform Project="x64" />
     </Project>
+    <Project Path="src/samples/WinUI/DpiTesting/DpiTesting.csproj">
+      <Platform Project="x64" />
+    </Project>
     <Project Path="src/samples/WinUI/SampleWinUIClassLibraryA/SampleWinUIClassLibraryA.csproj">
       <Platform Project="x64" />
     </Project>

@@ -279,6 +279,32 @@ public unsafe partial class XamlHostControl : CustomControl
     }
 
     /// <inheritdoc/>
+    protected override void OnDpiChanged(uint oldDpi, uint newDpi)
+    {
+        DesktopWindowXamlSource? xamlSource = _xamlSource;
+        if (xamlSource is not null)
+        {
+            try
+            {
+                Size size = this.GetClientRectangle().Size;
+                ResizeSiteBridge(xamlSource, size);
+                XamlHostEventSource.Log.HostDpiChanged(
+                    PInvoke.GetCurrentThreadId(),
+                    oldDpi,
+                    newDpi,
+                    size.Width,
+                    size.Height);
+            }
+            catch (Exception exception)
+            {
+                ReportNativeCallbackFailure("DpiChanged", exception);
+            }
+        }
+
+        base.OnDpiChanged(oldDpi, newDpi);
+    }
+
+    /// <inheritdoc/>
     protected override void OnColorModeChanged()
     {
         ApplyApplicationTheme(_xamlSource?.Content);
