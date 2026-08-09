@@ -1,14 +1,6 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace ControlHost;
+namespace Windows.WinUI.IntegrationHarness;
 
-internal enum ControlHostScenario
-{
-    Interactive,
-    Startup,
-    UiaTree,
-    NormalClose,
-    ShutdownTimeout,
-    Airspace
-}
+internal sealed record AirspaceCaptureSample(int X, int Y);

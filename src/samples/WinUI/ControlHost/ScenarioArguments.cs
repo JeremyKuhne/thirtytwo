@@ -16,7 +16,7 @@ internal static class ScenarioArguments
 
         if (arguments.Length != 2 || arguments[0] != "--scenario")
         {
-            throw new ArgumentException("Expected '--scenario <startup|uia-tree|normal-close|shutdown-timeout>'.");
+            throw new ArgumentException("Expected '--scenario <startup|uia-tree|normal-close|shutdown-timeout|airspace>'.");
         }
 
         return arguments[1] switch
@@ -25,6 +25,7 @@ internal static class ScenarioArguments
             "uia-tree" => ControlHostScenario.UiaTree,
             "normal-close" => ControlHostScenario.NormalClose,
             "shutdown-timeout" => ControlHostScenario.ShutdownTimeout,
+            "airspace" => ControlHostScenario.Airspace,
             _ => throw new ArgumentException($"Unknown ControlHost scenario '{arguments[1]}'.")
         };
     }

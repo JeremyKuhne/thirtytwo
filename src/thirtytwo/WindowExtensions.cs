@@ -387,6 +387,103 @@ public static unsafe partial class WindowExtensions
         GC.KeepAlive(window.Wrapper);
     }
 
+    /// <summary>Changes a window's bounds and special z-order position.</summary>
+    /// <param name="window">The window to position.</param>
+    /// <param name="zOrder">The special z-order position.</param>
+    /// <param name="position">
+    ///  The requested bounds in screen coordinates for top-level windows or parent-client coordinates for child
+    ///  windows. Individual values are ignored when the corresponding flags are set.
+    /// </param>
+    /// <param name="flags">Controls which position, size, activation, and redraw changes are applied.</param>
+    /// <remarks>
+    ///  When <paramref name="flags"/> includes <see cref="WindowPositionFlags.AsyncWindowPosition"/>, the caller is
+    ///  responsible for keeping the target HWND valid until its owning thread applies the request.
+    /// </remarks>
+    public static void SetWindowPosition<T>(
+        this T window,
+        WindowZOrder zOrder,
+        Rectangle position,
+        WindowPositionFlags flags = WindowPositionFlags.None)
+        where T : IHandle<HWND>
+    {
+        HWND insertAfter = zOrder switch
+        {
+            WindowZOrder.Top => HWND.HWND_TOP,
+            WindowZOrder.Bottom => HWND.HWND_BOTTOM,
+            WindowZOrder.TopMost => HWND.HWND_TOPMOST,
+            WindowZOrder.NotTopMost => HWND.HWND_NOTOPMOST,
+            _ => throw new ArgumentOutOfRangeException(nameof(zOrder), zOrder, "Unknown z-order position.")
+        };
+
+        SetWindowPosition(window, insertAfter, position, flags);
+    }
+
+    /// <summary>Changes a window's bounds and positions it behind a sibling in native z-order.</summary>
+    /// <param name="window">The window to position.</param>
+    /// <param name="insertAfter">The sibling that should immediately precede <paramref name="window"/>.</param>
+    /// <param name="position">
+    ///  The requested bounds in screen coordinates for top-level windows or parent-client coordinates for child
+    ///  windows. Individual values are ignored when the corresponding flags are set.
+    /// </param>
+    /// <param name="flags">Controls which position, size, activation, and redraw changes are applied.</param>
+    /// <remarks>
+    ///  When <paramref name="flags"/> includes <see cref="WindowPositionFlags.AsyncWindowPosition"/>, the caller is
+    ///  responsible for keeping both HWNDs valid until the target's owning thread applies the request.
+    /// </remarks>
+    public static void SetWindowPosition<T, TInsertAfter>(
+        this T window,
+        TInsertAfter insertAfter,
+        Rectangle position,
+        WindowPositionFlags flags = WindowPositionFlags.None)
+        where T : IHandle<HWND>
+        where TInsertAfter : IHandle<HWND>
+    {
+        ArgumentNullException.ThrowIfNull(insertAfter);
+        SetWindowPosition(window, insertAfter.Handle, position, flags);
+        GC.KeepAlive(insertAfter.Wrapper);
+    }
+
+    /// <summary>Gets a window related through native hierarchy or z-order.</summary>
+    /// <param name="window">The window from which to navigate.</param>
+    /// <param name="relationship">The relationship to query.</param>
+    /// <returns>
+    ///  A borrowed snapshot of the related window, or <see cref="HWND.Null"/> when no such window exists and USER32
+    ///  reports success. For <see cref="WindowRelationship.EnabledPopup"/>, USER32 returns <paramref name="window"/>
+    ///  itself when no enabled owned popup exists.
+    /// </returns>
+    public static HWND GetRelatedWindow<T>(this T window, WindowRelationship relationship)
+        where T : IHandle<HWND>
+    {
+        Marshal.SetLastPInvokeError(0);
+        HWND related = PInvoke.GetWindow(window.Handle, (GET_WINDOW_CMD)relationship);
+        if (related.IsNull)
+        {
+            Error.ThrowIfLastErrorNot(WIN32_ERROR.ERROR_SUCCESS);
+        }
+
+        GC.KeepAlive(window.Wrapper);
+        return related;
+    }
+
+    private static void SetWindowPosition<T>(
+        T window,
+        HWND insertAfter,
+        Rectangle position,
+        WindowPositionFlags flags)
+        where T : IHandle<HWND>
+    {
+        PInvoke.SetWindowPos(
+            window.Handle,
+            insertAfter,
+            position.X,
+            position.Y,
+            position.Width,
+            position.Height,
+            (SET_WINDOW_POS_FLAGS)flags).ThrowLastErrorIfFalse();
+
+        GC.KeepAlive(window.Wrapper);
+    }
+
     /// <returns/>
     /// <inheritdoc cref="Interop.UpdateWindow(HWND)"/>
     public static void UpdateWindow<T>(this T window) where T : IHandle<HWND>

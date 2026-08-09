@@ -24,6 +24,15 @@ internal static class ScreenshotCapture
         ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
 
         HWND window = WindowHandleValidation.Validate(windowHandle, expectedProcessId);
+        window.SetWindowPosition(
+            WindowZOrder.TopMost,
+            default,
+            WindowPositionFlags.NoMove
+                | WindowPositionFlags.NoSize
+                | WindowPositionFlags.NoActivate
+                | WindowPositionFlags.ShowWindow);
+        window.UpdateWindow();
+
         if (!PInvoke.GetWindowRect(window, out RECT bounds))
         {
             throw new Win32Exception(Marshal.GetLastPInvokeError());

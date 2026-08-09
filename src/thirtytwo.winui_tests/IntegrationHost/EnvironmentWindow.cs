@@ -31,6 +31,7 @@ internal sealed class EnvironmentWindow : Window
     private XamlHostControl? _popupHost;
     private Window? _shutdownParent;
     private XamlHostControl? _shutdownHost;
+    private AirspaceScenario? _airspaceScenario;
     private FocusScenario? _focusScenario;
     private InputScenario? _inputScenario;
 
@@ -44,7 +45,10 @@ internal sealed class EnvironmentWindow : Window
         if (!Dispatcher.TryPost(() =>
             {
                 ExecuteAfterShow(scenario);
-                if (scenario is not (EnvironmentScenario.FocusTraversal or EnvironmentScenario.InputSemantics))
+                if (scenario is not (
+                    EnvironmentScenario.HostAirspace
+                    or EnvironmentScenario.FocusTraversal
+                    or EnvironmentScenario.InputSemantics))
                 {
                     DestroyWindow();
                 }
@@ -137,6 +141,7 @@ internal sealed class EnvironmentWindow : Window
                 VerifyHostReplacement();
                 break;
             case EnvironmentScenario.HostLayout:
+            case EnvironmentScenario.HostAirspace:
             case EnvironmentScenario.HostPopupClose:
             case EnvironmentScenario.HostShutdownCleanup:
             case EnvironmentScenario.FocusTraversal:
@@ -189,6 +194,10 @@ internal sealed class EnvironmentWindow : Window
         {
             case EnvironmentScenario.HostLayout:
                 VerifyHostLayout();
+                break;
+            case EnvironmentScenario.HostAirspace:
+                _airspaceScenario = new(this, _reporter);
+                _airspaceScenario.Start();
                 break;
             case EnvironmentScenario.HostPopupClose:
                 VerifyHostPopupClose();
@@ -866,6 +875,7 @@ internal sealed class EnvironmentWindow : Window
     {
         if (disposing)
         {
+            _airspaceScenario?.Dispose();
             _inputScenario?.Dispose();
             _focusScenario?.Dispose();
             _popupHost?.Dispose();

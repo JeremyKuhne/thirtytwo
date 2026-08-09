@@ -1,6 +1,7 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.ComponentModel;
 using System.Drawing;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -147,6 +148,125 @@ public class WindowTests
         using WindowClassTrackingButton button = new(window);
 
         button.IsWindowClassSubclassed.Should().BeTrue();
+    }
+
+    [STATestMethod]
+    public void SetWindowPosition_SpecialZOrder_ChangesOrderWithoutBoundsOrFocus()
+    {
+        using Window parent = new(new Rectangle(0, 0, 400, 300));
+        using CustomControl first = new(new Rectangle(20, 20, 120, 80), parentWindow: parent);
+        using CustomControl second = new(new Rectangle(40, 40, 120, 80), parentWindow: parent);
+        Rectangle originalBounds = first.GetWindowRectangle();
+        _ = second.SetFocus();
+
+        first.SetWindowPosition(
+            WindowZOrder.Top,
+            default,
+            WindowPositionFlags.NoMove | WindowPositionFlags.NoSize | WindowPositionFlags.NoActivate);
+
+        parent.GetRelatedWindow(WindowRelationship.Child).Should().Be(first.Handle);
+        first.GetWindowRectangle().Should().Be(originalBounds);
+        PInvoke.GetFocus().Should().Be(second.Handle);
+
+        first.SetWindowPosition(
+            WindowZOrder.Bottom,
+            default,
+            WindowPositionFlags.NoMove | WindowPositionFlags.NoSize | WindowPositionFlags.NoActivate);
+
+        first.GetRelatedWindow(WindowRelationship.Next).Should().Be(HWND.Null);
+    }
+
+    [STATestMethod]
+    public void SetWindowPosition_Sibling_InsertsBehindSibling()
+    {
+        using Window parent = new(new Rectangle(0, 0, 400, 300));
+        using CustomControl first = new(new Rectangle(20, 20, 120, 80), parentWindow: parent);
+        using CustomControl second = new(new Rectangle(40, 40, 120, 80), parentWindow: parent);
+        Rectangle originalBounds = second.GetWindowRectangle();
+        _ = first.SetFocus();
+
+        first.SetWindowPosition(
+            WindowZOrder.Top,
+            default,
+            WindowPositionFlags.NoMove | WindowPositionFlags.NoSize | WindowPositionFlags.NoActivate);
+        second.SetWindowPosition(
+            first,
+            default,
+            WindowPositionFlags.NoMove | WindowPositionFlags.NoSize | WindowPositionFlags.NoActivate);
+
+        parent.GetRelatedWindow(WindowRelationship.Child).Should().Be(first.Handle);
+        first.GetRelatedWindow(WindowRelationship.Next).Should().Be(second.Handle);
+        second.GetWindowRectangle().Should().Be(originalBounds);
+        PInvoke.GetFocus().Should().Be(first.Handle);
+    }
+
+    [STATestMethod]
+    public void SetWindowPosition_Bounds_MovesAndResizesWindow()
+    {
+        using Window parent = new(new Rectangle(0, 0, 400, 300));
+        using CustomControl child = new(new Rectangle(20, 20, 120, 80), parentWindow: parent);
+        Rectangle requestedBounds = new(70, 80, 140, 90);
+        Point expectedLocation = requestedBounds.Location;
+        parent.ClientToScreen(ref expectedLocation).Should().BeTrue();
+
+        child.SetWindowPosition(
+            WindowZOrder.Top,
+            requestedBounds,
+            WindowPositionFlags.NoZOrder | WindowPositionFlags.NoActivate);
+
+        child.GetWindowRectangle().Should().Be(new Rectangle(expectedLocation, requestedBounds.Size));
+    }
+
+    [STATestMethod]
+    public void SetWindowPosition_NullSibling_Throws()
+    {
+        using Window window = new(new Rectangle(0, 0, 100, 100));
+        Window? sibling = null;
+
+        Action action = () => window.SetWindowPosition(sibling!, default);
+
+        action.Should().Throw<ArgumentNullException>();
+    }
+
+    [STATestMethod]
+    public void SetWindowPosition_TopMostAndNotTopMost_UpdateExtendedStyle()
+    {
+        using Window window = new(new Rectangle(0, 0, 100, 100));
+        _ = window.ShowWindow(ShowWindowCommand.NoActivate);
+
+        window.SetWindowPosition(
+            WindowZOrder.TopMost,
+            default,
+            WindowPositionFlags.NoMove | WindowPositionFlags.NoSize | WindowPositionFlags.NoActivate);
+
+        window.GetExtendedWindowStyle().HasFlag(ExtendedWindowStyles.TopMost).Should().BeTrue();
+
+        window.SetWindowPosition(
+            WindowZOrder.NotTopMost,
+            default,
+            WindowPositionFlags.NoMove | WindowPositionFlags.NoSize | WindowPositionFlags.NoActivate);
+
+        window.GetExtendedWindowStyle().HasFlag(ExtendedWindowStyles.TopMost).Should().BeFalse();
+    }
+
+    [STATestMethod]
+    public void SetWindowPosition_InvalidZOrder_Throws()
+    {
+        using Window window = new(new Rectangle(0, 0, 100, 100));
+
+        Action action = () => window.SetWindowPosition((WindowZOrder)int.MaxValue, default);
+
+        action.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [STATestMethod]
+    public void GetRelatedWindow_InvalidRelationship_ReportsNativeError()
+    {
+        using Window window = new(new Rectangle(0, 0, 100, 100));
+
+        Action action = () => window.GetRelatedWindow((WindowRelationship)uint.MaxValue);
+
+        action.Should().ThrowExactly<Win32Exception>();
     }
 
     private sealed class DpiTrackingWindow(Rectangle bounds) : Window(bounds)

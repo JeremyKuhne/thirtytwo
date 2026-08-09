@@ -195,6 +195,7 @@ GetUserDefaultLCID
 GetUserDefaultLocaleName
 GetViewportExtEx
 GetViewportOrgEx
+GetWindow
 GetWindowExtEx
 GetWindowLong
 GetWindowLongPtr
@@ -216,6 +217,10 @@ HIGHCONTRASTW_FLAGS
 HKEY_*
 HRESULT
 HWND_MESSAGE
+HWND_BOTTOM
+HWND_NOTOPMOST
+HWND_TOP
+HWND_TOPMOST
 IAccessible
 IAccessibleEx
 IAccIdentity
@@ -385,6 +390,7 @@ SetWindowExtEx
 SetWindowLong
 SetWindowLongPtr
 SetWindowRgn
+SetWindowPos
 SetWindowText
 SetWindowTheme
 SetWorldTransform
