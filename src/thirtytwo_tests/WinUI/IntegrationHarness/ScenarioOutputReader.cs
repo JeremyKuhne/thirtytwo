@@ -20,6 +20,10 @@ internal sealed class ScenarioOutputReader(string expectedScenario, int expected
     private readonly List<string> _protocolErrors = [];
     private readonly TaskCompletionSource<WinUIIntegrationEvent> _readySource =
         new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource<WinUIIntegrationEvent> _captureReadySource =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource<string> _protocolFailureSource =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
     private int _retainedOutputLength;
     private bool _outputLimitReported;
 
@@ -46,6 +50,10 @@ internal sealed class ScenarioOutputReader(string expectedScenario, int expected
     }
 
     internal Task<WinUIIntegrationEvent> Ready => _readySource.Task;
+
+    internal Task<WinUIIntegrationEvent> CaptureReady => _captureReadySource.Task;
+
+    internal Task<string> ProtocolFailure => _protocolFailureSource.Task;
 
     internal string StandardOutput
     {
@@ -180,9 +188,9 @@ internal sealed class ScenarioOutputReader(string expectedScenario, int expected
                 return;
             }
 
-            if (scenarioEvent.Event == "ready" && scenarioEvent.WindowHandle <= 0)
+            if (scenarioEvent.Event is "ready" or "capture-ready" && scenarioEvent.WindowHandle <= 0)
             {
-                AddProtocolError("The ready event did not report a valid window handle.");
+                AddProtocolError($"The {scenarioEvent.Event} event did not report a valid window handle.");
                 return;
             }
 
@@ -197,6 +205,10 @@ internal sealed class ScenarioOutputReader(string expectedScenario, int expected
             {
                 _readySource.TrySetResult(scenarioEvent);
             }
+            else if (scenarioEvent.Event == "capture-ready")
+            {
+                _captureReadySource.TrySetResult(scenarioEvent);
+            }
         }
         catch (JsonException exception)
         {
@@ -206,6 +218,7 @@ internal sealed class ScenarioOutputReader(string expectedScenario, int expected
 
     private void AddProtocolError(string message)
     {
+        _protocolFailureSource.TrySetResult(message);
         if (_protocolErrors.Count < MaximumProtocolErrorCount)
         {
             _protocolErrors.Add(message);

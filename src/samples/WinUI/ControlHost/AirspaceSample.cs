@@ -3,12 +3,4 @@
 
 namespace ControlHost;
 
-internal enum ControlHostScenario
-{
-    Interactive,
-    Startup,
-    UiaTree,
-    NormalClose,
-    ShutdownTimeout,
-    Airspace
-}
+internal sealed record AirspaceSample(int X, int Y);

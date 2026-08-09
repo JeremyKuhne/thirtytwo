@@ -42,6 +42,50 @@ public class ScenarioOutputReaderTests
     }
 
     [TestMethod]
+    public void ReadAsync_CaptureReady_CompletesCaptureSignal()
+    {
+        const int ExpectedProcessId = 42;
+        WinUIIntegrationEvent scenarioEvent = new(
+            "startup",
+            "capture-ready",
+            DateTimeOffset.UtcNow,
+            ExpectedProcessId,
+            10,
+            100,
+            "{}");
+        string json = JsonSerializer.Serialize(scenarioEvent, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
+        ScenarioOutputReader reader = Read(json, ExpectedProcessId);
+
+        reader.ProtocolErrors.Should().BeEmpty();
+        reader.CaptureReady.IsCompletedSuccessfully.Should().BeTrue();
+        reader.CaptureReady.Result.Should().Be(scenarioEvent);
+    }
+
+    [TestMethod]
+    public void ReadAsync_CaptureReadyWithoutWindow_RejectsEvent()
+    {
+        const int ExpectedProcessId = 42;
+        WinUIIntegrationEvent scenarioEvent = new(
+            "startup",
+            "capture-ready",
+            DateTimeOffset.UtcNow,
+            ExpectedProcessId,
+            10,
+            0,
+            "{}");
+        string json = JsonSerializer.Serialize(scenarioEvent, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
+        ScenarioOutputReader reader = Read(json, ExpectedProcessId);
+
+        reader.Events.Should().BeEmpty();
+        reader.ProtocolErrors.Should().ContainSingle().Which.Should().Contain("capture-ready");
+        reader.CaptureReady.IsCompleted.Should().BeFalse();
+        reader.ProtocolFailure.IsCompletedSuccessfully.Should().BeTrue();
+        reader.ProtocolFailure.Result.Should().Contain("capture-ready");
+    }
+
+    [TestMethod]
     public void ReadAsync_ManyMalformedLines_BoundsErrorsAndRetainedOutput()
     {
         string malformedLine = new('x', 60_000);

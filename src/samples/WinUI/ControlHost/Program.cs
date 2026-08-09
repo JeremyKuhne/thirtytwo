@@ -23,6 +23,7 @@ internal static unsafe class Program
     private static DesktopWindowXamlSource? s_xamlSource;
     private static Grid? s_root;
     private static ColorPicker? s_colorPicker;
+    private static RawAirspaceScenario? s_airspaceScenario;
     private static ScenarioReporter? s_reporter;
     private static ControlHostScenario s_scenario;
 
@@ -77,7 +78,10 @@ internal static unsafe class Program
         WindowProcedure windowProcedure = WindowProcedure;
 
         HMODULE module;
-        if (!PInvoke.GetModuleHandleEx(0, (PCWSTR)null, &module))
+        if (!PInvoke.GetModuleHandleEx(
+            Interop.GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            (PCWSTR)null,
+            &module))
         {
             throw new Win32Exception(Marshal.GetLastPInvokeError());
         }
@@ -129,6 +133,7 @@ internal static unsafe class Program
             PInvoke.ShowWindow(window, SHOW_WINDOW_CMD.SW_SHOWDEFAULT);
             PInvoke.UpdateWindow(window);
             s_reporter?.Write("ready", window);
+            s_airspaceScenario?.Start();
 
             if (s_scenario == ControlHostScenario.Startup)
             {
@@ -176,6 +181,14 @@ internal static unsafe class Program
         {
             case Interop.WM_CREATE:
                 s_reporter?.Write("window-created", window);
+                if (s_scenario == ControlHostScenario.Airspace)
+                {
+                    s_airspaceScenario = new(
+                        window,
+                        s_reporter ?? throw new InvalidOperationException("The airspace scenario requires a reporter."));
+                    return (LRESULT)0;
+                }
+
                 s_xamlSource = new DesktopWindowXamlSource();
                 s_xamlSource.Initialize(Win32Interop.GetWindowIdFromWindow((nint)window.Value));
                 s_xamlSource.ShouldConstrainPopupsToWorkArea = true;
@@ -209,6 +222,11 @@ internal static unsafe class Program
                 }
 
                 s_reporter?.Write("close-received", window);
+                if (s_scenario == ControlHostScenario.Airspace)
+                {
+                    s_airspaceScenario?.Dispose();
+                }
+
                 if (!PInvoke.DestroyWindow(window))
                 {
                     throw new Win32Exception(Marshal.GetLastPInvokeError());
@@ -228,6 +246,9 @@ internal static unsafe class Program
 
     private static void DisposeIsland()
     {
+        s_airspaceScenario?.Dispose();
+        s_airspaceScenario = null;
+
         if (s_xamlSource is null)
         {
             return;

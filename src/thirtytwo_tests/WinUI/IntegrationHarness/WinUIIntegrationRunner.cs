@@ -149,6 +149,62 @@ internal sealed class WinUIIntegrationRunner
                             (uia, screenshot) = await captureTask.ConfigureAwait(false);
                             RequestClose(ready.WindowHandle, processId);
                             break;
+                        case WinUIIntegrationScenario.RawAirspace:
+                        case WinUIIntegrationScenario.HostAirspace:
+                            Task<WinUIIntegrationEvent> captureReadyTask = outputReader.CaptureReady;
+                            Task captureReadyCompletion = await Task.WhenAny(
+                                captureReadyTask,
+                                outputReader.ProtocolFailure,
+                                exitTask,
+                                timeoutTask,
+                                cancellationTask).ConfigureAwait(false);
+                            cancellationToken.ThrowIfCancellationRequested();
+                            if (captureReadyCompletion == timeoutTask)
+                            {
+                                timedOut = true;
+                                break;
+                            }
+
+                            if (captureReadyCompletion == exitTask)
+                            {
+                                WinUIIntegrationEvent? captureFailed = outputReader.Events.LastOrDefault(
+                                    entry => entry.Event == "capture-failed");
+                                captureFailure = new InvalidOperationException(
+                                    captureFailed?.Message
+                                        ?? "The airspace scenario exited before reporting capture-ready.");
+                                break;
+                            }
+
+                            if (captureReadyCompletion == outputReader.ProtocolFailure)
+                            {
+                                captureFailure = new InvalidOperationException(
+                                    $"The airspace capture protocol failed: {await outputReader.ProtocolFailure.ConfigureAwait(false)}");
+                                break;
+                            }
+
+                            WinUIIntegrationEvent captureReady = await captureReadyTask.ConfigureAwait(false);
+                            WindowHandleValidation.Validate(captureReady.WindowHandle, processId, captureReady.ThreadId);
+                            windowHandles = CaptureWindowHandles(captureReady.WindowHandle, processId);
+                            Task<ScreenshotSnapshot> screenshotTask = Task.Run(
+                                () => ScreenshotCapture.Capture(
+                                    captureReady.WindowHandle,
+                                    processId,
+                                    Path.Combine(artifactDirectory, "window.png")));
+                            Task screenshotCompletion = await Task.WhenAny(
+                                screenshotTask,
+                                timeoutTask,
+                                cancellationTask).ConfigureAwait(false);
+                            if (screenshotCompletion != screenshotTask)
+                            {
+                                ObserveLateFailure(screenshotTask);
+                                cancellationToken.ThrowIfCancellationRequested();
+                                timedOut = true;
+                                break;
+                            }
+
+                            screenshot = await screenshotTask.ConfigureAwait(false);
+                            RequestClose(captureReady.WindowHandle, processId);
+                            break;
                         case WinUIIntegrationScenario.NormalClose:
                             RequestClose(ready.WindowHandle, processId);
                             break;
@@ -491,6 +547,7 @@ internal sealed class WinUIIntegrationRunner
         WinUIIntegrationScenario.UiaTree => "uia-tree",
         WinUIIntegrationScenario.NormalClose => "normal-close",
         WinUIIntegrationScenario.ShutdownTimeout => "shutdown-timeout",
+        WinUIIntegrationScenario.RawAirspace => "airspace",
         WinUIIntegrationScenario.EnvironmentOwned => "environment-owned",
         WinUIIntegrationScenario.EnvironmentBorrowed => "environment-borrowed",
         WinUIIntegrationScenario.EnvironmentComposition => "environment-composition",
@@ -506,6 +563,7 @@ internal sealed class WinUIIntegrationRunner
         WinUIIntegrationScenario.HostStress => "host-stress",
         WinUIIntegrationScenario.HostMultiple => "host-multiple",
         WinUIIntegrationScenario.HostLayout => "host-layout",
+        WinUIIntegrationScenario.HostAirspace => "host-airspace",
         WinUIIntegrationScenario.HostReparent => "host-reparent",
         WinUIIntegrationScenario.HostReplacement => "host-replacement",
         WinUIIntegrationScenario.HostPopupClose => "host-popup-close",
@@ -516,7 +574,7 @@ internal sealed class WinUIIntegrationRunner
     };
 
     private static string FindScenarioExecutable(WinUIIntegrationScenario scenario)
-        => scenario <= WinUIIntegrationScenario.ShutdownTimeout
+        => scenario <= WinUIIntegrationScenario.RawAirspace
             ? FindExecutable("ControlHost", "ControlHost.exe")
             : FindExecutable("IntegrationHost", "IntegrationHost.exe");
 

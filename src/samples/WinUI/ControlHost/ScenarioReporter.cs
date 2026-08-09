@@ -32,6 +32,7 @@ internal sealed unsafe class ScenarioReporter(ControlHostScenario scenario)
         ControlHostScenario.UiaTree => "uia-tree",
         ControlHostScenario.NormalClose => "normal-close",
         ControlHostScenario.ShutdownTimeout => "shutdown-timeout",
+        ControlHostScenario.Airspace => "airspace",
         _ => "interactive"
     };
 
