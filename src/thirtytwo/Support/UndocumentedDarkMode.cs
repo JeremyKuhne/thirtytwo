@@ -90,8 +90,14 @@ internal static unsafe class UndocumentedDarkMode
     /// <summary>Applies or removes a private dark visual-style association for a window.</summary>
     /// <param name="window">The window whose visual-style association is updated.</param>
     /// <param name="state">The resolved application color state to apply.</param>
-    /// <param name="darkSubAppName">The private visual-style sub-app name used when dark mode is active.</param>
-    /// <param name="darkSubIdList">The private visual-style sub-ID list used when dark mode is active.</param>
+    /// <param name="darkSubAppName">
+    ///  The private visual-style sub-app name used when dark mode is active, or <see langword="null"/> when no
+    ///  sub-app override is required.
+    /// </param>
+    /// <param name="darkSubIdList">
+    ///  The private visual-style sub-ID list used when dark mode is active, or <see langword="null"/> when no sub-ID
+    ///  override is required.
+    /// </param>
     /// <remarks>
     ///  <para>
     ///   The private per-window opt-in is enabled only when the exports are supported, the application has not opted
