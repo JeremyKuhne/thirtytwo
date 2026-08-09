@@ -9,12 +9,15 @@ namespace Windows.WinUI.IntegrationHarness;
 [DoNotParallelize]
 public class WinUIIntegrationHarnessTests
 {
+    // First Windows App SDK activation can be materially slower on a cold hosted runner than on a warm local machine.
+    private static readonly TimeSpan s_startupTimeout = TimeSpan.FromSeconds(30);
+
     [TestMethod]
-    [Timeout(30_000)]
+    [Timeout(45_000)]
     public void RunAsync_Startup_ReturnsStructuredResultAndExits()
     {
         WinUIIntegrationResult result = CreateRunner()
-            .RunAsync(WinUIIntegrationScenario.Startup, TimeSpan.FromSeconds(15))
+            .RunAsync(WinUIIntegrationScenario.Startup, s_startupTimeout)
             .GetAwaiter()
             .GetResult();
 
@@ -108,7 +111,7 @@ public class WinUIIntegrationHarnessTests
     }
 
     [TestMethod]
-    [Timeout(30_000)]
+    [Timeout(120_000)]
     public void RunAsync_RepeatedStartup_LeavesNoChildProcesses()
     {
         WinUIIntegrationRunner runner = CreateRunner();
@@ -116,7 +119,7 @@ public class WinUIIntegrationHarnessTests
         for (int iteration = 0; iteration < 3; iteration++)
         {
             WinUIIntegrationResult result = runner
-                .RunAsync(WinUIIntegrationScenario.Startup, TimeSpan.FromSeconds(15))
+                .RunAsync(WinUIIntegrationScenario.Startup, s_startupTimeout)
                 .GetAwaiter()
                 .GetResult();
 

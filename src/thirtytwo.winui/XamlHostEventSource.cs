@@ -6,7 +6,7 @@ using System.Diagnostics.Tracing;
 namespace Windows.WinUI;
 
 /// <summary>
-///  Emits WinUI host lifecycle, lease, initialization failure, and composition collision events.
+///  Emits WinUI host lifecycle, DPI, lease, initialization failure, and composition collision events.
 /// </summary>
 [EventSource(Name = "ThirtyTwo-WinUI")]
 internal sealed class XamlHostEventSource : EventSource
@@ -40,4 +40,8 @@ internal sealed class XamlHostEventSource : EventSource
     [Event(7, Level = EventLevel.Error)]
     public void HostCallbackFailed(uint nativeThreadId, string operation, int hresult, string exceptionType)
         => WriteEvent(7, nativeThreadId, operation, hresult, exceptionType);
+
+    [Event(8, Level = EventLevel.Informational)]
+    public void HostDpiChanged(uint nativeThreadId, uint oldDpi, uint newDpi, int width, int height)
+        => WriteEvent(8, nativeThreadId, oldDpi, newDpi, width, height);
 }

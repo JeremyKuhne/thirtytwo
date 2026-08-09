@@ -57,6 +57,10 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     protected HwndRenderTarget RenderTarget => _renderTarget ?? throw new InvalidOperationException();
 
     private uint _lastDpi;
+
+    // PMv2 child messages carry no DPI payload. Preserve the old value before the parent transition so the
+    // after-parent notification can report the complete transition even if an ancestor updates this window's font.
+    private uint _dpiBeforeParent;
     private Color _backgroundColor;
     private HBRUSH _backgroundBrush;
     private Color _backgroundBrushColor;
@@ -319,6 +323,20 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     {
     }
 
+    /// <summary>Called after this window has transitioned to a different DPI.</summary>
+    /// <param name="oldDpi">The effective DPI before the transition.</param>
+    /// <param name="newDpi">The effective DPI after the transition.</param>
+    /// <remarks>
+    ///  <para>
+    ///   For a top-level window, the suggested bounds have been applied before this method is called. For a child
+    ///   window under a Per-Monitor V2 top-level window, this method is called while processing
+    ///   <see cref="MessageType.DpiChangedAfterParent"/>. Layout coordinates and HWND bounds are physical pixels.
+    ///  </para>
+    /// </remarks>
+    protected virtual void OnDpiChanged(uint oldDpi, uint newDpi)
+    {
+    }
+
     /// <summary>
     ///  Called whenever a command is sent to the window.
     /// </summary>
@@ -501,7 +519,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
             case MessageType.GetFont:
                 // We only want to handle fonts if we're not an externally registered class.
-                if (!_windowClass.ModuleInstance.IsNull)
+                if (!_windowClass.IsSubclassed)
                 {
                     return (LRESULT)_font.Value;
                 }
@@ -509,7 +527,7 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                 break;
 
             case MessageType.SetFont:
-                if (!_windowClass.ModuleInstance.IsNull)
+                if (!_windowClass.IsSubclassed)
                 {
                     _font = (HFONT)(nint)wParam.Value;
                     if ((BOOL)lParam.LOWORD)
@@ -523,9 +541,20 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
                 break;
 
             case MessageType.DpiChanged:
-                // Resize and reposition for the new DPI
-                HandleDpiChanged(new(wParam, lParam));
-                break;
+                if (lParam != 0)
+                {
+                    HandleDpiChanged(new(wParam, lParam));
+                }
+
+                return ForwardDpiMessageToRegisteredClass(window, message, wParam, lParam);
+
+            case MessageType.DpiChangedBeforeParent:
+                _dpiBeforeParent = _lastDpi;
+                return ForwardDpiMessageToRegisteredClass(window, message, wParam, lParam);
+
+            case MessageType.DpiChangedAfterParent:
+                HandleDpiChangedAfterParent();
+                return ForwardDpiMessageToRegisteredClass(window, message, wParam, lParam);
 
             case MessageType.SettingChange:
             case MessageType.SystemColorChange:
@@ -728,14 +757,58 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
     private void HandleDpiChanged(Message.DpiChanged dpiChanged)
     {
-        uint lastDpi = _lastDpi;
-        _lastDpi = dpiChanged.Dpi;
-        UpdateFontsForDpi(lastDpi, _lastDpi);
+        uint oldDpi = _lastDpi;
+        uint newDpi = dpiChanged.Dpi;
+        UpdateFontForDpi(oldDpi, newDpi);
+        UpdateDescendantFontsForDpi();
         this.MoveWindow(dpiChanged.SuggestedBounds, repaint: true);
+        if (oldDpi != 0 && oldDpi != newDpi)
+        {
+            OnDpiChanged(oldDpi, newDpi);
+        }
     }
 
-    private void UpdateFontsForDpi(uint lastDpi, uint newDpi)
+    private LRESULT ForwardDpiMessageToRegisteredClass(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
     {
+        // Wrapped system controls retain DPI-specific behavior in their original class procedure. Framework-owned
+        // classes have fully processed the message here and follow the documented zero-result contract.
+        return _windowClass.IsSubclassed && !_priorWindowProcedure.IsNull
+            ? PInvoke.CallWindowProc(_priorWindowProcedure, window, (uint)message, wParam, lParam)
+            : default;
+    }
+
+    private void HandleDpiChangedAfterParent()
+    {
+        // PMv2 sends this to child HWNDs after the top-level WM_DPICHANGED, but supplies no new DPI or suggested
+        // bounds. Sample the child's effective DPI now that the parent transition is complete.
+        uint oldDpi = _dpiBeforeParent == 0 ? _lastDpi : _dpiBeforeParent;
+        uint newDpi = this.GetDpi();
+        _dpiBeforeParent = 0;
+
+        if (_lastDpi != newDpi)
+        {
+            UpdateFontForDpi(_lastDpi, newDpi);
+        }
+
+        if (oldDpi != 0 && oldDpi != newDpi)
+        {
+            OnDpiChanged(oldDpi, newDpi);
+        }
+    }
+
+    private void UpdateFontForDpi(uint lastDpi, uint newDpi)
+    {
+        if (newDpi == 0 || lastDpi == newDpi)
+        {
+            return;
+        }
+
+        if (lastDpi == 0)
+        {
+            _lastDpi = newDpi;
+            return;
+        }
+
         HFONT currentFont = this.GetFontHandle();
         HFONT lastCreatedFont = _lastCreatedFont;
 
@@ -758,9 +831,20 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
             this.SetFontHandle(GetDefaultFontForDpi((int)newDpi));
         }
 
+        _lastDpi = newDpi;
+    }
+
+    private void UpdateDescendantFontsForDpi()
+    {
+        // EnumChildWindows already walks the entire descendant tree. Update each managed HWND once rather than
+        // recursing from the callback and revisiting grandchildren.
         this.EnumerateChildWindows(child =>
         {
-            FromHandle(child)?.UpdateFontsForDpi(lastDpi, newDpi);
+            if (FromHandle(child) is { } childWindow)
+            {
+                childWindow.UpdateFontForDpi(childWindow._lastDpi, childWindow.GetDpi());
+            }
+
             return true;
         });
     }

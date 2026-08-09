@@ -487,7 +487,7 @@ internal sealed class EnvironmentWindow : Window
         _reporter.Write("multiple-host-disposal-completed");
     }
 
-    private void VerifyHostLayout()
+    private unsafe void VerifyHostLayout()
     {
         using XamlHostControl host = new(new Rectangle(0, 0, 1, 1), this, static () => new Grid());
         DesktopWindowXamlSource xamlSource = GetXamlSource(host);
@@ -517,6 +517,23 @@ internal sealed class EnvironmentWindow : Window
         Ensure(siteBridge.GetClientRectangle().Size == expectedSize, "The site bridge did not track the resize storm.");
         Ensure(ReferenceEquals(GetXamlSource(host), xamlSource), "Resizing replaced the XAML source.");
         _reporter.Write("host-resize-storm-completed");
+
+        uint oldDpi = host.GetDpi();
+        ushort newDpi = checked((ushort)(oldDpi + 24));
+        Rectangle dpiBounds = new(15, 20, 360, 240);
+        RECT suggestedBounds = dpiBounds;
+        nuint packedDpi = newDpi | ((nuint)newDpi << 16);
+
+        // SendMessage is synchronous, so the stack RECT remains valid until the window procedure returns.
+        _ = host.SendMessage(
+            MessageType.DpiChanged,
+            (WPARAM)packedDpi,
+            (LPARAM)(nint)(&suggestedBounds));
+
+        Ensure(host.GetClientRectangle().Size == dpiBounds.Size, "The managed host did not accept DPI-adjusted bounds.");
+        Ensure(siteBridge.GetClientRectangle().Size == dpiBounds.Size, "The site bridge did not resynchronize after DPI change.");
+        Ensure(ReferenceEquals(GetXamlSource(host), xamlSource), "DPI change replaced the XAML source.");
+        _reporter.Write("host-dpi-resynchronized");
     }
 
     private void VerifyHostReparent()
