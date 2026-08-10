@@ -23,6 +23,7 @@ internal enum WinUIIntegrationScenario
     EnvironmentFinalRelease,
     HostBasic,
     HostColorPicker,
+    HostTextEditors,
     HostStress,
     HostMultiple,
     HostLayout,
