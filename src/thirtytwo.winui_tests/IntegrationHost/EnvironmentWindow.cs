@@ -19,6 +19,7 @@ using Windows.Win32.Foundation;
 using Windows.WinUI;
 using ResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
 using XamlDataTemplate = Microsoft.UI.Xaml.DataTemplate;
+using XamlLinearGradientBrush = Microsoft.UI.Xaml.Media.LinearGradientBrush;
 
 namespace IntegrationHost;
 
@@ -484,6 +485,18 @@ internal sealed class EnvironmentWindow : Window
         TextBox textBox = _textBoxHost.Content as TextBox
             ?? throw new InvalidOperationException("The TextBox wrapper did not host a TextBox directly.");
         textBox.Loaded += TextEditorLoaded;
+        textBox.Background = null;
+        Ensure(_textBoxHost.BackgroundColor.IsEmpty, "A null TextBox background did not project as an unset color.");
+        textBox.PlaceholderForeground = null;
+        Ensure(
+            _textBoxHost.PlaceholderForegroundColor.IsEmpty,
+            "A null TextBox placeholder foreground did not project as an unset color.");
+        _textBoxHost.PlaceholderForegroundColor = Color.FromArgb(255, 12, 34, 56);
+        textBox.Background = new XamlLinearGradientBrush();
+        EnsureThrows<InvalidOperationException>(
+            () => _ = _textBoxHost.BackgroundColor,
+            "The TextBox projected a non-solid background as a color.");
+        textBox.Background = null;
         Ensure(ReferenceEquals(_textBoxHost.Header, header), "The TextBox header did not round-trip.");
         Ensure(ReferenceEquals(textBox.Header, header), "The projected TextBox header did not reach WinUI.");
         Ensure(

@@ -382,6 +382,7 @@ public abstract partial class WinUITextControl : XamlHostControl
     }
 
     /// <summary>Gets or sets focused selection highlight color.</summary>
+    /// <remarks>Returns <see cref="Color.Empty"/> when the WinUI brush is unset.</remarks>
     public Color SelectionHighlightColor
     {
         get => GetSolidColor(
@@ -394,6 +395,7 @@ public abstract partial class WinUITextControl : XamlHostControl
     }
 
     /// <summary>Gets or sets unfocused selection highlight color.</summary>
+    /// <remarks>Returns <see cref="Color.Empty"/> when the WinUI brush is unset.</remarks>
     public Color SelectionHighlightColorWhenNotFocused
     {
         get => GetSolidColor(
@@ -468,6 +470,7 @@ public abstract partial class WinUITextControl : XamlHostControl
     }
 
     /// <summary>Gets or sets the editor background color.</summary>
+    /// <remarks>Returns <see cref="Color.Empty"/> when the WinUI brush is unset.</remarks>
     public Color BackgroundColor
     {
         get => GetSolidColor(GetEditor().Background, nameof(BackgroundColor));
@@ -479,6 +482,7 @@ public abstract partial class WinUITextControl : XamlHostControl
     }
 
     /// <summary>Gets or sets the editor foreground color.</summary>
+    /// <remarks>Returns <see cref="Color.Empty"/> when the WinUI brush is unset.</remarks>
     public Color ForegroundColor
     {
         get => GetSolidColor(GetEditor().Foreground, nameof(ForegroundColor));
@@ -861,13 +865,16 @@ public abstract partial class WinUITextControl : XamlHostControl
     }
 
     private protected static Color GetSolidColor(Brush? brush, string propertyName)
-        => brush is SolidColorBrush solidColorBrush
-            ? Color.FromArgb(
+        => brush switch
+        {
+            null => Color.Empty,
+            SolidColorBrush solidColorBrush => Color.FromArgb(
                 solidColorBrush.Color.A,
                 solidColorBrush.Color.R,
                 solidColorBrush.Color.G,
-                solidColorBrush.Color.B)
-            : throw new InvalidOperationException($"The editor's {propertyName} is not a solid color.");
+                solidColorBrush.Color.B),
+            _ => throw new InvalidOperationException($"The editor's {propertyName} is not a solid color.")
+        };
 
     private protected static SolidColorBrush ToBrush(Color color)
         => new(Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B));

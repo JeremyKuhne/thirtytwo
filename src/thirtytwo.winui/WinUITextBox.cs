@@ -20,6 +20,7 @@ public sealed class WinUITextBox : WinUITextControl
     public event EventHandler<WinUITextBoxBeforeTextChangingEventArgs>? BeforeTextChanging;
 
     /// <summary>Gets or sets the placeholder foreground color.</summary>
+    /// <remarks>Returns <see cref="Color.Empty"/> when the WinUI brush is unset.</remarks>
     public Color PlaceholderForegroundColor
     {
         get => GetSolidColor(GetTextBox().PlaceholderForeground, nameof(PlaceholderForegroundColor));

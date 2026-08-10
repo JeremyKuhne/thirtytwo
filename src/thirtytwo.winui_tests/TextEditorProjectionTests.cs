@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using FluentAssertions;
+using Microsoft.UI.Xaml.Media;
 using Touki.TestSupport;
 using XamlCandidateWindowAlignment = Microsoft.UI.Xaml.Controls.CandidateWindowAlignment;
 using XamlCharacterCasing = Microsoft.UI.Xaml.Controls.CharacterCasing;
@@ -252,6 +253,16 @@ public class TextEditorProjectionTests
 
         EventHandler<WinUITextClipboardEventArgs> clear = (_, eventArgs) => eventArgs.Handled = false;
         raiseClipboardEvent(sender, clear, true).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetSolidColor_NullBrush_ReturnsEmptyColor()
+    {
+        Func<Brush?, string, global::System.Drawing.Color> getSolidColor =
+            typeof(WinUITextControl).TestAccessor.CreateDelegate<Func<Brush?, string, global::System.Drawing.Color>>(
+                "GetSolidColor");
+
+        getSolidColor(null, "BackgroundColor").Should().Be(global::System.Drawing.Color.Empty);
     }
 
     private static void AssertSameValue<TProjected, TXaml>(TProjected projected, TXaml xaml)
