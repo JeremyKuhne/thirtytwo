@@ -178,6 +178,7 @@ public class DispatcherTests
     public void InvokeAsync_AsyncCallback_RepresentsFullLifetimeAndResumesOnDispatcher()
     {
         using ThreadContext context = ThreadingTestAccessors.CreateThreadContext();
+        using ManualResetEventSlim interleavedQueued = new(initialState: false);
         Dispatcher dispatcher = context.Dispatcher;
         uint dispatcherThreadId = PInvoke.GetCurrentThreadId();
         uint resumedThreadId = 0;
@@ -186,6 +187,7 @@ public class DispatcherTests
         {
             Task<int> asyncOperation = dispatcher.InvokeAsync<int>(async _ =>
             {
+                interleavedQueued.Wait(TimeSpan.FromSeconds(5)).Should().BeTrue();
                 await Task.Yield();
                 resumedThreadId = PInvoke.GetCurrentThreadId();
                 interleavedCallbackRan.Should().BeTrue();
@@ -193,6 +195,7 @@ public class DispatcherTests
             });
 
             Task interleaved = dispatcher.InvokeAsync(() => interleavedCallbackRan = true);
+            interleavedQueued.Set();
             asyncOperation.GetAwaiter().GetResult();
             _ = dispatcher.InvokeAsync(() => PInvoke.PostQuitMessage(0));
             return (asyncOperation, interleaved);
