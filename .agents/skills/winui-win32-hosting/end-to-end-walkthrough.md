@@ -10,7 +10,7 @@ why every part exists.
 - Windows App SDK 2.3.1, stable channel.
 - .NET 10 and Windows 10 version 1809 or later.
 - Framework-dependent, unpackaged executable using bootstrap auto-initialization.
-- x64: built and run on Windows.
+- x64: built and run on Windows build 26200.
 - ARM64: cross-compiled on Windows; not executed on ARM64 hardware in this review.
 - x86, MSIX, clean-machine installation, and XAML markup compilation: not covered
   by the bundled sample.

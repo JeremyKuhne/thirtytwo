@@ -147,7 +147,7 @@ internal static unsafe class Program
             StackPanel panel = new()
             {
                 Padding = new Thickness(24),
-                // Win32 applications are always light mode by default.
+                // Keep this raw-host sample visually deterministic.
                 RequestedTheme = ElementTheme.Light,
                 Spacing = 12
             };
@@ -202,12 +202,7 @@ internal static unsafe class Program
                 case PInvoke.WM_SIZE:
                     if (s_xamlSource is { } source)
                     {
-                        nuint packedSize = (nuint)lParam.Value;
-                        source.SiteBridge?.MoveAndResize(new RectInt32(
-                            0,
-                            0,
-                            (ushort)packedSize,
-                            (ushort)(packedSize >> 16)));
+                        ResizeSiteBridge(source, window);
                     }
 
                     return (LRESULT)0;

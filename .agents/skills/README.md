@@ -4,10 +4,11 @@ This repository carries 14 portable skill cores from the
 [JeremyKuhne/agent-skills](https://github.com/JeremyKuhne/agent-skills)
 commons, pinned to immutable upstream refs. Most use the `v0.14.0` release;
 `cswin32-com` is pinned to commit `f1dcc2d` for its post-release `IComIID`
-guidance, and `winui-win32-hosting` is pinned to commit `d301b73` for the merged
-production-hosting guides. The installed core files carry `metadata.github-*`
-provenance injected by `gh skill install` and must remain exact upstream mirrors.
-Repository-specific paths and conventions live in each sibling `overlay.md`.
+guidance, and `winui-win32-hosting` is pinned to commit `b9c28f1` for the merged
+production-hosting guides and sample review fixes. The installed core files carry
+`metadata.github-*` provenance injected by `gh skill install` and must remain exact
+upstream mirrors. Repository-specific paths and conventions live in each sibling
+`overlay.md`.
 
 ## Inventory
 
