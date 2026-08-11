@@ -1,12 +1,13 @@
 # thirtytwo agent skills
 
-This repository carries 13 portable skill cores from the
+This repository carries 14 portable skill cores from the
 [JeremyKuhne/agent-skills](https://github.com/JeremyKuhne/agent-skills)
 commons, pinned to immutable upstream refs. Most use the `v0.14.0` release;
 `cswin32-com` is pinned to commit `f1dcc2d` for its post-release `IComIID`
-guidance. The installed core files carry `metadata.github-*` provenance injected
-by `gh skill install` and must remain exact upstream mirrors. Repository-specific
-paths and conventions live in each sibling `overlay.md`.
+guidance, and `winui-win32-hosting` is pinned to commit `d301b73` for the merged
+production-hosting guides. The installed core files carry `metadata.github-*`
+provenance injected by `gh skill install` and must remain exact upstream mirrors.
+Repository-specific paths and conventions live in each sibling `overlay.md`.
 
 ## Inventory
 
@@ -25,6 +26,7 @@ paths and conventions live in each sibling `overlay.md`.
 | [pre-pr-self-review](pre-pr-self-review/SKILL.md) | Review the working diff before publishing. | Runs Debug and Release checks and invokes security review for unsafe changes. |
 | [scratch-buffer-strategy](scratch-buffer-strategy/SKILL.md) | Choose among stack, pooled, and heap scratch buffers. | Binds to `BstrBuffer`, `ValueBuffer<T>`, and the modern-only TFM. |
 | [security-review](security-review/SKILL.md) | Audit unsafe code, native boundaries, malformed input, and resource ownership. | Uses the mirrored product/test layout and Windows interop threat surface. |
+| [winui-win32-hosting](winui-win32-hosting/SKILL.md) | Build and diagnose WinUI controls hosted in existing Win32 HWND applications. | Binds to `XamlHostControl`, the raw `ControlHost`, and the real-window integration harness. |
 
 ## Selection boundary
 
@@ -39,6 +41,10 @@ The project-gated `performance-testing`, `fuzz-testing`, and
 fuzz, or analyzer project. Add the corresponding project as a separate,
 reviewed prerequisite before vendoring one of those cores.
 
+`winui-win32-hosting` is installed because the optional `thirtytwo.winui` package,
+raw HWND samples, and integration harness own the native/WinUI lifecycle, input,
+DPI, airspace, accessibility, drag/drop, and shutdown boundaries directly.
+
 ## Disambiguation
 
 ### CsWin32 interop and COM
@@ -49,6 +55,15 @@ reviewed prerequisite before vendoring one of those cores.
   connection points, and reference lifetime.
 - When a change touches both, apply the general interop rules first and then
   the COM-specific rules.
+
+### WinUI hosting and native interop
+
+- Use `winui-win32-hosting` for island topology, environment/source lifetime,
+  message/focus routing, DPI, theme, popup/airspace, accessibility, drag/drop,
+  reparenting, deployment, and real-window diagnostics.
+- Hand raw P/Invoke projection questions to `cswin32-interop` and raw COM/CCW
+  questions to `cswin32-com`; then return to the hosting guide for integration
+  ownership and validation.
 
 ### Review and publishing
 
