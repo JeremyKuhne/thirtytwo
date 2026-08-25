@@ -20,6 +20,7 @@ using Windows.WinUI;
 using ResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
 using XamlDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 using XamlLinearGradientBrush = Microsoft.UI.Xaml.Media.LinearGradientBrush;
+using XamlControl = Microsoft.UI.Xaml.Controls.Control;
 
 namespace IntegrationHost;
 
@@ -30,6 +31,9 @@ internal sealed class EnvironmentWindow : Window
     private XamlHostEnvironment? _secondEnvironment;
     private XamlHostControl? _xamlHost;
     private WinUIColorPicker? _colorPickerHost;
+    private CustomControl? _dropReparentTarget;
+    private WinUIRichEditBox? _dropRichEditBoxHost;
+    private WinUITextBox? _dropTextBoxHost;
     private WinUITextBox? _textBoxHost;
     private WinUIRichEditBox? _richEditBoxHost;
     private string? _proposedTextBoxText;
@@ -47,6 +51,7 @@ internal sealed class EnvironmentWindow : Window
     private AccessibilityScenario? _accessibilityScenario;
     private FocusScenario? _focusScenario;
     private InputScenario? _inputScenario;
+    private NativeTextDragScenario? _nativeTextDragScenario;
 
     internal EnvironmentWindow(EnvironmentScenario scenario, ScenarioReporter reporter)
         : base(DefaultBounds, text: "ThirtyTwo WinUI Environment Host")
@@ -62,6 +67,8 @@ internal sealed class EnvironmentWindow : Window
                     EnvironmentScenario.HostAirspace
                     or EnvironmentScenario.HostScrolling
                     or EnvironmentScenario.HostAccessibility
+                    or EnvironmentScenario.HostDropTarget
+                    or EnvironmentScenario.HostNativeTextDrag
                     or EnvironmentScenario.HostTextEditors
                     or EnvironmentScenario.FocusTraversal
                     or EnvironmentScenario.InputSemantics))
@@ -144,6 +151,11 @@ internal sealed class EnvironmentWindow : Window
             case EnvironmentScenario.HostColorPicker:
                 VerifyHostColorPicker();
                 break;
+            case EnvironmentScenario.HostDropTarget:
+                VerifyHostDropTarget();
+                break;
+            case EnvironmentScenario.HostNativeTextDrag:
+                break;
             case EnvironmentScenario.HostTextEditors:
                 VerifyHostTextEditors();
                 break;
@@ -175,9 +187,17 @@ internal sealed class EnvironmentWindow : Window
 
     internal void VerifyAfterRun(EnvironmentScenario scenario)
     {
+        if (scenario == EnvironmentScenario.HostNativeTextDrag)
+        {
+            (_nativeTextDragScenario
+                ?? throw new InvalidOperationException("The native text-drag scenario was not created."))
+                .VerifyAfterRun();
+        }
+
         XamlHostControl? xamlHost = scenario switch
         {
             EnvironmentScenario.HostBasic => _xamlHost,
+            EnvironmentScenario.HostDropTarget => _dropTextBoxHost,
             EnvironmentScenario.HostPopupClose => _popupHost,
             EnvironmentScenario.HostShutdownCleanup => _shutdownHost,
             _ => null
@@ -186,6 +206,12 @@ internal sealed class EnvironmentWindow : Window
         if (xamlHost is null)
         {
             return;
+        }
+
+        if (scenario == EnvironmentScenario.HostDropTarget)
+        {
+            VerifyDropHostDestroyed(_dropTextBoxHost!, "TextBox");
+            VerifyDropHostDestroyed(_dropRichEditBoxHost!, "RichEditBox");
         }
 
         Ensure(xamlHost.Handle.IsNull, "Parent destruction left the managed host HWND alive.");
@@ -202,6 +228,7 @@ internal sealed class EnvironmentWindow : Window
 
         string eventName = scenario switch
         {
+            EnvironmentScenario.HostDropTarget => "drop-target-host-destroyed",
             EnvironmentScenario.HostPopupClose => "popup-parent-destroyed",
             EnvironmentScenario.HostShutdownCleanup => "host-shutdown-cleaned",
             _ => "host-parent-destroyed"
@@ -226,6 +253,13 @@ internal sealed class EnvironmentWindow : Window
                 break;
             case EnvironmentScenario.HostAccessibility:
                 _accessibilityScenario = new(this, _reporter);
+                break;
+            case EnvironmentScenario.HostDropTarget:
+                PerformHostDrop();
+                break;
+            case EnvironmentScenario.HostNativeTextDrag:
+                _nativeTextDragScenario = new(this, _reporter);
+                _nativeTextDragScenario.Start(DestroyWindow);
                 break;
             case EnvironmentScenario.HostPopupClose:
                 VerifyHostPopupClose();
@@ -448,6 +482,142 @@ internal sealed class EnvironmentWindow : Window
 
         Ensure(_colorPickerHost.Color == expected, "Rejected content replacement changed the selected color.");
         _reporter.Write("color-picker-projected", _colorPickerHost.Handle);
+    }
+
+    private void VerifyHostDropTarget()
+    {
+        _dropTextBoxHost = new(new Rectangle(20, 30, 320, 120), this)
+        {
+            EnableDrop = true,
+            Text = "Before selected after"
+        };
+        VerifyTextDropTarget(_dropTextBoxHost);
+        _dropRichEditBoxHost = new(new Rectangle(20, 170, 320, 120), this)
+        {
+            EnableDrop = true,
+            Text = "Before selected after"
+        };
+        VerifyTextDropTarget(_dropRichEditBoxHost);
+    }
+
+    private void PerformHostDrop()
+    {
+        this.SetWindowPosition(
+            WindowZOrder.TopMost,
+            default,
+            WindowPositionFlags.NoMove
+                | WindowPositionFlags.NoSize
+                | WindowPositionFlags.NoActivate
+                | WindowPositionFlags.ShowWindow);
+        this.UpdateWindow();
+        WinUITextBox textBox = _dropTextBoxHost
+            ?? throw new InvalidOperationException("The WinUI TextBox drop target was not created.");
+        VerifyTextDropCaret(textBox);
+        VerifyEmptyTextDropCaret(textBox);
+        _reporter.Write("winui-empty-text-drop-caret-bounded", textBox.Handle);
+        _reporter.Write("winui-drop-routing-configured", _dropTextBoxHost.Handle);
+        BeginHostDropAfterReparent();
+    }
+
+    private void BeginHostDropAfterReparent()
+    {
+        WinUITextBox textBox = _dropTextBoxHost
+            ?? throw new InvalidOperationException("The WinUI TextBox drop target was not created.");
+        textBox.TestAccessor.Dynamic.BeginTextDropInsertion();
+        textBox.TestAccessor.Dynamic.UpdateTextDropCaret(0);
+        Ensure(
+            (bool)textBox.TestAccessor.Dynamic._textDropCaretVisible,
+            "The WinUI TextBox did not show its drop caret before reparenting.");
+        _dropReparentTarget = new(new Rectangle(380, 30, 360, 160), parentWindow: this);
+        textBox.Reparent(_dropReparentTarget);
+        Ensure(
+            !(bool)textBox.TestAccessor.Dynamic._textDropCaretVisible,
+            "Reparenting left the WinUI TextBox drop caret visible.");
+        _reporter.Write("winui-drop-caret-canceled-for-reparent", textBox.Handle);
+        VerifyTextDropTarget(textBox);
+        _reporter.Write("winui-drop-routing-retained-after-reparent", textBox.Handle);
+        DestroyWindow();
+    }
+
+    private static void VerifyTextDropCaret(WinUITextBox textBox)
+    {
+        textBox.TestAccessor.Dynamic.BeginTextDropInsertion();
+        textBox.TestAccessor.Dynamic.UpdateTextDropCaret(0);
+        Ensure(
+            (bool)textBox.TestAccessor.Dynamic._textDropCaretVisible,
+            "The WinUI TextBox did not show its drop insertion caret.");
+        textBox.TestAccessor.Dynamic.CancelTextDropInsertion();
+        Ensure(
+            !(bool)textBox.TestAccessor.Dynamic._textDropCaretVisible,
+            "The WinUI TextBox did not hide its drop insertion caret.");
+    }
+
+    private static void VerifyEmptyTextDropCaret(WinUITextBox textBox)
+    {
+        string originalText = textBox.Text;
+        try
+        {
+            textBox.Text = string.Empty;
+            textBox.TestAccessor.Dynamic.BeginTextDropInsertion();
+            textBox.TestAccessor.Dynamic.UpdateTextDropCaret(0);
+            Ensure(
+                (bool)textBox.TestAccessor.Dynamic._textDropCaretTracking,
+                "The empty WinUI TextBox stopped tracking its sole drop insertion point.");
+            Ensure(
+                !(bool)textBox.TestAccessor.Dynamic._textDropCaretVisible,
+                "The empty WinUI TextBox synthesized unsupported character geometry.");
+        }
+        finally
+        {
+            textBox.TestAccessor.Dynamic.CancelTextDropInsertion();
+            textBox.Text = originalText;
+        }
+    }
+
+    private static void VerifyDropHostDestroyed(WinUITextControl host, string name)
+    {
+        object? dragSource = host.TestAccessor.Dynamic._attachedDragSource;
+        Ensure(dragSource is null, $"Parent destruction left the WinUI {name} drag source attached.");
+        object? dropTarget = host.TestAccessor.Dynamic._attachedDropTarget;
+        Ensure(dropTarget is null, $"Parent destruction left the WinUI {name} drop target attached.");
+        object? routedEnterHandler = host.TestAccessor.Dynamic._editorDragEnterHandler;
+        Ensure(routedEnterHandler is null, $"Parent destruction retained the WinUI {name} routed drop handlers.");
+        object? routedOverHandler = host.TestAccessor.Dynamic._editorDragOverHandler;
+        Ensure(routedOverHandler is null, $"Parent destruction retained the WinUI {name} routed over handler.");
+        object? routedLeaveHandler = host.TestAccessor.Dynamic._editorDragLeaveHandler;
+        Ensure(routedLeaveHandler is null, $"Parent destruction retained the WinUI {name} routed leave handler.");
+        object? routedDropHandler = host.TestAccessor.Dynamic._editorDropHandler;
+        Ensure(routedDropHandler is null, $"Parent destruction retained the WinUI {name} routed drop handler.");
+        Ensure(
+            !(bool)host.TestAccessor.Dynamic._textDropCaretTracking,
+            $"Parent destruction left the WinUI {name} drop caret tracking.");
+        Ensure(
+            !(bool)host.TestAccessor.Dynamic._textDropCaretVisible,
+            $"Parent destruction left the WinUI {name} drop caret visible.");
+        object? caretVisual = host.TestAccessor.Dynamic._textDropCaretVisual;
+        Ensure(caretVisual is null, $"Parent destruction retained the WinUI {name} drop caret visual.");
+        Ensure(host.Handle.IsNull, $"Parent destruction left the WinUI {name} host HWND alive.");
+        DesktopWindowXamlSource? xamlSource = host.TestAccessor.Dynamic._xamlSource;
+        Ensure(xamlSource is null, $"Parent destruction left the WinUI {name} XAML source alive.");
+    }
+
+    private static void VerifyTextDropTarget(WinUITextControl host)
+    {
+        object? nativeDragSource = host.TestAccessor.Dynamic._attachedDragSource;
+        Ensure(nativeDragSource is null, $"The {host.GetType().Name} attached a classic OLE source to XAML content.");
+        object? nativeDropTarget = host.TestAccessor.Dynamic._attachedDropTarget;
+        Ensure(nativeDropTarget is null, $"The {host.GetType().Name} registered a native target over the XAML site bridge.");
+        XamlControl editor = host.TestAccessor.Dynamic.GetEditor();
+        Ensure(editor.AllowDrop, $"The {host.GetType().Name} editor is not the routed XAML drop target.");
+        Ensure(!editor.CanDrag, $"The {host.GetType().Name} editor unexpectedly enables direct source dragging.");
+        int textLength = host.TestAccessor.Dynamic.GetTextLength(editor);
+        Ensure(
+            textLength == host.Text.Length,
+            $"The {host.GetType().Name} nonallocating drop bound did not match its public text length.");
+        Ensure(host.TestAccessor.Dynamic._editorDragEnterHandler is not null, "The routed enter handler was not attached.");
+        Ensure(host.TestAccessor.Dynamic._editorDragOverHandler is not null, "The routed over handler was not attached.");
+        Ensure(host.TestAccessor.Dynamic._editorDragLeaveHandler is not null, "The routed leave handler was not attached.");
+        Ensure(host.TestAccessor.Dynamic._editorDropHandler is not null, "The routed drop handler was not attached.");
     }
 
     private void VerifyHostTextEditors()
@@ -800,8 +970,11 @@ internal sealed class EnvironmentWindow : Window
         using CustomControl firstParent = new(new Rectangle(0, 0, 300, 220), parentWindow: this);
         using CustomControl secondParent = new(new Rectangle(300, 0, 300, 220), parentWindow: this);
         using XamlHostControl host = new(new Rectangle(5, 7, 180, 140), firstParent, static () => new Grid());
+        using DropTarget dropTarget = new(host);
         DesktopWindowXamlSource xamlSource = GetXamlSource(host);
         HWND siteBridge = GetSiteBridge(xamlSource);
+        HWND registeredDropTarget = dropTarget.TestAccessor.Dynamic._registeredHandle;
+        Ensure(registeredDropTarget == siteBridge, "The XAML drop target was not registered on its site bridge.");
         using CustomControl destroyedParent = new(new Rectangle(0, 220, 100, 80), parentWindow: this);
         destroyedParent.Dispose();
 
@@ -817,6 +990,10 @@ internal sealed class EnvironmentWindow : Window
         Ensure(PInvoke.GetParent(host.Handle) == firstParent.Handle, "Rejected reparenting changed the native parent.");
         Ensure(ReferenceEquals(GetXamlSource(host), xamlSource), "Rejected reparenting replaced the XAML source.");
         Ensure(host.Content is Grid, "Rejected reparenting lost the hosted content.");
+        object? attachedWindow = dropTarget.TestAccessor.Dynamic._attachedWindow;
+        Ensure(ReferenceEquals(attachedWindow, host), "Rejected reparenting detached the drop target.");
+        registeredDropTarget = dropTarget.TestAccessor.Dynamic._registeredHandle;
+        Ensure(registeredDropTarget == siteBridge, "Rejected reparenting moved the drop-target registration.");
         _reporter.Write("destroyed-reparent-target-rejected");
 
         host.Reparent(secondParent);
@@ -828,6 +1005,12 @@ internal sealed class EnvironmentWindow : Window
         Ensure(!ReferenceEquals(GetXamlSource(host), xamlSource), "Reparenting reused the source attached to the old parent.");
         Ensure(reattachedSiteBridge != siteBridge, "Reparenting reused the site bridge attached to the old parent.");
         Ensure(host.Content is Grid, "Reparenting lost the hosted content.");
+        attachedWindow = dropTarget.TestAccessor.Dynamic._attachedWindow;
+        Ensure(ReferenceEquals(attachedWindow, host), "Reparenting detached the drop target.");
+        registeredDropTarget = dropTarget.TestAccessor.Dynamic._registeredHandle;
+        Ensure(
+            registeredDropTarget == reattachedSiteBridge,
+            "Reparenting did not move drop-target registration to the replacement site bridge.");
         _reporter.Write("host-reparented");
     }
 
@@ -1130,7 +1313,11 @@ internal sealed class EnvironmentWindow : Window
             _airspaceScenario?.Dispose();
             _inputScenario?.Dispose();
             _focusScenario?.Dispose();
+            _nativeTextDragScenario?.Dispose();
             _popupHost?.Dispose();
+            _dropRichEditBoxHost?.Dispose();
+            _dropTextBoxHost?.Dispose();
+            _dropReparentTarget?.Dispose();
             _richEditBoxHost?.Dispose();
             _textBoxHost?.Dispose();
             _colorPickerHost?.Dispose();

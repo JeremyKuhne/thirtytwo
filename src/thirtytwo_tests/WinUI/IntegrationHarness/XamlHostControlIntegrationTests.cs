@@ -40,6 +40,60 @@ public class XamlHostControlIntegrationTests
 
     [TestMethod]
     [Timeout(30_000)]
+    public void RunAsync_HostDropTarget_ConfiguresRoutedDropAndDisposesWithParent()
+    {
+        WinUIIntegrationResult result = AssertScenario(WinUIIntegrationScenario.HostDropTarget);
+
+        result.Events.Select(entry => entry.Event).Should().ContainInOrder(
+            "ready",
+            "winui-empty-text-drop-caret-bounded",
+            "winui-drop-routing-configured",
+            "winui-drop-caret-canceled-for-reparent",
+            "winui-drop-routing-retained-after-reparent",
+            "drop-target-host-destroyed",
+            "environment-stopped",
+            "scenario-completed");
+    }
+
+    [TestMethod]
+    [Timeout(30_000)]
+    public void RunAsync_HostNativeTextDrag_MovesSelectionIntoBothWinUIEditors()
+    {
+        WinUIIntegrationResult result = AssertScenario(WinUIIntegrationScenario.HostNativeTextDrag);
+
+        result.Events.Select(entry => entry.Event).Should().ContainInOrder(
+            "ready",
+            "native-text-drag-controls-created",
+            "native-text-drag-targets-loaded",
+            "native-text-drag-textbox-source-ready",
+            "native-text-drag-textbox-source-positioned",
+            "native-text-drag-textbox-source-left-down",
+            "native-text-drag-textbox-source-drag-move",
+            "native-text-drag-textbox-target-drag-enter",
+            "native-text-drag-textbox-mouse-left-up-injecting",
+            "native-text-drag-textbox-mouse-left-up-injected",
+            "native-text-drag-textbox-target-drop",
+            "native-text-drag-textbox-target-committed",
+            "native-text-drag-textbox-source-deleted",
+            "native-text-drag-textbox-move-verified",
+            "native-text-drag-rich-edit-box-source-ready",
+            "native-text-drag-rich-edit-box-source-positioned",
+            "native-text-drag-rich-edit-box-source-left-down",
+            "native-text-drag-rich-edit-box-source-drag-move",
+            "native-text-drag-rich-edit-box-target-drag-enter",
+            "native-text-drag-rich-edit-box-mouse-left-up-injecting",
+            "native-text-drag-rich-edit-box-mouse-left-up-injected",
+            "native-text-drag-rich-edit-box-target-drop",
+            "native-text-drag-rich-edit-box-target-committed",
+            "native-text-drag-rich-edit-box-source-deleted",
+            "native-text-drag-rich-edit-box-move-verified",
+            "native-text-drag-completed",
+            "environment-stopped",
+            "scenario-completed");
+    }
+
+    [TestMethod]
+    [Timeout(30_000)]
     public void RunAsync_HostTextEditors_ProjectAndDisposeWithParent()
     {
         WinUIIntegrationResult result = AssertScenario(WinUIIntegrationScenario.HostTextEditors);

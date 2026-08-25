@@ -11,22 +11,37 @@ target routing, visual feedback, and data mutation as separate decisions.
 - .NET 10 on an STA thread with an HWND-backed WinUI island.
 - Routed XAML drag/drop, the Windows Runtime drag broker, and classic OLE
   `DoDragDrop` interoperability.
-- x64 behavior measured in a consuming framework; ARM64 builds but mixed transfer
-  behavior remains a manual gate.
+- XAML-only source behavior measured with x64 mouse input in the bundled assets;
+  the consuming framework's XAML target configuration and lifecycle are tested,
+  and native OLE input reaches routed XAML `DragEnter` with text plus Copy and
+  Move exposed. The measured empty TextBox target rejected that entry while its
+  wrapper requested unsupported character geometry. The empty-target regression
+  passes. A subsequent native run accepted Move but timed out before an observable
+  Drop. The next run proved mouse-up injection returned and routed TextBox `Drop`
+  ran with Copy and Move allowed, no modifiers, and final acceptance Move; it then
+  timed out before target commit or source deletion. A retrieval-traced run then
+  recorded product Drop entry, deferral acquisition, `GetTextAsync` start, and
+  native `QueryGetData` and `GetData` entry and return on the main STA.
+  `GetTextAsync` did not complete. The artifact did not record the `GetData`
+  HRESULT, so do not call the extraction successful from that run alone. Those
+  events came from temporary product observers that were removed after the
+  investigation. No mixed native/XAML transfer has therefore been recorded.
+  ARM64 execution and all remaining mixed-transfer behavior remain manual gates.
 - API and source-observed behavior checked against Windows App SDK 2.3.1.
 
 The drag/drop primitives described here begin in Windows App SDK 1.4, but the
 `XamlRoot.ContentIsland` access used by this host recipe begins in 1.7.
 
-The [bundled minimal host](assets/minimal-host/README.md) does not implement
-drag/drop. Use it to establish the host lifecycle, then add one drag layer at a
-time.
+The [bundled minimal host](assets/minimal-host/README.md) implements a Copy-only
+XAML text source and target with explicit drag handles. Use
+[xaml-drag-source.md](xaml-drag-source.md) for that canonical baseline before
+adding a mixed native/XAML direction.
 
 ## Choose one target owner
 
 | Scenario | Source | Target |
 | --- | --- | --- |
-| Ordinary WinUI controls | `UIElement.StartDragAsync` or `CanDrag` plus `DragStarting` | `AllowDrop` and routed XAML drag events |
+| Ordinary WinUI controls | `CanDrag` plus `DragStarting`; `StartDragAsync` only for an application-owned custom gesture | `AllowDrop` and routed XAML drag events |
 | Native source into ordinary WinUI | OLE or another system drag source | Routed XAML drag events through the platform bridge |
 | WinUI source into native HWNDs | XAML drag for standard system transfer; OLE when classic source feedback is required | Native `IDropTarget` |
 | Custom island framework | `DragOperation` | One `DragDropManager.TargetRequested` owner and `IDropOperationTarget` |
@@ -73,12 +88,13 @@ the old registration and binding the replacement after it is live.
 
 For ordinary content:
 
-1. Start a drag through `UIElement.StartDragAsync` or a `CanDrag` gesture.
+1. Set `CanDrag=true` on the element that owns the ordinary XAML gesture.
 2. Populate `DragStartingEventArgs.Data` and set `RequestedOperation`.
-3. Set `AllowDrop=true` on the target.
-4. Set `AcceptedOperation` during `DragOver`.
-5. Read `DataView` asynchronously during `Drop`.
-6. Use `DragEventArgs.GetPosition(target)` for target-relative feedback.
+3. Set `AllowedOperations` to the complete source effect set.
+4. Set `AllowDrop=true` on the target.
+5. Set `AcceptedOperation` during `DragOver`.
+6. Read `DataView` asynchronously during `Drop`.
+7. Use `DragEventArgs.GetPosition(target)` for target-relative feedback.
 
 Do not reinterpret an island-level position as an element-relative point. The
 target element may be translated, scrolled, mirrored, or scaled inside the root.
@@ -88,6 +104,18 @@ should receive pointer hit testing without visible fill.
 `UIElement.StartDragAsync` is not supported in an elevated process. Treat process
 elevation as a deployment constraint, not as an input bug to repair with a second
 island manager.
+
+Do not call `StartDragAsync` from every routed `PointerMoved` event. The
+`CanDrag` path already owns capture, system thresholds, mouse, pen, touch,
+release, and capture loss. Use the lower-level method only when the application
+owns a genuinely custom gesture.
+
+For editable TextBox or RichEditBox content, prefer a separate `CanDrag` handle
+that reads the editor selection in `DragStarting`. Directly setting `CanDrag` on
+the editable surface is not established by the bundled evidence and competes
+with text-control class handling. Do not compensate with island pointer
+observers unless a minimal platform reproduction first demonstrates that a
+custom gesture is required.
 
 ## Classic OLE path
 
@@ -102,6 +130,16 @@ pipeline.
 4. Treat the call as synchronous but reentrant: it runs a nested message loop.
 5. Complete a move only when the returned effect is Move and the destination
    commit succeeded.
+
+Classic OLE data extraction is synchronous unless the source and target negotiate
+background extraction through the optional `IDataObjectAsyncCapability`. Absence
+of that interface does not by itself violate the OLE contract. On the XAML side,
+`DataPackageView.GetTextAsync` is a remote asynchronous operation, and a routed
+Drop deferral keeps WinUI's Drop operation incomplete until the deferral is
+completed. If routed `Drop` runs but mutation does not, trace entry and completion
+around `GetTextAsync`, deferral completion, and native `IDataObject.QueryGetData`
+and `GetData` with test-owned adapters or external diagnostics before changing
+apartment or asynchronous-transfer behavior.
 
 Every COM callback must translate managed exceptions to an HRESULT. Do not let an
 exception cross the unmanaged boundary. Bound external format enumeration and
@@ -166,6 +204,10 @@ operations. Record enough source state to detect intervening edits before deleti
 text. If the source generation changed, keep the inserted copy and do not delete
 an unverified range.
 
+The bundled source sample intentionally offers Copy only. Treat Move as a
+separate feature after source initiation is reliable; do not add transaction
+state merely to prove that a drag can start.
+
 ## Target feedback
 
 Keep transport feedback separate from editor feedback. `DragUIOverride.Clear`
@@ -224,6 +266,7 @@ channel.
 | Symptom | First discriminating check |
 | --- | --- |
 | XAML `Drop` never runs | Confirm `AllowDrop`, accepted operation, and that no custom manager replaced XAML's target owner. |
+| XAML `Drop` runs but text is not committed | Trace `GetTextAsync` start/completion, Drop deferral completion, and native `QueryGetData` / `GetData`; do not infer which boundary stalled from routed Drop alone. |
 | Native target never activates | Compare the registered HWND with the site-bridge HWND under the pointer. |
 | Drag works until reparenting | Log registration HWND and `ContentIsland` identity before and after replacement. |
 | Move duplicates or deletes wrong text | Log destination commit, returned effect, source generation, and adjusted deletion range. |

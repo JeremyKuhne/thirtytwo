@@ -35,7 +35,8 @@ public partial class RichEditControl : EditBase
         nint parameters = default) : base(
             bounds,
             s_richEditClass,
-            style |= (WindowStyles)editStyle,
+            // Rich Edit registers its own OLE target unless this style is set during creation.
+            style |= (WindowStyles)editStyle | (WindowStyles)Interop.ES_NOOLEDRAGDROP,
             text,
             extendedStyle,
             parentWindow,
@@ -49,6 +50,31 @@ public partial class RichEditControl : EditBase
     {
         ApplyApplicationColors();
         base.OnColorModeChanged();
+    }
+
+    private protected override unsafe string GetTextForDrag()
+    {
+        (int start, int end) = GetSelection();
+        if (end <= start)
+        {
+            return string.Empty;
+        }
+
+        int length = checked(end - start);
+        using BufferScope<char> buffer = new(stackalloc char[256], checked(length + 1));
+        fixed (char* text = buffer)
+        {
+            int copied = (int)this.SendMessage((MessageType)PInvoke.EM_GETSELTEXT, lParam: (LPARAM)text);
+            return buffer[..copied].ToString();
+        }
+    }
+
+    private protected override unsafe int GetCharacterIndexFromPoint(Point position)
+    {
+        POINTL point = new() { x = position.X, y = position.Y };
+        return (int)this.SendMessage(
+            (MessageType)PInvoke.EM_CHARFROMPOS,
+            lParam: (LPARAM)(nint)(&point));
     }
 
     private unsafe void ApplyApplicationColors()

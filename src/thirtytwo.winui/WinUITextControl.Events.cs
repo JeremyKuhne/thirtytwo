@@ -98,6 +98,8 @@ public abstract partial class WinUITextControl
 
     private void DetachEditorEvents()
     {
+        SetXamlTextDropEnabled(value: false);
+
         if (_textBox is not null)
         {
             _textBox.BeforeTextChanging -= TextBoxBeforeTextChanging;

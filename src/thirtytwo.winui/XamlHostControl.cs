@@ -200,12 +200,21 @@ public unsafe partial class XamlHostControl : CustomControl
         }
 
         UIElement? content = null;
+        bool resumeDropTarget = SuspendDropTargetForHandleChange();
+        bool sourceChangeStarted = false;
 
         try
         {
+            OnXamlSourceChanging();
+            sourceChangeStarted = true;
             DetachXamlSource(out content);
             SetNativeParent(Handle, parentWindow.Handle);
             _xamlSource = CreateXamlSource(content);
+            OnXamlSourceChanged();
+            if (resumeDropTarget)
+            {
+                ResumeDropTargetAfterHandleChange();
+            }
         }
         catch (Exception reparentFailure)
         {
@@ -217,6 +226,10 @@ public unsafe partial class XamlHostControl : CustomControl
                 }
 
                 _xamlSource ??= CreateXamlSource(content);
+                if (sourceChangeStarted)
+                {
+                    OnXamlSourceChanged();
+                }
             }
             catch (Exception recoveryFailure)
             {
@@ -244,6 +257,18 @@ public unsafe partial class XamlHostControl : CustomControl
                     failures);
             }
 
+            if (resumeDropTarget)
+            {
+                try
+                {
+                    ResumeDropTargetAfterHandleChange();
+                }
+                catch (Exception dropTargetFailure)
+                {
+                    throw new AggregateException(reparentFailure, dropTargetFailure);
+                }
+            }
+
             throw;
         }
         finally
@@ -258,6 +283,25 @@ public unsafe partial class XamlHostControl : CustomControl
 
     /// <summary>Gets whether the XAML source has been disposed.</summary>
     protected bool IsXamlSourceDisposed => _xamlStateDisposed;
+
+    /// <summary>Called before the current XAML source is detached during reparenting.</summary>
+    private protected virtual void OnXamlSourceChanging()
+    {
+    }
+
+    /// <summary>Called after a replacement XAML source is attached during reparenting or recovery.</summary>
+    private protected virtual void OnXamlSourceChanged()
+    {
+    }
+
+    /// <inheritdoc/>
+    protected override HWND GetDropTargetHandle()
+    {
+        DesktopWindowXamlSource xamlSource = GetXamlSource();
+        return xamlSource.SiteBridge is { } siteBridge
+            ? (HWND)Win32Interop.GetWindowFromWindowId(siteBridge.WindowId)
+            : default;
+    }
 
     /// <inheritdoc/>
     protected override void OnSize(Size size)
@@ -345,6 +389,8 @@ public unsafe partial class XamlHostControl : CustomControl
         }
 
         VerifyAccess();
+        DisposeAttachedDropTarget();
+
         Exception? cleanupFailure = null;
         try
         {

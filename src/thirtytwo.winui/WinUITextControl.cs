@@ -108,6 +108,26 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
+    /// <summary>Gets or sets whether Unicode text can be dropped into this control.</summary>
+    /// <remarks>
+    ///  A drop replaces the current selection, or inserts at the caret when the selection is empty. The drop is
+    ///  accepted when the source permits moving or copying. The hosted editor owns routed XAML drag events; this
+    ///  wrapper does not register a second native OLE target over the XAML site bridge.
+    /// </remarks>
+    public bool EnableDrop
+    {
+        get
+        {
+            VerifyUsable();
+            return _textDropRequested;
+        }
+        set
+        {
+            VerifyUsable();
+            SetXamlTextDropEnabled(value);
+        }
+    }
+
     /// <summary>Gets or sets whether the editor accepts newline input.</summary>
     public bool AcceptsReturn
     {

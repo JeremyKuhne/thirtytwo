@@ -36,6 +36,7 @@ public static class Consumer
     public static Windows.WinUI.XamlHostControl ConfigureTextBox(Windows.WinUI.WinUITextBox textBox)
     {
         textBox.AcceptsReturn = true;
+        textBox.EnableDrop = true;
         textBox.PlaceholderText = "Plain text";
         textBox.Text = "TextBox";
         textBox.SelectAll();
@@ -45,6 +46,7 @@ public static class Consumer
     public static Windows.WinUI.XamlHostControl ConfigureRichEditBox(Windows.WinUI.WinUIRichEditBox richEditBox)
     {
         richEditBox.AcceptsReturn = true;
+        richEditBox.EnableDrop = true;
         richEditBox.ClipboardCopyFormat = Windows.WinUI.WinUIRichEditClipboardFormat.PlainText;
         richEditBox.DisabledFormattingAccelerators = Windows.WinUI.WinUIRichEditDisabledFormattingAccelerators.Bold;
         richEditBox.Text = "RichEditBox";

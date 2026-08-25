@@ -4,13 +4,13 @@ using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Windows.Graphics;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.WindowsAndMessaging;
+using WinUIHostingDragRepro;
 
 namespace MinimalWinUIHost;
 
@@ -21,7 +21,7 @@ internal static unsafe class Program
     private static DesktopWindowXamlSource? s_xamlSource;
 
     [STAThread]
-    private static int Main()
+    private static int Main(string[] args)
     {
         if (Thread.CurrentThread.GetApartmentState() != ApartmentState.STA)
         {
@@ -33,7 +33,8 @@ internal static unsafe class Program
         try
         {
             using XamlApplication application = new();
-            int result = RunMessageLoop();
+            bool directEditorRepro = args.Contains("--direct-editor-repro", StringComparer.Ordinal);
+            int result = RunMessageLoop(directEditorRepro);
             GC.KeepAlive(application);
             return result;
         }
@@ -43,12 +44,12 @@ internal static unsafe class Program
         }
     }
 
-    private static int RunMessageLoop()
+    private static int RunMessageLoop(bool directEditorRepro)
     {
         HWND window = CreateHostWindow();
         try
         {
-            InitializeIsland(window);
+            InitializeIsland(window, directEditorRepro);
             PInvoke.ShowWindow(window, SHOW_WINDOW_CMD.SW_SHOWDEFAULT);
             if (!PInvoke.UpdateWindow(window))
             {
@@ -136,7 +137,7 @@ internal static unsafe class Program
         }
     }
 
-    private static void InitializeIsland(HWND window)
+    private static void InitializeIsland(HWND window, bool directEditorRepro)
     {
         DesktopWindowXamlSource source = new();
         try
@@ -144,29 +145,9 @@ internal static unsafe class Program
             source.Initialize(Win32Interop.GetWindowIdFromWindow((nint)window.Value));
             source.ShouldConstrainPopupsToWorkArea = true;
 
-            StackPanel panel = new()
-            {
-                Padding = new Thickness(24),
-                // Keep this raw-host sample visually deterministic.
-                RequestedTheme = ElementTheme.Light,
-                Spacing = 12
-            };
-
-            panel.Children.Add(new TextBlock
-            {
-                Text = "WinUI 3 hosted by a raw Win32 HWND",
-                FontSize = 24
-            });
-
-            panel.Children.Add(new TextBox
-            {
-                Header = "Keyboard input",
-                PlaceholderText = "Type here"
-            });
-
-            panel.Children.Add(new Button { Content = "WinUI button" });
-
-            source.Content = panel;
+            source.Content = directEditorRepro
+                ? DirectEditorDragContent.Create("DesktopWindowXamlSource")
+                : TextDragContent.Create();
             ResizeSiteBridge(source, window);
             s_xamlSource = source;
         }

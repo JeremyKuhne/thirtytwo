@@ -26,4 +26,12 @@ public static class Consumer
     public static bool UndocumentedDarkModeApisSupported => ColorState.UndocumentedDarkModeApisSupported;
 
     public static int ColorGeneration => ColorState.Generation;
+
+    public static void EnableTextDrop(Windows.EditControl editControl)
+    {
+        editControl.EnableDrag = true;
+        editControl.EnableDrop = true;
+        _ = editControl.EnableDrag;
+        _ = editControl.EnableDrop;
+    }
 }

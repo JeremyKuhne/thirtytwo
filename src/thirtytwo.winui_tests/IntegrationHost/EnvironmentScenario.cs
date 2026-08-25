@@ -17,6 +17,8 @@ internal enum EnvironmentScenario
     FinalRelease,
     HostBasic,
     HostColorPicker,
+    HostDropTarget,
+    HostNativeTextDrag,
     HostTextEditors,
     HostStress,
     HostMultiple,

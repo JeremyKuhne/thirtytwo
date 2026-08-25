@@ -89,19 +89,28 @@ them with the design notes and sample below.
 ## Drag/drop APIs
 
 - [Drag and drop overview](https://learn.microsoft.com/windows/apps/develop/data/drag-and-drop)
+- [`UIElement.CanDrag`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.uielement.candrag)
+- [`UIElement.DragStarting`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.uielement.dragstarting)
+- [`UIElement.DropCompleted`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.uielement.dropcompleted)
+- [`DragStartingEventArgs`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.dragstartingeventargs)
 - [`UIElement.StartDragAsync`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.uielement.startdragasync)
+- [`DragUI.SetContentFromDataPackage`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.dragui.setcontentfromdatapackage)
 - [`DragEventArgs.GetPosition`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.drageventargs.getposition)
 - [`DragDropManager`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.input.dragdrop.dragdropmanager)
 - [`DragOperation`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.input.dragdrop.dragoperation)
 - [`IDropOperationTarget`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.input.dragdrop.idropoperationtarget)
 - [`DragUIOverride.Clear`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.draguioverride.clear)
+- [`DragEventArgs.GetDeferral`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.drageventargs.getdeferral)
+- [`TextBox.GetRectFromCharacterIndex`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.textbox.getrectfromcharacterindex)
 - [`DataPackage`](https://learn.microsoft.com/uwp/api/windows.applicationmodel.datatransfer.datapackage)
+- [`DataPackageView.GetTextAsync`](https://learn.microsoft.com/uwp/api/windows.applicationmodel.datatransfer.datapackageview.gettextasync)
 
 ## Official samples
 
 - [Windows App SDK Islands samples](https://github.com/microsoft/WindowsAppSDK-Samples/tree/main/Samples/Islands)
 - [SimpleIslandApp sample page](https://learn.microsoft.com/samples/microsoft/windowsappsdk-samples/simpleislandapp/)
 - [Windows App SDK installer sample](https://github.com/microsoft/WindowsAppSDK-Samples/tree/main/Samples/Installer)
+- [XAML drag-and-drop sample](https://github.com/microsoft/Windows-universal-samples/tree/main/Samples/XamlDragAndDrop)
 - [WinUI Gallery](https://github.com/microsoft/WinUI-Gallery) for control behavior and theme resources, not Win32 host ownership.
 
 Keep a minimal copy of the current official island sample as an oracle. Do not let a
@@ -132,7 +141,9 @@ Start from [`microsoft/microsoft-ui-xaml`](https://github.com/microsoft/microsof
 - [`XamlIslandRoot.cpp`](https://github.com/microsoft/microsoft-ui-xaml/blob/29ebf098f70df518b57b754130bc94004be8c6bc/dxaml/xcp/core/core/elements/XamlIslandRoot.cpp)
 - [`StartDragAsyncOperation.cpp`](https://github.com/microsoft/microsoft-ui-xaml/blob/29ebf098f70df518b57b754130bc94004be8c6bc/dxaml/xcp/dxaml/lib/StartDragAsyncOperation.cpp)
 - [`DropOperationTarget.cpp`](https://github.com/microsoft/microsoft-ui-xaml/blob/29ebf098f70df518b57b754130bc94004be8c6bc/dxaml/xcp/dxaml/lib/DropOperationTarget.cpp)
+- [`RaiseDragDropEventAsyncOperation.cpp`](https://github.com/microsoft/microsoft-ui-xaml/blob/29ebf098f70df518b57b754130bc94004be8c6bc/dxaml/xcp/dxaml/lib/RaiseDragDropEventAsyncOperation.cpp)
 - [`AutomaticDragHelper.cpp`](https://github.com/microsoft/microsoft-ui-xaml/blob/29ebf098f70df518b57b754130bc94004be8c6bc/dxaml/xcp/dxaml/lib/AutomaticDragHelper.cpp)
+- [`TextBox.cpp`](https://github.com/microsoft/microsoft-ui-xaml/blob/29ebf098f70df518b57b754130bc94004be8c6bc/dxaml/xcp/core/native/text/Controls/TextBox.cpp)
 - [`TextBoxBase.cpp`](https://github.com/microsoft/microsoft-ui-xaml/blob/29ebf098f70df518b57b754130bc94004be8c6bc/dxaml/xcp/core/native/text/Controls/TextBoxBase.cpp)
 - [`TextServicesHost.cpp`](https://github.com/microsoft/microsoft-ui-xaml/blob/29ebf098f70df518b57b754130bc94004be8c6bc/dxaml/xcp/core/native/text/Controls/TextServicesHost.cpp)
 - [`RichEditOleCallback.cpp`](https://github.com/microsoft/microsoft-ui-xaml/blob/29ebf098f70df518b57b754130bc94004be8c6bc/dxaml/xcp/core/native/text/Controls/RichEditOleCallback.cpp)
@@ -183,11 +194,13 @@ For classic OLE drag/drop, start with:
 - [`RegisterDragDrop`](https://learn.microsoft.com/windows/win32/api/ole2/nf-ole2-registerdragdrop)
 - [`RevokeDragDrop`](https://learn.microsoft.com/windows/win32/api/ole2/nf-ole2-revokedragdrop)
 - [`IDataObject`](https://learn.microsoft.com/windows/win32/api/objidl/nn-objidl-idataobject)
+- [`IDataObjectAsyncCapability`](https://learn.microsoft.com/windows/win32/api/shldisp/nn-shldisp-idataobjectasynccapability)
 - [`IDropSource`](https://learn.microsoft.com/windows/win32/api/oleidl/nn-oleidl-idropsource)
 - [`IDropTarget`](https://learn.microsoft.com/windows/win32/api/oleidl/nn-oleidl-idroptarget)
 - [`FORMATETC`](https://learn.microsoft.com/windows/win32/api/objidl/ns-objidl-formatetc)
 - [`STGMEDIUM`](https://learn.microsoft.com/windows/win32/api/objidl/ns-objidl-ustgmedium-r1)
 - [`ReleaseStgMedium`](https://learn.microsoft.com/windows/win32/api/ole2/nf-ole2-releasestgmedium)
+- [Handling Shell data transfer scenarios](https://learn.microsoft.com/windows/win32/shell/datascenarios)
 
 ## Corroborating applications
 

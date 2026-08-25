@@ -58,6 +58,9 @@ cross-framework integration, not a cross-platform UI abstraction.
 - [testing-and-diagnostics-runbook.md](testing-and-diagnostics-runbook.md) - run
   isolated scenarios with a bounded protocol, phase deadlines, process cleanup,
   retained artifacts, stage triage, and debugger/source workflows.
+- [xaml-drag-source.md](xaml-drag-source.md) - use `CanDrag`, `DragStarting`,
+  explicit handles, and Copy-only payloads before considering custom gestures
+  or editable-text Move transactions.
 - [mixed-ole-and-xaml-drag-drop.md](mixed-ole-and-xaml-drag-drop.md) - choose
   routed XAML, island-manager, or classic OLE ownership and preserve transfer,
   reentrancy, text-edit, and teardown correctness.

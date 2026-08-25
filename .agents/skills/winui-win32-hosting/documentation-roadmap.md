@@ -174,13 +174,53 @@ scenario category and supported architecture.
 
 ## Priority 2: advanced interop
 
+### [XAML text drag sources](xaml-drag-source.md)
+
+**Status:** Guide written with a bundled Copy-only explicit-handle sample and a
+two-host direct-editor diagnostic. Release x64 and ARM64 builds are automated.
+The x64 mouse matrix passes for both direct host topologies, both explicit
+handles, and empty-selection cancellation. Touch, pen, ARM64 execution, and
+external-target checks remain manual gates.
+
+**Gap:** Direct editable-surface initiation fails for TextBox and RichEditBox on
+the measured Windows App SDK 2.3.1 x64 mouse baseline. Official guidance
+demonstrates `CanDrag` on a containing element, not selected-text dragging from
+the editor surface. Other devices and package versions remain unmeasured.
+
+**Content:** `CanDrag`, `DragStarting`, `AllowedOperations`,
+`RequestedOperation`, system drag visuals, `DropCompleted`, explicit editor
+handles, bounded Copy targets, failure signatures, and the boundary between the
+documented API and source-observed text-control behavior.
+
+**Acceptance (pending):** The explicit-handle sample passes the remaining device,
+architecture-execution, and external-target matrix. The bundled diagnostic
+supports a focused upstream issue for direct editor initiation.
+
 ### [Mixed OLE and XAML drag/drop](mixed-ole-and-xaml-drag-drop.md)
 
 **Status:** Guide written with layer-selection, ownership, registration,
-reentrancy, editable-text, feedback, lifecycle, and validation guidance. Native
-OLE text drops into a WinUI target and source rebinding after reparenting were
-measured in a consuming framework. The portable skill has no bundled
-mixed-transfer harness; the complete direction/device matrix remains pending.
+reentrancy, editable-text, feedback, lifecycle, and validation guidance. A
+consuming framework measured WinUI target configuration and XAML source
+replacement after reparenting. Its first x64 native OLE-to-WinUI Move run timed
+out after source readiness. A second phased x64 run proved native button-down,
+threshold movement, and routed TextBox `DragEnter`, then the harness aborted
+before release on an order-dependent `AcceptedOperation` observation. A third
+run sampled after dispatch and recorded text present, Copy and Move allowed, the
+left button held, and final acceptance `None`. The controlling path requested
+unsupported character geometry from an empty TextBox. The empty-target regression
+then passed. A fourth native run reached final acceptance `Move` but timed out
+before any observable Drop, target commit, or source deletion. A fifth run proved
+that mouse-up injection returned and routed TextBox `Drop` ran with Copy and Move
+allowed, no modifiers, and final acceptance `Move`; it then timed out before
+target commit or source deletion. A sixth run recorded product Drop entry,
+deferral acquisition, `GetTextAsync` start, and native `QueryGetData` and
+`GetData` entry and return on the main STA. `GetTextAsync` did not complete, so
+the target did not mutate, the deferral did not complete, OLE did not return
+Move, and the source was not deleted. The artifact did not record the `GetData`
+HRESULT. The temporary product observers used for that run were removed; a
+test-owned `IDataObject` adapter confirms success only in the focused unit path.
+The portable skill bundles the ordinary XAML Copy baseline but no mixed-transfer
+harness; the complete direction/device matrix remains pending.
 
 **Gap:** The guide exists, but no bundled portable harness validates every native
 and WinUI source/target direction, effect, device, reparenting, and teardown path.
@@ -281,7 +321,8 @@ Use this shape for each page:
 | [Popup, airspace, and z-order](popup-airspace-and-z-order.md) | 1 | Skill core | No bundled popup/airspace harness | Portfolio and link validation | Pixel, popup-edge, DPI, focus, accessibility matrix | Microsoft Learn / WindowsAppSDK-Samples | Guide written; visual matrix pending |
 | [Accessibility](accessibility-across-islands.md) | 1 | Skill core | No bundled UIA scenario | Portfolio and link validation | Narrator, contrast, text-scale, magnifier, ARM64 | Microsoft Learn | Guide written; automation/manual matrices pending |
 | [Testing and diagnostics](testing-and-diagnostics-runbook.md) | 1 | Skill core | [Minimal host](assets/minimal-host/README.md) | Portfolio, link, and minimal-host build validation | Forced failure, dump, architecture, retention policy | Repository-local runbook | Guide written; portable harness pending |
-| [Mixed OLE and XAML drag/drop](mixed-ole-and-xaml-drag-drop.md) | 2 | Skill core | No bundled mixed-transfer harness | Portfolio and link validation | Direction/device/effect/lifecycle matrix | Microsoft Learn / WindowsAppSDK-Samples | Guide written; transfer matrix pending |
+| [XAML text drag sources](xaml-drag-source.md) | 2 | Skill core | [Minimal host](assets/minimal-host/README.md) | x64/ARM64 Release build, source-contract assertions | Mouse/touch/pen, external target, direct-editor diagnostic | Microsoft Learn / WindowsAppSDK-Samples | Guide and Copy sample implemented; manual gates pending |
+| [Mixed OLE and XAML drag/drop](mixed-ole-and-xaml-drag-drop.md) | 2 | Skill core | No bundled mixed-transfer harness | Portfolio and link validation | Direction/device/effect/lifecycle matrix | Microsoft Learn / WindowsAppSDK-Samples | Guide written; consumer reached routed Drop but not retrieval or transfer; matrix pending |
 | [Island pointer and cursor](island-pointer-and-cursor.md) | 2 | Skill core | No bundled pointer harness | Portfolio and link validation | Mouse/touch/pen/island matrix | Microsoft Learn / WindowsAppSDK-Samples | Guide written; device matrix pending |
 
 Do not mark a document complete because prose exists. Mark it complete when its

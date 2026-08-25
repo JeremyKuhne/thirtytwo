@@ -372,6 +372,11 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         // sure that Direct2D is in the right state if it has been opted into.
         switch (message)
         {
+            case Interop.WM_DESTROY:
+                DetachAttachedDragSource(throwOnFailure: false);
+                DetachAttachedDropTarget(throwOnFailure: false);
+                break;
+
             case Interop.WM_SIZE:
                 Size size = new(lParam.LOWORD, lParam.HIWORD);
 
@@ -948,6 +953,18 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         {
             if (!_destroyed)
             {
+                if (disposing && _attachedDragSource is not null)
+                {
+                    VerifyDropTargetAccess();
+                    DetachAttachedDragSource(throwOnFailure: true);
+                }
+
+                if (disposing && _attachedDropTarget is not null)
+                {
+                    VerifyDropTargetAccess();
+                    DetachAttachedDropTarget(throwOnFailure: true);
+                }
+
                 // Set back the default Window procedure as we don't want any messages coming in anymore.
                 Handle.SetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, (nint)(void*)DefaultWindowProcedure);
 

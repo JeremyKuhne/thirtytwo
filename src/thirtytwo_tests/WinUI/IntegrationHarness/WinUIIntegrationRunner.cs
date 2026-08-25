@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -71,6 +72,16 @@ internal sealed class WinUIIntegrationRunner
         string resultPath = Path.Combine(artifactDirectory, "result.json");
         string standardOutputPath = Path.Combine(artifactDirectory, "stdout.log");
         string standardErrorPath = Path.Combine(artifactDirectory, "stderr.log");
+        Point? cursorPosition = null;
+        if (scenario == WinUIIntegrationScenario.HostNativeTextDrag)
+        {
+            if (!PInvoke.GetCursorPos(out Point currentCursorPosition))
+            {
+                throw new Win32Exception(Marshal.GetLastPInvokeError(), "Failed to capture the cursor position.");
+            }
+
+            cursorPosition = currentCursorPosition;
+        }
 
         ProcessStartInfo startInfo = new()
         {
@@ -225,6 +236,8 @@ internal sealed class WinUIIntegrationRunner
                         case WinUIIntegrationScenario.EnvironmentFinalRelease:
                         case WinUIIntegrationScenario.HostBasic:
                         case WinUIIntegrationScenario.HostColorPicker:
+                        case WinUIIntegrationScenario.HostDropTarget:
+                        case WinUIIntegrationScenario.HostNativeTextDrag:
                         case WinUIIntegrationScenario.HostTextEditors:
                         case WinUIIntegrationScenario.HostStress:
                         case WinUIIntegrationScenario.HostMultiple:
@@ -310,6 +323,13 @@ internal sealed class WinUIIntegrationRunner
                         "Standard error drain after cancellation",
                         cleanupErrors).ConfigureAwait(false);
                 }
+            }
+
+            if (cursorPosition is Point originalCursorPosition
+                && !PInvoke.SetCursorPos(originalCursorPosition.X, originalCursorPosition.Y))
+            {
+                cleanupErrors.Add(
+                    $"Cursor restoration failed: {new Win32Exception(Marshal.GetLastPInvokeError()).Message}");
             }
         }
 
@@ -565,6 +585,8 @@ internal sealed class WinUIIntegrationRunner
         WinUIIntegrationScenario.EnvironmentFinalRelease => "environment-final-release",
         WinUIIntegrationScenario.HostBasic => "host-basic",
         WinUIIntegrationScenario.HostColorPicker => "host-color-picker",
+        WinUIIntegrationScenario.HostDropTarget => "host-drop-target",
+        WinUIIntegrationScenario.HostNativeTextDrag => "host-native-text-drag",
         WinUIIntegrationScenario.HostTextEditors => "host-text-editors",
         WinUIIntegrationScenario.HostStress => "host-stress",
         WinUIIntegrationScenario.HostMultiple => "host-multiple",
