@@ -8,12 +8,22 @@ namespace Windows;
 
 public unsafe partial class ActiveXControl
 {
-    internal sealed unsafe partial class Container(Window containerWindow) : IOleContainer.Interface, IOleInPlaceFrame.Interface, IDisposable,
+    /// <summary>
+    ///  Provides OLE container and in-place frame services for hosted ActiveX controls.
+    /// </summary>
+    /// <param name="containerWindow">The window that owns hosted ActiveX child controls.</param>
+    internal sealed unsafe partial class Container(Window containerWindow) : DisposableBase, IOleContainer.Interface, IOleInPlaceFrame.Interface,
         // IOleContainer : IParseDisplayName  -   IOleInPlaceFrame : IOleInPlaceUIWindow : IOleWindow
         IManagedWrapper<IOleContainer, IParseDisplayName, IOleInPlaceFrame, IOleInPlaceUIWindow, IOleWindow>
     {
+        /// <summary>
+        ///  Gets the window that owns the hosted ActiveX child controls.
+        /// </summary>
         internal Window Window { get; } = containerWindow;
 
+        /// <summary>
+        ///  Gets the currently active in-place object used for accelerator translation.
+        /// </summary>
         public AgileComPointer<IOleInPlaceActiveObject>? ActiveObject { get; private set; }
 
         HRESULT IOleContainer.Interface.ParseDisplayName(IBindCtx* pbc, PWSTR pszDisplayName, uint* pchEaten, IMoniker** ppmkOut)
@@ -123,6 +133,16 @@ public unsafe partial class ActiveXControl
         HRESULT IOleWindow.Interface.ContextSensitiveHelp(BOOL fEnterMode)
             => ((IOleInPlaceFrame.Interface)this).ContextSensitiveHelp(fEnterMode);
 
-        public void Dispose() => ActiveObject?.Dispose();
+        /// <summary>
+        ///  Releases COM references owned by this container.
+        /// </summary>
+        /// <param name="disposing"><see langword="true"/> when called by <see cref="Dispose()"/>.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                ActiveObject?.Dispose();
+            }
+        }
     }
 }

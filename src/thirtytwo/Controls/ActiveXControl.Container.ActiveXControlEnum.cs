@@ -9,6 +9,9 @@ public unsafe partial class ActiveXControl
 {
     internal sealed unsafe partial class Container
     {
+        /// <summary>
+        ///  Enumerates hosted ActiveX controls as <see cref="IUnknown"/> pointers.
+        /// </summary>
         private class ActiveXControlEnum(IReadOnlyList<ActiveXControl>? controls) : EnumUnknown(controls?.Count ?? 0)
         {
             private readonly IReadOnlyList<ActiveXControl>? _controls = controls;

@@ -7,8 +7,15 @@ namespace Windows;
 
 public static partial class Message
 {
+    /// <summary>
+    ///  Interprets keyboard-message <c>wParam</c> payload as a virtual-key value.
+    /// </summary>
+    /// <param name="wParam">The message <c>wParam</c> that carries a <c>VIRTUAL_KEY</c> value.</param>
     public readonly ref struct KeyUpDown(WPARAM wParam)
     {
+        /// <summary>
+        ///  Gets the virtual key code from <c>wParam</c>.
+        /// </summary>
         public VIRTUAL_KEY Key { get; } = (VIRTUAL_KEY)(nuint)wParam;
     }
 }

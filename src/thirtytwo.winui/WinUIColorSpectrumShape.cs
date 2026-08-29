@@ -3,12 +3,18 @@
 
 namespace Windows.WinUI;
 
-/// <summary>Specifies the shape of a WinUI color picker's color spectrum.</summary>
+/// <summary>
+///  Specifies the shape of a WinUI color picker's color spectrum.
+/// </summary>
 public enum WinUIColorSpectrumShape
 {
-    /// <summary>Displays the color spectrum as a square.</summary>
+    /// <summary>
+    ///  Displays the color spectrum as a square.
+    /// </summary>
     Box,
 
-    /// <summary>Displays the color spectrum as a circle.</summary>
+    /// <summary>
+    ///  Displays the color spectrum as a circle.
+    /// </summary>
     Ring
 }

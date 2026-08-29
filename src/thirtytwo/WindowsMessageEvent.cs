@@ -7,6 +7,10 @@ namespace Windows;
 ///  Delegate for handling Windows messages. Used to forward received messages for a window.
 /// </summary>
 /// <param name="sender">The class invoking the delegate.</param>
+/// <param name="window">The target native window handle.</param>
+/// <param name="message">The Win32 message identifier.</param>
+/// <param name="wParam">Message-specific first payload value.</param>
+/// <param name="lParam">Message-specific second payload value.</param>
 /// <returns>
 ///  The result of processing the message. Return null to indicate that the message has not been handled.
 /// </returns>

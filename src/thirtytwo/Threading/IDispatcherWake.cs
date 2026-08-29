@@ -51,7 +51,9 @@ internal interface IDispatcherWake : IDisposable
     ///   <see cref="CancelDelayedWake"/> after delivery and whenever the pending delayed wake is no longer needed;
     ///   implementations do not call it themselves.
     ///  </para>
-    ///  <para>This method does not affect a pending immediate wake.</para>
+    ///  <para>
+    ///   This method does not affect a pending immediate wake.
+    ///  </para>
     /// </remarks>
     /// <param name="delayMilliseconds">The minimum delay in milliseconds.</param>
     void WakeAfter(uint delayMilliseconds);
@@ -60,7 +62,9 @@ internal interface IDispatcherWake : IDisposable
     ///  Cancels the pending delayed wake. Has no effect when none is pending or it has already been delivered.
     /// </summary>
     /// <remarks>
-    ///  <para>This method does not affect a pending immediate wake.</para>
+    ///  <para>
+    ///   This method does not affect a pending immediate wake.
+    ///  </para>
     /// </remarks>
     void CancelDelayedWake();
 }

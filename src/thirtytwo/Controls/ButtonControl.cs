@@ -5,13 +5,29 @@ using System.Drawing;
 
 namespace Windows;
 
+/// <summary>
+///  Win32 button control wrapper.
+/// </summary>
 public partial class ButtonControl : RegisteredControl
 {
     private static readonly WindowClass s_buttonClass = new(registeredClassName: "Button");
 
-    /// <summary>Occurs when the user clicks the button.</summary>
+    /// <summary>
+    ///  Occurs when the user clicks the button.
+    /// </summary>
     public event EventHandler? Click;
 
+    /// <summary>
+    ///  Initializes a button control.
+    /// </summary>
+    /// <param name="bounds">The control bounds in parent client coordinates.</param>
+    /// <param name="text">The initial button text.</param>
+    /// <param name="buttonStyle">The native button style flags.</param>
+    /// <param name="style">The base window style flags.</param>
+    /// <param name="extendedStyle">The extended window style flags.</param>
+    /// <param name="buttonId">The control identifier used for command notifications.</param>
+    /// <param name="parentWindow">The parent window that owns this control.</param>
+    /// <param name="parameters">Additional creation parameters passed as <c>lpParam</c>.</param>
     public ButtonControl(
         Rectangle bounds = default,
         string? text = default,
@@ -33,7 +49,9 @@ public partial class ButtonControl : RegisteredControl
         ApplyApplicationTheme();
     }
 
-    /// <summary>Gets or sets the check state of a check box, radio button, or three-state button.</summary>
+    /// <summary>
+    ///  Gets or sets the check state of a check box, radio button, or three-state button.
+    /// </summary>
     public ButtonCheckState CheckState
     {
         get => (ButtonCheckState)(uint)(int)this.SendMessage((MessageType)PInvoke.BM_GETCHECK);
@@ -68,7 +86,9 @@ public partial class ButtonControl : RegisteredControl
                 ? "DarkMode_DarkTheme"
                 : "DarkMode_Explorer");
 
-    /// <summary>Raises the <see cref="Click"/> event.</summary>
+    /// <summary>
+    ///  Raises the <see cref="Click"/> event.
+    /// </summary>
     protected virtual void OnClick()
     {
     }

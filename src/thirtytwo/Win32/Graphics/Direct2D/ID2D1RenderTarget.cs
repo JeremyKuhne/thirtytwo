@@ -6,8 +6,13 @@ using Windows.Win32.Graphics.Direct2D.Common;
 
 namespace Windows.Win32.Graphics.Direct2D;
 
+/// <inheritdoc/>
 public unsafe partial struct ID2D1RenderTarget
 {
+    /// <summary>
+    ///  Calls <c>ID2D1RenderTarget::GetSize</c> through the vtable and returns the render target size.
+    /// </summary>
+    /// <returns>The size of the render target in device-independent pixels (DIPs).</returns>
     public D2D_SIZE_F GetSizeHack()
     {
         return ((delegate* unmanaged[Stdcall, MemberFunction]<ID2D1RenderTarget*, D2D_SIZE_F>)lpVtbl[53])((ID2D1RenderTarget*)Unsafe.AsPointer(ref this));

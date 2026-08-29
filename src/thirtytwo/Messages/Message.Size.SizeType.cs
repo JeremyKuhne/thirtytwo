@@ -5,32 +5,36 @@ namespace Windows;
 
 public static partial class Message
 {
+    /// <inheritdoc cref="Size"/>
     public readonly ref partial struct Size
     {
+        /// <summary>
+        ///  Resize reason values carried in <c>WM_SIZE</c> <c>wParam</c>.
+        /// </summary>
         public enum SizeType
         {
             /// <summary>
-            ///  [SIZE_RESTORED]
+            ///  The window has been restored from minimized or maximized state.
             /// </summary>
             Restored = 0,
 
             /// <summary>
-            ///  [SIZE_MINIMIZED]
+            ///  The window has been minimized.
             /// </summary>
             Minimized = 1,
 
             /// <summary>
-            ///  [SIZE_MAXIMIZED]
+            ///  The window has been maximized.
             /// </summary>
             Maximized = 2,
 
             /// <summary>
-            ///  [SIZE_MAXSHOW]
+            ///  A maximized pop-up window is being shown.
             /// </summary>
             MaxShow = 3,
 
             /// <summary>
-            ///  [SIZE_MAXHIDE]
+            ///  A maximized pop-up window is being hidden.
             /// </summary>
             MaxHide = 4
         }

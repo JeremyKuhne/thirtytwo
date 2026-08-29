@@ -9,14 +9,16 @@ namespace Windows;
 
 public unsafe partial class ActiveXControl
 {
-    private sealed class Site :
+    /// <summary>
+    ///  Implements the COM site interfaces required to host and communicate with an ActiveX control.
+    /// </summary>
+    private sealed class Site : DisposableBase,
         IOleClientSite.Interface,
         ISimpleFrameSite.Interface,
         IOleInPlaceSite.Interface,
         IOleWindow.Interface,
         IOleControlSite.Interface,
         IPropertyNotifySink.Interface,
-        IDisposable,
         IManagedWrapper<IOleClientSite, ISimpleFrameSite, IOleInPlaceSite, IOleWindow, IOleControlSite, IPropertyNotifySink>
     {
         private readonly ActiveXControl _control;
@@ -114,9 +116,12 @@ public unsafe partial class ActiveXControl
             // We did not process the message.
             => PInvoke.S_FALSE;
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            _connectionPoint.Dispose();
+            if (disposing)
+            {
+                _connectionPoint.Dispose();
+            }
         }
 
         HRESULT IOleInPlaceSite.Interface.GetWindow(HWND* phwnd) => ((IOleWindow.Interface)this).GetWindow(phwnd);

@@ -3,12 +3,18 @@
 
 namespace Windows.WinUI;
 
-/// <summary>Specifies how a WinUI color picker arranges its editing controls.</summary>
+/// <summary>
+///  Specifies how a WinUI color picker arranges its editing controls.
+/// </summary>
 public enum WinUIColorPickerOrientation
 {
-    /// <summary>Places editing controls below the color spectrum.</summary>
+    /// <summary>
+    ///  Places editing controls below the color spectrum.
+    /// </summary>
     Vertical,
 
-    /// <summary>Places editing controls beside the color spectrum.</summary>
+    /// <summary>
+    ///  Places editing controls beside the color spectrum.
+    /// </summary>
     Horizontal
 }

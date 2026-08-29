@@ -25,6 +25,16 @@ public partial class RichEditControl : EditBase
         s_richEditClass = new("RICHEDIT50W");
     }
 
+    /// <summary>
+    ///  Initializes a RichEdit 4.1 control.
+    /// </summary>
+    /// <param name="bounds">The control bounds in parent client coordinates.</param>
+    /// <param name="text">The initial control text.</param>
+    /// <param name="editStyle">The native edit style flags.</param>
+    /// <param name="style">The base window style flags.</param>
+    /// <param name="extendedStyle">The extended window style flags.</param>
+    /// <param name="parentWindow">The parent window that owns this control.</param>
+    /// <param name="parameters">Additional creation parameters passed as <c>lpParam</c>.</param>
     public RichEditControl(
         Rectangle bounds,
         string? text = default,

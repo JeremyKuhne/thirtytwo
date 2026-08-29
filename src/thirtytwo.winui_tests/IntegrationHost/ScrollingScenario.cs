@@ -20,7 +20,7 @@ using XamlVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 
 namespace IntegrationHost;
 
-internal sealed class ScrollingScenario : IDisposable
+internal sealed class ScrollingScenario : Touki.DisposableBase
 {
     private static readonly WindowPositionFlags s_moveFlags =
         WindowPositionFlags.NoSize | WindowPositionFlags.NoZOrder | WindowPositionFlags.NoActivate;
@@ -49,7 +49,6 @@ internal sealed class ScrollingScenario : IDisposable
     private bool _islandLoaded;
     private bool _started;
     private bool _captureScheduled;
-    private bool _disposed;
 
     internal ScrollingScenario(NativeWindow parent, ScenarioReporter reporter)
     {
@@ -120,14 +119,13 @@ internal sealed class ScrollingScenario : IDisposable
         TryScheduleCapture();
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        if (_disposed)
+        if (!disposing)
         {
             return;
         }
 
-        _disposed = true;
         _island.Loaded -= IslandLoaded;
         _focusTarget.Dispose();
         _host.Dispose();
@@ -158,7 +156,7 @@ internal sealed class ScrollingScenario : IDisposable
 
     private void TryScheduleCapture()
     {
-        if (!_started || !_islandLoaded || _captureScheduled || _disposed)
+        if (!_started || !_islandLoaded || _captureScheduled || Disposed)
         {
             return;
         }
@@ -231,7 +229,7 @@ internal sealed class ScrollingScenario : IDisposable
 
     private void ReportCaptureReady()
     {
-        if (_disposed)
+        if (Disposed)
         {
             return;
         }

@@ -7,6 +7,9 @@ using Windows.Win32.Graphics.DirectWrite;
 
 namespace Windows;
 
+/// <summary>
+///  A custom text label control that draws text with GDI or Direct2D.
+/// </summary>
 public class TextLabelControl : CustomControl
 {
     private static readonly WindowClass s_textLabelClass = new(className: "TextLabelClass");
@@ -16,6 +19,19 @@ public class TextLabelControl : CustomControl
     private SolidColorBrush? _textBrush;
     private Color _textColor;
 
+    /// <summary>
+    ///  Initializes a text label control.
+    /// </summary>
+    /// <param name="bounds">The control bounds in parent client coordinates.</param>
+    /// <param name="textFormat">The text drawing format flags.</param>
+    /// <param name="text">The initial label text.</param>
+    /// <param name="textColor">The text color. If empty, the current application foreground color is used.</param>
+    /// <param name="style">The base window style flags.</param>
+    /// <param name="extendedStyle">The extended window style flags.</param>
+    /// <param name="parentWindow">The parent window that owns this control.</param>
+    /// <param name="parameters">Additional creation parameters passed as <c>lpParam</c>.</param>
+    /// <param name="backgroundColor">The background color used by the base control.</param>
+    /// <param name="features">Optional control features.</param>
     public TextLabelControl(
         Rectangle bounds = default,
         DrawTextFormat textFormat = DrawTextFormat.Center | DrawTextFormat.VerticallyCenter | DrawTextFormat.SingleLine,
@@ -41,6 +57,9 @@ public class TextLabelControl : CustomControl
         TextColor = textColor;
     }
 
+    /// <summary>
+    ///  Gets or sets the foreground color used to draw label text.
+    /// </summary>
     public Color TextColor
     {
         get => _textColor.IsEmpty ? Application.CurrentColorState.Palette.WindowForeground : _textColor;
@@ -79,6 +98,7 @@ public class TextLabelControl : CustomControl
         return _textFormat;
     }
 
+    /// <inheritdoc/>
     protected override void OnPaint()
     {
         if (IsDirect2dEnabled())
@@ -128,6 +148,9 @@ public class TextLabelControl : CustomControl
         return base.WindowProcedure(window, message, wParam, lParam);
     }
 
+    /// <summary>
+    ///  Gets or sets the text layout flags used when drawing the label.
+    /// </summary>
     public DrawTextFormat TextFormat
     {
         get => _drawTextFormat;

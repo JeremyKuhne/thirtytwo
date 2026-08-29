@@ -306,7 +306,9 @@ internal sealed unsafe class ThreadContext : DisposableBase
     ///  Requests exit from the message loop and posts one <c>WM_QUIT</c> wakeup.
     /// </summary>
     /// <remarks>
-    ///  <para>This method must be called by the owning thread.</para>
+    ///  <para>
+    ///   This method must be called by the owning thread.
+    ///  </para>
     /// </remarks>
     private void RequestExit()
     {

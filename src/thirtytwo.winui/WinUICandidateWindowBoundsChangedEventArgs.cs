@@ -5,9 +5,14 @@ using System.Drawing;
 
 namespace Windows.WinUI;
 
-/// <summary>Provides a candidate-window bounds change.</summary>
+/// <summary>
+///  Provides a candidate-window bounds change.
+/// </summary>
+/// <param name="bounds">The candidate-window bounds in editor coordinates.</param>
 public sealed class WinUICandidateWindowBoundsChangedEventArgs(RectangleF bounds) : EventArgs
 {
-    /// <summary>Gets the candidate-window bounds in editor coordinates.</summary>
+    /// <summary>
+    ///  Gets the candidate-window bounds in editor coordinates.
+    /// </summary>
     public RectangleF Bounds { get; } = bounds;
 }

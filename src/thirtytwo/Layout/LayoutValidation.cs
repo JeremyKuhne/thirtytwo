@@ -3,11 +3,28 @@
 
 namespace Windows;
 
-/// <summary>Validates shared layout-construction invariants.</summary>
+/// <summary>
+///  Provides shared validation for proportional layout definitions.
+/// </summary>
 internal static class LayoutValidation
 {
+    /// <summary>
+    ///  The maximum allowed absolute difference between the total percentage and 1.0.
+    /// </summary>
     private const double PercentageTolerance = 0.00001;
 
+    /// <summary>
+    ///  Validates proportional child definitions used by split-layout containers.
+    /// </summary>
+    /// <param name="handlers">The handlers to validate.</param>
+    /// <exception cref="ArgumentNullException">
+    ///  <paramref name="handlers"/> is <see langword="null"/>, or one of the handler entries is
+    ///  <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///  A percentage is not finite, a percentage falls outside <c>0.0</c> through <c>1.0</c>, or the total
+    ///  percentage does not equal <c>1.0</c> within tolerance.
+    /// </exception>
     internal static void ValidateProportionalHandlers((float Percent, ILayoutHandler Handler)[] handlers)
     {
         ArgumentNullException.ThrowIfNull(handlers);

@@ -39,6 +39,9 @@ public enum PixelFormat
     /// </summary>
     Extended = (int)Interop.PixelFormatExtended,
 
+    /// <summary>
+    ///  Specifies the canonical 32-bit ARGB pixel format flag.
+    /// </summary>
     Canonical = (int)Interop.PixelFormatCanonical,
 
     /// <summary>
@@ -77,6 +80,9 @@ public enum PixelFormat
     /// </summary>
     Format16bppRgb555 = 5 | (16 << 8) | Gdi,
 
+    /// <summary>
+    ///  Specifies that pixel format is 16 bits per pixel with 5 bits red, 6 bits green, and 5 bits blue.
+    /// </summary>
     Format16bppRgb565 = 6 | (16 << 8) | Gdi,
 
     /// <summary>

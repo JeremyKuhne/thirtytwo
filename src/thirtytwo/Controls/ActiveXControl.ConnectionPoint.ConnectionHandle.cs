@@ -7,9 +7,15 @@ namespace Windows;
 
 public unsafe partial class ActiveXControl
 {
+    /// <summary>
+    ///  Manages an advisory connection for a COM connection point sink.
+    /// </summary>
     private sealed partial class ConnectionPoint<TSink>
         where TSink : unmanaged, IComIID
     {
+        /// <summary>
+        ///  Represents a single advisory connection that is unadvised on disposal.
+        /// </summary>
         private class ConnectionHandle : AgileComPointer<IConnectionPoint>
         {
             private readonly uint _cookie;

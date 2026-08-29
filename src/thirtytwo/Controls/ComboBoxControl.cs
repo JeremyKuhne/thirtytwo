@@ -32,36 +32,28 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// <summary>
     ///  Occurs when the text in the ComboBox's edit portion is changed.
     /// </summary>
-    /// <remarks>
-    ///  This event is not raised for ComboBoxes created with <see cref="Styles.DropDownList"/>.
-    /// </remarks>
+    /// <remarks>This event is not raised for ComboBoxes created with <see cref="Styles.DropDownList"/>.</remarks>
     /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-editchange</docs>
     public event EventHandler? TextChanged;
 
     /// <summary>
     ///  Occurs when the text in the ComboBox's edit portion is about to update.
     /// </summary>
-    /// <remarks>
-    ///  This event is not raised for ComboBoxes created with <see cref="Styles.DropDownList"/>.
-    /// </remarks>
+    /// <remarks>This event is not raised for ComboBoxes created with <see cref="Styles.DropDownList"/>.</remarks>
     /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-editupdate</docs>
     public event EventHandler? TextUpdated;
 
     /// <summary>
     ///  Occurs when the ComboBox's drop-down list is about to be displayed.
     /// </summary>
-    /// <remarks>
-    ///  This event does not occur for ComboBoxes created with <see cref="Styles.Simple"/>.
-    /// </remarks>
+    /// <remarks>This event does not occur for ComboBoxes created with <see cref="Styles.Simple"/>.</remarks>
     /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-dropdown</docs>
     public event EventHandler? DropDown;
 
     /// <summary>
     ///  Occurs when the ComboBox's drop-down list is closed.
     /// </summary>
-    /// <remarks>
-    ///  This event does not occur for ComboBoxes created with <see cref="Styles.Simple"/>.
-    /// </remarks>
+    /// <remarks>This event does not occur for ComboBoxes created with <see cref="Styles.Simple"/>.</remarks>
     /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-closeup</docs>
     public event EventHandler? CloseUp;
 
@@ -74,21 +66,27 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// <summary>
     ///  Occurs when the current selection is finalized by the user.
     /// </summary>
-    /// <remarks>
-    ///  This event does not occur for ComboBoxes created with <see cref="Styles.Simple"/>.
-    /// </remarks>
+    /// <remarks>This event does not occur for ComboBoxes created with <see cref="Styles.Simple"/>.</remarks>
     /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-selendok</docs>
     public event EventHandler? SelectionCommitted;
 
     /// <summary>
     ///  Occurs when the user cancels a selection in the drop-down list.
     /// </summary>
-    /// <remarks>
-    ///  This event does not occur for ComboBoxes created with <see cref="Styles.Simple"/>.
-    /// </remarks>
+    /// <remarks>This event does not occur for ComboBoxes created with <see cref="Styles.Simple"/>.</remarks>
     /// <docs>https://learn.microsoft.com/windows/win32/controls/cbn-selendcancel</docs>
     public event EventHandler? SelectionCanceled;
 
+    /// <summary>
+    ///  Initializes a ComboBox control.
+    /// </summary>
+    /// <param name="bounds">The control bounds in parent client coordinates.</param>
+    /// <param name="text">The initial text shown by the control.</param>
+    /// <param name="comboBoxStyle">The native ComboBox style flags.</param>
+    /// <param name="style">The base window style flags.</param>
+    /// <param name="extendedStyle">The extended window style flags.</param>
+    /// <param name="parentWindow">The parent window that owns this control.</param>
+    /// <param name="parameters">Additional creation parameters passed as <c>lpParam</c>.</param>
     public ComboBoxControl(
         Rectangle bounds = default,
         string? text = default,
@@ -117,6 +115,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// <summary>
     ///  Adds a new item to the ComboBox. The item is added to the end of the list.
     /// </summary>
+    /// <param name="item">The item text to add.</param>
     /// <returns>The count of items in the ComboBox.</returns>
     /// <exception cref="OutOfMemoryException">The ComboBox was unable to allocate space.</exception>
     public int AddItem(string item)
@@ -138,6 +137,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// <summary>
     ///  Adds a range of items.
     /// </summary>
+    /// <param name="items">The sequence of item text values to add.</param>
     /// <returns>The count of items in the ComboBox.</returns>
     /// <exception cref="OutOfMemoryException">The ComboBox was unable to allocate space.</exception>
     public int AddItems(IEnumerable<string> items)
@@ -176,6 +176,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// <summary>
     ///  Removes the item at the specified index. The index is zero-based.
     /// </summary>
+    /// <param name="index">The zero-based index to remove.</param>
     /// <returns>The count of items remaining in the ComboBox.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> was not valid.</exception>
     public int RemoveItem(int index)
@@ -208,6 +209,8 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// <summary>
     ///  Gets the text of the item at the specified index. The index is zero-based.
     /// </summary>
+    /// <param name="index">The zero-based item index.</param>
+    /// <returns>The text for the specified item.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> was invalid.</exception>
     public string GetItemText(int index)
     {
@@ -365,9 +368,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// <summary>
     ///  Called when the ComboBox's drop-down list is about to be displayed.
     /// </summary>
-    /// <remarks>
-    ///  This is not sent for ComboBoxes created with <see cref="Styles.Simple"/>.
-    /// </remarks>
+    /// <remarks>This is not sent for ComboBoxes created with <see cref="Styles.Simple"/>.</remarks>
     public virtual void OnDropDown()
     {
     }
@@ -375,9 +376,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// <summary>
     ///  Called when the ComboBox's drop-down list is closed.
     /// </summary>
-    /// <remarks>
-    ///  This is not sent for ComboBoxes created with <see cref="Styles.Simple"/>.
-    /// </remarks>
+    /// <remarks>This is not sent for ComboBoxes created with <see cref="Styles.Simple"/>.</remarks>
     public virtual void OnCloseUp()
     {
     }
@@ -392,9 +391,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// <summary>
     ///  Called after the text in the ComboBox's edit portion has changed.
     /// </summary>
-    /// <remarks>
-    ///  This is not sent for ComboBoxes created with <see cref="Styles.DropDownList"/>.
-    /// </remarks>
+    /// <remarks>This is not sent for ComboBoxes created with <see cref="Styles.DropDownList"/>.</remarks>
     public virtual void OnTextChanged()
     {
     }
@@ -402,9 +399,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// <summary>
     ///  Called when the text in the ComboBox's edit portion is about to update.
     /// </summary>
-    /// <remarks>
-    ///  This is not sent for ComboBoxes created with <see cref="Styles.DropDownList"/>.
-    /// </remarks>
+    /// <remarks>This is not sent for ComboBoxes created with <see cref="Styles.DropDownList"/>.</remarks>
     public virtual void OnTextUpdated()
     {
     }
@@ -412,9 +407,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// <summary>
     ///  Called when the current selection is finalized by the user.
     /// </summary>
-    /// <remarks>
-    ///  This is not sent for ComboBoxes created with <see cref="Styles.Simple"/>.
-    /// </remarks>
+    /// <remarks>This is not sent for ComboBoxes created with <see cref="Styles.Simple"/>.</remarks>
     public virtual void OnSelectionCommitted()
     {
     }
@@ -422,9 +415,7 @@ public unsafe partial class ComboBoxControl : RegisteredControl
     /// <summary>
     ///  Called when the user cancels selection in the drop-down list.
     /// </summary>
-    /// <remarks>
-    ///  This is not sent for ComboBoxes created with <see cref="Styles.Simple"/>.
-    /// </remarks>
+    /// <remarks>This is not sent for ComboBoxes created with <see cref="Styles.Simple"/>.</remarks>
     public virtual void OnSelectionCanceled()
     {
     }

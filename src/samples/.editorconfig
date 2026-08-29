@@ -1,4 +1,4 @@
-# Test code does not require XML documentation or separate files for nested types.
+# Sample code does not require XML documentation or separate files for nested types.
 
 [*.cs]
 dotnet_code_quality.TOUKI0020.exclude_nested_types = true

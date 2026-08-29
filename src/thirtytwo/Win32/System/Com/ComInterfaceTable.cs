@@ -11,12 +11,26 @@ namespace Windows.Win32.System.Com;
 /// </summary>
 internal readonly unsafe struct ComInterfaceTable
 {
+    /// <summary>
+    ///  Gets the pointer to the first <see cref="ComInterfaceEntry"/> in the table.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   The pointer references type-associated memory and remains valid for the process lifetime.
+    ///  </para>
+    /// </remarks>
     public ComInterfaceEntry* Entries { get; init; }
+
+    /// <summary>
+    ///  Gets the number of exposed entries, including the sentinel interface entry.
+    /// </summary>
     public int Count { get; init; }
 
     /// <summary>
     ///  Create an interface table for the given interface.
     /// </summary>
+    /// <typeparam name="TComInterface">The COM interface to expose from the wrapper.</typeparam>
+    /// <returns>A populated interface table with a sentinel <see cref="IComCallableWrapper"/> entry.</returns>
     public static ComInterfaceTable Create<TComInterface>()
         where TComInterface : unmanaged, IComIID, IVTable
     {
@@ -33,6 +47,9 @@ internal readonly unsafe struct ComInterfaceTable
     /// <summary>
     ///  Create an interface table for the given interfaces.
     /// </summary>
+    /// <typeparam name="TComInterface1">The first COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface2">The second COM interface to expose.</typeparam>
+    /// <returns>A populated interface table with a sentinel <see cref="IComCallableWrapper"/> entry.</returns>
     public static ComInterfaceTable Create<TComInterface1, TComInterface2>()
         where TComInterface1 : unmanaged, IComIID, IVTable
         where TComInterface2 : unmanaged, IComIID, IVTable
@@ -51,6 +68,10 @@ internal readonly unsafe struct ComInterfaceTable
     /// <summary>
     ///  Create an interface table for the given interfaces.
     /// </summary>
+    /// <typeparam name="TComInterface1">The first COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface2">The second COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface3">The third COM interface to expose.</typeparam>
+    /// <returns>A populated interface table with a sentinel <see cref="IComCallableWrapper"/> entry.</returns>
     public static ComInterfaceTable Create<TComInterface1, TComInterface2, TComInterface3>()
         where TComInterface1 : unmanaged, IComIID, IVTable
         where TComInterface2 : unmanaged, IComIID, IVTable
@@ -71,6 +92,11 @@ internal readonly unsafe struct ComInterfaceTable
     /// <summary>
     ///  Create an interface table for the given interfaces.
     /// </summary>
+    /// <typeparam name="TComInterface1">The first COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface2">The second COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface3">The third COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface4">The fourth COM interface to expose.</typeparam>
+    /// <returns>A populated interface table with a sentinel <see cref="IComCallableWrapper"/> entry.</returns>
     public static ComInterfaceTable Create<TComInterface1, TComInterface2, TComInterface3, TComInterface4>()
         where TComInterface1 : unmanaged, IComIID, IVTable
         where TComInterface2 : unmanaged, IComIID, IVTable
@@ -93,6 +119,12 @@ internal readonly unsafe struct ComInterfaceTable
     /// <summary>
     ///  Create an interface table for the given interfaces.
     /// </summary>
+    /// <typeparam name="TComInterface1">The first COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface2">The second COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface3">The third COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface4">The fourth COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface5">The fifth COM interface to expose.</typeparam>
+    /// <returns>A populated interface table with a sentinel <see cref="IComCallableWrapper"/> entry.</returns>
     public static ComInterfaceTable Create<TComInterface1, TComInterface2, TComInterface3, TComInterface4, TComInterface5>()
         where TComInterface1 : unmanaged, IComIID, IVTable
         where TComInterface2 : unmanaged, IComIID, IVTable
@@ -117,6 +149,13 @@ internal readonly unsafe struct ComInterfaceTable
     /// <summary>
     ///  Create an interface table for the given interfaces.
     /// </summary>
+    /// <typeparam name="TComInterface1">The first COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface2">The second COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface3">The third COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface4">The fourth COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface5">The fifth COM interface to expose.</typeparam>
+    /// <typeparam name="TComInterface6">The sixth COM interface to expose.</typeparam>
+    /// <returns>A populated interface table with a sentinel <see cref="IComCallableWrapper"/> entry.</returns>
     public static ComInterfaceTable Create<TComInterface1, TComInterface2, TComInterface3, TComInterface4, TComInterface5, TComInterface6>()
         where TComInterface1 : unmanaged, IComIID, IVTable
         where TComInterface2 : unmanaged, IComIID, IVTable

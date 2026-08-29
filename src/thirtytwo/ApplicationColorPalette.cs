@@ -6,7 +6,9 @@ using Windows.Win32.UI.ViewManagement;
 
 namespace Windows;
 
-/// <summary>Contains immutable opaque semantic colors used by native windows and controls.</summary>
+/// <summary>
+///  Contains immutable opaque semantic colors used by native windows and controls.
+/// </summary>
 public sealed record ApplicationColorPalette
 {
     // ------------------------------
@@ -166,6 +168,17 @@ public sealed record ApplicationColorPalette
     //   core. ColorPaletteResources is an override dictionary, not a system palette reader.
     //   Microsoft.UI.System.ThemeSettings reports High Contrast state and scheme only; it exposes no colors.
 
+    /// <summary>
+    ///  Initializes an immutable application color palette.
+    /// </summary>
+    /// <param name="windowBackground">Semantic background for top-level windows.</param>
+    /// <param name="windowForeground">Semantic foreground for text on window backgrounds.</param>
+    /// <param name="controlBackground">Semantic background for interactive controls.</param>
+    /// <param name="controlForeground">Semantic foreground for text on control backgrounds.</param>
+    /// <param name="disabledForeground">Semantic disabled foreground.</param>
+    /// <param name="border">Semantic border color.</param>
+    /// <param name="selectionBackground">Semantic selected-text background.</param>
+    /// <param name="selectionForeground">Semantic selected-text foreground.</param>
     internal ApplicationColorPalette(
         Color windowBackground,
         Color windowForeground,
@@ -186,30 +199,52 @@ public sealed record ApplicationColorPalette
         SelectionForeground = selectionForeground;
     }
 
-    /// <summary>Gets the default top-level window and inherited custom-control background.</summary>
+    /// <summary>
+    ///  Gets the default top-level window and inherited custom-control background.
+    /// </summary>
     public Color WindowBackground { get; }
 
-    /// <summary>Gets the default foreground for text drawn directly on <see cref="WindowBackground"/>.</summary>
+    /// <summary>
+    ///  Gets the default foreground for text drawn directly on <see cref="WindowBackground"/>.
+    /// </summary>
     public Color WindowForeground { get; }
 
-    /// <summary>Gets the default background for interactive native control surfaces.</summary>
+    /// <summary>
+    ///  Gets the default background for interactive native control surfaces.
+    /// </summary>
     public Color ControlBackground { get; }
 
-    /// <summary>Gets the default foreground for text drawn on <see cref="ControlBackground"/>.</summary>
+    /// <summary>
+    ///  Gets the default foreground for text drawn on <see cref="ControlBackground"/>.
+    /// </summary>
     public Color ControlForeground { get; }
 
-    /// <summary>Gets the default disabled foreground for text drawn on <see cref="ControlBackground"/>.</summary>
+    /// <summary>
+    ///  Gets the default disabled foreground for text drawn on <see cref="ControlBackground"/>.
+    /// </summary>
     public Color DisabledForeground { get; }
 
-    /// <summary>Gets the default top-level window border color.</summary>
+    /// <summary>
+    ///  Gets the default top-level window border color.
+    /// </summary>
     public Color Border { get; }
 
-    /// <summary>Gets the default selected-text background.</summary>
+    /// <summary>
+    ///  Gets the default selected-text background.
+    /// </summary>
     public Color SelectionBackground { get; }
 
-    /// <summary>Gets the default selected-text foreground.</summary>
+    /// <summary>
+    ///  Gets the default selected-text foreground.
+    /// </summary>
     public Color SelectionForeground { get; }
 
+    /// <summary>
+    ///  Creates a semantic palette for the requested base mode and High Contrast state.
+    /// </summary>
+    /// <param name="dark"><see langword="true"/> to use the dark palette branch when not in High Contrast.</param>
+    /// <param name="highContrast"><see langword="true"/> to use documented system High Contrast colors.</param>
+    /// <returns>The resolved semantic palette.</returns>
     internal static ApplicationColorPalette Create(bool dark, bool highContrast)
     {
         if (highContrast)

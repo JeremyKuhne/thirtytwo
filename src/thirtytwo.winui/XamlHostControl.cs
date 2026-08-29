@@ -120,7 +120,10 @@ public unsafe partial class XamlHostControl : CustomControl
         }
     }
 
-    /// <summary>Gets WinUI services backed by the environment lease owned by this host.</summary>
+    /// <summary>
+    ///  Gets WinUI services backed by the environment lease owned by this host.
+    /// </summary>
+    /// <value>A non-disposable context backed by this host's active environment lease.</value>
     /// <exception cref="ObjectDisposedException">The host or its parent window has been destroyed.</exception>
     public XamlHostContext Context
     {
@@ -131,7 +134,10 @@ public unsafe partial class XamlHostControl : CustomControl
         }
     }
 
-    /// <summary>Gets or sets the WinUI element displayed by this host.</summary>
+    /// <summary>
+    ///  Gets or sets the WinUI element displayed by this host.
+    /// </summary>
+    /// <value>The element currently hosted by the underlying <see cref="DesktopWindowXamlSource"/>.</value>
     /// <remarks>
     ///  <para>
     ///   Assignment and access must occur on the owner thread. Replacing or clearing content does not dispose the
@@ -160,10 +166,14 @@ public unsafe partial class XamlHostControl : CustomControl
         }
     }
 
-    /// <summary>Occurs when focus enters the hosted XAML content.</summary>
+    /// <summary>
+    ///  Occurs when focus enters the hosted XAML content.
+    /// </summary>
     public event EventHandler? XamlGotFocus;
 
-    /// <summary>Changes the managed host window's parent and reattaches its content through a new XAML source.</summary>
+    /// <summary>
+    ///  Changes the managed host window's parent and reattaches its content through a new XAML source.
+    /// </summary>
     /// <param name="parentWindow">The new parent window on the host's owner thread.</param>
     /// <exception cref="ArgumentNullException"><paramref name="parentWindow"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">
@@ -252,11 +262,16 @@ public unsafe partial class XamlHostControl : CustomControl
         }
     }
 
-    /// <summary>Verifies that the calling thread owns this host.</summary>
+    /// <summary>
+    ///  Verifies that the calling thread owns this host.
+    /// </summary>
     /// <exception cref="InvalidOperationException">The calling thread does not own this host.</exception>
     protected void VerifyAccess() => _affinity.VerifyAccess();
 
-    /// <summary>Gets whether the XAML source has been disposed.</summary>
+    /// <summary>
+    ///  Gets whether the XAML source has been disposed.
+    /// </summary>
+    /// <value><see langword="true"/> after XAML state disposal has started; otherwise, <see langword="false"/>.</value>
     protected bool IsXamlSourceDisposed => _xamlStateDisposed;
 
     /// <inheritdoc/>
@@ -370,7 +385,11 @@ public unsafe partial class XamlHostControl : CustomControl
         }
     }
 
-    /// <summary>Reports a failure caught at a native window-procedure boundary.</summary>
+    /// <summary>
+    ///  Reports a failure caught at a native window-procedure boundary.
+    /// </summary>
+    /// <param name="operation">The host operation being processed when the failure occurred.</param>
+    /// <param name="exception">The caught exception to report.</param>
     protected static void ReportNativeCallbackFailure(string operation, Exception exception)
     {
         try

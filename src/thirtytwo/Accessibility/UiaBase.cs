@@ -7,11 +7,18 @@ using Windows.Win32.UI.Accessibility;
 
 namespace Windows.Accessibility;
 
+/// <summary>
+///  Base class for accessibility objects that expose both MSAA via <see cref="IAccessible"/> and
+///  UI Automation via <see cref="IRawElementProviderSimple"/>.
+/// </summary>
 public unsafe abstract class UiaBase :
     AccessibleBase,
     IRawElementProviderSimple.Interface,
     IManagedWrapper<IRawElementProviderSimple, IAccessible, IDispatchCcw>
 {
+    /// <summary>
+    ///  Initializes a new instance of the <see cref="UiaBase"/> class.
+    /// </summary>
     public UiaBase() : base()
     {
     }
@@ -32,6 +39,11 @@ public unsafe abstract class UiaBase :
         return PInvoke.E_NOTIMPL;
     }
 
+    /// <summary>
+    ///  Determines whether the specified UI Automation pattern is supported by this object.
+    /// </summary>
+    /// <param name="patternId">The UI Automation pattern identifier being queried.</param>
+    /// <returns><see langword="true"/> when the pattern is supported; otherwise, <see langword="false"/>.</returns>
     protected virtual bool IsPatternSupported(UIA_PATTERN_ID patternId)
     {
         if (patternId == UIA_PATTERN_ID.UIA_InvokePatternId)
@@ -95,8 +107,22 @@ public unsafe abstract class UiaBase :
         return HRESULT.S_OK;
     }
 
+    /// <summary>
+    ///  Converts a managed string to a BSTR-backed variant, or returns an empty variant when no value exists.
+    /// </summary>
+    /// <param name="value">The managed string value.</param>
+    /// <returns>
+    ///  A VT_BSTR variant when <paramref name="value"/> is non-null; otherwise, <see cref="VARIANT.Empty"/>.
+    /// </returns>
     protected static VARIANT ToBSTROrEmpty(string? value) => value is null ? VARIANT.Empty : (VARIANT)new BSTR(value);
 
+    /// <summary>
+    ///  Gets the value for a UI Automation property query.
+    /// </summary>
+    /// <param name="propertyId">The UI Automation property identifier to resolve.</param>
+    /// <returns>
+    ///  A variant containing the property value, or <see cref="VARIANT.Empty"/> when the property is not exposed.
+    /// </returns>
     protected virtual VARIANT GetProperty(UIA_PROPERTY_ID propertyId)
     {
         return propertyId switch

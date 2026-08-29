@@ -3,6 +3,9 @@
 
 namespace Windows;
 
+/// <summary>
+///  Identifies the complexity of a region.
+/// </summary>
 public enum RegionType : int
 {
     /// <summary>

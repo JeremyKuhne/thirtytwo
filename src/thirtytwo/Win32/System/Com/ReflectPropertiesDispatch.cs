@@ -13,11 +13,15 @@ public unsafe abstract class ReflectPropertiesDispatch : UnknownDispatch
 {
     private readonly ClassPropertyDispatchAdapter _dispatchAdapter;
 
+    /// <summary>
+    ///  Initializes a new reflective dispatch adapter for the current instance.
+    /// </summary>
     public ReflectPropertiesDispatch() : base()
     {
         _dispatchAdapter = new(this);
     }
 
+    /// <inheritdoc/>
     protected override HRESULT GetDispID(BSTR bstrName, uint grfdex, int* pid)
     {
         if (_dispatchAdapter.TryGetDispID(bstrName.ToString(), out int dispid))
@@ -30,6 +34,7 @@ public unsafe abstract class ReflectPropertiesDispatch : UnknownDispatch
         return PInvoke.DISP_E_UNKNOWNNAME;
     }
 
+    /// <inheritdoc/>
     protected override HRESULT GetMemberName(int id, BSTR* pbstrName)
     {
         if (_dispatchAdapter.TryGetMemberName(id, out string? name))
@@ -42,6 +47,7 @@ public unsafe abstract class ReflectPropertiesDispatch : UnknownDispatch
         return PInvoke.DISP_E_UNKNOWNNAME;
     }
 
+    /// <inheritdoc/>
     protected override HRESULT GetNextDispID(uint grfdex, int id, int* pid)
     {
         if (_dispatchAdapter.TryGetNextDispId(id, out int dispId))
@@ -54,6 +60,7 @@ public unsafe abstract class ReflectPropertiesDispatch : UnknownDispatch
         return PInvoke.S_FALSE;
     }
 
+    /// <inheritdoc/>
     protected override HRESULT Invoke(
         int dispId,
         uint lcid,
@@ -64,6 +71,7 @@ public unsafe abstract class ReflectPropertiesDispatch : UnknownDispatch
         IServiceProvider* pspCaller,
         uint* argumentError) => _dispatchAdapter.Invoke(dispId, lcid, flags, parameters, result);
 
+    /// <inheritdoc/>
     protected override HRESULT GetMemberProperties(int dispId, out FDEX_PROP_FLAGS properties)
     {
         if (_dispatchAdapter.TryGetMemberProperties(dispId, out properties))

@@ -3,10 +3,14 @@
 
 namespace Windows.WinUI;
 
-/// <summary>Specifies how a text editor determines reading order.</summary>
+/// <summary>
+///  Specifies how a text editor determines reading order.
+/// </summary>
 public enum WinUITextReadingOrder
 {
-    /// <summary>Uses the platform default behavior.</summary>
+    /// <summary>
+    ///  Uses the platform default behavior.
+    /// </summary>
     Default = 0,
 
     /// <summary>
@@ -15,6 +19,8 @@ public enum WinUITextReadingOrder
     /// </summary>
     UseFlowDirection = Default,
 
-    /// <summary>Determines reading order from text content.</summary>
+    /// <summary>
+    ///  Determines reading order from text content.
+    /// </summary>
     DetectFromContent = 1
 }

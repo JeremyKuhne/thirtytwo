@@ -8,15 +8,23 @@ namespace Windows.WinUI;
 /// </summary>
 public enum XamlHostInitializationStage
 {
-    /// <summary>Thread apartment, affinity, or core dispatcher validation.</summary>
+    /// <summary>
+    ///  Thread apartment, affinity, or core dispatcher validation.
+    /// </summary>
     ThreadValidation,
 
-    /// <summary>Windows App SDK dispatcher queue discovery or creation.</summary>
+    /// <summary>
+    ///  Windows App SDK dispatcher queue discovery or creation.
+    /// </summary>
     DispatcherQueue,
 
-    /// <summary>WinUI XAML manager initialization.</summary>
+    /// <summary>
+    ///  WinUI XAML manager initialization.
+    /// </summary>
     XamlManager,
 
-    /// <summary>Process application creation or compatibility validation.</summary>
+    /// <summary>
+    ///  Process application creation or compatibility validation.
+    /// </summary>
     Application
 }

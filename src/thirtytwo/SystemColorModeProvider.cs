@@ -7,12 +7,21 @@ using Windows.Win32.UI.ViewManagement;
 
 namespace Windows;
 
-/// <summary>Reads the supported Windows application color preference through UISettings.</summary>
+/// <summary>
+///  Reads the supported Windows application color preference through UISettings.
+/// </summary>
 internal static unsafe class SystemColorModeProvider
 {
     // https://learn.microsoft.com/uwp/api/windows.ui.viewmanagement.uisettings
     private const string UISettingsRuntimeClass = "Windows.UI.ViewManagement.UISettings";
 
+    /// <summary>
+    ///  Attempts to classify the current system app color preference as dark or light.
+    /// </summary>
+    /// <param name="dark">On success, <see langword="true"/> when the system preference resolves to Dark mode.</param>
+    /// <returns>
+    ///  <see langword="true"/> when the underlying WinRT color query succeeded; otherwise <see langword="false"/>.
+    /// </returns>
     internal static bool TryGetIsDark(out bool dark)
     {
         dark = false;
@@ -25,6 +34,12 @@ internal static unsafe class SystemColorModeProvider
         return true;
     }
 
+    /// <summary>
+    ///  Attempts to read a UISettings color via WinRT activation.
+    /// </summary>
+    /// <param name="colorType">The UISettings color role to query.</param>
+    /// <param name="color">Receives the queried color when the call succeeds.</param>
+    /// <returns><see langword="true"/> when the color was retrieved successfully.</returns>
     internal static bool TryGetColor(UISettingsColorType colorType, out UISettingsColor color)
     {
         color = default;
@@ -89,13 +104,19 @@ internal static unsafe class SystemColorModeProvider
         }
     }
 
-    /// <summary>Classifies a color with Microsoft's documented weighted-brightness heuristic.</summary>
+    /// <summary>
+    ///  Classifies a color with Microsoft's documented weighted-brightness heuristic.
+    /// </summary>
     /// <remarks>
     ///  <para>
     ///   A light application foreground indicates Dark mode. This is a quick classifier, not a general luminance
     ///   model. See <see href="https://learn.microsoft.com/windows/apps/desktop/modernize/ui/apply-windows-themes#know-when-dark-mode-is-enabled">Support Dark and Light themes in Win32 apps</see>.
     ///  </para>
     /// </remarks>
+    /// <param name="color">The UISettings color to classify.</param>
+    /// <returns>
+    ///  <see langword="true"/> when the color is classified as light; otherwise, <see langword="false"/>.
+    /// </returns>
     internal static bool IsLight(UISettingsColor color)
         => ((5 * color.G) + (2 * color.R) + color.B) > (8 * 128);
 }

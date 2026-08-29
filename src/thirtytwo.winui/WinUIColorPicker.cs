@@ -22,7 +22,9 @@ public sealed class WinUIColorPicker : XamlHostControl
 {
     private ColorPicker? _colorPicker;
 
-    /// <summary>Creates a WinUI color picker attached to <paramref name="parentWindow"/>.</summary>
+    /// <summary>
+    ///  Creates a WinUI color picker attached to <paramref name="parentWindow"/>.
+    /// </summary>
     /// <param name="bounds">The host bounds in parent-client pixels.</param>
     /// <param name="parentWindow">The managed parent window.</param>
     public WinUIColorPicker(Rectangle bounds, Window parentWindow)
@@ -42,10 +44,14 @@ public sealed class WinUIColorPicker : XamlHostControl
         }
     }
 
-    /// <summary>Occurs when the selected color changes.</summary>
+    /// <summary>
+    ///  Occurs when the selected color changes.
+    /// </summary>
     public event EventHandler<WinUIColorChangedEventArgs>? ColorChanged;
 
-    /// <summary>Gets the hosted WinUI color picker.</summary>
+    /// <summary>
+    ///  Gets the hosted WinUI color picker.
+    /// </summary>
     /// <remarks>
     ///  <para>
     ///   The typed wrapper fixes its content during construction. Assigning another element would detach the picker
@@ -67,7 +73,9 @@ public sealed class WinUIColorPicker : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets the selected color.</summary>
+    /// <summary>
+    ///  Gets or sets the selected color.
+    /// </summary>
     /// <exception cref="InvalidOperationException">The calling thread does not own this control.</exception>
     /// <exception cref="ObjectDisposedException">The host has been disposed.</exception>
     public Color Color
@@ -84,7 +92,9 @@ public sealed class WinUIColorPicker : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets whether the picker allows alpha-channel selection.</summary>
+    /// <summary>
+    ///  Gets or sets whether the picker allows alpha-channel selection.
+    /// </summary>
     /// <exception cref="InvalidOperationException">The calling thread does not own this control.</exception>
     /// <exception cref="ObjectDisposedException">The host has been disposed.</exception>
     public bool IsAlphaEnabled
@@ -101,7 +111,9 @@ public sealed class WinUIColorPicker : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets whether the color spectrum is visible.</summary>
+    /// <summary>
+    ///  Gets or sets whether the color spectrum is visible.
+    /// </summary>
     public bool IsColorSpectrumVisible
     {
         get
@@ -116,7 +128,9 @@ public sealed class WinUIColorPicker : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets whether the color preview bar is visible.</summary>
+    /// <summary>
+    ///  Gets or sets whether the color preview bar is visible.
+    /// </summary>
     public bool IsColorPreviewVisible
     {
         get
@@ -131,7 +145,9 @@ public sealed class WinUIColorPicker : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets whether the color-value slider is visible.</summary>
+    /// <summary>
+    ///  Gets or sets whether the color-value slider is visible.
+    /// </summary>
     public bool IsColorSliderVisible
     {
         get
@@ -146,7 +162,9 @@ public sealed class WinUIColorPicker : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets whether the color-channel text inputs are visible.</summary>
+    /// <summary>
+    ///  Gets or sets whether the color-channel text inputs are visible.
+    /// </summary>
     public bool IsColorChannelTextInputVisible
     {
         get
@@ -161,7 +179,9 @@ public sealed class WinUIColorPicker : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets whether the alpha slider is visible when alpha is enabled.</summary>
+    /// <summary>
+    ///  Gets or sets whether the alpha slider is visible when alpha is enabled.
+    /// </summary>
     public bool IsAlphaSliderVisible
     {
         get
@@ -176,7 +196,9 @@ public sealed class WinUIColorPicker : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets whether the alpha text input is visible when alpha is enabled.</summary>
+    /// <summary>
+    ///  Gets or sets whether the alpha text input is visible when alpha is enabled.
+    /// </summary>
     public bool IsAlphaTextInputVisible
     {
         get
@@ -191,7 +213,9 @@ public sealed class WinUIColorPicker : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets whether the hexadecimal color input is visible.</summary>
+    /// <summary>
+    ///  Gets or sets whether the hexadecimal color input is visible.
+    /// </summary>
     public bool IsHexInputVisible
     {
         get
@@ -206,7 +230,9 @@ public sealed class WinUIColorPicker : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets the shape of the color spectrum.</summary>
+    /// <summary>
+    ///  Gets or sets the shape of the color spectrum.
+    /// </summary>
     public WinUIColorSpectrumShape ColorSpectrumShape
     {
         get
@@ -231,7 +257,9 @@ public sealed class WinUIColorPicker : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets how HSV components map to the color spectrum axes.</summary>
+    /// <summary>
+    ///  Gets or sets how HSV components map to the color spectrum axes.
+    /// </summary>
     public WinUIColorSpectrumComponents ColorSpectrumComponents
     {
         get
@@ -264,7 +292,9 @@ public sealed class WinUIColorPicker : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets the orientation of the color picker's editing controls.</summary>
+    /// <summary>
+    ///  Gets or sets the orientation of the color picker's editing controls.
+    /// </summary>
     public WinUIColorPickerOrientation Orientation
     {
         get
@@ -289,7 +319,9 @@ public sealed class WinUIColorPicker : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets the theme requested for the hosted color picker.</summary>
+    /// <summary>
+    ///  Gets or sets the theme requested for the hosted color picker.
+    /// </summary>
     public WinUIElementTheme RequestedTheme
     {
         get

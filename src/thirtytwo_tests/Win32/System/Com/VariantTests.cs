@@ -144,11 +144,11 @@ public unsafe class VariantTests
         public void SetVariantByRef(ref object? variant);
     }
 
-    public sealed class TestVariant : ITestVariant.Interface, IDisposable, IManagedWrapper<ITestVariant>
+    public sealed class TestVariant : Touki.DisposableBase, ITestVariant.Interface, IManagedWrapper<ITestVariant>
     {
         public VARIANT Variant { get; set; }
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
             Variant.Clear();
             Variant = default;

@@ -9,6 +9,9 @@ using Windows.Wdk.System.SystemServices;
 
 namespace Windows.Win32.System.Registry;
 
+/// <summary>
+///  Managed helpers for common Windows registry operations.
+/// </summary>
 public static unsafe partial class Registry
 {
     /// <summary>
@@ -20,6 +23,8 @@ public static unsafe partial class Registry
     ///   real key handles.
     ///  </para>
     /// </remarks>
+    /// <param name="key">Open key handle to query.</param>
+    /// <returns>Kernel registry path for <paramref name="key"/>.</returns>
     public static string QueryKeyName(HKEY key)
     {
         // The special root keys aren't actually handles so they don't work with this API (returns ERROR_INVALID_HANDLE).
@@ -71,6 +76,13 @@ public static unsafe partial class Registry
     /// <summary>
     ///  Open the specified subkey.
     /// </summary>
+    /// <param name="key">Parent key handle.</param>
+    /// <param name="subKeyName">
+    ///  Relative path of the subkey to open, or <see langword="null"/> for the current key.
+    /// </param>
+    /// <param name="rights">Desired access rights.</param>
+    /// <returns>A newly opened key handle owned by the caller.</returns>
+    /// <exception cref="Exception">Thrown when <c>RegOpenKeyEx</c> fails.</exception>
     public static HKEY OpenKey(
         HKEY key,
         string? subKeyName,
@@ -83,6 +95,10 @@ public static unsafe partial class Registry
     /// <summary>
     ///  Returns true if the given value exists.
     /// </summary>
+    /// <param name="key">Key handle that contains the value.</param>
+    /// <param name="valueName">Registry value name.</param>
+    /// <returns><see langword="true"/> when the value exists.</returns>
+    /// <exception cref="Exception">Thrown when the query fails for reasons other than value absence.</exception>
     public static bool QueryValueExists(HKEY key, string valueName)
     {
         fixed (char* c = valueName)
@@ -100,6 +116,10 @@ public static unsafe partial class Registry
     /// <summary>
     ///  Returns the type of the given value, or REG_NONE if it doesn't exist.
     /// </summary>
+    /// <param name="key">Key handle that contains the value.</param>
+    /// <param name="valueName">Registry value name.</param>
+    /// <returns>The value type, or <see cref="REG_VALUE_TYPE.REG_NONE"/> when the value is not present.</returns>
+    /// <exception cref="Exception">Thrown when the query fails for reasons other than value absence.</exception>
     public static REG_VALUE_TYPE QueryValueType(HKEY key, string valueName)
     {
         fixed (char* c = valueName)
@@ -115,6 +135,20 @@ public static unsafe partial class Registry
         }
     }
 
+    /// <summary>
+    ///  Reads a registry value and converts it to an appropriate managed value.
+    /// </summary>
+    /// <param name="key">Key handle that contains the value.</param>
+    /// <param name="valueName">Registry value name.</param>
+    /// <returns>
+    ///  Converted value, or <see langword="null"/> when the value does not exist.
+    ///  String values map to <see cref="string"/>, multi-string values map to <see cref="string"/> arrays,
+    ///  integer values map to unsigned integral types, and binary values map to <see cref="byte"/> arrays.
+    /// </returns>
+    /// <exception cref="NotSupportedException">
+    ///  Thrown for registry value types that are not currently mapped.
+    /// </exception>
+    /// <exception cref="Exception">Thrown when the underlying registry query fails.</exception>
     public static object? QueryValue(HKEY key, string valueName)
     {
         using BufferScope<byte> buffer = new(stackalloc byte[512]);
@@ -147,6 +181,9 @@ public static unsafe partial class Registry
     /// <summary>
     ///  Gets all value names for the given registry key.
     /// </summary>
+    /// <param name="key">Key handle to enumerate.</param>
+    /// <returns>Value names in enumeration order.</returns>
+    /// <exception cref="Exception">Thrown when a registry enumeration call fails.</exception>
     public static IEnumerable<string> GetValueNames(HKEY key)
     {
         uint valueCount;

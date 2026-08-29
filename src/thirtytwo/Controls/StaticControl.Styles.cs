@@ -7,6 +7,9 @@ namespace Windows;
 
 public partial class StaticControl
 {
+    /// <summary>
+    ///  Native <c>SS_*</c> style flags for a static control.
+    /// </summary>
     [Flags]
     public enum Styles : uint
     {
@@ -60,6 +63,9 @@ public partial class StaticControl
         /// </summary>
         WhiteFrame = STATIC_STYLES.SS_WHITEFRAME,
 
+        /// <summary>
+        ///  Obsolete user-defined static style.
+        /// </summary>
          UserItem = STATIC_STYLES.SS_USERITEM,
 
         /// <summary>

@@ -6,19 +6,46 @@ using Windows.Win32.System.Ole;
 
 namespace Windows.Dialogs;
 
+/// <summary>
+///  Wraps the Windows common file dialog COM object and exposes managed events and options.
+/// </summary>
 public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
 {
     // https://learn.microsoft.com/windows/win32/shell/common-file-dialog
 
+    /// <summary>
+    ///  Gets the agile COM pointer that owns the underlying <c>IFileDialog</c> instance.
+    /// </summary>
     protected AgileComPointer<IFileDialog> Interface { get; private set; }
     private HWND _hwnd;
     private readonly uint _cookie;
 
+    /// <summary>
+    ///  Occurs when the selected item changes in the dialog.
+    /// </summary>
     public event EventHandler? SelectionChanged;
+
+    /// <summary>
+    ///  Occurs when the user activates the Open or Save button.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   Handlers can set <see cref="AcceptEventArgs.Accept"/> to <see langword="false"/> to block dialog
+    ///   acceptance.
+    ///  </para>
+    /// </remarks>
     public event EventHandler<AcceptEventArgs>? OkClicked;
 
+    /// <summary>
+    ///  Gets the owner window handle wrapper used when showing the dialog.
+    /// </summary>
     public IHandle<HWND>? Owner { get; private set; }
 
+    /// <summary>
+    ///  Initializes a new <see cref="FileDialog"/> wrapper around an existing <c>IFileDialog</c> pointer.
+    /// </summary>
+    /// <param name="dialog">The native file dialog interface pointer to own.</param>
+    /// <param name="owner">The optional owner window for modal display.</param>
     internal FileDialog(IFileDialog* dialog, IHandle<HWND>? owner = default)
     {
         using ComScope<IFileDialogEvents> events = new(
@@ -30,6 +57,9 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         Owner = owner;
     }
 
+    /// <summary>
+    ///  Gets the native window handle for the current dialog instance.
+    /// </summary>
     public HWND Handle
     {
         get
@@ -57,6 +87,9 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
             || (result == WIN32_ERROR.ERROR_CANCELLED.ToHRESULT() ? false : throw result);
     }
 
+    /// <summary>
+    ///  Gets or sets the option flags for the underlying common file dialog.
+    /// </summary>
     public Options DialogOptions
     {
         get
@@ -116,6 +149,9 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         }
     }
 
+    /// <summary>
+    ///  Sets the default folder used when the dialog has no persisted last-visited location.
+    /// </summary>
     public string DefaultFolder
     {
         set
@@ -126,6 +162,9 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         }
     }
 
+    /// <summary>
+    ///  Sets the initial folder shown when the dialog opens.
+    /// </summary>
     public string InitialFolder
     {
         set
@@ -136,6 +175,10 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         }
     }
 
+    /// <summary>
+    ///  Gets the currently selected item path, if the dialog can provide one.
+    /// </summary>
+    /// <returns>The current selection path; otherwise <see langword="null"/> if no selection is available.</returns>
     public string? CurrentSelection
     {
         get
@@ -171,6 +214,9 @@ public unsafe partial class FileDialog : ComponentBase, IHandle<HWND>
         dialog.Pointer->ClearClientData();
     }
 
+    /// <summary>
+    ///  Closes the dialog by signaling an explicit user-cancel result.
+    /// </summary>
     public void Close()
     {
         using ComScope<IFileDialog> dialog = Interface.GetInterface<IFileDialog>();

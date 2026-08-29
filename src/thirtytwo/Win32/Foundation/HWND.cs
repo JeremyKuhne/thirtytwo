@@ -3,8 +3,14 @@
 
 namespace Windows.Win32.Foundation;
 
+/// <summary>
+///  Represents a Win32 window handle.
+/// </summary>
 public partial struct HWND : IHandle<HWND>
 {
+    /// <inheritdoc cref="IHandle{T}.Handle"/>
     HWND IHandle<HWND>.Handle => this;
+
+    /// <inheritdoc cref="IHandle{T}.Wrapper"/>
     object? IHandle<HWND>.Wrapper => null;
 }

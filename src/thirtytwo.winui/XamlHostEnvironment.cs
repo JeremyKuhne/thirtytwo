@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.UI.Dispatching;
+using Touki;
 using Windows.Win32;
 
 namespace Windows.WinUI;
@@ -25,9 +26,11 @@ namespace Windows.WinUI;
 ///   Public leases may fall to zero and be acquired again; native XAML and queue state is released when the owning core
 ///   dispatcher shuts down.
 ///  </para>
-///  <para>Only one designated XAML UI thread is supported per process.</para>
+///  <para>
+///   Only one designated XAML UI thread is supported per process.
+///  </para>
 /// </remarks>
-public sealed class XamlHostEnvironment : IDisposable
+public sealed class XamlHostEnvironment : DisposableBase, IDisposable
 {
     private static readonly Lock s_lock = new();
 
@@ -44,25 +47,41 @@ public sealed class XamlHostEnvironment : IDisposable
         _state = state;
     }
 
-    /// <summary>Gets the process WinUI application.</summary>
+    /// <summary>
+    ///  Gets the process WinUI application.
+    /// </summary>
+    /// <value>The retained process application bound to the designated XAML thread.</value>
     /// <exception cref="ObjectDisposedException">This lease has been disposed.</exception>
     public Microsoft.UI.Xaml.Application Application => GetState().Application;
 
-    /// <summary>Gets the current thread's Windows App SDK dispatcher queue.</summary>
+    /// <summary>
+    ///  Gets the current thread's Windows App SDK dispatcher queue.
+    /// </summary>
+    /// <value>The dispatcher queue associated with the designated XAML thread.</value>
     /// <exception cref="ObjectDisposedException">This lease has been disposed.</exception>
     public DispatcherQueue DispatcherQueue => GetState().Queue;
 
-    /// <summary>Gets the application-wide metadata provider registry.</summary>
+    /// <summary>
+    ///  Gets the application-wide metadata provider registry.
+    /// </summary>
+    /// <value>The registry used to resolve XAML metadata for this process application.</value>
     /// <exception cref="ObjectDisposedException">This lease has been disposed.</exception>
     public XamlMetadataProviderRegistry MetadataProviders => GetState().HostApplication.MetadataProviders;
 
-    /// <summary>Gets the application-wide resource dictionary registry.</summary>
+    /// <summary>
+    ///  Gets the application-wide resource dictionary registry.
+    /// </summary>
+    /// <value>The registry that merges shared resource dictionaries into application resources.</value>
     /// <exception cref="ObjectDisposedException">This lease has been disposed.</exception>
     public XamlResourceDictionaryRegistry ResourceDictionaries => GetState().HostApplication.ResourceDictionaries;
 
     /// <summary>
     ///  Gets whether this environment created the process WinUI application instead of adopting an existing one.
     /// </summary>
+    /// <value>
+    ///  <see langword="true"/> when the environment created the process application; otherwise,
+    ///  <see langword="false"/>.
+    /// </value>
     /// <remarks>
     ///  <para>
     ///   This is initialization information only. The process application is retained whether this environment created
@@ -71,7 +90,13 @@ public sealed class XamlHostEnvironment : IDisposable
     /// </remarks>
     public bool OwnsApplication => GetState().OwnsApplication;
 
-    /// <summary>Gets whether this environment created the current thread's dispatcher queue.</summary>
+    /// <summary>
+    ///  Gets whether this environment created the current thread's dispatcher queue.
+    /// </summary>
+    /// <value>
+    ///  <see langword="true"/> when the queue was created for the current thread; otherwise,
+    ///  <see langword="false"/>.
+    /// </value>
     /// <remarks>
     ///  <para>
     ///   The environment shuts down a queue it created during core dispatcher shutdown. An existing queue is borrowed
@@ -84,7 +109,9 @@ public sealed class XamlHostEnvironment : IDisposable
     ///  Gets a point-in-time snapshot of the active thread environment, or <see langword="null"/> when none exists.
     /// </summary>
     /// <remarks>
-    ///  <para>The returned lease count and ownership state may become stale immediately after this property returns.</para>
+    ///  <para>
+    ///   The returned lease count and ownership state may become stale immediately after this property returns.
+    ///  </para>
     /// </remarks>
     public static XamlHostEnvironmentInfo? Current
     {
@@ -164,17 +191,30 @@ public sealed class XamlHostEnvironment : IDisposable
         }
     }
 
-    /// <summary>Releases this public lease. Repeated disposal has no effect.</summary>
+    /// <inheritdoc/>
+    /// <remarks>
+    ///  <para>
+    ///   Disposal is lease-scoped. It decrements the shared lease count and invalidates only this instance.
+    ///  </para>
+    ///  <para>
+    ///   Native XAML shutdown occurs when the owner dispatcher shuts down, not when lease count reaches zero.
+    ///  </para>
+    /// </remarks>
+    /// <param name="disposing"><see langword="true"/> when called by <see cref="DisposableBase.Dispose()"/>.</param>
     /// <exception cref="InvalidOperationException">The calling thread does not own this lease.</exception>
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
+        if (!disposing)
+        {
+            return;
+        }
+
         XamlHostEnvironmentState? state = _state;
         if (state is null)
         {
             return;
         }
 
-        state.VerifyAccess();
         _state = null;
 
         lock (s_lock)
@@ -183,8 +223,28 @@ public sealed class XamlHostEnvironment : IDisposable
         }
     }
 
+    /// <inheritdoc/>
+    public new void Dispose()
+    {
+        _state?.VerifyAccess();
+        base.Dispose();
+    }
+
+    void IDisposable.Dispose() => Dispose();
+
+    /// <summary>
+    ///  Gets the native thread identifier for the calling thread.
+    /// </summary>
+    /// <returns>The Win32 thread identifier of the current thread.</returns>
     internal static uint GetCurrentNativeThreadId() => PInvoke.GetCurrentThreadId();
 
+    /// <summary>
+    ///  Creates and retains the process host application on the designated XAML thread.
+    /// </summary>
+    /// <returns>The newly created host application.</returns>
+    /// <exception cref="XamlHostInitializationException">
+    ///  A different retained application state prevents creating a new host application.
+    /// </exception>
     internal static XamlApplication CreateProcessApplication()
     {
         if (s_processApplication is not null)
@@ -204,6 +264,13 @@ public sealed class XamlHostEnvironment : IDisposable
         return application;
     }
 
+    /// <summary>
+    ///  Retains an existing process application for subsequent lease acquisitions.
+    /// </summary>
+    /// <param name="application">The process WinUI application to retain.</param>
+    /// <exception cref="XamlHostInitializationException">
+    ///  A different application has already been retained for this process.
+    /// </exception>
     internal static void RetainProcessApplication(Microsoft.UI.Xaml.Application application)
     {
         if (s_processApplication is not null && !ReferenceEquals(s_processApplication, application))
@@ -218,6 +285,10 @@ public sealed class XamlHostEnvironment : IDisposable
         s_designatedThread ??= Thread.CurrentThread;
     }
 
+    /// <summary>
+    ///  Shuts down the active thread environment when dispatcher shutdown begins.
+    /// </summary>
+    /// <param name="state">The state instance that owns the current environment resources.</param>
     internal static void Shutdown(XamlHostEnvironmentState state)
     {
         state.VerifyAccess();

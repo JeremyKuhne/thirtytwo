@@ -3,7 +3,15 @@
 
 namespace Windows;
 
-/// <docs>https://learn.microsoft.com/windows/win32/api/winuser/nc-winuser-timerproc</docs>
+/// <summary>
+///  Represents a callback function that processes timer events raised by USER32.
+/// </summary>
+/// <param name="hwnd">
+///  The associated window handle, or <see cref="HWND.Null"/> when the timer was created without a window.
+/// </param>
+/// <param name="uMsg">The message identifier, typically <see cref="MessageType.Timer"/>.</param>
+/// <param name="idEvent">The timer identifier returned by timer creation.</param>
+/// <param name="dwTime">The system tick count, in milliseconds, when USER32 dispatched the callback.</param>
 public delegate void TimerProcedure(
     HWND hwnd,
     MessageType uMsg,

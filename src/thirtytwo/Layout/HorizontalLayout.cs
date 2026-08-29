@@ -6,8 +6,15 @@ using System.Drawing;
 namespace Windows;
 
 /// <summary>
-///  Arranges elements horizontally by allocating a percentage of the available height to each handler.
+///  Stacks child handlers in horizontal bands by splitting the available height proportionally.
 /// </summary>
+/// <remarks>
+///  <para>
+///   Every child receives the full input width. Each handler except the last receives
+///   <c>(int)(bounds.Height * percent)</c> pixels, and the last handler receives the remaining height so total
+///   coverage matches the original bounds.
+///  </para>
+/// </remarks>
 public class HorizontalLayout : ILayoutHandler
 {
     private readonly (float Percent, ILayoutHandler Handler)[] _handlers;
@@ -16,8 +23,9 @@ public class HorizontalLayout : ILayoutHandler
     ///  Initializes a new instance of the <see cref="HorizontalLayout"/> class.
     /// </summary>
     /// <param name="handlers">
-    ///  An array of tuples containing the percentage of height to allocate and the handler to layout in that space.
-    ///  The sum of all percentages must equal 1.0.
+    ///  The proportional child definitions. Each tuple contains a height percentage and the handler for that segment.
+    ///  Percentages must be finite, each percentage must be between <c>0.0</c> and <c>1.0</c>, and the total must
+    ///  equal <c>1.0</c> within tolerance.
     /// </param>
     /// <exception cref="ArgumentNullException">The handler array or one of its handlers is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">
@@ -29,10 +37,7 @@ public class HorizontalLayout : ILayoutHandler
         _handlers = [.. handlers];
     }
 
-    /// <summary>
-    ///  Lays out the handlers horizontally within the specified bounds.
-    /// </summary>
-    /// <param name="bounds">The bounds to layout within.</param>
+    /// <inheritdoc/>
     public void Layout(Rectangle bounds, float scale)
     {
         int last = _handlers.Length - 1;

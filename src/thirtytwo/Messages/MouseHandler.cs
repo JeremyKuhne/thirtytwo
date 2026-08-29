@@ -5,13 +5,32 @@ using System.Drawing;
 
 namespace Windows.Messages;
 
+/// <summary>
+///  Routes mouse-related window messages to events and overridable callbacks.
+/// </summary>
 public class MouseHandler : IMouseMessageHandler
 {
     private readonly Window _attachedWindow;
+
+    /// <summary>
+    ///  Raised when a mouse button release message is received.
+    /// </summary>
     public event MouseMessageEvent? MouseUp;
+
+    /// <summary>
+    ///  Raised when a mouse move message is received.
+    /// </summary>
     public event MouseMessageEvent? MouseMove;
+
+    /// <summary>
+    ///  Raised when a mouse button press message is received.
+    /// </summary>
     public event MouseMessageEvent? MouseDown;
 
+    /// <summary>
+    ///  Subscribes a mouse handler to the specified window.
+    /// </summary>
+    /// <param name="window">The window whose message stream is observed.</param>
     public MouseHandler(Window window)
     {
         window.MessageHandler += WindowMessageHandler;
@@ -59,12 +78,15 @@ public class MouseHandler : IMouseMessageHandler
         return null;
     }
 
+    /// <inheritdoc/>
     public virtual void OnMouseMove(Point position, MouseKey mouseState)
         => MouseMove?.Invoke(_attachedWindow, position, 0, mouseState);
 
+    /// <inheritdoc/>
     public virtual void OnButtonDown(Point position, MouseButton button, MouseKey mouseState)
         => MouseDown?.Invoke(_attachedWindow, position, 0, mouseState);
 
+    /// <inheritdoc/>
     public virtual void OnButtonUp(Point position, MouseButton button, MouseKey mouseState)
         => MouseUp?.Invoke(_attachedWindow,  position, button, mouseState);
 }

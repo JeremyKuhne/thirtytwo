@@ -22,7 +22,7 @@ using XamlTextBox = Microsoft.UI.Xaml.Controls.TextBox;
 
 namespace IntegrationHost;
 
-internal sealed class InputScenario : IDisposable
+internal sealed class InputScenario : Touki.DisposableBase
 {
     private readonly XamlHostControl _host;
     private readonly XamlButton _button;
@@ -155,8 +155,13 @@ internal sealed class InputScenario : IDisposable
         }
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
+        if (!disposing)
+        {
+            return;
+        }
+
         RestoreMenuState();
         _button.RemoveHandler(UIElement.KeyDownEvent, _buttonKeyDownHandler);
         _accelerator.Invoked -= AcceleratorInvoked;

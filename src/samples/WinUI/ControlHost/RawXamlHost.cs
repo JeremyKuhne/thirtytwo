@@ -17,10 +17,9 @@ using XamlVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 
 namespace ControlHost;
 
-internal sealed unsafe class RawXamlHost : IDisposable
+internal sealed unsafe class RawXamlHost : Touki.DisposableBase
 {
     private readonly DesktopWindowXamlSource _source;
-    private bool _disposed;
 
     private RawXamlHost(HWND handle, DesktopWindowXamlSource source, FrameworkElement content)
     {
@@ -73,14 +72,13 @@ internal sealed unsafe class RawXamlHost : IDisposable
         }
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        if (_disposed)
+        if (!disposing)
         {
             return;
         }
 
-        _disposed = true;
         _source.Content = null;
         _source.Dispose();
         _ = PInvoke.DestroyWindow(Handle);

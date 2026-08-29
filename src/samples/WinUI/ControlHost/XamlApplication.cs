@@ -1,6 +1,7 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Markup;
@@ -8,6 +9,7 @@ using Microsoft.UI.Xaml.XamlTypeInfo;
 
 namespace ControlHost;
 
+[SuppressMessage("Usage", "TOUKI0012:Use DisposableBase", Justification = "This type must derive from Microsoft.UI.Xaml.Application due to C# single inheritance.")]
 internal sealed class XamlApplication : Microsoft.UI.Xaml.Application, IXamlMetadataProvider, IDisposable
 {
     private readonly List<IXamlMetadataProvider> _providers = [new XamlControlsXamlMetaDataProvider()];

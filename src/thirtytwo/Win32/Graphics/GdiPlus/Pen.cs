@@ -5,12 +5,42 @@ using Windows.Support;
 
 namespace Windows.Win32.Graphics.GdiPlus;
 
+/// <summary>
+///  <para>
+///   Wraps a native GDI+ pen object.
+///  </para>
+/// </summary>
 public unsafe class Pen : DisposableBase.Finalizable, IPointer<GpPen>
 {
     private GpPen* _pointer;
 
+    /// <summary>
+    ///  <para>
+    ///   Gets the underlying native pen pointer.
+    ///  </para>
+    /// </summary>
     public GpPen* Pointer => _pointer;
 
+    /// <summary>
+    ///  <para>
+    ///   Creates a pen with the specified color and width.
+    ///  </para>
+    /// </summary>
+    /// <param name="color">
+    ///  <para>
+    ///   The ARGB color of the pen.
+    ///  </para>
+    /// </param>
+    /// <param name="width">
+    ///  <para>
+    ///   The pen width in pixels.
+    ///  </para>
+    /// </param>
+    /// <exception cref="Exception">
+    ///  <para>
+    ///   The underlying GDI+ operation failed.
+    ///  </para>
+    /// </exception>
     public Pen(ARGB color, float width = 1.0f)
     {
         GdiPlus.Init();

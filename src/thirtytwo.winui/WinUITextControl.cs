@@ -26,7 +26,9 @@ using XamlTextWrapping = Microsoft.UI.Xaml.TextWrapping;
 
 namespace Windows.WinUI;
 
-/// <summary>Hosts a WinUI text editor and projects its common editing contract through .NET types.</summary>
+/// <summary>
+///  Hosts a WinUI text editor and projects its common editing contract through .NET types.
+/// </summary>
 /// <remarks>
 ///  <para>
 ///   Members must be accessed from the owner thread while the control is alive. Text, selection, clipboard, undo,
@@ -43,6 +45,14 @@ public abstract partial class WinUITextControl : XamlHostControl
     private XamlTextBox? _textBox;
     private XamlRichEditBox? _richEditBox;
 
+    /// <summary>
+    ///  Creates a WinUI text editor host attached to <paramref name="parentWindow"/>.
+    /// </summary>
+    /// <param name="bounds">The host bounds in parent-client pixels.</param>
+    /// <param name="parentWindow">The native parent window.</param>
+    /// <param name="richEdit">
+    ///  <see langword="true"/> to host a RichEdit-based editor; otherwise hosts a TextBox.
+    /// </param>
     private protected WinUITextControl(Rectangle bounds, Window parentWindow, bool richEdit)
         : base(bounds, parentWindow)
     {
@@ -62,7 +72,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets the hosted WinUI text editor.</summary>
+    /// <summary>
+    ///  Gets the hosted WinUI text editor.
+    /// </summary>
     /// <exception cref="InvalidOperationException"><paramref name="value"/> is not the hosted editor.</exception>
     public override Microsoft.UI.Xaml.UIElement? Content
     {
@@ -78,7 +90,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets the editor text.</summary>
+    /// <summary>
+    ///  Gets or sets the editor text.
+    /// </summary>
     /// <remarks>The RichEdit document's synthetic final paragraph mark is not included in the returned text.</remarks>
     public new string Text
     {
@@ -108,7 +122,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets whether the editor accepts newline input.</summary>
+    /// <summary>
+    ///  Gets or sets whether the editor accepts newline input.
+    /// </summary>
     public bool AcceptsReturn
     {
         get => GetCommon(static editor => editor.AcceptsReturn, static editor => editor.AcceptsReturn);
@@ -118,7 +134,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.AcceptsReturn = newValue);
     }
 
-    /// <summary>Gets whether clipboard content can currently be pasted.</summary>
+    /// <summary>
+    ///  Gets whether clipboard content can currently be pasted.
+    /// </summary>
     public bool CanPasteClipboardContent
     {
         get
@@ -128,7 +146,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets whether a redo operation is available.</summary>
+    /// <summary>
+    ///  Gets whether a redo operation is available.
+    /// </summary>
     public bool CanRedo
     {
         get
@@ -138,7 +158,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets whether an undo operation is available.</summary>
+    /// <summary>
+    ///  Gets whether an undo operation is available.
+    /// </summary>
     public bool CanUndo
     {
         get
@@ -148,7 +170,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets automatic character casing.</summary>
+    /// <summary>
+    ///  Gets or sets automatic character casing.
+    /// </summary>
     public WinUITextCharacterCasing CharacterCasing
     {
         get => FromXaml(GetCommon(static editor => editor.CharacterCasing, static editor => editor.CharacterCasing));
@@ -158,7 +182,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.CharacterCasing = newValue);
     }
 
-    /// <summary>Gets or sets legacy descriptive text displayed by the editor.</summary>
+    /// <summary>
+    ///  Gets or sets legacy descriptive text displayed by the editor.
+    /// </summary>
     public string? Description
     {
         get => GetCommon(static editor => editor.Description?.ToString(), static editor => editor.Description?.ToString());
@@ -168,7 +194,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.Description = newValue);
     }
 
-    /// <summary>Gets or sets preferred IME candidate-window alignment.</summary>
+    /// <summary>
+    ///  Gets or sets preferred IME candidate-window alignment.
+    /// </summary>
     public WinUITextCandidateWindowAlignment DesiredCandidateWindowAlignment
     {
         get => FromXaml(GetCommon(
@@ -180,7 +208,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.DesiredCandidateWindowAlignment = newValue);
     }
 
-    /// <summary>Gets or sets the editor header.</summary>
+    /// <summary>
+    ///  Gets or sets the editor header.
+    /// </summary>
     public object? Header
     {
         get => GetCommon(static editor => editor.Header, static editor => editor.Header);
@@ -190,7 +220,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.Header = newValue);
     }
 
-    /// <summary>Gets or sets the editor header-template object.</summary>
+    /// <summary>
+    ///  Gets or sets the editor header-template object.
+    /// </summary>
     /// <remarks>A non-null value must be a WinUI DataTemplate.</remarks>
     public object? HeaderTemplate
     {
@@ -210,7 +242,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets horizontal alignment used during text layout.</summary>
+    /// <summary>
+    ///  Gets or sets horizontal alignment used during text layout.
+    /// </summary>
     public WinUITextAlignment HorizontalTextAlignment
     {
         get => FromXaml(GetCommon(
@@ -222,7 +256,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.HorizontalTextAlignment = newValue);
     }
 
-    /// <summary>Gets or sets input-method scope hints.</summary>
+    /// <summary>
+    ///  Gets or sets input-method scope hints.
+    /// </summary>
     public IReadOnlyList<WinUITextInputScopeName> InputScope
     {
         get
@@ -252,7 +288,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets whether color-font glyphs are enabled.</summary>
+    /// <summary>
+    ///  Gets or sets whether color-font glyphs are enabled.
+    /// </summary>
     public bool IsColorFontEnabled
     {
         get => GetCommon(static editor => editor.IsColorFontEnabled, static editor => editor.IsColorFontEnabled);
@@ -262,7 +300,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.IsColorFontEnabled = newValue);
     }
 
-    /// <summary>Gets or sets whether text is read-only.</summary>
+    /// <summary>
+    ///  Gets or sets whether text is read-only.
+    /// </summary>
     public bool IsReadOnly
     {
         get => GetCommon(static editor => editor.IsReadOnly, static editor => editor.IsReadOnly);
@@ -272,7 +312,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.IsReadOnly = newValue);
     }
 
-    /// <summary>Gets or sets whether spell checking is enabled.</summary>
+    /// <summary>
+    ///  Gets or sets whether spell checking is enabled.
+    /// </summary>
     public bool IsSpellCheckEnabled
     {
         get => GetCommon(static editor => editor.IsSpellCheckEnabled, static editor => editor.IsSpellCheckEnabled);
@@ -282,7 +324,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.IsSpellCheckEnabled = newValue);
     }
 
-    /// <summary>Gets or sets whether text prediction is enabled.</summary>
+    /// <summary>
+    ///  Gets or sets whether text prediction is enabled.
+    /// </summary>
     public bool IsTextPredictionEnabled
     {
         get => GetCommon(static editor => editor.IsTextPredictionEnabled, static editor => editor.IsTextPredictionEnabled);
@@ -292,7 +336,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.IsTextPredictionEnabled = newValue);
     }
 
-    /// <summary>Gets or sets the maximum text length. Zero uses the platform default.</summary>
+    /// <summary>
+    ///  Gets or sets the maximum text length. Zero uses the platform default.
+    /// </summary>
     public int MaxLength
     {
         get => GetCommon(static editor => editor.MaxLength, static editor => editor.MaxLength);
@@ -302,7 +348,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.MaxLength = newValue);
     }
 
-    /// <summary>Gets or sets placeholder text.</summary>
+    /// <summary>
+    ///  Gets or sets placeholder text.
+    /// </summary>
     public string PlaceholderText
     {
         get => GetCommon(static editor => editor.PlaceholderText, static editor => editor.PlaceholderText);
@@ -316,7 +364,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets whether programmatic focus suppresses automatic keyboard display.</summary>
+    /// <summary>
+    ///  Gets or sets whether programmatic focus suppresses automatic keyboard display.
+    /// </summary>
     public bool PreventKeyboardDisplayOnProgrammaticFocus
     {
         get => GetCommon(
@@ -328,12 +378,16 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.PreventKeyboardDisplayOnProgrammaticFocus = newValue);
     }
 
-    /// <summary>Gets whether the platform proofing menu is currently available.</summary>
+    /// <summary>
+    ///  Gets whether the platform proofing menu is currently available.
+    /// </summary>
     public bool ProofingMenuFlyout => GetCommon(
         static editor => editor.ProofingMenuFlyout is not null,
         static editor => editor.ProofingMenuFlyout is not null);
 
-    /// <summary>Gets or sets selected text.</summary>
+    /// <summary>
+    ///  Gets or sets selected text.
+    /// </summary>
     public string SelectedText
     {
         get
@@ -356,7 +410,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets whether the standard text selection flyout is available.</summary>
+    /// <summary>
+    ///  Gets or sets whether the standard text selection flyout is available.
+    /// </summary>
     public WinUITextFlyoutMode SelectionFlyout
     {
         get => GetCommon(
@@ -381,7 +437,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets focused selection highlight color.</summary>
+    /// <summary>
+    ///  Gets or sets focused selection highlight color.
+    /// </summary>
     /// <remarks>Returns <see cref="Color.Empty"/> when the WinUI brush is unset.</remarks>
     public Color SelectionHighlightColor
     {
@@ -394,7 +452,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.SelectionHighlightColor = newValue);
     }
 
-    /// <summary>Gets or sets unfocused selection highlight color.</summary>
+    /// <summary>
+    ///  Gets or sets unfocused selection highlight color.
+    /// </summary>
     /// <remarks>Returns <see cref="Color.Empty"/> when the WinUI brush is unset.</remarks>
     public Color SelectionHighlightColorWhenNotFocused
     {
@@ -409,7 +469,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.SelectionHighlightColorWhenNotFocused = newValue);
     }
 
-    /// <summary>Gets or sets selection length.</summary>
+    /// <summary>
+    ///  Gets or sets selection length.
+    /// </summary>
     public int SelectionLength
     {
         get
@@ -424,7 +486,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets selection start.</summary>
+    /// <summary>
+    ///  Gets or sets selection start.
+    /// </summary>
     public int SelectionStart
     {
         get
@@ -439,7 +503,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets text alignment.</summary>
+    /// <summary>
+    ///  Gets or sets text alignment.
+    /// </summary>
     public WinUITextAlignment TextAlignment
     {
         get => FromXaml(GetCommon(static editor => editor.TextAlignment, static editor => editor.TextAlignment));
@@ -449,7 +515,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.TextAlignment = newValue);
     }
 
-    /// <summary>Gets or sets text reading order.</summary>
+    /// <summary>
+    ///  Gets or sets text reading order.
+    /// </summary>
     public WinUITextReadingOrder TextReadingOrder
     {
         get => FromXaml(GetCommon(static editor => editor.TextReadingOrder, static editor => editor.TextReadingOrder));
@@ -459,7 +527,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.TextReadingOrder = newValue);
     }
 
-    /// <summary>Gets or sets text wrapping.</summary>
+    /// <summary>
+    ///  Gets or sets text wrapping.
+    /// </summary>
     public WinUITextWrapping TextWrapping
     {
         get => FromXaml(GetCommon(static editor => editor.TextWrapping, static editor => editor.TextWrapping));
@@ -469,7 +539,9 @@ public abstract partial class WinUITextControl : XamlHostControl
             static (editor, newValue) => editor.TextWrapping = newValue);
     }
 
-    /// <summary>Gets or sets the editor background color.</summary>
+    /// <summary>
+    ///  Gets or sets the editor background color.
+    /// </summary>
     /// <remarks>Returns <see cref="Color.Empty"/> when the WinUI brush is unset.</remarks>
     public Color BackgroundColor
     {
@@ -481,7 +553,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets the editor foreground color.</summary>
+    /// <summary>
+    ///  Gets or sets the editor foreground color.
+    /// </summary>
     /// <remarks>Returns <see cref="Color.Empty"/> when the WinUI brush is unset.</remarks>
     public Color ForegroundColor
     {
@@ -493,7 +567,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets the editor font family name.</summary>
+    /// <summary>
+    ///  Gets or sets the editor font family name.
+    /// </summary>
     public string FontFamilyName
     {
         get
@@ -509,7 +585,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets the editor font size in view pixels.</summary>
+    /// <summary>
+    ///  Gets or sets the editor font size in view pixels.
+    /// </summary>
     public double FontSize
     {
         get
@@ -524,7 +602,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets whether the editor is enabled.</summary>
+    /// <summary>
+    ///  Gets or sets whether the editor is enabled.
+    /// </summary>
     public bool IsEnabled
     {
         get
@@ -540,7 +620,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets whether the editor participates in tab navigation.</summary>
+    /// <summary>
+    ///  Gets or sets whether the editor participates in tab navigation.
+    /// </summary>
     public bool IsTabStop
     {
         get
@@ -555,7 +637,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets the editor tab order.</summary>
+    /// <summary>
+    ///  Gets or sets the editor tab order.
+    /// </summary>
     public int TabIndex
     {
         get
@@ -570,7 +654,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets or sets the theme requested for the editor.</summary>
+    /// <summary>
+    ///  Gets or sets the theme requested for the editor.
+    /// </summary>
     public WinUIElementTheme RequestedTheme
     {
         get
@@ -597,7 +683,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Clears the undo and redo history.</summary>
+    /// <summary>
+    ///  Clears the undo and redo history.
+    /// </summary>
     public void ClearUndoRedoHistory()
     {
         VerifyUsable();
@@ -611,7 +699,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Copies the selection to the clipboard.</summary>
+    /// <summary>
+    ///  Copies the selection to the clipboard.
+    /// </summary>
     public void CopySelectionToClipboard()
     {
         VerifyUsable();
@@ -625,7 +715,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Cuts the selection to the clipboard.</summary>
+    /// <summary>
+    ///  Cuts the selection to the clipboard.
+    /// </summary>
     public void CutSelectionToClipboard()
     {
         VerifyUsable();
@@ -639,7 +731,11 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Gets linguistic alternatives for the current text.</summary>
+    /// <summary>
+    ///  Gets linguistic alternatives for the current text.
+    /// </summary>
+    /// <param name="cancellationToken">A token used to cancel the asynchronous WinUI alternatives request.</param>
+    /// <returns>A task that produces alternative strings supplied by the platform language services.</returns>
     public async Task<IReadOnlyList<string>> GetLinguisticAlternativesAsync(CancellationToken cancellationToken = default)
     {
         VerifyUsable();
@@ -648,7 +744,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         return alternatives;
     }
 
-    /// <summary>Pastes clipboard text into the selection.</summary>
+    /// <summary>
+    ///  Pastes clipboard text into the selection.
+    /// </summary>
     public void PasteFromClipboard()
     {
         VerifyUsable();
@@ -662,7 +760,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Redoes the most recently undone operation.</summary>
+    /// <summary>
+    ///  Redoes the most recently undone operation.
+    /// </summary>
     public void Redo()
     {
         VerifyUsable();
@@ -676,7 +776,11 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Selects a text range.</summary>
+    /// <summary>
+    ///  Selects a text range.
+    /// </summary>
+    /// <param name="start">The zero-based start index of the selection.</param>
+    /// <param name="length">The number of characters to select starting at <paramref name="start"/>.</param>
     public void Select(int start, int length)
     {
         VerifyUsable();
@@ -690,7 +794,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Selects all text.</summary>
+    /// <summary>
+    ///  Selects all text.
+    /// </summary>
     public void SelectAll()
     {
         VerifyUsable();
@@ -705,7 +811,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
-    /// <summary>Undoes the most recent operation.</summary>
+    /// <summary>
+    ///  Undoes the most recent operation.
+    /// </summary>
     public void Undo()
     {
         VerifyUsable();
@@ -719,18 +827,33 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
+    /// <summary>
+    ///  Gets the hosted TextBox when this wrapper was created as a TextBox projection.
+    /// </summary>
+    /// <returns>The hosted <see cref="XamlTextBox"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">This wrapper does not host a TextBox.</exception>
     internal XamlTextBox GetTextBox()
     {
         VerifyUsable();
         return _textBox ?? throw new InvalidOperationException("This wrapper does not host a TextBox.");
     }
 
+    /// <summary>
+    ///  Gets the hosted RichEditBox when this wrapper was created as a RichEdit projection.
+    /// </summary>
+    /// <returns>The hosted <see cref="XamlRichEditBox"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">This wrapper does not host a RichEditBox.</exception>
     internal XamlRichEditBox GetRichEditBox()
     {
         VerifyUsable();
         return _richEditBox ?? throw new InvalidOperationException("This wrapper does not host a RichEditBox.");
     }
 
+    /// <summary>
+    ///  Verifies that this wrapper is accessed on the owner thread and has not been disposed.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">The calling thread does not own this control.</exception>
+    /// <exception cref="ObjectDisposedException">The host or editor has already been disposed.</exception>
     internal void VerifyUsable()
     {
         VerifyAccess();
@@ -791,18 +914,36 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
+    /// <summary>
+    ///  Gets the hosted editor as its shared WinUI base type.
+    /// </summary>
+    /// <returns>The underlying hosted editor instance.</returns>
     private XamlControl GetEditor()
     {
         VerifyUsable();
         return _editor!;
     }
 
+    /// <summary>
+    ///  Reads a property that exists on both TextBox and RichEditBox projections.
+    /// </summary>
+    /// <typeparam name="T">The projected property type.</typeparam>
+    /// <param name="textBoxGetter">Reads the value from a TextBox-backed editor.</param>
+    /// <param name="richEditBoxGetter">Reads the value from a RichEditBox-backed editor.</param>
+    /// <returns>The current projected value.</returns>
     private T GetCommon<T>(Func<XamlTextBox, T> textBoxGetter, Func<XamlRichEditBox, T> richEditBoxGetter)
     {
         VerifyUsable();
         return _textBox is not null ? textBoxGetter(_textBox) : richEditBoxGetter(_richEditBox!);
     }
 
+    /// <summary>
+    ///  Writes a property that exists on both TextBox and RichEditBox projections.
+    /// </summary>
+    /// <typeparam name="T">The projected property type.</typeparam>
+    /// <param name="value">The value to assign.</param>
+    /// <param name="textBoxSetter">Assigns the value to a TextBox-backed editor.</param>
+    /// <param name="richEditBoxSetter">Assigns the value to a RichEditBox-backed editor.</param>
     private void SetCommon<T>(
         T value,
         Action<XamlTextBox, T> textBoxSetter,
@@ -819,6 +960,9 @@ public abstract partial class WinUITextControl : XamlHostControl
         }
     }
 
+    /// <summary>
+    ///  Detaches editor event handlers and drops references to hosted WinUI editor instances.
+    /// </summary>
     private void DetachEditor()
     {
         if (_editor is null)
@@ -832,6 +976,10 @@ public abstract partial class WinUITextControl : XamlHostControl
         _richEditBox = null;
     }
 
+    /// <summary>
+    ///  Cleans up partially constructed editor state and rethrows the construction failure.
+    /// </summary>
+    /// <param name="constructionFailure">The exception thrown while creating the editor host.</param>
     [DoesNotReturn]
     private void ThrowAfterFailedConstruction(Exception constructionFailure)
     {
@@ -864,6 +1012,18 @@ public abstract partial class WinUITextControl : XamlHostControl
         throw new UnreachableException();
     }
 
+    /// <summary>
+    ///  Converts a WinUI brush-backed color property to <see cref="Color"/>.
+    /// </summary>
+    /// <param name="brush">The WinUI brush value to project.</param>
+    /// <param name="propertyName">The property name used in exception messages.</param>
+    /// <returns>
+    ///  <see cref="Color.Empty"/> when <paramref name="brush"/> is <see langword="null"/>; otherwise the brush
+    ///  ARGB value.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    ///  <paramref name="brush"/> is not a <see cref="SolidColorBrush"/>.
+    /// </exception>
     private protected static Color GetSolidColor(Brush? brush, string propertyName)
         => brush switch
         {
@@ -876,9 +1036,19 @@ public abstract partial class WinUITextControl : XamlHostControl
             _ => throw new InvalidOperationException($"The editor's {propertyName} is not a solid color.")
         };
 
+    /// <summary>
+    ///  Converts <see cref="Color"/> to a WinUI <see cref="SolidColorBrush"/>.
+    /// </summary>
+    /// <param name="color">The color value to project into WinUI.</param>
+    /// <returns>A new <see cref="SolidColorBrush"/> with the same ARGB components.</returns>
     private protected static SolidColorBrush ToBrush(Color color)
         => new(Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B));
 
+    /// <summary>
+    ///  Converts WinUI character-casing values to the managed projection.
+    /// </summary>
+    /// <param name="value">The WinUI character-casing value.</param>
+    /// <returns>The equivalent managed character-casing value.</returns>
     private static WinUITextCharacterCasing FromXaml(XamlCharacterCasing value) => value switch
     {
         XamlCharacterCasing.Normal => WinUITextCharacterCasing.Normal,
@@ -887,6 +1057,11 @@ public abstract partial class WinUITextControl : XamlHostControl
         _ => throw new InvalidOperationException("The editor returned unknown character casing.")
     };
 
+    /// <summary>
+    ///  Converts managed character-casing values to WinUI values.
+    /// </summary>
+    /// <param name="value">The managed character-casing value.</param>
+    /// <returns>The equivalent WinUI character-casing value.</returns>
     private static XamlCharacterCasing ToXaml(WinUITextCharacterCasing value) => value switch
     {
         WinUITextCharacterCasing.Normal => XamlCharacterCasing.Normal,
@@ -895,6 +1070,11 @@ public abstract partial class WinUITextControl : XamlHostControl
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown character casing.")
     };
 
+    /// <summary>
+    ///  Converts WinUI candidate-window alignment values to the managed projection.
+    /// </summary>
+    /// <param name="value">The WinUI candidate-window alignment value.</param>
+    /// <returns>The equivalent managed alignment value.</returns>
     private static WinUITextCandidateWindowAlignment FromXaml(XamlCandidateWindowAlignment value) => value switch
     {
         XamlCandidateWindowAlignment.Default => WinUITextCandidateWindowAlignment.Default,
@@ -902,6 +1082,11 @@ public abstract partial class WinUITextControl : XamlHostControl
         _ => throw new InvalidOperationException("The editor returned unknown candidate-window alignment.")
     };
 
+    /// <summary>
+    ///  Converts managed candidate-window alignment values to WinUI values.
+    /// </summary>
+    /// <param name="value">The managed candidate-window alignment value.</param>
+    /// <returns>The equivalent WinUI alignment value.</returns>
     private static XamlCandidateWindowAlignment ToXaml(WinUITextCandidateWindowAlignment value) => value switch
     {
         WinUITextCandidateWindowAlignment.Default => XamlCandidateWindowAlignment.Default,
@@ -909,6 +1094,11 @@ public abstract partial class WinUITextControl : XamlHostControl
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown candidate-window alignment.")
     };
 
+    /// <summary>
+    ///  Converts WinUI text-alignment values to the managed projection.
+    /// </summary>
+    /// <param name="value">The WinUI text-alignment value.</param>
+    /// <returns>The equivalent managed alignment value.</returns>
     private static WinUITextAlignment FromXaml(XamlTextAlignment value) => value switch
     {
         XamlTextAlignment.Center => WinUITextAlignment.Center,
@@ -919,6 +1109,11 @@ public abstract partial class WinUITextControl : XamlHostControl
         _ => throw new InvalidOperationException("The editor returned unknown text alignment.")
     };
 
+    /// <summary>
+    ///  Converts managed text-alignment values to WinUI values.
+    /// </summary>
+    /// <param name="value">The managed text-alignment value.</param>
+    /// <returns>The equivalent WinUI alignment value.</returns>
     private static XamlTextAlignment ToXaml(WinUITextAlignment value) => value switch
     {
         WinUITextAlignment.Center => XamlTextAlignment.Center,
@@ -929,6 +1124,11 @@ public abstract partial class WinUITextControl : XamlHostControl
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown text alignment.")
     };
 
+    /// <summary>
+    ///  Converts WinUI text-reading-order values to the managed projection.
+    /// </summary>
+    /// <param name="value">The WinUI text-reading-order value.</param>
+    /// <returns>The equivalent managed reading-order value.</returns>
     private static WinUITextReadingOrder FromXaml(XamlTextReadingOrder value) => value switch
     {
         XamlTextReadingOrder.Default => WinUITextReadingOrder.Default,
@@ -936,6 +1136,11 @@ public abstract partial class WinUITextControl : XamlHostControl
         _ => throw new InvalidOperationException("The editor returned unknown text reading order.")
     };
 
+    /// <summary>
+    ///  Converts managed text-reading-order values to WinUI values.
+    /// </summary>
+    /// <param name="value">The managed text-reading-order value.</param>
+    /// <returns>The equivalent WinUI reading-order value.</returns>
     private static XamlTextReadingOrder ToXaml(WinUITextReadingOrder value) => value switch
     {
         WinUITextReadingOrder.Default => XamlTextReadingOrder.Default,
@@ -943,6 +1148,11 @@ public abstract partial class WinUITextControl : XamlHostControl
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown text reading order.")
     };
 
+    /// <summary>
+    ///  Converts WinUI text-wrapping values to the managed projection.
+    /// </summary>
+    /// <param name="value">The WinUI text-wrapping value.</param>
+    /// <returns>The equivalent managed wrapping value.</returns>
     private static WinUITextWrapping FromXaml(XamlTextWrapping value) => value switch
     {
         XamlTextWrapping.NoWrap => WinUITextWrapping.NoWrap,
@@ -951,6 +1161,11 @@ public abstract partial class WinUITextControl : XamlHostControl
         _ => throw new InvalidOperationException("The editor returned unknown text wrapping.")
     };
 
+    /// <summary>
+    ///  Converts managed text-wrapping values to WinUI values.
+    /// </summary>
+    /// <param name="value">The managed text-wrapping value.</param>
+    /// <returns>The equivalent WinUI wrapping value.</returns>
     private static XamlTextWrapping ToXaml(WinUITextWrapping value) => value switch
     {
         WinUITextWrapping.NoWrap => XamlTextWrapping.NoWrap,

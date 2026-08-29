@@ -8,10 +8,14 @@ using XamlRichEditClipboardFormat = Microsoft.UI.Xaml.Controls.RichEditClipboard
 
 namespace Windows.WinUI;
 
-/// <summary>Hosts a WinUI RichEditBox and projects its editing contract through .NET types.</summary>
+/// <summary>
+///  Hosts a WinUI RichEditBox and projects its editing contract through .NET types.
+/// </summary>
 public sealed class WinUIRichEditBox : WinUITextControl
 {
-    /// <summary>Creates a WinUI RichEditBox attached to <paramref name="parentWindow"/>.</summary>
+    /// <summary>
+    ///  Creates a WinUI RichEditBox attached to <paramref name="parentWindow"/>.
+    /// </summary>
     /// <param name="bounds">The host bounds in parent-client pixels.</param>
     /// <param name="parentWindow">The managed parent window.</param>
     public WinUIRichEditBox(Rectangle bounds, Window parentWindow)
@@ -19,7 +23,9 @@ public sealed class WinUIRichEditBox : WinUITextControl
     {
     }
 
-    /// <summary>Gets or sets the formats copied from the rich editor.</summary>
+    /// <summary>
+    ///  Gets or sets the formats copied from the rich editor.
+    /// </summary>
     public WinUIRichEditClipboardFormat ClipboardCopyFormat
     {
         get => GetRichEditBox().ClipboardCopyFormat switch
@@ -36,7 +42,9 @@ public sealed class WinUIRichEditBox : WinUITextControl
         };
     }
 
-    /// <summary>Gets or sets formatting keyboard accelerators disabled by the rich editor.</summary>
+    /// <summary>
+    ///  Gets or sets formatting keyboard accelerators disabled by the rich editor.
+    /// </summary>
     public WinUIRichEditDisabledFormattingAccelerators DisabledFormattingAccelerators
     {
         get
@@ -82,9 +90,13 @@ public sealed class WinUIRichEditBox : WinUITextControl
         }
     }
 
-    /// <summary>Gets the rich-text document.</summary>
+    /// <summary>
+    ///  Gets the rich-text document.
+    /// </summary>
     public RichEditTextDocument Document => GetRichEditBox().Document;
 
-    /// <summary>Gets the rich-text document through the newer WinUI property name.</summary>
+    /// <summary>
+    ///  Gets the rich-text document through the newer WinUI property name.
+    /// </summary>
     public RichEditTextDocument TextDocument => GetRichEditBox().TextDocument;
 }

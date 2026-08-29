@@ -3,6 +3,9 @@
 
 namespace Windows;
 
+/// <summary>
+///  Specifies font weight values.
+/// </summary>
 public enum FontWeight : uint
 {
     /// <summary>

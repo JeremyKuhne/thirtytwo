@@ -7,6 +7,9 @@ using Windows.Support;
 
 namespace Windows;
 
+/// <summary>
+///  Registers and manages a Win32 window class and class-level message procedure.
+/// </summary>
 public unsafe partial class WindowClass : DisposableBase.Finalizable
 {
     private readonly WNDPROC _priorClassProcedure;
@@ -30,44 +33,37 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
     /// </summary>
     public HMODULE ModuleInstance { get; }
 
-    /// <summary>Gets whether this instance subclasses an existing registered window class.</summary>
+    /// <summary>
+    ///  Gets whether this instance subclasses an existing registered window class.
+    /// </summary>
     public bool IsSubclassed => !_priorClassProcedure.IsNull;
 
     /// <summary>
     ///  Construct a new <see cref="WindowClass"/>.
     /// </summary>
-    /// <param name="className">
-    ///  The name of the class. If not provided a new GUID will be used.
-    /// </param>
+    /// <param name="className">The name of the class. If not provided a new GUID will be used.</param>
     /// <param name="moduleInstance">
     ///  The module instance to register the class with. If not provided the module instance
     ///  of the launching executable will be used.
     /// </param>
+    /// <param name="classStyle">Window class style flags used during registration.</param>
     /// <param name="backgroundBrush">
     ///  The background brush for the window. If not provided the system window color will be used. To have no
     ///  background brush, pass <see cref="HBRUSH.Invalid"/>.
     /// </param>
-    /// <param name="icon">
-    ///  The icon for the window. If not provided the application icon will be used.
-    /// </param>
+    /// <param name="icon">The icon for the window. If not provided the application icon will be used.</param>
     /// <param name="smallIcon">
     ///  The small icon for the window. If not provided the application icon will be used.
     /// </param>
-    /// <param name="cursor">
-    ///  The default cursor to use. If not provided the arrow cursor will be used.
-    /// </param>
+    /// <param name="cursor">The default cursor to use. If not provided the arrow cursor will be used.</param>
     /// <param name="menuName">
     ///  The name of the menu to be used, if any. Cannot also specify <paramref name="menuId"/>
     /// </param>
     /// <param name="menuId">
     ///  The id of the menu to be used, if any. Cannot also specify <paramref name="menuName"/>
     /// </param>
-    /// <param name="classExtraBytes">
-    ///  The number of extra bytes to be allocated for the class, if any.
-    /// </param>
-    /// <param name="windowExtraBytes">
-    ///  The number of extra bytes to be allocated for the window, if any.
-    /// </param>
+    /// <param name="classExtraBytes">The number of extra bytes to be allocated for the class, if any.</param>
+    /// <param name="windowExtraBytes">The number of extra bytes to be allocated for the window, if any.</param>
     /// <exception cref="ArgumentException">
     ///  <paramref name="menuName"/> and <paramref name="menuId"/> were both specified.
     /// </exception>
@@ -146,6 +142,10 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
         };
     }
 
+    /// <summary>
+    ///  Wraps an existing registered class and subclasses its class window procedure.
+    /// </summary>
+    /// <param name="registeredClassName">The name of an already-registered native window class.</param>
     public WindowClass(string registeredClassName)
     {
         _windowProcedure = WindowProcedureInternal;
@@ -165,11 +165,15 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
         }
     }
 
+    /// <summary>
+    ///  Gets whether this instance has been registered or is subclassing an existing class.
+    /// </summary>
     public bool IsRegistered => Atom.IsValid || IsSubclassed;
 
     /// <summary>
     ///  Registers this <see cref="WindowClass"/> so that instances can be created.
     /// </summary>
+    /// <returns>This instance.</returns>
     public WindowClass Register()
     {
         ObjectDisposedException.ThrowIf(Disposed, this);
@@ -191,9 +195,7 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
     /// <summary>
     ///  Creates an instance of this <see cref="WindowClass"/>.
     /// </summary>
-    /// <param name="bounds">
-    ///  Pass <see cref="Window.DefaultBounds"/> for the default size.
-    /// </param>
+    /// <param name="bounds">Pass <see cref="Window.DefaultBounds"/> for the default size.</param>
     /// <param name="windowName">
     ///  The text for the title bar when using <see cref="WindowStyles.Caption"/> or <see cref="WindowStyles.Overlapped"/>.
     ///  For buttons, checkboxes, and other static controls this is the text of the control or a resource reference.
@@ -202,6 +204,12 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
     ///  Optional window procedure to send messages to while attempting to construct the window. Allows for
     ///  <see cref="MessageType.Create"/> to be handled.
     /// </param>
+    /// <param name="style">Window style flags.</param>
+    /// <param name="extendedStyle">Extended window style flags.</param>
+    /// <param name="parentWindow">Optional parent window handle.</param>
+    /// <param name="parameters">Application-defined creation data passed to <c>CreateWindowEx</c>.</param>
+    /// <param name="menuHandle">Optional menu handle or child identifier.</param>
+    /// <returns>The created window handle.</returns>
     public virtual HWND CreateWindow(
         Rectangle bounds = default,
         string? windowName = null,
@@ -304,11 +312,20 @@ public unsafe partial class WindowClass : DisposableBase.Finalizable
         return result;
     }
 
+    /// <summary>
+    ///  Processes class-level messages for windows of this class.
+    /// </summary>
+    /// <param name="window">The target window handle.</param>
+    /// <param name="message">The message identifier.</param>
+    /// <param name="wParam">Message-specific first payload value.</param>
+    /// <param name="lParam">Message-specific second payload value.</param>
+    /// <returns>The native message result.</returns>
     protected virtual LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam) =>
         _priorClassProcedure.IsNull
             ? PInvoke.DefWindowProc(window, (uint)message, wParam, lParam)
             : PInvoke.CallWindowProc(_priorClassProcedure, window, (uint)message, wParam, lParam);
 
+    /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
         if (!Atom.IsValid)

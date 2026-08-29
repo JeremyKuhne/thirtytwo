@@ -8,18 +8,28 @@ namespace Windows.Threading;
 /// </summary>
 internal enum DispatcherWorkItemState
 {
-    /// <summary>The operation is waiting to run.</summary>
+    /// <summary>
+    ///  The operation is waiting to run.
+    /// </summary>
     Queued,
 
-    /// <summary>The operation callback has started.</summary>
+    /// <summary>
+    ///  The operation callback has started.
+    /// </summary>
     Running,
 
-    /// <summary>The operation completed successfully.</summary>
+    /// <summary>
+    ///  The operation completed successfully.
+    /// </summary>
     Succeeded,
 
-    /// <summary>The operation was canceled.</summary>
+    /// <summary>
+    ///  The operation was canceled.
+    /// </summary>
     Canceled,
 
-    /// <summary>The operation completed with an exception.</summary>
+    /// <summary>
+    ///  The operation completed with an exception.
+    /// </summary>
     Faulted
 }

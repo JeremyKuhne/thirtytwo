@@ -16,6 +16,9 @@ namespace Windows.Win32.System.Com;
 /// </summary>
 internal static unsafe class GlobalInterfaceTable
 {
+    /// <summary>
+    ///  Stores the process-wide global interface table pointer.
+    /// </summary>
     private static readonly IGlobalInterfaceTable* s_globalInterfaceTable;
 
     static GlobalInterfaceTable()
@@ -33,10 +36,17 @@ internal static unsafe class GlobalInterfaceTable
     }
 
     /// <summary>
-    ///  Registers the given <paramref name="interface"/> in the global interface table. This decrements the
-    ///  ref count so that the entry in the table will "own" the interface (as it increments the ref count).
+    ///  Registers the given <paramref name="interface"/> in the global interface table.
     /// </summary>
+    /// <typeparam name="TInterface">The COM interface type to register.</typeparam>
+    /// <param name="interface">Borrowed interface pointer to register.</param>
     /// <returns>The cookie used to refer to the interface in the table.</returns>
+    /// <remarks>
+    ///  <para>
+    ///   The table takes its own reference internally. This method does not transfer ownership of
+    ///   <paramref name="interface"/> and does not release the caller's reference.
+    ///  </para>
+    /// </remarks>
     public static uint RegisterInterface<TInterface>(TInterface* @interface)
         where TInterface : unmanaged, IComIID
     {
@@ -49,9 +59,30 @@ internal static unsafe class GlobalInterfaceTable
     }
 
     /// <summary>
-    ///  Gets an agile interface for the <paramref name="cookie"/> that was given back by
-    ///  <see cref="RegisterInterface{TInterface}(TInterface*)"/>
+    ///  <para>
+    ///   Gets an agile interface for a previously registered cookie.
+    ///  </para>
     /// </summary>
+    /// <typeparam name="TInterface">
+    ///  <para>
+    ///   The COM interface type to resolve.
+    ///  </para>
+    /// </typeparam>
+    /// <param name="cookie">
+    ///  <para>
+    ///   Registration cookie returned by <see cref="RegisterInterface{TInterface}(TInterface*)"/>.
+    ///  </para>
+    /// </param>
+    /// <param name="result">
+    ///  <para>
+    ///   Receives the HRESULT from the lookup operation.
+    ///  </para>
+    /// </param>
+    /// <returns>
+    ///  <para>
+    ///   A ComScope that owns one AddRef'd interface pointer when the lookup succeeds; otherwise a null scope.
+    ///  </para>
+    /// </returns>
     public static ComScope<TInterface> GetInterface<TInterface>(uint cookie, out HRESULT result)
         where TInterface : unmanaged, IComIID
     {
@@ -62,8 +93,14 @@ internal static unsafe class GlobalInterfaceTable
 
     /// <summary>
     ///  Revokes the interface registered with <see cref="RegisterInterface{TInterface}(TInterface*)"/>.
-    ///  This will decrement the ref count for the interface.
     /// </summary>
+    /// <param name="cookie">Registration cookie to revoke.</param>
+    /// <returns>The HRESULT from the revoke operation.</returns>
+    /// <remarks>
+    ///  <para>
+    ///   Revocation releases the table's internal reference for the registration.
+    ///  </para>
+    /// </remarks>
     public static HRESULT RevokeInterface(uint cookie)
     {
         HRESULT hr = s_globalInterfaceTable->RevokeInterfaceFromGlobal(cookie);

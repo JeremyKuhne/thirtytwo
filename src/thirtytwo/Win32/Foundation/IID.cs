@@ -14,8 +14,14 @@ using System.Runtime.InteropServices;
 
 namespace Windows.Win32.Foundation;
 
+/// <summary>
+///  Provides helpers for obtaining unmanaged pointers and references to COM interface IDs.
+/// </summary>
 internal static unsafe class IID
 {
+    /// <summary>
+    ///  Gets a readonly reference to the all-zero <see cref="Guid"/> value.
+    /// </summary>
     private static ref readonly Guid IID_NULL
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -36,6 +42,8 @@ internal static unsafe class IID
     /// <summary>
     ///  Gets a pointer to the IID <see cref="Guid"/> for the given <typeparamref name="T"/>.
     /// </summary>
+    /// <typeparam name="T">The COM interface marker type that supplies a static IID.</typeparam>
+    /// <returns>A pointer to the IID storage for <typeparamref name="T"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Guid* Get<T>() where T : unmanaged, IComIID
         => (Guid*)Unsafe.AsPointer(ref Unsafe.AsRef(in T.Guid));
@@ -43,12 +51,15 @@ internal static unsafe class IID
     /// <summary>
     ///  Gets a reference to the IID <see cref="Guid"/> for the given <typeparamref name="T"/>.
     /// </summary>
+    /// <typeparam name="T">The COM interface marker type that supplies a static IID.</typeparam>
+    /// <returns>A mutable reference used for APIs that require <c>ref Guid</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref Guid GetRef<T>() where T : unmanaged, IComIID
         => ref Unsafe.AsRef(in T.Guid);
 
     /// <summary>
-    ///  Empty <see cref="Guid"/>.
+    ///  Gets a pointer to an empty (all-zero) <see cref="Guid"/>.
     /// </summary>
+    /// <returns>A pointer to the static empty IID value.</returns>
     public static Guid* Empty() => (Guid*)Unsafe.AsPointer(ref Unsafe.AsRef(in IID_NULL));
 }

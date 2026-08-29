@@ -5,10 +5,29 @@ namespace Windows.Win32.System.Com;
 
 public unsafe partial struct IComCallableWrapper
 {
+    /// <summary>
+    ///  Native vtable layout for <see cref="IComCallableWrapper"/>.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   Field names encode ABI slot order and mirror unmanaged calling signatures.
+    ///  </para>
+    /// </remarks>
     public struct Vtbl
     {
+        /// <summary>
+        ///  Vtable slot 1: <c>QueryInterface</c>.
+        /// </summary>
         internal delegate* unmanaged[Stdcall]<IComCallableWrapper*, Guid*, void**, HRESULT> QueryInterface_1;
+
+        /// <summary>
+        ///  Vtable slot 2: <c>AddRef</c>.
+        /// </summary>
         internal delegate* unmanaged[Stdcall]<IComCallableWrapper*, uint> AddRef_2;
+
+        /// <summary>
+        ///  Vtable slot 3: <c>Release</c>.
+        /// </summary>
         internal delegate* unmanaged[Stdcall]<IComCallableWrapper*, uint> Release_3;
     }
 }

@@ -14,7 +14,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace ControlHost;
 
-internal sealed unsafe class RawScrollingScenario : IDisposable
+internal sealed unsafe class RawScrollingScenario : Touki.DisposableBase
 {
     private static readonly SET_WINDOW_POS_FLAGS s_moveFlags =
         SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOZORDER | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE;
@@ -40,7 +40,6 @@ internal sealed unsafe class RawScrollingScenario : IDisposable
     private bool _islandLoaded;
     private bool _started;
     private bool _captureScheduled;
-    private bool _disposed;
 
     internal RawScrollingScenario(HWND parent, ScenarioReporter reporter)
     {
@@ -59,14 +58,13 @@ internal sealed unsafe class RawScrollingScenario : IDisposable
         TryScheduleCapture();
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        if (_disposed)
+        if (!disposing)
         {
             return;
         }
 
-        _disposed = true;
         if (_captureTimer is not null)
         {
             _captureTimer.Stop();
@@ -88,7 +86,7 @@ internal sealed unsafe class RawScrollingScenario : IDisposable
 
     private void TryScheduleCapture()
     {
-        if (!_started || !_islandLoaded || _captureScheduled || _disposed)
+        if (!_started || !_islandLoaded || _captureScheduled || Disposed)
         {
             return;
         }
@@ -173,7 +171,7 @@ internal sealed unsafe class RawScrollingScenario : IDisposable
 
     private void ReportCaptureReady()
     {
-        if (_disposed)
+        if (Disposed)
         {
             return;
         }

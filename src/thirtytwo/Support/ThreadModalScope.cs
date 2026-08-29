@@ -3,12 +3,21 @@
 
 namespace Windows.Support;
 
+/// <summary>
+///  Temporarily disables visible, enabled windows on the current UI thread to emulate modal behavior.
+/// </summary>
+/// <remarks>
+///  Disposing the scope re-enables all disabled windows and attempts to restore the previously active and focused windows.
+/// </remarks>
 public readonly ref struct ThreadModalScope
 {
     private readonly List<HWND> _windows;
     private readonly HWND _focusedWindow;
     private readonly HWND _activeWindow;
 
+    /// <summary>
+    ///  Captures current focus and active windows, then disables eligible thread windows.
+    /// </summary>
     public ThreadModalScope()
     {
         _focusedWindow = PInvoke.GetFocus();
@@ -30,6 +39,9 @@ public readonly ref struct ThreadModalScope
         _windows = windows;
     }
 
+    /// <summary>
+    ///  Re-enables windows disabled by this scope and restores active and focused windows when available.
+    /// </summary>
     public void Dispose()
     {
         foreach (HWND hwnd in _windows)

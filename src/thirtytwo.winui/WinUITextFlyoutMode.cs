@@ -3,12 +3,18 @@
 
 namespace Windows.WinUI;
 
-/// <summary>Specifies whether a built-in text-editing flyout is available.</summary>
+/// <summary>
+///  Specifies whether a built-in text-editing flyout is available.
+/// </summary>
 public enum WinUITextFlyoutMode
 {
-    /// <summary>Uses the standard WinUI text-command flyout.</summary>
+    /// <summary>
+    ///  Uses the standard WinUI text-command flyout.
+    /// </summary>
     Default,
 
-    /// <summary>Disables the flyout.</summary>
+    /// <summary>
+    ///  Disables the flyout.
+    /// </summary>
     Disabled
 }

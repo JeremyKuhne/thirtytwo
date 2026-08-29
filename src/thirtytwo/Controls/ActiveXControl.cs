@@ -8,6 +8,9 @@ using Windows.Win32.System.Ole;
 
 namespace Windows;
 
+/// <summary>
+///  Hosts an ActiveX control instance.
+/// </summary>
 public unsafe partial class ActiveXControl : CustomControl
 {
     private static readonly WindowClass s_class = new(
@@ -26,6 +29,13 @@ public unsafe partial class ActiveXControl : CustomControl
     private bool _activated;
     private bool _shown;
 
+    /// <summary>
+    ///  Creates a host window for the given ActiveX class identifier.
+    /// </summary>
+    /// <param name="classId">The COM class identifier of the ActiveX control to instantiate.</param>
+    /// <param name="bounds">The host bounds in parent client coordinates.</param>
+    /// <param name="parentWindow">The parent window that owns the host window.</param>
+    /// <param name="parameters">Additional creation parameters passed as <c>lpParam</c>.</param>
     public ActiveXControl(
         Guid classId,
         Rectangle bounds,
@@ -170,12 +180,25 @@ public unsafe partial class ActiveXControl : CustomControl
         }
     }
 
+    /// <summary>
+    ///  Gets the cached COM property descriptors for the hosted control instance.
+    /// </summary>
     protected PropertyDescriptorCollection ComPropertyDescriptors
         => _propertyDescriptors ??= _typeDescriptor.GetProperties();
 
+    /// <summary>
+    ///  Sets a COM property on the hosted control by name.
+    /// </summary>
+    /// <param name="name">The property name.</param>
+    /// <param name="value">The value to assign.</param>
     protected void SetComProperty(string name, object? value)
         => ComPropertyDescriptors[name]!.SetValue(_instance, value);
 
+    /// <summary>
+    ///  Gets a COM property value from the hosted control by name.
+    /// </summary>
+    /// <param name="name">The property name.</param>
+    /// <returns>The current property value.</returns>
     protected object? GetComProperty(string name)
         => ComPropertyDescriptors[name]!.GetValue(_instance);
 

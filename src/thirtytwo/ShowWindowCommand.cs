@@ -3,6 +3,9 @@
 
 namespace Windows;
 
+/// <summary>
+///  Specifies how a window is shown, hidden, minimized, or restored.
+/// </summary>
 public enum ShowWindowCommand : uint
 {
     /// <summary>

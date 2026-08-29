@@ -7,7 +7,7 @@ namespace Windows;
 
 public unsafe partial class ActiveXControl
 {
-    private sealed partial class ConnectionPoint<TSink> : IDisposable
+    private sealed partial class ConnectionPoint<TSink> : DisposableBase
         where TSink : unmanaged, IComIID
     {
         private readonly ConnectionHandle? _connectionPoint;
@@ -29,6 +29,12 @@ public unsafe partial class ActiveXControl
             _connectionPoint = new(connectionPoint, sink);
         }
 
-        public void Dispose() => _connectionPoint?.Dispose();
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _connectionPoint?.Dispose();
+            }
+        }
     }
 }

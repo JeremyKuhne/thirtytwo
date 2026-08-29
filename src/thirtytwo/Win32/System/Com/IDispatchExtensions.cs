@@ -5,10 +5,23 @@ using Windows.Win32.System.Variant;
 
 namespace Windows.Win32.System.Com;
 
+/// <summary>
+///  Extension helpers for invoking <see cref="IDispatch"/> members.
+/// </summary>
 public static unsafe class IDispatchExtensions
 {
+    /// <summary>
+    ///  Provides extension helpers for a dispatch interface reference.
+    /// </summary>
+    /// <param name="dispatch">The dispatch interface reference that extension members operate on.</param>
     extension(ref IDispatch dispatch)
     {
+        /// <summary>
+        ///  Resolves dispatch identifiers for the provided member names.
+        /// </summary>
+        /// <param name="names">The member names to resolve.</param>
+        /// <returns>An array of dispatch identifiers aligned with <paramref name="names"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="names"/> is <see langword="null"/>.</exception>
         public int[] GetIdsOfNames(params string[] names)
         {
             ArgumentNullException.ThrowIfNull(names);
@@ -32,6 +45,14 @@ public static unsafe class IDispatchExtensions
             return ids;
         }
 
+        /// <summary>
+        ///  Resolves a dispatch identifier for a single member name.
+        /// </summary>
+        /// <param name="name">The member name to resolve.</param>
+        /// <returns>
+        ///  The resolved dispatch identifier, or <see cref="PInvoke.DISPID_UNKNOWN"/> when the name is unknown.
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
         public int GetIdOfName(string name)
         {
             ArgumentNullException.ThrowIfNull(name);
@@ -50,6 +71,11 @@ public static unsafe class IDispatchExtensions
             return id;
         }
 
+        /// <summary>
+        ///  Reads a property value by member name.
+        /// </summary>
+        /// <param name="name">The property name.</param>
+        /// <returns>The property value, or <see langword="default"/> when the name cannot be resolved.</returns>
         public VARIANT GetPropertyValue(string name)
         {
             int dispid = dispatch.GetIdOfName(name);
@@ -61,6 +87,11 @@ public static unsafe class IDispatchExtensions
             return dispatch.GetPropertyValue(dispid);
         }
 
+        /// <summary>
+        ///  Reads a property value by dispatch identifier.
+        /// </summary>
+        /// <param name="dispatchId">The property dispatch identifier.</param>
+        /// <returns>The value returned by <c>IDispatch::Invoke</c>.</returns>
         public VARIANT GetPropertyValue(int dispatchId)
         {
             Guid guid = Guid.Empty;
@@ -81,6 +112,12 @@ public static unsafe class IDispatchExtensions
             return value;
         }
 
+        /// <summary>
+        ///  Sets a property value by dispatch identifier.
+        /// </summary>
+        /// <param name="dispatchId">The property dispatch identifier.</param>
+        /// <param name="value">The value to assign.</param>
+        /// <returns>The <c>HRESULT</c> returned by <c>IDispatch::Invoke</c>.</returns>
         public HRESULT SetPropertyValue(int dispatchId, VARIANT value)
         {
             Guid guid = Guid.Empty;

@@ -3,20 +3,31 @@
 
 namespace Windows.Win32.Graphics.GdiPlus;
 
-public class Session : IDisposable
+/// <summary>
+///  Represents a started GDI+ session.
+/// </summary>
+/// <remarks>
+///  <para>
+///   Disposing the session shuts down the associated GDI+ token.
+///  </para>
+/// </remarks>
+public class Session : DisposableBase.Finalizable
 {
     private UIntPtr _token;
 
+    /// <summary>
+    ///  Starts a new GDI+ session.
+    /// </summary>
+    /// <param name="version">The GDI+ startup version to request.</param>
+    /// <exception cref="Exception">The underlying GDI+ startup call failed.</exception>
     public Session(uint version = 2)
     {
         _token = GdiPlus.Startup(version);
     }
 
-    ~Session() => Dispose();
-
-    public void Dispose()
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
     {
-        GC.SuppressFinalize(this);
         GdiPlus.Shutdown(_token);
         _token = UIntPtr.Zero;
     }

@@ -21,13 +21,40 @@ namespace Windows.Win32.System.Com;
 /// </remarks>
 public unsafe struct Lifetime<TVTable, TObject> where TVTable : unmanaged
 {
+    /// <summary>
+    ///  Pointer to the unmanaged vtable for this COM wrapper instance.
+    /// </summary>
     public TVTable* VTable;
+
+    /// <summary>
+    ///  Stored <see cref="GCHandle"/> encoded as an <see cref="IUnknown"/> pointer-sized value.
+    /// </summary>
     public IUnknown* Handle;
+
+    /// <summary>
+    ///  Native COM reference count.
+    /// </summary>
     public uint RefCount;
 
+    /// <summary>
+    ///  Increments the COM reference count for the wrapper instance.
+    /// </summary>
+    /// <param name="this">Pointer to the wrapper instance.</param>
+    /// <returns>The updated reference count.</returns>
     public static uint AddRef(IUnknown* @this)
         => Interlocked.Increment(ref ((Lifetime<TVTable, TObject>*)@this)->RefCount);
 
+    /// <summary>
+    ///  Decrements the COM reference count and frees resources when it reaches zero.
+    /// </summary>
+    /// <param name="this">Pointer to the wrapper instance.</param>
+    /// <returns>The updated reference count.</returns>
+    /// <remarks>
+    ///  <para>
+    ///   When the count reaches zero, the rooted managed object handle is released and native memory allocated for
+    ///   the wrapper is freed with <c>CoTaskMemFree</c>.
+    ///  </para>
+    /// </remarks>
     public static uint Release(IUnknown* @this)
     {
         var lifetime = (Lifetime<TVTable, TObject>*)@this;
@@ -56,6 +83,10 @@ public unsafe struct Lifetime<TVTable, TObject> where TVTable : unmanaged
     ///   include the "this" pointer as the first argument.
     ///  </para>
     /// </remarks>
+    /// <param name="object">The managed object to root for the COM wrapper lifetime.</param>
+    /// <param name="vtable">Pointer to the unmanaged vtable for this COM wrapper shape.</param>
+    /// <returns>A pointer to the allocated wrapper instance.</returns>
+    /// <exception cref="OutOfMemoryException">The native wrapper allocation failed.</exception>
     public static Lifetime<TVTable, TObject>* Allocate(TObject @object, TVTable* vtable)
     {
         GCHandle handle = GCHandle.Alloc(@object);
@@ -79,6 +110,8 @@ public unsafe struct Lifetime<TVTable, TObject> where TVTable : unmanaged
     /// <summary>
     ///  Gets the object wrapped by a lifetime wrapper.
     /// </summary>
+    /// <param name="this">Pointer to the wrapper instance.</param>
+    /// <returns>The managed object associated with the wrapper, if available.</returns>
     public static TObject? GetObject(IUnknown* @this)
     {
         var lifetime = (Lifetime<TVTable, TObject>*)@this;

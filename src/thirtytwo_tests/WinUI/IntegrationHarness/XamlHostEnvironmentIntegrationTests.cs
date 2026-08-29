@@ -91,7 +91,8 @@ public class XamlHostEnvironmentIntegrationTests
     {
         WinUIIntegrationResult result = AssertScenario(
             WinUIIntegrationScenario.EnvironmentWrongThreadRejected,
-            "wrong-thread-rejected");
+            "wrong-thread-rejected",
+            "owner-thread-dispose-retried");
 
         FindEvent(result, "wrong-thread-rejected").Message.Should().Contain("Expected managed thread");
     }

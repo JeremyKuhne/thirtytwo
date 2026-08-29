@@ -6,9 +6,14 @@ namespace Windows.Messages;
 public partial class EnterIdleHandler
 {
     /// <summary>
-    ///  Delegate for processing idle events.
+    ///  Handles a <see cref="MessageType.EnterIdle"/> notification.
     /// </summary>
-    /// <param name="isDialog"><see langword="true"/> if dialog is displayed, otherwise a menu is displayed.</param>
-    /// <param name="handle">Dialog handle if is <see langword="true"/>, or parent window handle.</param>
+    /// <param name="isDialog">
+    ///  <see langword="true"/> when <c>wParam</c> is <c>MSGF_DIALOGBOX</c>; otherwise the source is a menu loop.
+    /// </param>
+    /// <param name="handle">
+    ///  The native handle carried in <c>lParam</c>: the dialog HWND when <paramref name="isDialog"/> is
+    ///  <see langword="true"/>, or the owner/parent window HWND for menu idle.
+    /// </param>
     public delegate void EnterIdleEvent(bool isDialog, HWND handle);
 }

@@ -14,7 +14,7 @@ public unsafe class ComHelpersTests
     [STATestMethod]
     public void SHCreateShellItem_NonexistentPath_Throws()
     {
-        string path = Path.Combine(Path.GetTempPath(), $"thirtytwo-{Guid.NewGuid():N}", "missing");
+        string path = Path.Join(Path.GetTempPath(), $"thirtytwo-{Guid.NewGuid():N}", "missing");
 
         Action action = () =>
         {

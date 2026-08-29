@@ -6,6 +6,9 @@ using static Windows.Win32.UI.Input.KeyboardAndMouse.VIRTUAL_KEY;
 namespace Windows;
 
 // https://learn.microsoft.com/windows/win32/inputdev/virtual-key-codes
+/// <summary>
+///  Identifies virtual-key codes used by keyboard and mouse input messages.
+/// </summary>
 public enum VirtualKey : ushort
 {
     /// <summary>
@@ -225,40 +228,179 @@ public enum VirtualKey : ushort
 
     // 0-9 and A-Z match ASCII
 
+    /// <summary>
+    ///  '1' key.
+    /// </summary>
     One = 0x30,
+
+    /// <summary>
+    ///  '2' key.
+    /// </summary>
     Two = 0x31,
+
+    /// <summary>
+    ///  '3' key.
+    /// </summary>
     Three = 0x32,
+
+    /// <summary>
+    ///  '4' key.
+    /// </summary>
     Four = 0x33,
+
+    /// <summary>
+    ///  '5' key.
+    /// </summary>
     Five = 0x34,
+
+    /// <summary>
+    ///  '6' key.
+    /// </summary>
     Six = 0x35,
+
+    /// <summary>
+    ///  '7' key.
+    /// </summary>
     Seven = 0x36,
+
+    /// <summary>
+    ///  '8' key.
+    /// </summary>
     Eight = 0x37,
+
+    /// <summary>
+    ///  '9' key.
+    /// </summary>
     Nine = 0x38,
+
+    /// <summary>
+    ///  'A' key.
+    /// </summary>
     A = 0x41,
+
+    /// <summary>
+    ///  'B' key.
+    /// </summary>
     B = 0x42,
+
+    /// <summary>
+    ///  'C' key.
+    /// </summary>
     C = 0x43,
+
+    /// <summary>
+    ///  'D' key.
+    /// </summary>
     D = 0x44,
+
+    /// <summary>
+    ///  'E' key.
+    /// </summary>
     E = 0x45,
+
+    /// <summary>
+    ///  'F' key.
+    /// </summary>
     F = 0x46,
+
+    /// <summary>
+    ///  'G' key.
+    /// </summary>
     G = 0x47,
+
+    /// <summary>
+    ///  'H' key.
+    /// </summary>
     H = 0x48,
+
+    /// <summary>
+    ///  'I' key.
+    /// </summary>
     I = 0x49,
+
+    /// <summary>
+    ///  'J' key.
+    /// </summary>
     J = 0x4A,
+
+    /// <summary>
+    ///  'K' key.
+    /// </summary>
     K = 0x4B,
+
+    /// <summary>
+    ///  'L' key.
+    /// </summary>
     L = 0x4C,
+
+    /// <summary>
+    ///  'M' key.
+    /// </summary>
     M = 0x4D,
+
+    /// <summary>
+    ///  'N' key.
+    /// </summary>
     N = 0x4E,
+
+    /// <summary>
+    ///  'O' key.
+    /// </summary>
     O = 0x4F,
+
+    /// <summary>
+    ///  'P' key.
+    /// </summary>
     P = 0x50,
+
+    /// <summary>
+    ///  'Q' key.
+    /// </summary>
     Q = 0x51,
+
+    /// <summary>
+    ///  'R' key.
+    /// </summary>
     R = 0x52,
+
+    /// <summary>
+    ///  'S' key.
+    /// </summary>
     S = 0x53,
+
+    /// <summary>
+    ///  'T' key.
+    /// </summary>
     T = 0x54,
+
+    /// <summary>
+    ///  'U' key.
+    /// </summary>
     U = 0x55,
+
+    /// <summary>
+    ///  'V' key.
+    /// </summary>
     V = 0x56,
+
+    /// <summary>
+    ///  'W' key.
+    /// </summary>
     W = 0x57,
+
+    /// <summary>
+    ///  'X' key.
+    /// </summary>
     X = 0x58,
+
+    /// <summary>
+    ///  'Y' key.
+    /// </summary>
     Y = 0x59,
+
+    /// <summary>
+    ///  'Z' key.
+    /// </summary>
     Z = 0x5A,
 
     /// <summary>

@@ -3,13 +3,19 @@
 
 namespace Windows.WinUI;
 
-/// <summary>Specifies horizontal text alignment.</summary>
+/// <summary>
+///  Specifies horizontal text alignment.
+/// </summary>
 public enum WinUITextAlignment
 {
-    /// <summary>Centers text.</summary>
+    /// <summary>
+    ///  Centers text.
+    /// </summary>
     Center = 0,
 
-    /// <summary>Aligns text to the physical left edge.</summary>
+    /// <summary>
+    ///  Aligns text to the physical left edge.
+    /// </summary>
     Left = 1,
 
     /// <summary>
@@ -18,7 +24,9 @@ public enum WinUITextAlignment
     /// </summary>
     Start = Left,
 
-    /// <summary>Aligns text to the physical right edge.</summary>
+    /// <summary>
+    ///  Aligns text to the physical right edge.
+    /// </summary>
     Right = 2,
 
     /// <summary>
@@ -27,9 +35,13 @@ public enum WinUITextAlignment
     /// </summary>
     End = Right,
 
-    /// <summary>Justifies text.</summary>
+    /// <summary>
+    ///  Justifies text.
+    /// </summary>
     Justify = 3,
 
-    /// <summary>Determines alignment from text content.</summary>
+    /// <summary>
+    ///  Determines alignment from text content.
+    /// </summary>
     DetectFromContent = 4
 }

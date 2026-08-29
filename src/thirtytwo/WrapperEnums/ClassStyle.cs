@@ -3,6 +3,9 @@
 
 namespace Windows;
 
+/// <summary>
+///  Specifies window class styles used when registering a window class.
+/// </summary>
 [Flags]
 public enum ClassStyle : uint
 {

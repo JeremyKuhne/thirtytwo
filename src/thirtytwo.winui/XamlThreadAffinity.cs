@@ -12,19 +12,27 @@ internal sealed class XamlThreadAffinity
 {
     private readonly Thread _thread = Thread.CurrentThread;
 
-    /// <summary>Captures the current thread as the owner.</summary>
+    /// <summary>
+    ///  Captures the current thread as the owner.
+    /// </summary>
     internal XamlThreadAffinity()
     {
         NativeThreadId = PInvoke.GetCurrentThreadId();
     }
 
-    /// <summary>Gets the managed identifier of the owner thread.</summary>
+    /// <summary>
+    ///  Gets the managed identifier of the owner thread.
+    /// </summary>
     internal int ManagedThreadId => _thread.ManagedThreadId;
 
-    /// <summary>Gets the native identifier of the owner thread.</summary>
+    /// <summary>
+    ///  Gets the native identifier of the owner thread.
+    /// </summary>
     internal uint NativeThreadId { get; }
 
-    /// <summary>Verifies that the calling thread is the captured owner thread.</summary>
+    /// <summary>
+    ///  Verifies that the calling thread is the captured owner thread.
+    /// </summary>
     /// <exception cref="InvalidOperationException">The calling thread is not the owner thread.</exception>
     internal void VerifyAccess()
     {

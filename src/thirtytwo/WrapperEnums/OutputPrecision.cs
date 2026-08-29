@@ -3,6 +3,9 @@
 
 namespace Windows;
 
+/// <summary>
+///  Specifies output precision values for logical fonts.
+/// </summary>
 public enum OutputPrecision : byte
 {
     /// <summary>

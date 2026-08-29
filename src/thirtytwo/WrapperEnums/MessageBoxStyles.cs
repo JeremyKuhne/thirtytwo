@@ -3,6 +3,9 @@
 
 namespace Windows;
 
+/// <summary>
+///  Specifies options for displaying a message box.
+/// </summary>
 /// <remarks>
 ///  <inheritdoc cref="Interop.MessageBoxEx(HWND, PCWSTR, PCWSTR, MESSAGEBOX_STYLE, ushort)"/>
 /// </remarks>
@@ -74,6 +77,7 @@ public enum MessageBoxStyles : uint
     /// </summary>
     IconWarning = MESSAGEBOX_STYLE.MB_ICONWARNING,
 
+    /// <inheritdoc cref="MESSAGEBOX_STYLE.MB_ICONERROR"/>
     IconError = MESSAGEBOX_STYLE.MB_ICONERROR,
 
     /// <summary>

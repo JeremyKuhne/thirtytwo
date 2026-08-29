@@ -20,17 +20,34 @@ public readonly struct FontFeature
     /// </remarks>
     public readonly uint Parameter;
 
+    /// <summary>
+    ///  Initializes a feature with an explicit parameter value.
+    /// </summary>
+    /// <param name="nameTag">The OpenType feature tag.</param>
+    /// <param name="parameter">The feature parameter value used by DirectWrite.</param>
     public FontFeature(FontFeatureTag nameTag, uint parameter)
     {
         NameTag = nameTag;
         Parameter = parameter;
     }
 
+    /// <summary>
+    ///  Initializes a feature with enable or disable semantics.
+    /// </summary>
+    /// <param name="nameTag">The OpenType feature tag.</param>
+    /// <param name="enable">
+    ///  <see langword="true"/> to pass parameter value <c>1</c>; otherwise parameter value <c>0</c>.
+    /// </param>
     public FontFeature(FontFeatureTag nameTag, bool enable = true)
     {
         NameTag = nameTag;
         Parameter = enable ? 1u : 0u;
     }
 
+    /// <summary>
+    ///  Creates an enabled feature from a tag.
+    /// </summary>
+    /// <param name="tag">The OpenType feature tag.</param>
+    /// <returns>A <see cref="FontFeature"/> whose <see cref="Parameter"/> is set to <c>1</c>.</returns>
     public static implicit operator FontFeature(FontFeatureTag tag) => new(tag);
 }

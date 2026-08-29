@@ -14,7 +14,9 @@ public static unsafe partial class Application
     private static bool s_useUndocumentedDarkModeApis = true;
     private static int s_colorGeneration;
 
-    /// <summary>Gets or sets how the application chooses its light or dark color palette.</summary>
+    /// <summary>
+    ///  Gets or sets how the application chooses its light or dark color palette.
+    /// </summary>
     /// <remarks>
     ///  <para>
     ///   The default is <see cref="ApplicationColorMode.System"/>. Changing this property updates existing managed
@@ -58,7 +60,9 @@ public static unsafe partial class Application
         }
     }
 
-    /// <summary>Gets or sets whether undocumented Windows dark mode APIs are used for native controls.</summary>
+    /// <summary>
+    ///  Gets or sets whether undocumented Windows dark mode APIs are used for native controls.
+    /// </summary>
     /// <remarks>
     ///  <para>
     ///   The default is <see langword="true"/>. These APIs are not part of the supported Windows SDK contract and
@@ -93,7 +97,9 @@ public static unsafe partial class Application
         }
     }
 
-    /// <summary>Gets a snapshot of the application's resolved color state and semantic palette.</summary>
+    /// <summary>
+    ///  Gets a snapshot of the application's resolved color state and semantic palette.
+    /// </summary>
     /// <remarks>
     ///  <para>
     ///   The snapshot reflects the requested mode, resolved Light or Dark preference, High Contrast precedence,
@@ -117,6 +123,9 @@ public static unsafe partial class Application
         }
     }
 
+    /// <summary>
+    ///  Re-reads system color-mode signals and updates managed windows when state changes.
+    /// </summary>
     internal static void RefreshSystemColorMode()
     {
         bool changed;

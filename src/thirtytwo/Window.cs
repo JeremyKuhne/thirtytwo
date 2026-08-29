@@ -18,6 +18,9 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     private static readonly ConcurrentDictionary<HWND, WeakReference<Window>> s_windows = new();
     private static readonly WindowClass s_defaultWindowClass = new(className: $"DefaultWindowClass_{Guid.NewGuid()}");
 
+    /// <summary>
+    ///  Default Win32 creation bounds that delegate position and size selection to the system.
+    /// </summary>
     public static Rectangle DefaultBounds { get; }
         = new(PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT, PInvoke.CW_USEDEFAULT);
 
@@ -33,6 +36,9 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     // Stash the delegate to keep it from being collected
     private readonly WindowProcedure _windowProcedure;
     private readonly WNDPROC _priorWindowProcedure;
+    /// <summary>
+    ///  The window class registration used to create this native window.
+    /// </summary>
     protected readonly WindowClass _windowClass;
 
     // Identifies the managed thread that owns the HWND without querying a handle after destruction.
@@ -54,6 +60,10 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
     private HwndRenderTarget? _renderTarget;
 
+    /// <summary>
+    ///  Gets the Direct2D render target for this window.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Direct2D rendering is not currently enabled.</exception>
     protected HwndRenderTarget RenderTarget => _renderTarget ?? throw new InvalidOperationException();
 
     private uint _lastDpi;
@@ -70,6 +80,10 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
     private readonly Features _features;
 
+    /// <summary>
+    ///  Gets whether Direct2D rendering is enabled and initialized for this window.
+    /// </summary>
+    /// <returns><see langword="true"/> when the Direct2D feature flag is enabled for this instance.</returns>
     [MemberNotNullWhen(true, nameof(_renderTarget))]
     protected bool IsDirect2dEnabled()
     {
@@ -118,8 +132,24 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
     object? IHandle<HWND>.Wrapper => this;
 
+    /// <summary>
+    ///  Occurs when the window receives a native Win32 message.
+    /// </summary>
     public event WindowsMessageEvent? MessageHandler;
 
+    /// <summary>
+    ///  Creates a managed wrapper around a newly created Win32 window.
+    /// </summary>
+    /// <param name="bounds">Initial bounds in screen coordinates.</param>
+    /// <param name="text">Optional caption or control text.</param>
+    /// <param name="style">Window style flags.</param>
+    /// <param name="extendedStyle">Extended window style flags.</param>
+    /// <param name="parentWindow">Optional parent window for child windows.</param>
+    /// <param name="windowClass">Optional class registration to create with.</param>
+    /// <param name="parameters">Application-defined creation data passed to <c>CreateWindowEx</c>.</param>
+    /// <param name="menuHandle">Optional menu handle or child identifier.</param>
+    /// <param name="backgroundColor">Optional explicit background color override.</param>
+    /// <param name="features">Optional framework feature flags for this window.</param>
     public Window(
         Rectangle bounds = default,
         string? text = default,
@@ -223,6 +253,9 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         }
     }
 
+    /// <summary>
+    ///  Applies the current application color state to all live managed windows.
+    /// </summary>
     internal static void ApplyApplicationColorModeToWindows()
     {
         HashSet<Threading.Dispatcher> postedDispatchers = [];
@@ -278,6 +311,11 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         return font;
     }
 
+    /// <summary>
+    ///  Sets the window font from a typeface and point size.
+    /// </summary>
+    /// <param name="typeFace">The font family name.</param>
+    /// <param name="pointSize">The requested point size.</param>
     public void SetFont(string typeFace, int pointSize)
     {
         HFONT newFont = HFONT.CreateFont(
@@ -315,15 +353,24 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     {
     }
 
+    /// <summary>
+    ///  Called when a paint message is processed.
+    /// </summary>
     protected virtual void OnPaint()
     {
     }
 
+    /// <summary>
+    ///  Called when the window client size changes.
+    /// </summary>
+    /// <param name="size">The new client size in physical pixels.</param>
     protected virtual void OnSize(Size size)
     {
     }
 
-    /// <summary>Called after this window has transitioned to a different DPI.</summary>
+    /// <summary>
+    ///  Called after this window has transitioned to a different DPI.
+    /// </summary>
     /// <param name="oldDpi">The effective DPI before the transition.</param>
     /// <param name="newDpi">The effective DPI after the transition.</param>
     /// <remarks>
@@ -346,6 +393,8 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     ///   the control Window so that it can handle the message. This is similar to MFC/WinForms behavior.
     ///  </para>
     /// </remarks>
+    /// <param name="controlId">The sender control identifier.</param>
+    /// <param name="notificationCode">The control-specific notification code.</param>
     protected virtual void OnCommand(int controlId, int notificationCode)
     {
     }
@@ -476,6 +525,11 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     ///   <see cref="MessageType.NonClientCalculateSize"/> and <see cref="MessageType.Create"/>. Do not access
     ///  </para>
     /// </remarks>
+    /// <param name="window">The target window handle.</param>
+    /// <param name="message">The message identifier.</param>
+    /// <param name="wParam">Message-specific first payload value.</param>
+    /// <param name="lParam">Message-specific second payload value.</param>
+    /// <returns>The native message result.</returns>
     protected virtual LRESULT WindowProcedure(HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
     {
         switch (message)
@@ -587,7 +641,9 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
             : PInvoke.CallWindowProc(_priorWindowProcedure, window, (uint)message, wParam, lParam);
     }
 
-    /// <summary>Called after the effective application color state changes.</summary>
+    /// <summary>
+    ///  Called after the effective application color state changes.
+    /// </summary>
     /// <remarks>
     ///  <para>
     ///   This method is called on the window's owning UI thread after <see cref="Application.CurrentColorState"/> is
@@ -600,7 +656,9 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     {
     }
 
-    /// <summary>Applies the current application color state to this window using a private dark theme class.</summary>
+    /// <summary>
+    ///  Applies the current application color state to this window using a private dark theme class.
+    /// </summary>
     /// <param name="darkThemeName">The private visual-style class name used when dark mode is active.</param>
     /// <remarks>
     ///  <para>
@@ -612,9 +670,15 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     protected void ApplyApplicationDarkModeTheme(string darkThemeName)
         => ApplyApplicationDarkModeTheme(Handle, darkThemeName);
 
-    /// <summary>Applies the current application color state using private dark visual-style identifiers.</summary>
-    /// <param name="darkSubAppName">The private sub-app name used when dark mode is active, or <see langword="null"/>.</param>
-    /// <param name="darkSubIdList">The private sub-ID list used when dark mode is active, or <see langword="null"/>.</param>
+    /// <summary>
+    ///  Applies the current application color state using private dark visual-style identifiers.
+    /// </summary>
+    /// <param name="darkSubAppName">
+    ///  The private sub-app name used when dark mode is active, or <see langword="null"/>.
+    /// </param>
+    /// <param name="darkSubIdList">
+    ///  The private sub-ID list used when dark mode is active, or <see langword="null"/>.
+    /// </param>
     /// <remarks>
     ///  <para>
     ///   Call this after the window handle is created and again from <see cref="OnColorModeChanged"/>. At least one
@@ -624,7 +688,9 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     protected void ApplyApplicationDarkModeTheme(string? darkSubAppName, string? darkSubIdList)
         => ApplyApplicationDarkModeTheme(Handle, darkSubAppName, darkSubIdList);
 
-    /// <summary>Applies the current application color state to an owned native window using a private dark theme class.</summary>
+    /// <summary>
+    ///  Applies the current application color state to an owned native window using a private dark theme class.
+    /// </summary>
     /// <param name="window">The owned native window whose visual-style association is updated.</param>
     /// <param name="darkThemeName">The private visual-style class name used when dark mode is active.</param>
     /// <remarks>
@@ -639,10 +705,16 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         ApplyApplicationDarkModeTheme(window, darkThemeName, darkSubIdList: null);
     }
 
-    /// <summary>Applies private dark visual-style identifiers to an owned native window.</summary>
+    /// <summary>
+    ///  Applies private dark visual-style identifiers to an owned native window.
+    /// </summary>
     /// <param name="window">The owned native window whose visual-style association is updated.</param>
-    /// <param name="darkSubAppName">The private sub-app name used when dark mode is active, or <see langword="null"/>.</param>
-    /// <param name="darkSubIdList">The private sub-ID list used when dark mode is active, or <see langword="null"/>.</param>
+    /// <param name="darkSubAppName">
+    ///  The private sub-app name used when dark mode is active, or <see langword="null"/>.
+    /// </param>
+    /// <param name="darkSubIdList">
+    ///  The private sub-ID list used when dark mode is active, or <see langword="null"/>.
+    /// </param>
     /// <remarks>
     ///  <para>
     ///   This overload supports controls that select a private theme through the sub-ID list and unwrapped child or
@@ -691,7 +763,9 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         return current;
     }
 
-    /// <summary>Gets the effective inherited background color for this window.</summary>
+    /// <summary>
+    ///  Gets the effective inherited background color for this window.
+    /// </summary>
     /// <param name="controlSurface">
     ///  <see langword="true"/> to use the semantic interactive-control background when no explicit background is
     ///  inherited; <see langword="false"/> to use the semantic window background.
@@ -709,7 +783,9 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         return controlSurface ? palette.ControlBackground : palette.WindowBackground;
     }
 
-    /// <summary>Gets the effective enabled or disabled semantic foreground color for this window.</summary>
+    /// <summary>
+    ///  Gets the effective enabled or disabled semantic foreground color for this window.
+    /// </summary>
     /// <param name="controlSurface">
     ///  <see langword="true"/> to use the semantic interactive-control foreground; <see langword="false"/> to use
     ///  the semantic window foreground.
@@ -899,6 +975,11 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     ///  Try to get the <see cref="Window"/> from the given <paramref name="handle"/>. Walks parent windows
     ///  if there is no matching <see cref="Window"/> and <paramref name="walkParents"/> is <see langword="true"/>.
     /// </summary>
+    /// <param name="handle">The window handle wrapper to resolve.</param>
+    /// <param name="walkParents">
+    ///  <see langword="true"/> to continue searching through parent handles when no direct match is found.
+    /// </param>
+    /// <returns>The matching managed window wrapper, or <see langword="null"/>.</returns>
     public static Window? FromHandle<T>(T handle, bool walkParents = false)
         where T : IHandle<HWND>
     {
@@ -981,6 +1062,10 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
 
     void ILayoutHandler.Layout(Rectangle bounds, float scale) => LayoutWindow(bounds);
 
+    /// <summary>
+    ///  Lays out this window in the given client bounds.
+    /// </summary>
+    /// <param name="bounds">The requested client bounds in physical pixels.</param>
     protected virtual void LayoutWindow(Rectangle bounds)
     {
         if (bounds != this.GetClientRectangle())
@@ -989,20 +1074,41 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
         }
     }
 
+    /// <summary>
+    ///  Converts a managed <see cref="Window"/> wrapper to its <c>HWND</c>.
+    /// </summary>
+    /// <param name="window">The window to convert.</param>
+    /// <returns>The underlying native handle.</returns>
     public static implicit operator HWND(Window window) => window.Handle;
 
     /// <summary>
     ///  Allows preprocessing messages before they are translated and dispatched.
     /// </summary>
+    /// <param name="message">The message under consideration.</param>
     /// <returns><see langword="true"/> if handled and translation and dispatching should be skipped.</returns>
     protected internal virtual bool PreProcessMessage(ref MSG message) => false;
 
+    /// <summary>
+    ///  Converts a pixel measurement to HIMETRIC units using the current DPI.
+    /// </summary>
+    /// <param name="pixels">The pixel measurement.</param>
+    /// <returns>The equivalent HIMETRIC value.</returns>
     public int PixelToHiMetric(int pixels)
         => (int)(((HiMetricUnitsPerInch * pixels) + (_lastDpi >> 1)) / _lastDpi);
 
+    /// <summary>
+    ///  Converts a pixel size to HIMETRIC units using the current DPI.
+    /// </summary>
+    /// <param name="size">The pixel size.</param>
+    /// <returns>The equivalent HIMETRIC size.</returns>
     public Size PixelToHiMetric(Size size)
         => new(PixelToHiMetric(size.Width), PixelToHiMetric(size.Height));
 
+    /// <summary>
+    ///  Converts a HIMETRIC measurement to pixels using the current DPI.
+    /// </summary>
+    /// <param name="units">The HIMETRIC measurement.</param>
+    /// <returns>The equivalent pixel value.</returns>
     public int HiMetricToPixel(int units)
         => (int)(((_lastDpi * units) + (HiMetricUnitsPerInch / 2)) / HiMetricUnitsPerInch);
 

@@ -15,13 +15,16 @@ namespace Windows;
 ///
 ///  Other things in consideration: Adding a BeginPaint that scales the HDC to the DPI of the window.
 ///
-///    deviceContext.SetGraphicsMode(GRAPHICS_MODE.GM_ADVANCED);
-///    uint dpi = hwnd.GetDpi();
-///    Matrix3x2 transform = Matrix3x2.CreateScale((dpi / 96.0f) * 5.0f);
-///    deviceContext.SetWorldTransform(ref transform);
+///  deviceContext.SetGraphicsMode(GRAPHICS_MODE.GM_ADVANCED);
+///  uint dpi = hwnd.GetDpi();
+///  Matrix3x2 transform = Matrix3x2.CreateScale((dpi / 96.0f) * 5.0f);
+///  deviceContext.SetWorldTransform(ref transform);
 /// </devdoc>
 public unsafe readonly partial struct DeviceContext : IDisposable, IHandle<HDC>
 {
+    /// <summary>
+    ///  Gets the wrapped <c>HDC</c> handle.
+    /// </summary>
     public HDC Handle { get; private init; }
     object? IHandle<HDC>.Wrapper => null;
 
@@ -31,6 +34,7 @@ public unsafe readonly partial struct DeviceContext : IDisposable, IHandle<HDC>
     /// <summary>
     ///  Creates a screen device context.
     /// </summary>
+    /// <returns>A device context that must be disposed to release the screen DC.</returns>
     public static DeviceContext Create() => new()
     {
         HWND = default,
@@ -38,6 +42,14 @@ public unsafe readonly partial struct DeviceContext : IDisposable, IHandle<HDC>
         Handle = PInvoke.GetDC(HWND.Null)
     };
 
+    /// <summary>
+    ///  Creates a device context wrapper for an existing <c>HDC</c>.
+    /// </summary>
+    /// <param name="hdc">The device context handle to wrap.</param>
+    /// <param name="ownsHandle">
+    ///  <see langword="true"/> to delete the wrapped handle on dispose; otherwise disposal does not release it.
+    /// </param>
+    /// <returns>A wrapper over <paramref name="hdc"/>.</returns>
     public static DeviceContext Create(
         HDC hdc,
         bool ownsHandle = false)
@@ -52,6 +64,14 @@ public unsafe readonly partial struct DeviceContext : IDisposable, IHandle<HDC>
         return context;
     }
 
+    /// <summary>
+    ///  Creates a device context wrapper associated with a specific owner window.
+    /// </summary>
+    /// <typeparam name="THdc">The wrapped HDC handle-provider type.</typeparam>
+    /// <typeparam name="THwnd">The wrapped HWND handle-provider type.</typeparam>
+    /// <param name="hdc">The device context handle provider.</param>
+    /// <param name="hwnd">The window that owns the DC for release semantics.</param>
+    /// <returns>A wrapper that releases with <c>ReleaseDC</c> when disposed.</returns>
     public static DeviceContext Create<THdc, THwnd>(
         THdc hdc,
         THwnd hwnd)
@@ -75,9 +95,10 @@ public unsafe readonly partial struct DeviceContext : IDisposable, IHandle<HDC>
     /// <summary>
     ///  Create a device context in a Begin/EndPaint scope.
     /// </summary>
-    /// <param name="saveContext">
-    ///  If <see langword="true"/>, the device context will be saved and restored.
-    /// </param>
+    /// <param name="hwnd">The window being painted.</param>
+    /// <param name="saveContext">If <see langword="true"/>, the device context will be saved and restored.</param>
+    /// <param name="paintBounds">The invalid rectangle reported by <c>BeginPaint</c>, in client pixels.</param>
+    /// <returns>A paint-scoped device context that must be disposed to call <c>EndPaint</c>.</returns>
     public static DeviceContext BeginPaint<THwnd>(
         THwnd hwnd,
         bool saveContext,
@@ -102,6 +123,9 @@ public unsafe readonly partial struct DeviceContext : IDisposable, IHandle<HDC>
         };
     }
 
+    /// <summary>
+    ///  Releases or restores the wrapped device context according to how it was created.
+    /// </summary>
     public void Dispose()
     {
         if (State.HasFlag(ContextState.RestoreDc))
@@ -141,6 +165,17 @@ public unsafe readonly partial struct DeviceContext : IDisposable, IHandle<HDC>
         }
     }
 
+    /// <summary>
+    ///  Converts this wrapper to its underlying <c>HDC</c> handle.
+    /// </summary>
+    /// <param name="context">The wrapper to convert.</param>
+    /// <returns>The underlying <c>HDC</c> value.</returns>
     public static implicit operator HDC(DeviceContext context) => context.Handle;
+
+    /// <summary>
+    ///  Converts a <c>WPARAM</c> value containing an <c>HDC</c> to a wrapper instance.
+    /// </summary>
+    /// <param name="wparam">The message parameter containing an <c>HDC</c>.</param>
+    /// <returns>A non-owning device-context wrapper over the extracted handle.</returns>
     public static explicit operator DeviceContext(WPARAM wparam) => Create(new((nint)wparam));
 }

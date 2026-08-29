@@ -8,18 +8,28 @@ namespace Windows.Threading;
 /// </summary>
 internal enum DispatcherState
 {
-    /// <summary>The dispatcher has been constructed but not started.</summary>
+    /// <summary>
+    ///  The dispatcher has been constructed but not started.
+    /// </summary>
     Created,
 
-    /// <summary>The dispatcher accepts and processes work.</summary>
+    /// <summary>
+    ///  The dispatcher accepts and processes work.
+    /// </summary>
     Running,
 
-    /// <summary>The dispatcher no longer accepts work and is shutting down.</summary>
+    /// <summary>
+    ///  The dispatcher no longer accepts work and is shutting down.
+    /// </summary>
     Stopping,
 
-    /// <summary>The dispatcher has stopped.</summary>
+    /// <summary>
+    ///  The dispatcher has stopped.
+    /// </summary>
     Stopped,
 
-    /// <summary>The dispatcher stopped because of an infrastructure or unhandled callback failure.</summary>
+    /// <summary>
+    ///  The dispatcher stopped because of an infrastructure or unhandled callback failure.
+    /// </summary>
     Faulted
 }

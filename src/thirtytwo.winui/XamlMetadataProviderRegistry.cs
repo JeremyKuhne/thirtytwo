@@ -9,7 +9,13 @@ namespace Windows.WinUI;
 ///  Composes XAML metadata providers in deterministic registration order.
 /// </summary>
 /// <remarks>
-///  <para>Instances are bound to their construction thread; cross-thread member access throws.</para>
+///  <para>
+///   Instances are bound to their construction thread; cross-thread member access throws.
+///  </para>
+///  <para>
+///   Type resolution uses first-provider precedence: the first registered provider that returns a non-null type wins,
+///   and later providers that also resolve the same request are reported as collisions.
+///  </para>
 /// </remarks>
 public sealed class XamlMetadataProviderRegistry : IXamlMetadataProvider
 {
@@ -17,10 +23,20 @@ public sealed class XamlMetadataProviderRegistry : IXamlMetadataProvider
     private readonly List<IXamlMetadataProvider> _providers = [];
     private readonly HashSet<Type> _providerTypes = [];
 
-    /// <summary>Occurs when a later provider also resolves a type already resolved by an earlier provider.</summary>
+    /// <summary>
+    ///  Occurs when a later provider also resolves a type already resolved by an earlier provider.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   The event payload identifies the requested type name, the earlier provider whose result was kept, and the
+    ///   later provider that also produced a result.
+    ///  </para>
+    /// </remarks>
     public event EventHandler<XamlMetadataCollisionEventArgs>? CollisionDetected;
 
-    /// <summary>Gets the number of registered provider types.</summary>
+    /// <summary>
+    ///  Gets the number of registered provider types.
+    /// </summary>
     public int Count
     {
         get
@@ -30,7 +46,9 @@ public sealed class XamlMetadataProviderRegistry : IXamlMetadataProvider
         }
     }
 
-    /// <summary>Gets provider types in deterministic registration order.</summary>
+    /// <summary>
+    ///  Gets provider types in deterministic registration order.
+    /// </summary>
     public IReadOnlyList<Type> ProviderTypes
     {
         get
@@ -40,15 +58,20 @@ public sealed class XamlMetadataProviderRegistry : IXamlMetadataProvider
         }
     }
 
-    /// <summary>Gets the managed owner thread identifier.</summary>
+    /// <summary>
+    ///  Gets the managed owner thread identifier.
+    /// </summary>
     public int OwnerManagedThreadId => _affinity.ManagedThreadId;
 
-    /// <summary>Gets the native owner thread identifier.</summary>
+    /// <summary>
+    ///  Gets the native owner thread identifier.
+    /// </summary>
     public uint OwnerNativeThreadId => _affinity.NativeThreadId;
 
     /// <summary>
     ///  Registers a provider. A provider type already present is treated as the same registration.
     /// </summary>
+    /// <param name="provider">The metadata provider to register.</param>
     /// <returns><see langword="true"/> when the provider was added.</returns>
     public bool Register(IXamlMetadataProvider provider)
     {
@@ -64,7 +87,13 @@ public sealed class XamlMetadataProviderRegistry : IXamlMetadataProvider
         return true;
     }
 
-    /// <summary>Resolves a XAML type name using first-provider precedence.</summary>
+    /// <summary>
+    ///  Resolves a XAML type name using first-provider precedence.
+    /// </summary>
+    /// <param name="fullName">The fully qualified XAML type name to resolve.</param>
+    /// <returns>
+    ///  The first non-null resolved type in provider registration order; otherwise, <see langword="null"/>.
+    /// </returns>
     public IXamlType? GetXamlType(string fullName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fullName);
@@ -72,7 +101,13 @@ public sealed class XamlMetadataProviderRegistry : IXamlMetadataProvider
         return Resolve(fullName, provider => provider.GetXamlType(fullName));
     }
 
-    /// <summary>Resolves a managed type using first-provider precedence.</summary>
+    /// <summary>
+    ///  Resolves a managed type using first-provider precedence.
+    /// </summary>
+    /// <param name="type">The managed type to resolve through registered providers.</param>
+    /// <returns>
+    ///  The first non-null resolved type in provider registration order; otherwise, <see langword="null"/>.
+    /// </returns>
     public IXamlType? GetXamlType(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
@@ -80,7 +115,12 @@ public sealed class XamlMetadataProviderRegistry : IXamlMetadataProvider
         return Resolve(type.FullName ?? type.Name, provider => provider.GetXamlType(type));
     }
 
-    /// <summary>Gets namespace definitions in provider registration order.</summary>
+    /// <summary>
+    ///  Gets namespace definitions in provider registration order.
+    /// </summary>
+    /// <returns>
+    ///  A concatenated array of namespace definitions from each registered provider, preserving registration order.
+    /// </returns>
     public XmlnsDefinition[] GetXmlnsDefinitions()
     {
         _affinity.VerifyAccess();

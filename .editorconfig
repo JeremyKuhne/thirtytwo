@@ -41,6 +41,11 @@ dotnet_diagnostic.SA1313.severity = none
 # IDE1006: Naming Styles (replaced by TOUKI0041)
 dotnet_diagnostic.IDE1006.severity = none
 
+# Touki analyzers enforced at repository scope
+dotnet_diagnostic.TOUKI0012.severity = warning
+dotnet_diagnostic.TOUKI0022.severity = warning
+dotnet_diagnostic.TOUKI0024.severity = warning
+
 # TOUKI0041: Naming rule violation
 dotnet_diagnostic.TOUKI0041.severity = warning
 

@@ -23,12 +23,21 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
     // https://learn.microsoft.com/windows/win32/winauto/window
     // https://learn.microsoft.com/windows/win32/winauto/client-object
 
+    /// <summary>
+    ///  Gets a variant representing the current accessible object (<c>CHILDID_SELF</c>).
+    /// </summary>
     public static VARIANT Self { get; } = (VARIANT)(int)PInvoke.CHILDID_SELF;
 
+    /// <summary>
+    ///  Gets a sentinel rectangle used when an object has no meaningful visual bounds.
+    /// </summary>
     public static Rectangle InvalidBounds { get; } = new(int.MinValue, int.MinValue, int.MinValue, int.MinValue);
 
     private readonly IAccessible.Interface? _childHandler;
 
+    /// <summary>
+    ///  Initializes a new instance of the <see cref="AccessibleBase"/> class.
+    /// </summary>
     /// <param name="childHandler">
     ///  Used to delegate calls to when referring to a child id other than <see cref="Interop.CHILDID_SELF"/>.
     /// </param>
@@ -37,6 +46,14 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         _childHandler = childHandler;
     }
 
+    /// <summary>
+    ///  Converts an accessible object reference to the VARIANT shape expected by MSAA navigation and selection APIs.
+    /// </summary>
+    /// <param name="accessible">The accessible object to represent.</param>
+    /// <returns>
+    ///  <see cref="Self"/> when <paramref name="accessible"/> is this object; otherwise a VT_DISPATCH variant for
+    ///  the object's COM callable wrapper.
+    /// </returns>
     protected VARIANT AsVariant(AccessibleBase accessible)
         => accessible == this ? Self : (VARIANT)accessible.GetComPointer<IDispatch>();
 
@@ -70,6 +87,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         return HRESULT.S_OK;
     }
 
+    /// <inheritdoc cref="IAccessibleObject.Description"/>
     public virtual string? Description => null;
 
     HRESULT IAccessible.Interface.get_accRole(VARIANT varChild, VARIANT* pvarRole)
@@ -96,9 +114,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         return HRESULT.S_OK;
     }
 
-    /// <summary>
-    ///  Returns the <see href="https://learn.microsoft.com/windows/win32/winauto/object-roles">role</see> of the object.
-    /// </summary>
+    /// <inheritdoc cref="IAccessibleObject.Role"/>
     public virtual ObjectRoles Role => ObjectRoles.Client;
 
     HRESULT IAccessible.Interface.get_accState(VARIANT varChild, VARIANT* pvarState)
@@ -132,10 +148,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         return HRESULT.S_OK;
     }
 
-    /// <summary>
-    ///  Returns the <see href="https://learn.microsoft.com/windows/win32/winauto/object-state-constants">state flags</see>
-    ///  for the object.
-    /// </summary>
+    /// <inheritdoc cref="IAccessibleObject.State"/>
     public virtual ObjectState State => default;
 
     HRESULT IAccessible.Interface.get_accHelp(VARIANT varChild, BSTR* pszHelp)
@@ -166,6 +179,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         return HRESULT.S_OK;
     }
 
+    /// <inheritdoc cref="IAccessibleObject.Help"/>
     protected virtual string? Help => null;
 
     HRESULT IAccessible.Interface.get_accHelpTopic(BSTR* pszHelpFile, VARIANT varChild, int* pidTopic)
@@ -202,6 +216,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         return HRESULT.S_OK;
     }
 
+    /// <inheritdoc cref="IAccessibleObject.KeyboardShortcut"/>
     protected virtual string? KeyboardShortcut => null;
 
     HRESULT IAccessible.Interface.get_accDefaultAction(VARIANT varChild, BSTR* pszDefaultAction)
@@ -232,6 +247,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         return HRESULT.S_OK;
     }
 
+    /// <inheritdoc cref="IAccessibleObject.DefaultAction"/>
     protected virtual string? DefaultAction => null;
 
     HRESULT IAccessible.Interface.accLocation(int* pxLeft, int* pyTop, int* pcxWidth, int* pcyHeight, VARIANT varChild)
@@ -265,12 +281,16 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         return HRESULT.S_OK;
     }
 
-    /// <summary>
-    ///  Gets the bounds of the specified object in screen coordinates.
-    /// </summary>
+    /// <inheritdoc cref="IAccessibleObject.Bounds"/>
     /// <returns>The bounds or <see cref="InvalidBounds"/> if the object is not a visual object.</returns>
     public virtual Rectangle Bounds => InvalidBounds;
 
+    /// <summary>
+    ///  Validates a navigation direction and start id combination for MSAA navigation.
+    /// </summary>
+    /// <param name="direction">The MSAA navigation direction constant.</param>
+    /// <param name="id">The child id used as the navigation starting point.</param>
+    /// <returns><see langword="true"/> if the combination is valid; otherwise, <see langword="false"/>.</returns>
     private static bool ValidateNavigationDirection(int direction, int id)
     {
         if (direction <= PInvoke.NAVDIR_MIN || direction >= PInvoke.NAVDIR_MAX)
@@ -285,6 +305,13 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         };
     }
 
+    /// <summary>
+    ///  Normalizes and validates an incoming child variant for MSAA child-targeted methods.
+    /// </summary>
+    /// <param name="child">
+    ///  The input child variant. May be updated in place when by-reference or empty values are provided.
+    /// </param>
+    /// <returns><see langword="true"/> if the result is a VT_I4 child id; otherwise, <see langword="false"/>.</returns>
     protected bool ValidateChild(ref VARIANT child)
     {
         if (child.vt == (VARENUM.VT_VARIANT | VARENUM.VT_BYREF))
@@ -365,7 +392,20 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         return HRESULT.S_OK;
     }
 
-    /// <param name="startFromId"><see cref="Interop.CHILDID_SELF"/> or a child element's id to start navigation from.</param>
+    /// <summary>
+    ///  Attempts to navigate from the specified child id in the requested MSAA direction.
+    /// </summary>
+    /// <param name="startFromId">
+    ///  <see cref="Interop.CHILDID_SELF"/> or a child element's id to start navigation from.
+    /// </param>
+    /// <param name="direction">
+    ///  The MSAA navigation direction (for example next, previous, directional, or first/last child).
+    /// </param>
+    /// <param name="result">
+    ///  When this method returns <see langword="true"/>, contains the navigation target represented as a
+    ///  VARIANT child id or dispatch pointer.
+    /// </param>
+    /// <returns><see langword="true"/> if a navigation target was found; otherwise, <see langword="false"/>.</returns>
     public virtual bool Navigate(int direction, int startFromId, out VARIANT result)
     {
         // IMPORTANT:
@@ -405,6 +445,10 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
     ///  this returns <see langword="null"/>.
     /// </summary>
     /// <param name="id"><see cref="Interop.CHILDID_SELF"/> or a child element's id.</param>
+    /// <returns>
+    ///  A child object's dispatch pointer, or <see langword="null"/> when the child is a simple element or
+    ///  no child object is available.
+    /// </returns>
     protected virtual IDispatch* GetChild(int id) => null;
 
     HRESULT IAccessible.Interface.get_accParent(IDispatch** ppdispParent)
@@ -421,6 +465,10 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         return *ppdispParent is null ? PInvoke.S_FALSE : HRESULT.S_OK;
     }
 
+    /// <summary>
+    ///  Gets the parent accessible object as an <see cref="IDispatch"/> pointer.
+    /// </summary>
+    /// <returns>The parent dispatch pointer, or <see langword="null"/> when no parent is available.</returns>
     public virtual IDispatch* GetParent() => null;
 
     HRESULT IAccessible.Interface.get_accChildCount(int* pcountChildren)
@@ -437,6 +485,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         return HRESULT.S_OK;
     }
 
+    /// <inheritdoc cref="IAccessibleObject.ChildCount"/>
     public virtual int ChildCount => 0;
 
     HRESULT IAccessible.Interface.accHitTest(int xLeft, int yTop, VARIANT* pvarChild)
@@ -462,10 +511,18 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
     /// </summary>
     /// <returns>
     ///  <list type="bullet">
-    ///   <item>Within the bounds of the current object, <see cref="Self"/></item>
-    ///   <item>Within the bounds of a child object, <see cref="IDispatch"/></item>
-    ///   <item>Within the bounds of a child element, the <see langword="int"/> identifier</item>
-    ///   <item>Outside of the bounds, <see cref="VARIANT.Empty"/></item>
+    ///   <item>
+    ///    Within the bounds of the current object, <see cref="Self"/>
+    ///   </item>
+    ///   <item>
+    ///    Within the bounds of a child object, <see cref="IDispatch"/>
+    ///   </item>
+    ///   <item>
+    ///    Within the bounds of a child element, the <see langword="int"/> identifier
+    ///   </item>
+    ///   <item>
+    ///    Outside of the bounds, <see cref="VARIANT.Empty"/>
+    ///   </item>
     ///  </list>
     /// </returns>
     /// <param name="location">Location in screen coordinates.</param>
@@ -486,10 +543,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         return !DoDefaultAction() ? PInvoke.DISP_E_MEMBERNOTFOUND : HRESULT.S_OK;
     }
 
-    /// <summary>
-    ///  Do the default action for the object, if it has one.
-    /// </summary>
-    /// <returns><see langword="true"/> if the object has a default action.</returns>
+    /// <inheritdoc cref="IAccessibleObject.DoDefaultAction"/>
     public virtual bool DoDefaultAction() => false;
 
     HRESULT IAccessible.Interface.get_accName(VARIANT varChild, BSTR* pszName)
@@ -528,6 +582,7 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         return PInvoke.E_NOTIMPL;
     }
 
+    /// <inheritdoc cref="IAccessibleObject.Name"/>
     public virtual string? Name => null;
 
     HRESULT IAccessible.Interface.get_accValue(VARIANT varChild, BSTR* pszValue)
@@ -573,16 +628,10 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
         return !SetValue(szValue) ? PInvoke.S_FALSE : HRESULT.S_OK;
     }
 
-    /// <summary>
-    ///  Returns the value.
-    /// </summary>
-    /// <returns>The value or <see langword="null"/> if unsupported.</returns>
+    /// <inheritdoc cref="IAccessibleObject.GetValue"/>
     protected virtual string? GetValue() => null;
 
-    /// <summary>
-    ///  Sets the value.
-    /// </summary>
-    /// <returns><see langword="true"/> if setting values is supported/successful.</returns>
+    /// <inheritdoc cref="IAccessibleObject.SetValue"/>
     protected virtual bool SetValue(BSTR value) => false;
 
     HRESULT IAccessible.Interface.get_accFocus(VARIANT* pvarChild)
@@ -603,6 +652,10 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
     ///  Return the focused object, if any. This can be <see cref="Self"/> or an <see cref="IDispatch"/> for the
     ///  relevant <see cref="IAccessible"/>.
     /// </summary>
+    /// <returns>
+    ///  <see cref="VARIANT.Empty"/> when no focus target is available; otherwise a VT_I4 child id or VT_DISPATCH
+    ///  value describing the focused target.
+    /// </returns>
     protected virtual VARIANT GetFocus() => VARIANT.Empty;
 
     HRESULT IAccessible.Interface.get_accSelection(VARIANT* pvarChildren)
@@ -643,15 +696,18 @@ public unsafe abstract class AccessibleBase : AccessibleDispatch, IAccessible.In
     /// <summary>
     ///  Returns <see langword="true"/> if this object supports selection (listbox is one example that does).
     /// </summary>
+    /// <returns><see langword="true"/> when selection APIs are supported; otherwise, <see langword="false"/>.</returns>
     protected virtual bool SupportsSelection => false;
 
-    /// <summary>
-    ///  For a single selected child returns either the <see langword="int"/> id or <see cref="IDispatch"/> for the
-    ///  <see cref="IAccessible"/> object. For multiple selections must return <see cref="IEnumUnknown"/> as
-    ///  <see cref="IUnknown"/>. Returns <see cref="VARIANT.Empty"/> for no selection.
-    /// </summary>
+    /// <inheritdoc cref="IAccessibleObject.GetSelection"/>
+    /// <remarks>
+    ///  For a single selected child, return either an integer child id or an <see cref="IDispatch"/> for the
+    ///  corresponding <see cref="IAccessible"/> object. For multiple selections, return an <see cref="IEnumUnknown"/>
+    ///  exposed as <see cref="IUnknown"/>.
+    /// </remarks>
     protected virtual VARIANT GetSelection() => VARIANT.Empty;
 
+    /// <inheritdoc cref="IAccessibleObject.SetSelection"/>
     protected virtual HRESULT SetSelection(SelectionFlags flags) => HRESULT.E_INVALIDARG;
 
     // Default accessibility objects implement the following publicly documented interfaces:

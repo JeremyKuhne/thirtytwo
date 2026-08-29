@@ -5,6 +5,9 @@ namespace Windows;
 
 public partial class EditControl
 {
+    /// <summary>
+    ///  Native <c>ES_*</c> style flags for an edit control.
+    /// </summary>
     [Flags]
     public enum Styles : uint
     {
@@ -43,8 +46,14 @@ public partial class EditControl
         /// </summary>
         Password = Interop.ES_PASSWORD,
 
+        /// <summary>
+        ///  Automatically scrolls vertically when text reaches the bottom edge.
+        /// </summary>
         AutoVerticalScroll = Interop.ES_AUTOVSCROLL,
 
+        /// <summary>
+        ///  Automatically scrolls horizontally when text reaches the right edge.
+        /// </summary>
         AutoHorizontalScroll = Interop.ES_AUTOHSCROLL,
 
         /// <summary>

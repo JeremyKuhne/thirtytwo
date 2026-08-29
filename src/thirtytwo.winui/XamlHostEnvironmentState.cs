@@ -10,6 +10,16 @@ namespace Windows.WinUI;
 /// <summary>
 ///  Owns the WinUI state for the designated UI thread and tracks active host-environment leases.
 /// </summary>
+/// <remarks>
+///  <para>
+///   State transitions are: created with lease count one, active while the owner dispatcher is running, and disposed
+///   during dispatcher shutdown.
+///  </para>
+///  <para>
+///   Lease count can reach zero while still active. Final resource shutdown is driven by the owner dispatcher's
+///   shutdown callback rather than lease count.
+///  </para>
+/// </remarks>
 internal sealed class XamlHostEnvironmentState
 {
     private readonly XamlThreadAffinity _affinity = new();
@@ -40,36 +50,78 @@ internal sealed class XamlHostEnvironmentState
         LeaseCount = 1;
     }
 
-    /// <summary>Gets the owning thirtytwo dispatcher whose shutdown tears down this environment.</summary>
+    /// <summary>
+    ///  Gets the owning thirtytwo dispatcher whose shutdown tears down this environment.
+    /// </summary>
+    /// <value>The owner dispatcher for this thread-bound environment.</value>
     internal Dispatcher Dispatcher { get; }
 
-    /// <summary>Gets the Windows App SDK dispatcher queue associated with the owner thread.</summary>
+    /// <summary>
+    ///  Gets the Windows App SDK dispatcher queue associated with the owner thread.
+    /// </summary>
+    /// <value>The queue used by WinUI on the owner thread.</value>
     internal DispatcherQueue Queue { get; }
 
-    /// <summary>Gets the retained process WinUI application.</summary>
+    /// <summary>
+    ///  Gets the retained process WinUI application.
+    /// </summary>
+    /// <value>The process application retained for WinUI hosting.</value>
     internal Microsoft.UI.Xaml.Application Application { get; }
 
-    /// <summary>Gets the application's metadata and resource composition contract.</summary>
+    /// <summary>
+    ///  Gets the application's metadata and resource composition contract.
+    /// </summary>
+    /// <value>The host application contract used for metadata and resource composition.</value>
     internal IXamlHostApplication HostApplication { get; }
 
-    /// <summary>Gets whether this environment created the process WinUI application.</summary>
+    /// <summary>
+    ///  Gets whether this environment created the process WinUI application.
+    /// </summary>
+    /// <value>
+    ///  <see langword="true"/> when this environment created the process application; otherwise,
+    ///  <see langword="false"/>.
+    /// </value>
     internal bool OwnsApplication { get; }
 
-    /// <summary>Gets whether this environment created and must shut down the dispatcher queue.</summary>
+    /// <summary>
+    ///  Gets whether this environment created and must shut down the dispatcher queue.
+    /// </summary>
+    /// <value>
+    ///  <see langword="true"/> when this environment owns queue shutdown; otherwise, <see langword="false"/>.
+    /// </value>
     internal bool OwnsDispatcherQueue => _queueController is not null;
 
-    /// <summary>Gets the number of active public environment leases.</summary>
+    /// <summary>
+    ///  Gets the number of active public environment leases.
+    /// </summary>
+    /// <value>The current lease count for active public <see cref="XamlHostEnvironment"/> instances.</value>
     internal int LeaseCount { get; private set; }
 
-    /// <summary>Gets the managed identifier of the owner thread.</summary>
+    /// <summary>
+    ///  Gets the managed identifier of the owner thread.
+    /// </summary>
+    /// <value>The managed thread identifier of the designated XAML thread.</value>
     internal int OwnerManagedThreadId => _affinity.ManagedThreadId;
 
-    /// <summary>Gets the native identifier of the owner thread.</summary>
+    /// <summary>
+    ///  Gets the native identifier of the owner thread.
+    /// </summary>
+    /// <value>The Win32 thread identifier of the designated XAML thread.</value>
     internal uint OwnerNativeThreadId => _affinity.NativeThreadId;
 
-    /// <summary>Gets whether this environment has entered dispatcher shutdown.</summary>
+    /// <summary>
+    ///  Gets whether this environment has entered dispatcher shutdown.
+    /// </summary>
+    /// <value><see langword="true"/> after shutdown begins; otherwise, <see langword="false"/>.</value>
     internal bool Disposed => _disposed;
 
+    /// <summary>
+    ///  Creates and initializes the environment state for the current STA thread.
+    /// </summary>
+    /// <returns>The initialized environment state with one active lease.</returns>
+    /// <exception cref="XamlHostInitializationException">
+    ///  Thread validation, queue setup, application setup, or XAML manager initialization failed.
+    /// </exception>
     internal static XamlHostEnvironmentState Create()
     {
         uint nativeThreadId = XamlHostEnvironment.GetCurrentNativeThreadId();
@@ -224,6 +276,11 @@ internal sealed class XamlHostEnvironmentState
         }
     }
 
+    /// <summary>
+    ///  Increments the active public lease count.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">The calling thread does not own this environment state.</exception>
+    /// <exception cref="ObjectDisposedException">The environment has already entered shutdown.</exception>
     internal void AddLease()
     {
         VerifyAccess();
@@ -232,6 +289,12 @@ internal sealed class XamlHostEnvironmentState
         XamlHostEventSource.Log.LeaseCountChanged(OwnerNativeThreadId, LeaseCount);
     }
 
+    /// <summary>
+    ///  Decrements the active public lease count.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    ///  The calling thread does not own this environment state, or no active lease remains to release.
+    /// </exception>
     internal void ReleaseLease()
     {
         VerifyAccess();
@@ -249,8 +312,22 @@ internal sealed class XamlHostEnvironmentState
         XamlHostEventSource.Log.LeaseCountChanged(OwnerNativeThreadId, LeaseCount);
     }
 
+    /// <summary>
+    ///  Verifies that the calling thread is the designated owner thread.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">The calling thread is not the owner thread.</exception>
     internal void VerifyAccess() => _affinity.VerifyAccess();
 
+    /// <summary>
+    ///  Disposes thread-owned WinUI state during dispatcher shutdown.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   Disposal is idempotent and tears down, in order, message filtering, XAML manager state, and any queue
+    ///   controller owned by this environment.
+    ///  </para>
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">The calling thread is not the owner thread.</exception>
     internal void Dispose()
     {
         VerifyAccess();
