@@ -153,7 +153,8 @@ public class LayoutTests
         LastLayoutHandler handler = new();
         ReplaceableLayout layout = new(handler);
         FluentActions.Invoking(() => layout.Handler = null!)
-            .Should().Throw<NullReferenceException>();
+            .Should().Throw<ArgumentNullException>()
+            .WithParameterName("value");
     }
 
     [TestMethod]

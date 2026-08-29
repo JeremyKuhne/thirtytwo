@@ -34,6 +34,8 @@ require an interactive Windows session.
 
 Start with [Writing a thirtytwo Application](docs/writing-a-thirtytwo-application.md)
 for guides to creating an application and dispatching work to its UI thread.
+See [Using the Layout Engine](docs/layout.md) to arrange child windows with
+composable, DPI-aware layouts.
 
 ## Contributing and security
 

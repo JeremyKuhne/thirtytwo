@@ -17,17 +17,25 @@ namespace Windows;
 /// </remarks>
 /// <param name="margin">The logical padding to apply on each edge.</param>
 /// <param name="handler">The child handler that receives the padded bounds.</param>
+/// <exception cref="ArgumentNullException"><paramref name="handler"/> is null.</exception>
 public class PaddedLayout(
     Padding margin,
     ILayoutHandler handler) : ILayoutHandler
 {
+    private readonly ILayoutHandler _handler = LayoutValidation.ValidateHandler(handler);
+
     /// <inheritdoc/>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="scale"/> is not finite or positive.</exception>
+    /// <exception cref="OverflowException">
+    ///  The scaled padding or resulting bounds cannot be represented by integers.
+    /// </exception>
     public void Layout(Rectangle bounds, float scale)
     {
+        LayoutValidation.ValidateScale(scale);
         ApplyLeftAndRightPadding(ref bounds, margin.Left, margin.Right, scale);
         ApplyTopAndBottomPadding(ref bounds, margin.Top, margin.Bottom, scale);
 
-        handler.Layout(bounds, scale);
+        _handler.Layout(bounds, scale);
 
         static void ApplyLeftAndRightPadding(ref Rectangle bounds, int leftPadding, int rightPadding, float scale)
         {
@@ -37,8 +45,8 @@ public class PaddedLayout(
                 return;
             }
 
-            int left = (int)MathF.Round(leftPadding * scale);
-            int right = (int)MathF.Round(rightPadding * scale);
+            int left = LayoutValidation.MultiplyAndRound(leftPadding, scale);
+            int right = LayoutValidation.MultiplyAndRound(rightPadding, scale);
 
             long marginWidth = (long)left + right;
             long remainingWidth = bounds.Width - marginWidth;
@@ -52,8 +60,8 @@ public class PaddedLayout(
             }
             else
             {
-                bounds.X += left;
-                bounds.Width -= (int)marginWidth;
+                bounds.X = checked(bounds.X + left);
+                bounds.Width = checked(bounds.Width - checked((int)marginWidth));
             }
         }
 
@@ -65,8 +73,8 @@ public class PaddedLayout(
                 return;
             }
 
-            int top = (int)MathF.Round(topPadding * scale);
-            int bottom = (int)MathF.Round(bottomPadding * scale);
+            int top = LayoutValidation.MultiplyAndRound(topPadding, scale);
+            int bottom = LayoutValidation.MultiplyAndRound(bottomPadding, scale);
             long marginHeight = (long)top + bottom;
             long remainingHeight = bounds.Height - marginHeight;
 
@@ -80,8 +88,8 @@ public class PaddedLayout(
             }
             else
             {
-                bounds.Y += top;
-                bounds.Height -= (int)marginHeight;
+                bounds.Y = checked(bounds.Y + top);
+                bounds.Height = checked(bounds.Height - checked((int)marginHeight));
             }
         }
     }

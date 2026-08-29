@@ -15,8 +15,11 @@ namespace Windows;
 ///  </para>
 /// </remarks>
 /// <param name="handler">The child handler that receives the unmodified layout bounds.</param>
+/// <exception cref="ArgumentNullException"><paramref name="handler"/> is null.</exception>
 public class FillLayout(ILayoutHandler handler) : ILayoutHandler
 {
+    private readonly ILayoutHandler _handler = LayoutValidation.ValidateHandler(handler);
+
     /// <inheritdoc/>
-    public void Layout(Rectangle bounds, float scale) => handler.Layout(bounds, scale);
+    public void Layout(Rectangle bounds, float scale) => _handler.Layout(bounds, scale);
 }
