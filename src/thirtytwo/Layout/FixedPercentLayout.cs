@@ -6,13 +6,24 @@ using System.Drawing;
 namespace Windows;
 
 /// <summary>
-///  Uses a fixed percent of the available space, aligning within as specified.
+///  Uses fixed width and height percentages of the available bounds, then aligns the result.
 /// </summary>
-/// <param name="handler">The handler to layout within the specified space.</param>
-/// <param name="heightPercent">The percentage of available height to use.</param>
-/// <param name="widthPercent">The percentage of available width to use.</param>
-/// <param name="verticalAlignment">The vertical alignment within the bounds.</param>
-/// <param name="horizontalAlignment">The horizontal alignment within the bounds.</param>
+/// <remarks>
+///  <para>
+///   The computed size is <c>(int)(bounds.Width * widthPercent)</c> by
+///   <c>(int)(bounds.Height * heightPercent)</c>. No clamping or validation is performed; values outside the
+///   <c>0.0</c> through <c>1.0</c> range can produce rectangles larger than, or offset outside, the input bounds.
+///  </para>
+/// </remarks>
+/// <param name="handler">The child handler that receives the computed and aligned rectangle.</param>
+/// <param name="heightPercent">The fraction of the available height to use when computing the child height.</param>
+/// <param name="widthPercent">The fraction of the available width to use when computing the child width.</param>
+/// <param name="verticalAlignment">
+///  The vertical placement of the computed rectangle inside the available bounds.
+/// </param>
+/// <param name="horizontalAlignment">
+///  The horizontal placement of the computed rectangle inside the available bounds.
+/// </param>
 public class FixedPercentLayout(
     ILayoutHandler handler,
     float heightPercent,
@@ -20,6 +31,7 @@ public class FixedPercentLayout(
     VerticalAlignment verticalAlignment = VerticalAlignment.Center,
     HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center) : ILayoutHandler
 {
+    /// <inheritdoc/>
     public void Layout(Rectangle bounds, float scale)
     {
         Size size = new((int)(bounds.Width * widthPercent), (int)(bounds.Height * heightPercent));

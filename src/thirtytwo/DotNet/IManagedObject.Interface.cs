@@ -27,12 +27,15 @@ public unsafe partial struct IManagedObject
     public unsafe interface Interface
     {
 #pragma warning disable SA1313 // Parameter names should begin with lower-case letter
+        /// <inheritdoc cref="IUnknown.QueryInterface(Guid*, void**)"/>
         [PreserveSig]
         HRESULT QueryInterface(Guid* riid, void** ppvObject);
 
+        /// <inheritdoc cref="IUnknown.AddRef()"/>
         [PreserveSig]
         uint AddRef();
 
+        /// <inheritdoc cref="IUnknown.Release()"/>
         [PreserveSig]
         uint Release();
 
@@ -46,6 +49,7 @@ public unsafe partial struct IManagedObject
         ///   the client.
         ///  </para>
         /// </remarks>
+        /// <returns>An HRESULT that indicates success or describes the COM failure.</returns>
         [PreserveSig]
         HRESULT GetSerializedBuffer(BSTR* pBSTR);
 
@@ -55,6 +59,7 @@ public unsafe partial struct IManagedObject
         /// <param name="pBSTRGUID">A pointer to the GUID of the process in which the object resides.</param>
         /// <param name="AppDomainID">A pointer to the ID of the object's application domain.</param>
         /// <param name="pCCW">A pointer to object's index in the COM classic v-table.</param>
+        /// <returns>An HRESULT that indicates success or describes the COM failure.</returns>
         [PreserveSig]
         HRESULT GetObjectIdentity(BSTR* pBSTRGUID, int* AppDomainID, int* pCCW);
 #pragma warning restore SA1313

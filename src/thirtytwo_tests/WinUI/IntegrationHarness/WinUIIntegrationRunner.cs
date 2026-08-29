@@ -26,7 +26,7 @@ internal sealed class WinUIIntegrationRunner
     private readonly string? _scenarioExecutableOverride;
 
     internal WinUIIntegrationRunner()
-        : this(Path.Combine(
+        : this(Path.Join(
             GetArtifactsDirectory().FullName,
             "test-results",
             "WinUIIntegrationHarness",
@@ -66,11 +66,11 @@ internal sealed class WinUIIntegrationRunner
         }
 
         string scenarioName = GetScenarioName(scenario);
-        string artifactDirectory = Path.Combine(_artifactRoot, $"{scenarioName}-{Guid.NewGuid():N}");
+        string artifactDirectory = Path.Join(_artifactRoot, $"{scenarioName}-{Guid.NewGuid():N}");
         Directory.CreateDirectory(artifactDirectory);
-        string resultPath = Path.Combine(artifactDirectory, "result.json");
-        string standardOutputPath = Path.Combine(artifactDirectory, "stdout.log");
-        string standardErrorPath = Path.Combine(artifactDirectory, "stderr.log");
+        string resultPath = Path.Join(artifactDirectory, "result.json");
+        string standardOutputPath = Path.Join(artifactDirectory, "stdout.log");
+        string standardErrorPath = Path.Join(artifactDirectory, "stderr.log");
 
         ProcessStartInfo startInfo = new()
         {
@@ -192,7 +192,7 @@ internal sealed class WinUIIntegrationRunner
                                 () => ScreenshotCapture.Capture(
                                     captureReady.WindowHandle,
                                     processId,
-                                    Path.Combine(artifactDirectory, "window.png")));
+                                    Path.Join(artifactDirectory, "window.png")));
                             Task screenshotCompletion = await Task.WhenAny(
                                 screenshotTask,
                                 timeoutTask,
@@ -388,7 +388,7 @@ internal sealed class WinUIIntegrationRunner
         ScreenshotSnapshot screenshot = ScreenshotCapture.Capture(
             windowHandle,
             expectedProcessId,
-            Path.Combine(artifactDirectory, "window.png"));
+            Path.Join(artifactDirectory, "window.png"));
         return (uia, screenshot);
     }
 
@@ -589,7 +589,7 @@ internal sealed class WinUIIntegrationRunner
     private static string FindExecutable(string projectName, string executableName)
     {
         DirectoryInfo artifacts = GetArtifactsDirectory();
-        string outputDirectory = Path.Combine(
+        string outputDirectory = Path.Join(
             artifacts.FullName,
             "x64",
             GetConfigurationName(),
@@ -634,8 +634,8 @@ internal sealed class WinUIIntegrationRunner
                 return current;
             }
 
-            string artifactsPath = Path.Combine(current.FullName, "artifacts");
-            if (File.Exists(Path.Combine(current.FullName, "thirtytwo.slnx"))
+            string artifactsPath = Path.Join(current.FullName, "artifacts");
+            if (File.Exists(Path.Join(current.FullName, "thirtytwo.slnx"))
                 && Directory.Exists(artifactsPath))
             {
                 return new(artifactsPath);

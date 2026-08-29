@@ -3,6 +3,9 @@
 
 namespace Windows;
 
+/// <summary>
+///  Specifies standard window styles.
+/// </summary>
 [Flags]
 public enum WindowStyles : uint
 {

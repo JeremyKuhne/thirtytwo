@@ -8,6 +8,9 @@ using Windows.Support;
 
 namespace Windows;
 
+/// <summary>
+///  Provides Win32 window helper extension methods for handle-wrapper types.
+/// </summary>
 public static unsafe partial class WindowExtensions
 {
     /// <inheritdoc cref="Interop.GetWindowText(HWND, PWSTR, int)"/>
@@ -65,6 +68,8 @@ public static unsafe partial class WindowExtensions
     /// <summary>
     ///  Gets the scale factor for the window based on its DPI.
     /// </summary>
+    /// <param name="window">The target window.</param>
+    /// <returns>The scale factor where 1.0 corresponds to 96 DPI.</returns>
     public static float GetScale<T>(this T window) where T : IHandle<HWND>
     {
         // Scale is the DPI divided by 96.
@@ -129,6 +134,8 @@ public static unsafe partial class WindowExtensions
     /// <summary>
     ///  Gets the font currently set for the window, if any.
     /// </summary>
+    /// <param name="window">The target window.</param>
+    /// <returns>The currently associated font handle, or <see cref="HFONT.Null"/>.</returns>
     public static HFONT GetFontHandle<T>(this T window) where T : IHandle<HWND>
     {
         HFONT font = new(window.SendMessage(MessageType.GetFont));
@@ -139,6 +146,9 @@ public static unsafe partial class WindowExtensions
     /// <summary>
     ///  Converts the requested point size to height based on the DPI of the given window.
     /// </summary>
+    /// <param name="window">The target window.</param>
+    /// <param name="pointSize">The point size to convert.</param>
+    /// <returns>The corresponding logical font height.</returns>
     public static int FontPointSizeToHeight<T>(this T window, int pointSize) where T : IHandle<HWND>
     {
         int result = PInvoke.MulDiv(
@@ -226,6 +236,9 @@ public static unsafe partial class WindowExtensions
     ///   collected.
     ///  </para>
     /// </remarks>
+    /// <param name="window">The target window.</param>
+    /// <param name="newCallback">The replacement managed window procedure delegate.</param>
+    /// <returns>The previously installed native window procedure pointer.</returns>
     public static WNDPROC SetWindowProcedure<T>(this T window, WindowProcedure newCallback)
         where T : IHandle<HWND>
     {
@@ -239,6 +252,9 @@ public static unsafe partial class WindowExtensions
     /// <summary>
     ///  Set the specified font for the window.
     /// </summary>
+    /// <param name="window">The target window.</param>
+    /// <param name="font">The font handle to assign.</param>
+    /// <returns>The message result from <see cref="MessageType.SetFont"/> processing.</returns>
     public static LRESULT SetFontHandle<T>(this T window, HFONT font)
         where T : IHandle<HWND>
     {
@@ -305,6 +321,8 @@ public static unsafe partial class WindowExtensions
     ///  Dimensions of the bounding rectangle of the specified <paramref name="window"/>
     ///  in screen coordinates relative to the upper-left corner.
     /// </summary>
+    /// <param name="window">The target window.</param>
+    /// <returns>The window rectangle in screen coordinates.</returns>
     public static Rectangle GetWindowRectangle<T>(this T window) where T : IHandle<HWND>
     {
         Unsafe.SkipInit(out RECT rect);
@@ -317,6 +335,10 @@ public static unsafe partial class WindowExtensions
     ///  Converts (maps) a set of points from a coordinate space relative to one window to a coordinate space
     ///  relative to another window.
     /// </summary>
+    /// <param name="from">The source coordinate-space window.</param>
+    /// <param name="to">The destination coordinate-space window.</param>
+    /// <param name="rectangle">The rectangle to map.</param>
+    /// <returns>The mapped rectangle.</returns>
     public static Rectangle MapTo<TFrom, TTo>(this TFrom from, TTo to, Rectangle rectangle)
         where TFrom : IHandle<HWND> where TTo : IHandle<HWND>
     {
@@ -331,6 +353,10 @@ public static unsafe partial class WindowExtensions
     ///  Converts (maps) a set of points from a coordinate space relative to one window to a coordinate space
     ///  relative to another window.
     /// </summary>
+    /// <param name="to">The destination coordinate-space window.</param>
+    /// <param name="from">The source coordinate-space window.</param>
+    /// <param name="rectangle">The rectangle to map.</param>
+    /// <returns>The mapped rectangle.</returns>
     public static Rectangle MapFrom<TFrom, TTo>(this TTo to, TFrom from, Rectangle rectangle)
         where TFrom : IHandle<HWND> where TTo : IHandle<HWND>
     {
@@ -341,6 +367,11 @@ public static unsafe partial class WindowExtensions
         return rect;
     }
 
+    /// <summary>
+    ///  Gets the native parent window handle.
+    /// </summary>
+    /// <param name="child">The child window.</param>
+    /// <returns>The parent window handle, or <see cref="HWND.Null"/>.</returns>
     public static HWND GetParent<T>(this T child) where T : IHandle<HWND>
     {
         HWND parent = PInvoke.GetParent(child.Handle);
@@ -351,6 +382,7 @@ public static unsafe partial class WindowExtensions
     /// <summary>
     ///  Enumerates child windows for the given <paramref name="parent"/>.
     /// </summary>
+    /// <param name="parent">The parent whose child windows are enumerated.</param>
     /// <param name="callback">
     ///  The provided function will be passed child window handles. Return <see langword="true"/> to continue enumeration.
     /// </param>
@@ -362,6 +394,12 @@ public static unsafe partial class WindowExtensions
         GC.KeepAlive(parent.Wrapper);
     }
 
+    /// <summary>
+    ///  Shows, hides, minimizes, or restores a window.
+    /// </summary>
+    /// <param name="window">The target window.</param>
+    /// <param name="command">The show-state command to apply.</param>
+    /// <returns>The previous visibility state as reported by USER32.</returns>
     public static bool ShowWindow<T>(this T window, ShowWindowCommand command = ShowWindowCommand.Show)
         where T : IHandle<HWND>
     {
@@ -374,6 +412,9 @@ public static unsafe partial class WindowExtensions
     ///  Moves the window to the requested location. For main windows this is in screen coordinates. For child
     ///  windows this is relative to the client area of the parent window.
     /// </summary>
+    /// <param name="window">The target window.</param>
+    /// <param name="position">The requested bounds.</param>
+    /// <param name="repaint"><see langword="true"/> to repaint after moving.</param>
     public static void MoveWindow<T>(this T window, Rectangle position, bool repaint)
         where T : IHandle<HWND>
     {
@@ -387,7 +428,9 @@ public static unsafe partial class WindowExtensions
         GC.KeepAlive(window.Wrapper);
     }
 
-    /// <summary>Changes a window's bounds and special z-order position.</summary>
+    /// <summary>
+    ///  Changes a window's bounds and special z-order position.
+    /// </summary>
     /// <param name="window">The window to position.</param>
     /// <param name="zOrder">The special z-order position.</param>
     /// <param name="position">
@@ -418,7 +461,9 @@ public static unsafe partial class WindowExtensions
         SetWindowPosition(window, insertAfter, position, flags);
     }
 
-    /// <summary>Changes a window's bounds and positions it behind a sibling in native z-order.</summary>
+    /// <summary>
+    ///  Changes a window's bounds and positions it behind a sibling in native z-order.
+    /// </summary>
     /// <param name="window">The window to position.</param>
     /// <param name="insertAfter">The sibling that should immediately precede <paramref name="window"/>.</param>
     /// <param name="position">
@@ -443,7 +488,9 @@ public static unsafe partial class WindowExtensions
         GC.KeepAlive(insertAfter.Wrapper);
     }
 
-    /// <summary>Gets a window related through native hierarchy or z-order.</summary>
+    /// <summary>
+    ///  Gets a window related through native hierarchy or z-order.
+    /// </summary>
     /// <param name="window">The window from which to navigate.</param>
     /// <param name="relationship">The relationship to query.</param>
     /// <returns>
@@ -506,6 +553,13 @@ public static unsafe partial class WindowExtensions
     /// <summary>
     ///  Shows a task dialog.
     /// </summary>
+    /// <param name="owner">The owner window.</param>
+    /// <param name="mainInstruction">Primary instruction text shown prominently.</param>
+    /// <param name="content">Additional content text.</param>
+    /// <param name="title">Dialog caption text.</param>
+    /// <param name="buttons">Standard command buttons to display.</param>
+    /// <param name="icon">Optional predefined main icon.</param>
+    /// <returns>The command result selected by the user.</returns>
     public static DialogResult ShowTaskDialog<T>(
         this T owner,
         string? mainInstruction = null,
@@ -552,6 +606,14 @@ public static unsafe partial class WindowExtensions
         }
     }
 
+    /// <summary>
+    ///  Shows a legacy message box.
+    /// </summary>
+    /// <param name="owner">The owner window.</param>
+    /// <param name="text">Message text.</param>
+    /// <param name="caption">Caption text.</param>
+    /// <param name="style">Button and icon style flags.</param>
+    /// <returns>The button selected by the user.</returns>
     public static DialogResult MessageBox<T>(
         this T owner,
         string text,
@@ -592,6 +654,13 @@ public static unsafe partial class WindowExtensions
     public static DeviceContext BeginPaint<T>(this T window, bool saveContext, out Rectangle paintBounds)
         where T : IHandle<HWND> => DeviceContext.BeginPaint(window, saveContext, out paintBounds);
 
+    /// <summary>
+    ///  Invalidates a rectangle in the client area.
+    /// </summary>
+    /// <param name="window">The target window.</param>
+    /// <param name="rectangle">The client rectangle to invalidate.</param>
+    /// <param name="erase"><see langword="true"/> to request background erasing.</param>
+    /// <returns><see langword="true"/> on success.</returns>
     public static bool InvalidateRectangle<T>(this T window, Rectangle rectangle, bool erase)
         where T : IHandle<HWND>
     {
@@ -601,6 +670,12 @@ public static unsafe partial class WindowExtensions
         return result;
     }
 
+    /// <summary>
+    ///  Invalidates the entire client area.
+    /// </summary>
+    /// <param name="window">The target window.</param>
+    /// <param name="erase"><see langword="true"/> to request background erasing.</param>
+    /// <returns><see langword="true"/> on success.</returns>
     public static bool Invalidate<T>(this T window, bool erase = true)
         where T : IHandle<HWND>
     {
@@ -628,6 +703,9 @@ public static unsafe partial class WindowExtensions
     ///   ]]>
     ///  </code>
     /// </remarks>
+    /// <param name="window">The target window.</param>
+    /// <param name="handler">The layout callback implementation.</param>
+    /// <returns>A binder that controls the registration lifetime.</returns>
     public static LayoutBinder AddLayoutHandler(this Window window, ILayoutHandler handler)
         => new(window, handler);
 
@@ -651,6 +729,9 @@ public static unsafe partial class WindowExtensions
     /// <summary>
     ///  Set the window region. Windows takes ownership of the given <paramref name="region"/>, do not free it.
     /// </summary>
+    /// <param name="window">The target window.</param>
+    /// <param name="region">The region handle to assign.</param>
+    /// <param name="redraw"><see langword="true"/> to redraw after applying the region.</param>
     public static void SetWindowRegion<T>(this T window, HRGN region, bool redraw = false)
         where T : IHandle<HWND>
     {
@@ -670,6 +751,7 @@ public static unsafe partial class WindowExtensions
     /// <param name="interval">Interval in milliseconds.</param>
     /// <param name="callback">Optional callback. Ensure the callback stays rooted while the timer is active.</param>
     /// <param name="delayTolerance">Delay tolerance in milliseconds (to improve power consumption).</param>
+    /// <returns>The timer identifier.</returns>
     public static nuint SetTimer<T>(
         this T window,
         uint interval,
@@ -694,6 +776,11 @@ public static unsafe partial class WindowExtensions
         return result;
     }
 
+    /// <summary>
+    ///  Stops a timer associated with a window.
+    /// </summary>
+    /// <param name="window">The target window.</param>
+    /// <param name="id">The timer identifier to stop.</param>
     public static void KillTimer<T>(this T window, nuint id) where T : IHandle<HWND>
     {
         bool success = PInvoke.KillTimer(window.Handle, id);
@@ -705,6 +792,11 @@ public static unsafe partial class WindowExtensions
         GC.KeepAlive(window.Wrapper);
     }
 
+    /// <summary>
+    ///  Sets keyboard focus to the target window.
+    /// </summary>
+    /// <param name="window">The window that should receive focus.</param>
+    /// <returns>The window that previously had focus, or <see cref="HWND.Null"/>.</returns>
     public static HWND SetFocus<T>(this T window) where T : IHandle<HWND>
     {
         HWND prior = PInvoke.SetFocus(window.Handle);
@@ -717,6 +809,12 @@ public static unsafe partial class WindowExtensions
         return prior;
     }
 
+    /// <summary>
+    ///  Gets a child dialog item by identifier.
+    /// </summary>
+    /// <param name="window">The dialog or parent window.</param>
+    /// <param name="id">The child control identifier.</param>
+    /// <returns>The child control handle.</returns>
     public static HWND GetDialogItem<T>(this T window, int id) where T : IHandle<HWND>
     {
         HWND control = PInvoke.GetDlgItem(window.Handle, id);
@@ -728,6 +826,11 @@ public static unsafe partial class WindowExtensions
         return control;
     }
 
+    /// <summary>
+    ///  Gets the dialog/control identifier of a child window.
+    /// </summary>
+    /// <param name="window">The child window.</param>
+    /// <returns>The current dialog/control identifier.</returns>
     public static int GetDialogControlId<T>(this T window) where T : IHandle<HWND>
     {
         // GWLP_ID is the control ID or the handle to the menu, depending on whether the window has the WS_CHILD style.
@@ -742,6 +845,12 @@ public static unsafe partial class WindowExtensions
         return id;
     }
 
+    /// <summary>
+    ///  Sets the dialog/control identifier on a child window.
+    /// </summary>
+    /// <param name="window">The child window.</param>
+    /// <param name="id">The identifier to assign.</param>
+    /// <returns>The previous identifier value.</returns>
     public static int SetDialogControlId<T>(this T window, int id) where T : IHandle<HWND>
     {
         if (!window.IsChildWindow())
@@ -754,12 +863,27 @@ public static unsafe partial class WindowExtensions
         return result;
     }
 
+    /// <summary>
+    ///  Gets whether a window has the <c>WS_CHILD</c> style.
+    /// </summary>
+    /// <param name="window">The window to inspect.</param>
+    /// <returns><see langword="true"/> when the window is a child window.</returns>
     public static bool IsChildWindow<T>(this T window) where T : IHandle<HWND> =>
         window.GetWindowStyle().HasFlag(WindowStyles.Child);
 
+    /// <summary>
+    ///  Gets the current window style flags.
+    /// </summary>
+    /// <param name="window">The window to inspect.</param>
+    /// <returns>The current <see cref="WindowStyles"/> bit flags.</returns>
     public static WindowStyles GetWindowStyle<T>(this T window) where T : IHandle<HWND> =>
         (WindowStyles)window.GetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_STYLE);
 
+    /// <summary>
+    ///  Gets the current extended window style flags.
+    /// </summary>
+    /// <param name="window">The window to inspect.</param>
+    /// <returns>The current <see cref="ExtendedWindowStyles"/> bit flags.</returns>
     public static ExtendedWindowStyles GetExtendedWindowStyle<T>(this T window) where T : IHandle<HWND> =>
         (ExtendedWindowStyles)window.GetWindowLong(WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
 }

@@ -17,7 +17,7 @@ using XamlVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 
 namespace IntegrationHost;
 
-internal sealed class AirspaceScenario : IDisposable
+internal sealed class AirspaceScenario : Touki.DisposableBase
 {
     private static readonly WindowPositionFlags s_zOrderFlags =
         WindowPositionFlags.NoMove | WindowPositionFlags.NoSize | WindowPositionFlags.NoActivate;
@@ -34,7 +34,6 @@ internal sealed class AirspaceScenario : IDisposable
     private int _loadedIslandCount;
     private bool _started;
     private bool _captureScheduled;
-    private bool _disposed;
 
     internal AirspaceScenario(NativeWindow parent, ScenarioReporter reporter)
     {
@@ -130,14 +129,13 @@ internal sealed class AirspaceScenario : IDisposable
         TryScheduleCapture();
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        if (_disposed)
+        if (!disposing)
         {
             return;
         }
 
-        _disposed = true;
         foreach (FrameworkElement island in _islands)
         {
             island.Loaded -= IslandLoaded;
@@ -193,7 +191,7 @@ internal sealed class AirspaceScenario : IDisposable
 
     private void TryScheduleCapture()
     {
-        if (!_started || _loadedIslandCount != _islands.Length || _captureScheduled || _disposed)
+        if (!_started || _loadedIslandCount != _islands.Length || _captureScheduled || Disposed)
         {
             return;
         }
@@ -227,7 +225,7 @@ internal sealed class AirspaceScenario : IDisposable
 
     private void ReportCaptureReady()
     {
-        if (_disposed)
+        if (Disposed)
         {
             return;
         }

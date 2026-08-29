@@ -3,9 +3,13 @@
 
 namespace Windows.WinUI;
 
-/// <summary>Provides a clipboard operation that can be handled by the application.</summary>
+/// <summary>
+///  Provides a clipboard operation that can be handled by the application.
+/// </summary>
 public sealed class WinUITextClipboardEventArgs : EventArgs
 {
-    /// <summary>Gets or sets whether the clipboard operation was handled.</summary>
+    /// <summary>
+    ///  Gets or sets whether the clipboard operation was handled.
+    /// </summary>
     public bool Handled { get; set; }
 }

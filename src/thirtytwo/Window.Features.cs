@@ -5,6 +5,9 @@ namespace Windows;
 
 public partial class Window
 {
+    /// <summary>
+    ///  Specifies optional rendering and behavior features for a window.
+    /// </summary>
     [Flags]
     public enum Features
     {

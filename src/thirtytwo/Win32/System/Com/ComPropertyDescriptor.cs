@@ -16,6 +16,15 @@ internal unsafe class ComPropertyDescriptor : PropertyDescriptor
     private readonly VARENUM _variantType;
     private readonly Type _managedType;
 
+    /// <summary>
+    ///  Initializes a descriptor that maps a COM property DISPID to a managed property.
+    /// </summary>
+    /// <param name="name">Property name.</param>
+    /// <param name="dispatchId">DISPID used for COM get and set operations.</param>
+    /// <param name="readOnly"><see langword="true"/> when no setter is available.</param>
+    /// <param name="variantType">VARIANT type used for marshaling values.</param>
+    /// <param name="attrs">Optional descriptor attributes.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="variantType"/> is unsupported.</exception>
     public ComPropertyDescriptor(
         string name,
         int dispatchId,
@@ -37,6 +46,8 @@ internal unsafe class ComPropertyDescriptor : PropertyDescriptor
     /// <summary>
     ///  Returns true if the given type is supported by this descriptor.
     /// </summary>
+    /// <param name="type">The VARIANT type to evaluate.</param>
+    /// <returns><see langword="true"/> when the type can be mapped to a managed property type.</returns>
     internal static bool IsSupportedType(VARENUM type) => GetManagedType(type) is not null;
 
     private static Type? GetManagedType(VARENUM type) => type switch
@@ -47,13 +58,25 @@ internal unsafe class ComPropertyDescriptor : PropertyDescriptor
         _ => null,
     };
 
+    /// <inheritdoc/>
     public override Type ComponentType => typeof(IComPointer);
+    /// <inheritdoc/>
     public override bool IsReadOnly => _readOnly;
+    /// <inheritdoc/>
     public override Type PropertyType => _managedType;
+    /// <inheritdoc/>
     public override bool CanResetValue(object component) => false;
+    /// <inheritdoc/>
     public override void ResetValue(object component) { }
+    /// <inheritdoc/>
     public override bool ShouldSerializeValue(object component) => false;
 
+    /// <inheritdoc/>
+    /// <remarks>
+    ///  <para>
+    ///   The component must implement <see cref="IComPointer"/> and provide an <see cref="IDispatch"/> view.
+    ///  </para>
+    /// </remarks>
     public override object? GetValue(object? component)
     {
         if (component is not IComPointer comObject)
@@ -89,6 +112,12 @@ internal unsafe class ComPropertyDescriptor : PropertyDescriptor
         return null;
     }
 
+    /// <inheritdoc/>
+    /// <remarks>
+    ///  <para>
+    ///   The component must implement <see cref="IComPointer"/> and provide an <see cref="IDispatch"/> view.
+    ///  </para>
+    /// </remarks>
     public override void SetValue(object? component, object? value)
     {
         if (component is not IComPointer comObject)

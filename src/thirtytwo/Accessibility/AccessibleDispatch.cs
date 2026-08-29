@@ -18,5 +18,8 @@ public unsafe abstract class AccessibleDispatch : StandardDispatch<IAccessible>
     private static ITypeInfo* TypeInfo { get; }
         = s_accessibilityTypeLib.GetRegisteredTypeInfo(1, 1, IAccessible.IID_Guid);
 
+    /// <summary>
+    ///  Initializes a new instance of the <see cref="AccessibleDispatch"/> class.
+    /// </summary>
     public AccessibleDispatch() : base(TypeInfo) { }
 }

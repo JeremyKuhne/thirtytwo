@@ -3,6 +3,9 @@
 
 namespace Windows;
 
+/// <summary>
+///  Identifies predefined system icons.
+/// </summary>
 public enum IconId : uint
 {
     // Unfortunately the metadata defines most of these as PCWSTR, which has CsWin32 defining them as statics.

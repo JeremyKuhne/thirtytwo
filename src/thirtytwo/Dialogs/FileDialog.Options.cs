@@ -5,6 +5,9 @@ namespace Windows.Dialogs;
 
 public partial class FileDialog
 {
+    /// <summary>
+    ///  Option flags for the Windows common file dialog.
+    /// </summary>
     [Flags]
     public enum Options : uint
     {

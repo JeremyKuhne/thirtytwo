@@ -22,6 +22,9 @@ public unsafe class Clipboard
     /// <summary>
     ///  Gets the formats that are currently available on the clipboard.
     /// </summary>
+    /// <returns>
+    ///  An array of registered or predefined clipboard format identifiers available at the time of the call.
+    /// </returns>
     public static uint[] GetAvailableClipboardFormats()
     {
         uint count = (uint)PInvoke.CountClipboardFormats();
@@ -48,6 +51,8 @@ public unsafe class Clipboard
     /// <summary>
     ///  Returns true if the requested format is available.
     /// </summary>
+    /// <param name="format">The clipboard format identifier to test.</param>
+    /// <returns><see langword="true"/> when the format is currently present.</returns>
     public static bool IsClipboardFormatAvailable(uint format)
     {
         bool result = PInvoke.IsClipboardFormatAvailable(format);
@@ -63,6 +68,7 @@ public unsafe class Clipboard
     /// <summary>
     ///  Returns true if there is text on the clipboard.
     /// </summary>
+    /// <returns><see langword="true"/> when Unicode text is available.</returns>
     public static bool IsClipboardTextAvailable()
         => PInvoke.IsClipboardFormatAvailable((uint)CLIPBOARD_FORMAT.CF_UNICODETEXT);
 
@@ -74,6 +80,8 @@ public unsafe class Clipboard
     /// <summary>
     ///  This only works for types that aren't built in (e.g. defined in ClipboardFormat).
     /// </summary>
+    /// <param name="format">The registered clipboard format identifier.</param>
+    /// <returns>The registered format name associated with <paramref name="format"/>.</returns>
     /// <exception cref="ArgumentException">Thrown if passing in a built-in format type.</exception>
     public static string GetClipboardFormatName(uint format)
     {
@@ -103,6 +111,8 @@ public unsafe class Clipboard
     /// <summary>
     ///  Registers the given format if not already registered. Returns the format id.
     /// </summary>
+    /// <param name="formatName">The case-insensitive format name to register.</param>
+    /// <returns>The format identifier for <paramref name="formatName"/>.</returns>
     public static uint RegisterClipboardFormat(string formatName)
     {
         uint id = PInvoke.RegisterClipboardFormat(formatName);
@@ -114,7 +124,16 @@ public unsafe class Clipboard
         return id;
     }
 
-    /// <inheritdoc cref="SetClipboardData{T}(ReadOnlySpan{T}, string)"/>
+    /// <summary>
+    ///  Places data on the clipboard in the specified numeric format.
+    /// </summary>
+    /// <param name="data">The data payload to copy into global movable memory.</param>
+    /// <param name="format">The clipboard format identifier.</param>
+    /// <remarks>
+    ///  <para>
+    ///   On success, clipboard ownership of the allocated global handle transfers to the system.
+    ///  </para>
+    /// </remarks>
     public static void SetClipboardData<T>(ReadOnlySpan<T> data, uint format)
         where T : unmanaged
     {
@@ -223,12 +242,15 @@ public unsafe class Clipboard
     ///   Synthesized Clipboard Formats</see>.
     ///  </para>
     /// </remarks>
+    /// <param name="data">The data payload to copy into global movable memory.</param>
+    /// <param name="format">The registered clipboard format name.</param>
     public static void SetClipboardData<T>(ReadOnlySpan<T> data, string format) where T : unmanaged
         => SetClipboardData(data, RegisterClipboardFormat(format));
 
     /// <summary>
     ///  Sets the given text on the clipboard.
     /// </summary>
+    /// <param name="text">The Unicode text payload to place on the clipboard.</param>
     public static void SetClipboardText(ReadOnlySpan<char> text)
         => SetClipboardData(text, (uint)CLIPBOARD_FORMAT.CF_UNICODETEXT);
 
@@ -286,17 +308,20 @@ public unsafe class Clipboard
     /// <summary>
     ///  Returns the window handle that has the clipboard open, if any.
     /// </summary>
+    /// <returns>The window that currently has the clipboard open, or <see cref="HWND.Null"/>.</returns>
     public static HWND GetOpenClipboardWindow() => PInvoke.GetOpenClipboardWindow();
 
     /// <summary>
     ///  Returns the window handle that owns the clipboard data, if any.
     /// </summary>
+    /// <returns>The clipboard owner window, or <see cref="HWND.Null"/>.</returns>
     public static HWND GetClipboardOwner() => PInvoke.GetClipboardOwner();
 
     /// <summary>
     ///  Registers the given window to get <see cref="MessageType.ClipboardUpdate"/> messages when the
     ///  clipboard content changes.
     /// </summary>
+    /// <param name="window">The listening window that receives update notifications on its UI thread.</param>
     public static void AddClipboardFormatListener<T>(T window) where T : IHandle<HWND>
     {
         PInvoke.AddClipboardFormatListener(window.Handle).ThrowLastErrorIfFalse();
@@ -306,6 +331,7 @@ public unsafe class Clipboard
     /// <summary>
     ///  Unregisters the given window from getting <see cref="MessageType.ClipboardUpdate"/> messages.
     /// </summary>
+    /// <param name="window">The window to remove from clipboard update notifications.</param>
     public static void RemoveClipboardFormatListener<T>(T window) where T : IHandle<HWND>
     {
         PInvoke.RemoveClipboardFormatListener(window.Handle).ThrowLastErrorIfFalse();

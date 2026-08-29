@@ -1053,7 +1053,7 @@ internal sealed class EnvironmentWindow : Window
         {
             try
             {
-                _environment!.Dispose();
+                ((IDisposable)_environment!).Dispose();
             }
             catch (Exception exception)
             {
@@ -1068,6 +1068,9 @@ internal sealed class EnvironmentWindow : Window
         }
 
         _reporter.Write("wrong-thread-rejected", message: diagnostic.Message);
+        _environment!.Dispose();
+        _environment = null;
+        _reporter.Write("owner-thread-dispose-retried");
     }
 
     private void VerifySecondThreadRejected()

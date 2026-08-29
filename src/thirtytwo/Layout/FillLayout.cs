@@ -6,15 +6,17 @@ using System.Drawing;
 namespace Windows;
 
 /// <summary>
-///  Simple layout handler that fills the available space.
+///  Represents a layout wrapper that forwards the full available bounds to another handler.
 /// </summary>
 /// <remarks>
 ///  <para>
-///   This usually isn't needed. <see cref="Window"/> itself is an <see cref="ILayoutHandler"/>
-///   and it fills the available space by default.
+///   This usually is not needed for top-level windows. <see cref="Window"/> already implements
+///   <see cref="ILayoutHandler"/> and fills its available space by default.
 ///  </para>
 /// </remarks>
+/// <param name="handler">The child handler that receives the unmodified layout bounds.</param>
 public class FillLayout(ILayoutHandler handler) : ILayoutHandler
 {
+    /// <inheritdoc/>
     public void Layout(Rectangle bounds, float scale) => handler.Layout(bounds, scale);
 }

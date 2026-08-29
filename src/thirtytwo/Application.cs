@@ -29,6 +29,10 @@ public static unsafe partial class Application
     private static DirectWriteGdiInterop? s_directWriteGdiInterop;
     private static ImagingFactory? s_imagingFactory;
 
+    /// <summary>
+    ///  Gets an activation scope that enables visual-styles manifests for common controls.
+    /// </summary>
+    /// <returns>An activation scope for the current thread.</returns>
     internal static ActivationScope ThemingScope
     {
         get
@@ -60,6 +64,9 @@ public static unsafe partial class Application
         }
     }
 
+    /// <summary>
+    ///  Ensures the current thread uses Per-Monitor DPI awareness for Win32 window creation.
+    /// </summary>
     internal static void EnsureDpiAwareness()
     {
         // Enable High DPI awareness if not enabled already. Requires Windows 10.
@@ -71,6 +78,15 @@ public static unsafe partial class Application
         }
     }
 
+    /// <summary>
+    ///  Shows a task dialog owned by the current active window.
+    /// </summary>
+    /// <param name="mainInstruction">Primary instruction text shown prominently.</param>
+    /// <param name="content">Additional content text.</param>
+    /// <param name="title">Dialog caption text.</param>
+    /// <param name="buttons">Standard command buttons to display.</param>
+    /// <param name="icon">Optional predefined main icon.</param>
+    /// <returns>The command result selected by the user.</returns>
     public static DialogResult ShowTaskDialog(
         string? mainInstruction = null,
         string? content = null,
@@ -82,6 +98,17 @@ public static unsafe partial class Application
         return new HandleRef<HWND>(Window.FromHandle(active), active).ShowTaskDialog(mainInstruction, content, title, buttons, icon);
     }
 
+    /// <summary>
+    ///  Shows a task dialog owned by the specified window handle wrapper.
+    /// </summary>
+    /// <typeparam name="T">The owner wrapper type.</typeparam>
+    /// <param name="owner">The native owner window.</param>
+    /// <param name="mainInstruction">Primary instruction text shown prominently.</param>
+    /// <param name="content">Additional content text.</param>
+    /// <param name="title">Dialog caption text.</param>
+    /// <param name="buttons">Standard command buttons to display.</param>
+    /// <param name="icon">Optional predefined main icon.</param>
+    /// <returns>The command result selected by the user.</returns>
     public static DialogResult ShowTaskDialog<T>(
         T owner,
         string? mainInstruction = null,
@@ -97,6 +124,13 @@ public static unsafe partial class Application
     // TaskDialog is not a 1-1 replacement for MessageBox. There is very little reason to use MessageBox, but leaving
     // this here to help discovery of ShowTaskDialog.
 
+    /// <summary>
+    ///  Shows a legacy message box owned by the current active window.
+    /// </summary>
+    /// <param name="text">Message text.</param>
+    /// <param name="caption">Window caption text.</param>
+    /// <param name="style">Button and icon style flags.</param>
+    /// <returns>The button selected by the user.</returns>
     [Obsolete($"{nameof(ShowMessageBox)} does not support high DPI, use {nameof(ShowTaskDialog)} instead.", error: false)]
     public static DialogResult ShowMessageBox(
         string text,
@@ -107,6 +141,15 @@ public static unsafe partial class Application
         return new HandleRef<HWND>(Window.FromHandle(active), active).MessageBox(text, caption, style);
     }
 
+    /// <summary>
+    ///  Shows a legacy message box owned by the specified window handle wrapper.
+    /// </summary>
+    /// <typeparam name="T">The owner wrapper type.</typeparam>
+    /// <param name="owner">The native owner window.</param>
+    /// <param name="text">Message text.</param>
+    /// <param name="caption">Window caption text.</param>
+    /// <param name="style">Button and icon style flags.</param>
+    /// <returns>The button selected by the user.</returns>
     [Obsolete($"{nameof(ShowMessageBox)} does not support high DPI, use {nameof(ShowTaskDialog)} instead.", error: false)]
     public static DialogResult ShowMessageBox<T>(
         T owner,
@@ -118,6 +161,14 @@ public static unsafe partial class Application
         return owner.MessageBox(text, caption, style);
     }
 
+    /// <summary>
+    ///  Creates, shows, and runs a root window with default bounds.
+    /// </summary>
+    /// <param name="windowClass">The window class used to create the root window.</param>
+    /// <param name="windowTitle">Optional title text.</param>
+    /// <param name="style">Window style flags.</param>
+    /// <param name="extendedStyle">Extended window style flags.</param>
+    /// <param name="menuHandle">Optional native menu handle.</param>
     public static void Run(
         WindowClass windowClass,
         string? windowTitle = null,
@@ -131,6 +182,15 @@ public static unsafe partial class Application
             extendedStyle,
             menuHandle);
 
+    /// <summary>
+    ///  Creates, shows, and runs a root window with explicit bounds.
+    /// </summary>
+    /// <param name="windowClass">The window class used to create the root window.</param>
+    /// <param name="bounds">Initial window bounds.</param>
+    /// <param name="windowTitle">Optional title text.</param>
+    /// <param name="style">Window style flags.</param>
+    /// <param name="extendedStyle">Extended window style flags.</param>
+    /// <param name="menuHandle">Optional native menu handle.</param>
     public static void Run(
         WindowClass windowClass,
         Rectangle bounds,
@@ -230,11 +290,14 @@ public static unsafe partial class Application
     ///  Enters a modal scope for the current thread. All active visible windows are disabled until the returned
     ///  scope is disposed.
     /// </summary>
+    /// <returns>A modal scope that reenables affected windows when disposed.</returns>
     public static ThreadModalScope EnterThreadModalScope() => new();
 
     /// <summary>
     ///  Adds a message filter to the current UI thread. Filters run in registration order.
     /// </summary>
+    /// <param name="filter">The filter to register for the current thread message loop.</param>
+    /// <returns>A registration token that removes the filter when disposed.</returns>
     /// <exception cref="InvalidOperationException">A message loop is not active on this thread.</exception>
     public static MessageFilterRegistration AddMessageFilter(IMessageFilter filter)
     {
@@ -261,6 +324,7 @@ public static unsafe partial class Application
     /// <summary>
     ///  Enumerates thread windows for the given <paramref name="threadId"/>.
     /// </summary>
+    /// <param name="threadId">The native thread identifier whose top-level and owned windows are enumerated.</param>
     /// <param name="callback">
     ///  The provided function will be passed thread window handles. Return <see langword="true"/> to continue enumeration.
     /// </param>
@@ -271,6 +335,10 @@ public static unsafe partial class Application
         using var enumerator = new ThreadWindowEnumerator(threadId, callback);
     }
 
+    /// <summary>
+    ///  Gets the current user's default locale name.
+    /// </summary>
+    /// <returns>A BCP-47 locale name such as <c>en-US</c>.</returns>
     public static string GetUserDefaultLocaleName()
     {
         Span<char> localeName = stackalloc char[(int)PInvoke.LOCALE_NAME_MAX_LENGTH];
@@ -293,7 +361,7 @@ public static unsafe partial class Application
     /// <summary>
     ///  Factory that is used to create DirectWrite resources.
     /// </summary>
-    /// <inheritdoc cref="Win32.Graphics.DirectWrite.DirectWriteFactory"/>/>
+    /// <inheritdoc cref="Win32.Graphics.DirectWrite.DirectWriteFactory"/>
     public static DirectWriteFactory DirectWriteFactory => s_directWriteFactory ??= new();
 
     /// <inheritdoc cref="Win32.Graphics.DirectWrite.DirectWriteGdiInterop"/>

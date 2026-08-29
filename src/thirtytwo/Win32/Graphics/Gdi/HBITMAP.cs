@@ -3,8 +3,14 @@
 
 namespace Windows.Win32.Graphics.Gdi;
 
+/// <summary>
+///  GDI bitmap handle (<c>HBITMAP</c>).
+/// </summary>
 public partial struct HBITMAP : IHandle<HBITMAP>
 {
+    /// <inheritdoc cref="IHandle{T}.Handle"/>
     HBITMAP IHandle<HBITMAP>.Handle => this;
+
+    /// <inheritdoc cref="IHandle{T}.Wrapper"/>
     object? IHandle<HBITMAP>.Wrapper => null;
 }

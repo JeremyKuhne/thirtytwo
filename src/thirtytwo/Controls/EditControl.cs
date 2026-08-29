@@ -13,6 +13,16 @@ public partial class EditControl : EditBase
     private static readonly WindowClass s_editClass = new("Edit");
     private readonly bool _usesApplicationScrollBarTheme;
 
+    /// <summary>
+    ///  Initializes an edit control.
+    /// </summary>
+    /// <param name="bounds">The control bounds in parent client coordinates.</param>
+    /// <param name="text">The initial control text.</param>
+    /// <param name="editStyle">The native edit style flags.</param>
+    /// <param name="style">The base window style flags.</param>
+    /// <param name="extendedStyle">The extended window style flags.</param>
+    /// <param name="parentWindow">The parent window that owns this control.</param>
+    /// <param name="parameters">Additional creation parameters passed as <c>lpParam</c>.</param>
     public EditControl(
         Rectangle bounds = default,
         string? text = default,

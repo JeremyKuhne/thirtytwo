@@ -5,6 +5,9 @@ namespace Windows;
 
 public partial class RichEditControl
 {
+    /// <summary>
+    ///  Native style flags supported by <see cref="RichEditControl"/>.
+    /// </summary>
     [Flags]
     public enum Styles : uint
     {

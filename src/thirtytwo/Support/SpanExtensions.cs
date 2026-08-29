@@ -3,11 +3,26 @@
 
 namespace System;
 
+/// <summary>
+///  Provides extension methods for span-based interop conversions.
+/// </summary>
 public static class SpanExtensions
 {
     /// <summary>
-    ///  Converts a span of <see cref="BSTR"/>s to an array of <see langword="string"/>;
+    ///  <para>
+    ///   Converts a span of <see cref="BSTR"/> values to a managed <see cref="string"/> array.
+    ///  </para>
     /// </summary>
+    /// <param name="bstrs">
+    ///  <para>
+    ///   The input BSTR span. Each element is converted by calling <c>BSTR.ToString()</c>.
+    ///  </para>
+    /// </param>
+    /// <returns>
+    ///  <para>
+    ///   An array with one string per span element, or an empty array when the span is empty.
+    ///  </para>
+    /// </returns>
     public static string[] ToStringArray(this ReadOnlySpan<BSTR> bstrs)
     {
         if (bstrs.IsEmpty)

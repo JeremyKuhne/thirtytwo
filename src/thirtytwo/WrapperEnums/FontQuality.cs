@@ -3,6 +3,9 @@
 
 namespace Windows;
 
+/// <summary>
+///  Specifies output quality for logical fonts.
+/// </summary>
 public enum FontQuality : byte
 {
     /// <summary>

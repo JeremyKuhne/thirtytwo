@@ -1,0 +1,7 @@
+# Sample code does not require XML documentation or separate files for nested types.
+
+[*.cs]
+dotnet_code_quality.TOUKI0020.exclude_nested_types = true
+dotnet_diagnostic.TOUKI0024.severity = none
+dotnet_diagnostic.TOUKI0025.severity = none
+dotnet_diagnostic.TOUKI0026.severity = none

@@ -5,12 +5,23 @@ using Windows.Win32.System.Com;
 
 namespace Windows.Dialogs;
 
+/// <summary>
+///  Displays the shell file-open picker and exposes selected results.
+/// </summary>
 public sealed unsafe partial class FileOpenDialog : FileDialog
 {
+    /// <summary>
+    ///  Initializes a file-open dialog wrapper.
+    /// </summary>
+    /// <param name="owner">The optional owner window used for modal display.</param>
     public FileOpenDialog(IHandle<HWND>? owner = default) : base(CreateInstance(), owner)
     {
     }
 
+    /// <summary>
+    ///  Creates the native <c>IFileOpenDialog</c> COM instance.
+    /// </summary>
+    /// <returns>A pointer to the created <c>IFileDialog</c> interface.</returns>
     private static IFileDialog* CreateInstance()
     {
         PInvoke.CoCreateInstance(
@@ -26,6 +37,7 @@ public sealed unsafe partial class FileOpenDialog : FileDialog
     ///  Gets the results. This will throw if called without getting a successful return from
     ///  <see cref="FileDialog.ShowDialog"/>.
     /// </summary>
+    /// <returns>The full file-system paths selected by the user.</returns>
     public IReadOnlyList<string> GetResults()
     {
         using ComScope<IShellItemArray> items = new(null);

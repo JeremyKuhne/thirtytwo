@@ -9,6 +9,11 @@ namespace Windows.Win32.Graphics;
 /// <summary>
 ///  Base class for DirectDraw objects.
 /// </summary>
+/// <remarks>
+///  <para>
+///   Instances own a COM-style interface pointer and release it exactly once during disposal/finalization.
+///  </para>
+/// </remarks>
 /// <devdoc>
 ///  <see href="https://learn.microsoft.com/archive/msdn-magazine/2009/june/introducing-direct2d"/>
 ///
@@ -21,8 +26,20 @@ public unsafe abstract class DirectDrawBase<T> : DisposableBase.Finalizable, IPo
 {
     private nint _pointer;
 
+    /// <summary>
+    ///  Gets the underlying unmanaged interface pointer.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   Returns <see langword="null"/> after disposal.
+    ///  </para>
+    /// </remarks>
     public T* Pointer => (T*)_pointer;
 
+    /// <summary>
+    ///  Initializes a new wrapper that takes ownership of <paramref name="pointer"/>.
+    /// </summary>
+    /// <param name="pointer">Non-null interface pointer to manage.</param>
     public DirectDrawBase(T* pointer)
     {
         if (pointer is null)
@@ -33,8 +50,19 @@ public unsafe abstract class DirectDrawBase<T> : DisposableBase.Finalizable, IPo
         _pointer = (nint)pointer;
     }
 
+    /// <summary>
+    ///  Gets the wrapped unmanaged pointer.
+    /// </summary>
+    /// <param name="d">Wrapper instance.</param>
+    /// <returns>The current unmanaged pointer value.</returns>
     public static implicit operator T*(DirectDrawBase<T> d) => d.Pointer;
 
+    /// <summary>
+    ///  Releases the owned interface pointer.
+    /// </summary>
+    /// <param name="disposing">
+    ///  <see langword="true"/> when called from <c>Dispose()</c>; <see langword="false"/> during finalization.
+    /// </param>
     protected override void Dispose(bool disposing)
     {
         // DirectDraw objects can be accessed from any thread.

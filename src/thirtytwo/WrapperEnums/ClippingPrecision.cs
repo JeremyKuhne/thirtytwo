@@ -3,6 +3,9 @@
 
 namespace Windows;
 
+/// <summary>
+///  Specifies clipping precision values for logical fonts.
+/// </summary>
 [Flags]
 public enum ClippingPrecision : byte
 {

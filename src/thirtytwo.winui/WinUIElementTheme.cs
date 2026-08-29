@@ -3,15 +3,23 @@
 
 namespace Windows.WinUI;
 
-/// <summary>Specifies the theme requested for a hosted WinUI element.</summary>
+/// <summary>
+///  Specifies the theme requested for a hosted WinUI element.
+/// </summary>
 public enum WinUIElementTheme
 {
-    /// <summary>Uses the theme inherited from the WinUI application.</summary>
+    /// <summary>
+    ///  Uses the theme inherited from the WinUI application.
+    /// </summary>
     Default,
 
-    /// <summary>Uses the light theme.</summary>
+    /// <summary>
+    ///  Uses the light theme.
+    /// </summary>
     Light,
 
-    /// <summary>Uses the dark theme.</summary>
+    /// <summary>
+    ///  Uses the dark theme.
+    /// </summary>
     Dark
 }

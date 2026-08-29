@@ -6,11 +6,26 @@ using Windows.Win32.System.Variant;
 
 namespace Windows.Win32.System.Ole;
 
+/// <summary>
+///  Base implementation of <see cref="IEnumVARIANT"/> over an indexable managed source.
+/// </summary>
+/// <remarks>
+///  <para>
+///   This type tracks enumeration position and implements COM <c>Next</c>, <c>Skip</c>, <c>Reset</c>, and
+///   <c>Clone</c> semantics.
+///  </para>
+/// </remarks>
 public unsafe abstract class EnumVARIANT : IEnumVARIANT.Interface, IManagedWrapper<IEnumVARIANT>
 {
     private readonly int _count;
     private int _index;
 
+    /// <summary>
+    ///  Initializes a new enumerator with the specified total <paramref name="count"/> and starting
+    ///  <paramref name="index"/>.
+    /// </summary>
+    /// <param name="count">Total number of elements available to enumerate.</param>
+    /// <param name="index">Starting zero-based index.</param>
     public EnumVARIANT(int count, int index = 0)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(count);
@@ -51,6 +66,16 @@ public unsafe abstract class EnumVARIANT : IEnumVARIANT.Interface, IManagedWrapp
     /// <summary>
     ///  Gets the <see cref="VARIANT"/> at the specified index.
     /// </summary>
+    /// <param name="index">Zero-based item index to materialize.</param>
+    /// <returns>
+    ///  Value returned to the COM caller through <see cref="IEnumVARIANT.Interface.Next(uint, VARIANT*, uint*)"/>.
+    /// </returns>
+    /// <remarks>
+    ///  <para>
+    ///   Implementations should populate the returned variant as a COM out value: ownership of any contained
+    ///   resources is transferred to the caller, which is responsible for clearing the returned variant.
+    ///  </para>
+    /// </remarks>
     protected abstract VARIANT GetAtIndex(int index);
 
     /// <inheritdoc cref="IEnumVARIANT.Skip(uint)"/>
@@ -90,5 +115,6 @@ public unsafe abstract class EnumVARIANT : IEnumVARIANT.Interface, IManagedWrapp
     /// <summary>
     ///  Clones the current object with the same enumeration state.
     /// </summary>
+    /// <returns>A new enumerator instance that can continue from the current position.</returns>
     protected abstract EnumVARIANT Clone();
 }

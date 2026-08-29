@@ -5,6 +5,9 @@ namespace Windows;
 
 public partial class ButtonControl
 {
+    /// <summary>
+    ///  Native <c>BS_*</c> style flags for a button control.
+    /// </summary>
     [Flags]
     public enum Styles : uint
     {
@@ -96,7 +99,9 @@ public partial class ButtonControl
         ///  Draw text to the left of radio buttons and checkboxes.
         /// </summary>
         /// <remarks>
-        ///  <para>Same as <see cref="RightButton"/>.</para>
+        ///  <para>
+        ///   Same as <see cref="RightButton"/>.
+        ///  </para>
         /// </remarks>
         LeftText = Interop.BS_LEFTTEXT,
 
@@ -104,7 +109,9 @@ public partial class ButtonControl
         ///  Draw text to the left of radio buttons and checkboxes.
         /// </summary>
         /// <remarks>
-        ///  <para>Same as <see cref="LeftText"/>.</para>
+        ///  <para>
+        ///   Same as <see cref="LeftText"/>.
+        ///  </para>
         /// </remarks>
         RightButton = Interop.BS_RIGHTBUTTON,
 

@@ -3,6 +3,9 @@
 
 namespace Windows;
 
+/// <summary>
+///  Identifies predefined system cursors.
+/// </summary>
 public enum CursorId : uint
 {
     // Can't use CsWin32 values here as they aren't constant

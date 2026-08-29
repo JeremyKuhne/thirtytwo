@@ -11,13 +11,12 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace ControlHost;
 
-internal sealed unsafe class RawWindowClass : IDisposable
+internal sealed unsafe class RawWindowClass : Touki.DisposableBase
 {
     private readonly HMODULE _module;
     private readonly string _className;
     private readonly HBRUSH _backgroundBrush;
     private readonly WindowProcedure _windowProcedure;
-    private bool _disposed;
 
     internal RawWindowClass(HMODULE module, string className, Color backgroundColor)
     {
@@ -80,14 +79,8 @@ internal sealed unsafe class RawWindowClass : IDisposable
         return window;
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
         if (PInvoke.UnregisterClass(_className, _module))
         {
             _ = PInvoke.DeleteObject(_backgroundBrush);

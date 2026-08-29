@@ -6,8 +6,13 @@ using Windows.Win32.Graphics.Direct2D.Common;
 
 namespace Windows.Win32.Graphics.Direct2D;
 
+/// <inheritdoc/>
 public unsafe partial struct ID2D1SolidColorBrush
 {
+    /// <summary>
+    ///  Calls <c>ID2D1SolidColorBrush::GetColor</c> through the vtable and returns the current brush color.
+    /// </summary>
+    /// <returns>The current solid color value.</returns>
     public D2D1_COLOR_F GetColorHack()
     {
         return ((delegate* unmanaged[Stdcall, MemberFunction]<ID2D1SolidColorBrush*, D2D1_COLOR_F>)lpVtbl[9])((ID2D1SolidColorBrush*)Unsafe.AsPointer(ref this));

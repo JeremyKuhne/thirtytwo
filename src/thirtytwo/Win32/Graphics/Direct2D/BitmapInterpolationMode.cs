@@ -3,6 +3,10 @@
 
 namespace Windows.Win32.Graphics.Direct2D;
 
+/// <summary>
+///  Interpolation mode used when scaling a bitmap in Direct2D.
+///  [<see cref="D2D1_BITMAP_INTERPOLATION_MODE"/>]
+/// </summary>
 public enum BitmapInterpolationMode
 {
     /// <inheritdoc cref="D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR"/>

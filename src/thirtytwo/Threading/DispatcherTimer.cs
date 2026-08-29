@@ -6,14 +6,13 @@ namespace Windows.Threading;
 /// <summary>
 ///  Repeats on a dispatcher using monotonic deadlines. Missed intervals are skipped rather than replayed.
 /// </summary>
-public sealed class DispatcherTimer : IDisposable
+public sealed class DispatcherTimer : DisposableBase, IDisposable
 {
     private readonly Dispatcher _dispatcher;
     private readonly ShutdownRegistration _shutdownRegistration;
     private CancellationTokenSource? _scheduledCancellation;
     private TimeSpan _interval;
     private long _nextDueTicks;
-    private bool _disposed;
 
     /// <summary>
     ///  Initializes a timer owned by a dispatcher.
@@ -47,7 +46,7 @@ public sealed class DispatcherTimer : IDisposable
         set
         {
             _dispatcher.VerifyAccess();
-            ObjectDisposedException.ThrowIf(_disposed, this);
+            ObjectDisposedException.ThrowIf(Disposed, this);
 
             if (value <= TimeSpan.Zero)
             {
@@ -81,7 +80,7 @@ public sealed class DispatcherTimer : IDisposable
     public void Start()
     {
         _dispatcher.VerifyAccess();
-        ObjectDisposedException.ThrowIf(_disposed, this);
+        ObjectDisposedException.ThrowIf(Disposed, this);
 
         if (IsRunning)
         {
@@ -203,9 +202,10 @@ public sealed class DispatcherTimer : IDisposable
     /// <summary>
     ///  Stops and releases the timer.
     /// </summary>
-    public void Dispose()
+    /// <param name="disposing"><see langword="true"/> when called by <see cref="Dispose()"/>.</param>
+    protected override void Dispose(bool disposing)
     {
-        if (_disposed)
+        if (!disposing)
         {
             return;
         }
@@ -213,6 +213,14 @@ public sealed class DispatcherTimer : IDisposable
         _dispatcher.VerifyAccess();
         Stop();
         _shutdownRegistration.Dispose();
-        _disposed = true;
     }
+
+    /// <inheritdoc/>
+    public new void Dispose()
+    {
+        _dispatcher.VerifyAccess();
+        base.Dispose();
+    }
+
+    void IDisposable.Dispose() => Dispose();
 }

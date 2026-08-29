@@ -3,7 +3,9 @@
 
 namespace Windows;
 
-/// <summary>Specifies how an application chooses its light or dark color palette.</summary>
+/// <summary>
+///  Specifies how an application chooses its light or dark color palette.
+/// </summary>
 public enum ApplicationColorMode
 {
     /// <summary>
@@ -11,9 +13,13 @@ public enum ApplicationColorMode
     /// </summary>
     System,
 
-    /// <summary>Uses the dark application palette.</summary>
+    /// <summary>
+    ///  Uses the dark application palette.
+    /// </summary>
     Dark,
 
-    /// <summary>Uses the light application palette.</summary>
+    /// <summary>
+    ///  Uses the light application palette.
+    /// </summary>
     Light
 }

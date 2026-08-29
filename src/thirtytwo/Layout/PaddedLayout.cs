@@ -6,18 +6,22 @@ using System.Drawing;
 namespace Windows;
 
 /// <summary>
-///  Applies padding (margins) to the layout area before delegating layout to the specified handler.
+///  Applies scaled padding to incoming bounds before delegating layout to a child handler.
 /// </summary>
-/// <param name="margin">The padding to apply on each side of the layout bounds.</param>
-/// <param name="handler">The layout handler to which the padded bounds are passed.</param>
+/// <remarks>
+///  <para>
+///   Each side is scaled with <see cref="MathF.Round(float)"/>. When the combined horizontal or vertical padding
+///   exceeds available space, this type repeatedly halves the effective padding until it fits or both sides are
+///   reduced to one pixel or less.
+///  </para>
+/// </remarks>
+/// <param name="margin">The logical padding to apply on each edge.</param>
+/// <param name="handler">The child handler that receives the padded bounds.</param>
 public class PaddedLayout(
     Padding margin,
     ILayoutHandler handler) : ILayoutHandler
 {
-    /// <summary>
-    ///  Lays out the handler within the specified bounds, applying the configured padding.
-    /// </summary>
-    /// <param name="bounds">The bounds within which to layout, before padding is applied.</param>
+    /// <inheritdoc/>
     public void Layout(Rectangle bounds, float scale)
     {
         ApplyLeftAndRightPadding(ref bounds, margin.Left, margin.Right, scale);

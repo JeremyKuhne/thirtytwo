@@ -5,6 +5,9 @@ namespace Windows;
 
 public partial class ComboBoxControl
 {
+    /// <summary>
+    ///  Native <c>CBS_*</c> style flags for a ComboBox control.
+    /// </summary>
     [Flags]
     public enum Styles : uint
     {

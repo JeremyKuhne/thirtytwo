@@ -3,8 +3,12 @@
 
 namespace Windows;
 
+/// <summary>
+///  Identifies standard window message identifiers.
+/// </summary>
 public enum MessageType : uint
 {
+    /// <inheritdoc cref="Interop.WM_NULL"/>
     Null = Interop.WM_NULL,
 
     /// <inheritdoc cref="Interop.WM_CREATE"/>

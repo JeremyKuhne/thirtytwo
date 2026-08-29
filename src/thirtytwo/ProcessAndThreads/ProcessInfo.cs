@@ -7,6 +7,15 @@ using Windows.Win32.System.WindowsProgramming;
 
 namespace Windows.ProcessAndThreads;
 
+/// <summary>
+///  Captures a snapshot of process information returned by <c>NtQuerySystemInformation</c>.
+/// </summary>
+/// <remarks>
+///  <para>
+///   The snapshot is immutable after construction and backed by a pinned buffer that remains valid for the lifetime
+///   of this instance.
+///  </para>
+/// </remarks>
 public sealed unsafe partial class ProcessInfo
 {
     private readonly byte[] _buffer;
@@ -16,6 +25,10 @@ public sealed unsafe partial class ProcessInfo
     private int _lastProcessIndex;
     private SYSTEM_PROCESS_INFORMATION* _lastProcess;
 
+    /// <summary>
+    ///  Initializes a new process snapshot for the current system.
+    /// </summary>
+    /// <exception cref="ThirtyTwoException"><c>NtQuerySystemInformation</c> returned a failing status.</exception>
     public ProcessInfo()
     {
         // On the dev box where I wrote this there were 247 active processes and it needed 512K for the buffer.
@@ -57,13 +70,27 @@ public sealed unsafe partial class ProcessInfo
         }
     }
 
+    /// <summary>
+    ///  Returns an enumerator over the snapshot entries.
+    /// </summary>
+    /// <returns>An enumerator that iterates each process record in order.</returns>
     public Enumerator GetEnumerator() => new(this);
 
     private SYSTEM_PROCESS_INFORMATION* First
         => (SYSTEM_PROCESS_INFORMATION*)Unsafe.AsPointer(ref Unsafe.AsRef(ref _buffer[0]));
 
+    /// <summary>
+    ///  Gets the number of process records in this snapshot.
+    /// </summary>
     public int Count => _count;
 
+    /// <summary>
+    ///  Gets the process record at the specified index.
+    /// </summary>
+    /// <param name="i">The zero-based index of the process record.</param>
+    /// <returns>A readonly reference to the process information at <paramref name="i"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="i"/> is outside the snapshot bounds.</exception>
+    /// <exception cref="InvalidOperationException">The snapshot chain ended unexpectedly.</exception>
     public ref readonly SYSTEM_PROCESS_INFORMATION this[int i]
     {
         get

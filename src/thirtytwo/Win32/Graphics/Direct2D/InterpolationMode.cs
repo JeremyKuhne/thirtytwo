@@ -3,6 +3,10 @@
 
 namespace Windows.Win32.Graphics.Direct2D;
 
+/// <summary>
+///  Interpolation algorithm used for image scaling and sampling.
+///  [<see cref="D2D1_INTERPOLATION_MODE"/>]
+/// </summary>
 public enum InterpolationMode
 {
     /// <inheritdoc cref="D2D1_INTERPOLATION_MODE.D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR"/>

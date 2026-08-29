@@ -7,6 +7,39 @@ namespace Windows.Threading;
 public class DispatcherTimerTests
 {
     [TestMethod]
+    public void Dispose_WrongThreadThrows_OwnerThreadCanRetry()
+    {
+        using ThreadContext context = ThreadingTestAccessors.CreateThreadContext(
+            wakeFactory: dispatcher => new FakeDispatcherWake(dispatcher));
+        Dispatcher dispatcher = context.Dispatcher;
+        dispatcher.Start();
+        using DispatcherTimer timer = dispatcher.CreateTimer(TimeSpan.FromHours(1));
+        timer.Start();
+        Exception? failure = null;
+
+        Thread worker = new(() =>
+        {
+            try
+            {
+                ((IDisposable)timer).Dispose();
+            }
+            catch (Exception exception)
+            {
+                failure = exception;
+            }
+        });
+
+        worker.Start();
+        worker.Join();
+
+        failure.Should().BeOfType<InvalidOperationException>();
+        timer.IsRunning.Should().BeTrue();
+
+        timer.Dispose();
+        timer.IsRunning.Should().BeFalse();
+    }
+
+    [TestMethod]
     public void Tick_MissedIntervals_SkipsToNextDeadline()
     {
         ManualTimeProvider timeProvider = new();

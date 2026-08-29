@@ -3,9 +3,16 @@
 
 namespace Windows.WinUI;
 
-/// <summary>Provides information while editor content is changing.</summary>
+/// <summary>
+///  Provides information while editor content is changing.
+/// </summary>
+/// <param name="isContentChanging">
+///  The WinUI content-changing flag indicating whether the text content itself is being modified.
+/// </param>
 public sealed class WinUITextChangingEventArgs(bool isContentChanging) : EventArgs
 {
-    /// <summary>Gets whether editor content is changing.</summary>
+    /// <summary>
+    ///  Gets whether editor content is changing.
+    /// </summary>
     public bool IsContentChanging { get; } = isContentChanging;
 }

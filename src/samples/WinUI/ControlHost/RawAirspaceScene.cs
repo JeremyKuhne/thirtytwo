@@ -10,13 +10,12 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace ControlHost;
 
-internal sealed unsafe class RawAirspaceScene : IDisposable
+internal sealed unsafe class RawAirspaceScene : Touki.DisposableBase
 {
     private readonly RawWindowClass _viewportClass;
     private readonly RawWindowClass _hostClass;
     private readonly RawWindowClass _magentaClass;
     private readonly RawWindowClass _greenClass;
-    private bool _disposed;
 
     private RawAirspaceScene(
         RawWindowClass viewportClass,
@@ -141,14 +140,13 @@ internal sealed unsafe class RawAirspaceScene : IDisposable
         }
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        if (_disposed)
+        if (!disposing)
         {
             return;
         }
 
-        _disposed = true;
         ClippedHost.Dispose();
         HostAboveNative.Dispose();
         DestroyWindow(NativeUnder);

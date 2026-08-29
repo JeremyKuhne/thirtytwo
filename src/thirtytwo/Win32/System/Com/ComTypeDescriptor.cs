@@ -7,6 +7,9 @@ using Windows.Win32.System.Variant;
 
 namespace Windows.Win32.System.Com;
 
+/// <summary>
+///  Provides managed type descriptor metadata for COM objects.
+/// </summary>
 internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
 {
     private string? _className;
@@ -14,14 +17,20 @@ internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
     private List<PropertyDescriptor>? _properties;
     private List<EventDescriptor>? _events;
 
+    /// <summary>
+    ///  Initializes a new descriptor for the given COM-backed object.
+    /// </summary>
+    /// <param name="comObject">Object that can provide COM interface pointers.</param>
     public ComTypeDescriptor(IComPointer comObject)
     {
         ArgumentNullException.ThrowIfNull(comObject);
         _comObject = comObject;
     }
 
+    /// <inheritdoc cref="ICustomTypeDescriptor.GetAttributes"/>
     AttributeCollection ICustomTypeDescriptor.GetAttributes() => AttributeCollection.Empty;
 
+    /// <inheritdoc cref="ICustomTypeDescriptor.GetClassName"/>
     string? ICustomTypeDescriptor.GetClassName()
     {
         if (_className is not null)
@@ -49,6 +58,7 @@ internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
         return _className;
     }
 
+    /// <inheritdoc cref="ICustomTypeDescriptor.GetComponentName"/>
     string? ICustomTypeDescriptor.GetComponentName()
     {
         using var dispatch = _comObject.TryGetInterface<IDispatch>(out HRESULT hr);
@@ -84,17 +94,25 @@ internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
         return string.Empty;
     }
 
+    /// <inheritdoc cref="ICustomTypeDescriptor.GetConverter"/>
     TypeConverter? ICustomTypeDescriptor.GetConverter() => null;
+    /// <inheritdoc cref="ICustomTypeDescriptor.GetDefaultEvent"/>
     EventDescriptor? ICustomTypeDescriptor.GetDefaultEvent() => throw new NotImplementedException();
+    /// <inheritdoc cref="ICustomTypeDescriptor.GetDefaultProperty"/>
     PropertyDescriptor? ICustomTypeDescriptor.GetDefaultProperty() => throw new NotImplementedException();
+    /// <inheritdoc cref="ICustomTypeDescriptor.GetEditor"/>
     object? ICustomTypeDescriptor.GetEditor(Type editorBaseType) => null;
 
+    /// <inheritdoc cref="ICustomTypeDescriptor.GetEvents()"/>
     EventDescriptorCollection ICustomTypeDescriptor.GetEvents()
     {
         InitializeEventDescriptors();
         return new([.. _events]);
     }
 
+    /// <summary>
+    ///  Initializes cached event descriptors from COM type information.
+    /// </summary>
     [MemberNotNull(nameof(_events))]
     private void InitializeEventDescriptors()
     {
@@ -200,19 +218,34 @@ internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
         }
     }
 
+    /// <inheritdoc cref="ICustomTypeDescriptor.GetEvents(Attribute[])"/>
     EventDescriptorCollection ICustomTypeDescriptor.GetEvents(Attribute[]? attributes) => throw new NotImplementedException();
 
+    /// <inheritdoc cref="ICustomTypeDescriptor.GetProperties()"/>
     PropertyDescriptorCollection ICustomTypeDescriptor.GetProperties()
     {
         InitializePropertyDescriptors();
         return new([.. _properties]);
     }
 
+    /// <inheritdoc cref="ICustomTypeDescriptor.GetProperties(Attribute[])"/>
     PropertyDescriptorCollection ICustomTypeDescriptor.GetProperties(Attribute[]? attributes) =>
         ((ICustomTypeDescriptor)this).GetProperties();
 
+    /// <inheritdoc cref="ICustomTypeDescriptor.GetPropertyOwner"/>
     object? ICustomTypeDescriptor.GetPropertyOwner(PropertyDescriptor? pd) => _comObject;
 
+    /// <summary>
+    ///  Gets type information for the wrapped COM object.
+    /// </summary>
+    /// <param name="preferIProvideClassInfo">
+    ///  <see langword="true"/> to try <see cref="IProvideClassInfo"/> first; otherwise <see cref="IDispatch"/>
+    ///  is preferred.
+    /// </param>
+    /// <returns>
+    ///  A <see cref="ComScope{T}"/> that owns one AddRef'd <see cref="ITypeInfo"/> reference when available;
+    ///  otherwise a null scope.
+    /// </returns>
     private ComScope<ITypeInfo> GetObjectTypeInfo(bool preferIProvideClassInfo = false)
     {
         if (preferIProvideClassInfo)
@@ -263,6 +296,11 @@ internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
         }
     }
 
+    /// <summary>
+    ///  Enumerates function descriptions for a COM type and invokes <paramref name="func"/> for each function.
+    /// </summary>
+    /// <param name="typeInfo">Type information to enumerate.</param>
+    /// <param name="func">Callback invoked with borrowed pointers valid only during the callback.</param>
     private void EnumerateFunctionDescriptions(ITypeInfo* typeInfo, EnumerateFunctionDescriptionDelegate func)
     {
         if (typeInfo is null)
@@ -307,6 +345,9 @@ internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
         }
     }
 
+    /// <summary>
+    ///  Initializes cached property descriptors from COM type information.
+    /// </summary>
     [MemberNotNull(nameof(_properties))]
     private void InitializePropertyDescriptors()
     {

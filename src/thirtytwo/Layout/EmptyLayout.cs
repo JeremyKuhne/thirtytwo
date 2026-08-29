@@ -6,11 +6,24 @@ using System.Drawing;
 namespace Windows;
 
 /// <summary>
-///  A layout handler that does nothing. Useful for designating a space that has no content.
+///  Represents a layout handler that intentionally performs no layout work.
 /// </summary>
+/// <remarks>
+///  <para>
+///   Use this handler when a layout slot must be present but should not position or size any child content.
+///   The provided bounds and scale are ignored.
+///  </para>
+/// </remarks>
 public class EmptyLayout : ILayoutHandler
 {
+    /// <inheritdoc/>
     public void Layout(Rectangle bounds, float scale) { }
+
     private EmptyLayout() { }
+
+    /// <summary>
+    ///  Gets the shared singleton instance.
+    /// </summary>
+    /// <value>A reusable <see cref="EmptyLayout"/> instance.</value>
     public static EmptyLayout Instance { get; } = new EmptyLayout();
 }

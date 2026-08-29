@@ -12,6 +12,11 @@ namespace Windows.Win32.System.Ole;
 /// <summary>
 ///  Provides an <see cref="IDispatchEx"/> friendly view of a given class' public properties.
 /// </summary>
+/// <remarks>
+///  <para>
+///   This adapter projects managed properties as late-bound dispatch members and keeps an internal DISPID map.
+///  </para>
+/// </remarks>
 public unsafe partial class ClassPropertyDispatchAdapter
 {
     private const int StartingDispId = 0x00010000;
@@ -23,6 +28,12 @@ public unsafe partial class ClassPropertyDispatchAdapter
     private readonly Dictionary<int, DispatchEntry> _members = [];
     private readonly Dictionary<string, int> _reverseLookup = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>
+    ///  Initializes a new adapter for the specified managed <paramref name="instance"/>.
+    /// </summary>
+    /// <param name="instance">
+    ///  Managed object whose public properties are exposed through dispatch metadata and invocation.
+    /// </param>
     public ClassPropertyDispatchAdapter(object instance)
     {
         ArgumentNullException.ThrowIfNull(instance);
@@ -78,6 +89,7 @@ public unsafe partial class ClassPropertyDispatchAdapter
     ///   Matches up to <see cref="IDispatchEx.GetDispID(BSTR, uint, int*)"/>
     ///  </para>
     /// </remarks>
+    /// <param name="name">Member name to resolve.</param>
     /// <param name="dispId">The DISPID, if found.</param>
     /// <returns><see langword="true"/> if the given <paramref name="name"/> is found.</returns>
     public bool TryGetDispID(string name, out int dispId) => _reverseLookup.TryGetValue(name, out dispId);
@@ -90,6 +102,7 @@ public unsafe partial class ClassPropertyDispatchAdapter
     ///   Matches up to <see cref="IDispatchEx.GetMemberName(IDispatchEx*, int, BSTR*)"/>
     ///  </para>
     /// </remarks>
+    /// <param name="dispId">DISPID to resolve.</param>
     /// <param name="name">The name, if found.</param>
     /// <returns><see langword="true"/> if the given <paramref name="dispId"/> is found.</returns>
     public bool TryGetMemberName(int dispId, [NotNullWhen(true)] out string? name)
@@ -111,7 +124,21 @@ public unsafe partial class ClassPropertyDispatchAdapter
     ///  <para>
     ///   Matches up to <see cref="IDispatchEx.InvokeEx(IDispatchEx*, int, uint, ushort, DISPPARAMS*, VARIANT*, EXCEPINFO*, Com.IServiceProvider*)"/>
     ///  </para>
+    ///  <para>
+    ///   The call does not add references to values already present in <paramref name="parameters"/> and writes the
+    ///   invocation result into <paramref name="result"/> for property gets.
+    ///  </para>
     /// </remarks>
+    /// <param name="dispId">DISPID to invoke.</param>
+    /// <param name="lcid">Locale identifier used by the dispatch invocation.</param>
+    /// <param name="flags">Dispatch operation flags.</param>
+    /// <param name="parameters">Arguments in COM dispatch order (right-to-left in <c>rgvarg</c>).</param>
+    /// <param name="result">Output location for the return value of get-style invocations.</param>
+    /// <returns>
+    ///  <see cref="HRESULT.S_OK"/> on success, or the corresponding COM error such as
+    ///  <see cref="HRESULT.E_POINTER"/>, <see cref="PInvoke.DISP_E_MEMBERNOTFOUND"/>, or
+    ///  <see cref="PInvoke.DISP_E_BADPARAMCOUNT"/>.
+    /// </returns>
     public HRESULT Invoke(
         int dispId,
         uint lcid,
@@ -190,6 +217,7 @@ public unsafe partial class ClassPropertyDispatchAdapter
     ///   Matches up to <see cref="IDispatchEx.GetNextDispID(IDispatchEx*, uint, int, int*)"/>
     ///  </para>
     /// </remarks>
+    /// <param name="dispId">Current DISPID, or <see cref="PInvoke.DISPID_STARTENUM"/> to start enumeration.</param>
     /// <param name="nextDispId">The DISPID, if found.</param>
     /// <returns><see langword="true"/> if the next DISPID after <paramref name="dispId"/> is found.</returns>
     public bool TryGetNextDispId(int dispId, out int nextDispId)
@@ -219,6 +247,8 @@ public unsafe partial class ClassPropertyDispatchAdapter
     ///   Matches up to <see cref="IDispatchEx.GetMemberProperties(int, uint, FDEX_PROP_FLAGS*)"/>
     ///  </para>
     /// </remarks>
+    /// <param name="dispId">DISPID to query.</param>
+    /// <param name="flags">Member property flags, if the member exists.</param>
     /// <returns><see langword="true"/> if the <paramref name="dispId"/> is found.</returns>
     public bool TryGetMemberProperties(int dispId, out FDEX_PROP_FLAGS flags)
     {

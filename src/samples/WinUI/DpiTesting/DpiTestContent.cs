@@ -1,6 +1,7 @@
 // Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -9,6 +10,7 @@ using Microsoft.UI.Xaml.Media;
 namespace DpiTesting;
 
 /// <summary>Provides XAML-side DPI metrics and a fixed logical-size reference surface.</summary>
+[SuppressMessage("Usage", "TOUKI0012:Use DisposableBase", Justification = "This type must derive from Microsoft.UI.Xaml.Controls.Grid due to C# single inheritance.")]
 internal sealed class DpiTestContent : Grid, IDisposable
 {
     internal const double ReferenceWidth = 240;

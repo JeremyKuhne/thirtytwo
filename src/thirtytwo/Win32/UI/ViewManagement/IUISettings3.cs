@@ -6,7 +6,9 @@ using System.Runtime.InteropServices;
 
 namespace Windows.Win32.UI.ViewManagement;
 
-/// <summary>Raw Windows Runtime interface used to read application color preferences.</summary>
+/// <summary>
+///  Raw Windows Runtime interface used to read application color preferences.
+/// </summary>
 /// <remarks>
 ///  <para>
 ///   See <see href="https://learn.microsoft.com/en-us/uwp/api/windows.ui.viewmanagement.uisettings.getcolorvalue">UISettings.GetColorValue</see>
@@ -16,8 +18,14 @@ namespace Windows.Win32.UI.ViewManagement;
 /// </remarks>
 internal unsafe struct IUISettings3 : IComIID
 {
+    /// <summary>
+    ///  Pointer to the interface vtable in Windows Runtime ABI layout.
+    /// </summary>
     private readonly void** _vtable;
 
+    /// <summary>
+    ///  Gets the interface identifier for <c>IUISettings3</c>.
+    /// </summary>
     static ref readonly Guid IComIID.Guid
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -39,6 +47,13 @@ internal unsafe struct IUISettings3 : IComIID
     ///  Invokes the raw ABI form of
     ///  <see href="https://learn.microsoft.com/en-us/uwp/api/windows.ui.viewmanagement.uisettings.getcolorvalue">UISettings.GetColorValue</see>.
     /// </summary>
+    /// <param name="desiredColor">The semantic color slot to query.</param>
+    /// <param name="value">Output pointer that receives the color bytes when the call succeeds.</param>
+    /// <returns>The native HRESULT returned by the vtable call. The value is not translated by this method.</returns>
+    /// <remarks>
+    ///  The function pointer is invoked with the <c>Stdcall</c> calling convention and expects
+    ///  the current struct address as the first argument.
+    /// </remarks>
     internal HRESULT GetColorValue(UISettingsColorType desiredColor, UISettingsColor* value)
     {
         fixed (IUISettings3* settings = &this)

@@ -22,9 +22,13 @@ internal sealed class XamlApplication : Microsoft.UI.Xaml.Application, IXamlHost
     private XamlMetadataProviderRegistry? _metadataProviders;
     private XamlResourceDictionaryRegistry? _resourceDictionaries;
 
+    /// <inheritdoc cref="IXamlHostApplication.MetadataProviders"/>
+    /// <exception cref="InvalidOperationException">XAML composition has not been initialized.</exception>
     public XamlMetadataProviderRegistry MetadataProviders
         => _metadataProviders ?? throw new InvalidOperationException("XAML composition has not been initialized.");
 
+    /// <inheritdoc cref="IXamlHostApplication.ResourceDictionaries"/>
+    /// <exception cref="InvalidOperationException">XAML composition has not been initialized.</exception>
     public XamlResourceDictionaryRegistry ResourceDictionaries
         => _resourceDictionaries ?? throw new InvalidOperationException("XAML composition has not been initialized.");
 
@@ -52,12 +56,15 @@ internal sealed class XamlApplication : Microsoft.UI.Xaml.Application, IXamlHost
         ResourceDictionaries.Register(new XamlControlsResources());
     }
 
+    /// <inheritdoc/>
     IXamlType? IXamlMetadataProvider.GetXamlType(string fullName)
         => MetadataProviders.GetXamlType(fullName);
 
+    /// <inheritdoc/>
     IXamlType? IXamlMetadataProvider.GetXamlType(Type type)
         => MetadataProviders.GetXamlType(type);
 
+    /// <inheritdoc/>
     XmlnsDefinition[] IXamlMetadataProvider.GetXmlnsDefinitions()
         => MetadataProviders.GetXmlnsDefinitions();
 }

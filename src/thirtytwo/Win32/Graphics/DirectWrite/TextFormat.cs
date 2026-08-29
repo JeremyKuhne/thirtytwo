@@ -5,12 +5,37 @@ using Windows.Win32.System.Com;
 
 namespace Windows.Win32.Graphics.DirectWrite;
 
+/// <summary>
+///  Wraps <see cref="IDWriteTextFormat"/> and exposes commonly used text-format settings.
+/// </summary>
+/// <remarks>
+///  Instances own the underlying <see cref="IDWriteTextFormat"/> COM interface pointer and release it when disposed.
+///  Property setters in this type throw when the corresponding DirectWrite API returns a failing <c>HRESULT</c>.
+/// </remarks>
 public unsafe class TextFormat : DirectDrawBase<IDWriteTextFormat>
 {
+    /// <summary>
+    ///  Wraps an existing DirectWrite text format pointer.
+    /// </summary>
+    /// <param name="format">The existing text format interface pointer to wrap.</param>
+    /// <remarks>The wrapper takes responsibility for releasing this COM interface pointer when disposed.</remarks>
     public TextFormat(IDWriteTextFormat* format) : base(format)
     {
     }
 
+    /// <summary>
+    ///  Creates a text format from DirectWrite font characteristics.
+    /// </summary>
+    /// <param name="fontFamilyName">The font family name.</param>
+    /// <param name="fontSize">The font size in DIPs.</param>
+    /// <param name="fontWeight">The weight of the font.</param>
+    /// <param name="fontStyle">The style of the font.</param>
+    /// <param name="fontStretch">The stretch of the font.</param>
+    /// <param name="localeName">The locale name used for font fallback and shaping.</param>
+    /// <remarks>
+    ///  This constructor calls <see cref="IDWriteFactory.CreateTextFormat(char*, IDWriteFontCollection*, DWRITE_FONT_WEIGHT, DWRITE_FONT_STYLE, DWRITE_FONT_STRETCH, float, char*, IDWriteTextFormat**)"/>
+    ///  and throws when the underlying API returns a failing <c>HRESULT</c>.
+    /// </remarks>
     public TextFormat(
         string fontFamilyName,
         float fontSize,
@@ -21,6 +46,16 @@ public unsafe class TextFormat : DirectDrawBase<IDWriteTextFormat>
     {
     }
 
+    /// <summary>
+    ///  Creates a text format from a GDI logical font description.
+    /// </summary>
+    /// <param name="logfont">
+    ///  The logical font values used to resolve the DirectWrite font family, style, and size.
+    /// </param>
+    /// <remarks>
+    ///  This constructor uses DirectWrite and GDI interop APIs and throws when those APIs return a failing
+    ///  <c>HRESULT</c>.
+    /// </remarks>
     public TextFormat(in LOGFONTW logfont) : this(Create(logfont))
     {
     }
@@ -28,9 +63,15 @@ public unsafe class TextFormat : DirectDrawBase<IDWriteTextFormat>
     /// <summary>
     ///  Create a <see cref="TextFormat"/> from a GDI font and format.
     /// </summary>
+    /// <param name="hfont">The GDI font handle used to obtain a logical font.</param>
+    /// <param name="format">The GDI draw-text format flags used to map alignment and wrapping settings.</param>
     /// <remarks>
     ///  <para>
     ///   The mapping of options is only partially implmenented.
+    ///  </para>
+    ///  <para>
+    ///   The underlying font conversion uses DirectWrite and GDI interop APIs and throws when those APIs return a
+    ///   failing <c>HRESULT</c>.
     ///  </para>
     /// </remarks>
     public TextFormat(HFONT hfont, DrawTextFormat format) : this(Create(hfont.GetLogicalFont()))
@@ -146,6 +187,10 @@ public unsafe class TextFormat : DirectDrawBase<IDWriteTextFormat>
         return format;
     }
 
+    /// <summary>
+    ///  Gets or sets paragraph-line text alignment.
+    /// </summary>
+    /// <value>The horizontal text alignment setting.</value>
     public TextAlignment TextAlignment
     {
         get
@@ -161,6 +206,10 @@ public unsafe class TextFormat : DirectDrawBase<IDWriteTextFormat>
         }
     }
 
+    /// <summary>
+    ///  Gets or sets alignment of each paragraph relative to the layout box height.
+    /// </summary>
+    /// <value>The vertical paragraph alignment setting.</value>
     public ParagraphAlignment ParagraphAlignment
     {
         get
@@ -176,6 +225,10 @@ public unsafe class TextFormat : DirectDrawBase<IDWriteTextFormat>
         }
     }
 
+    /// <summary>
+    ///  Gets or sets word-wrapping behavior.
+    /// </summary>
+    /// <value>The wrapping mode used during text layout.</value>
     public WordWrapping WordWrapping
     {
         get

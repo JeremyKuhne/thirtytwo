@@ -5,7 +5,9 @@ using Windows.Win32.System.LibraryLoader;
 
 namespace Windows;
 
-/// <summary>Applies private UxTheme dark-mode preferences when explicitly enabled by the application.</summary>
+/// <summary>
+///  Applies private UxTheme dark-mode preferences when explicitly enabled by the application.
+/// </summary>
 /// <devdoc>
 ///  <para>
 ///   These exports are undocumented and can change between Windows releases. On Windows 10 build 17763, ordinal
@@ -32,7 +34,9 @@ internal static unsafe class UndocumentedDarkMode
     private static readonly FARPROC s_setPreferredAppMode = GetExport(SetPreferredAppModeOrdinal);
     private static int s_configuredGeneration = -1;
 
-    /// <summary>Gets whether the required private UxTheme exports are available on this Windows version.</summary>
+    /// <summary>
+    ///  Gets whether the required private UxTheme exports are available on this Windows version.
+    /// </summary>
     /// <value>
     ///  <see langword="true"/> when Windows is build 17763 or later and both required exports resolved;
     ///  otherwise, <see langword="false"/>.
@@ -42,7 +46,9 @@ internal static unsafe class UndocumentedDarkMode
             && !s_allowDarkModeForWindow.IsNull
             && !s_setPreferredAppMode.IsNull;
 
-    /// <summary>Configures the process-wide private preferred application mode for the current color generation.</summary>
+    /// <summary>
+    ///  Configures the process-wide private preferred application mode for the current color generation.
+    /// </summary>
     /// <param name="state">The resolved application color state to apply.</param>
     /// <remarks>
     ///  <para>
@@ -87,7 +93,9 @@ internal static unsafe class UndocumentedDarkMode
         }
     }
 
-    /// <summary>Applies or removes a private dark visual-style association for a window.</summary>
+    /// <summary>
+    ///  Applies or removes a private dark visual-style association for a window.
+    /// </summary>
     /// <param name="window">The window whose visual-style association is updated.</param>
     /// <param name="state">The resolved application color state to apply.</param>
     /// <param name="darkSubAppName">

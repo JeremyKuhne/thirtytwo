@@ -3,11 +3,19 @@
 
 namespace Windows.Win32.System.Com;
 
+/// <summary>
+///  Base implementation of <see cref="IEnumUnknown"/> over an indexable sequence.
+/// </summary>
 public unsafe abstract class EnumUnknown : IEnumUnknown.Interface, IManagedWrapper<IEnumUnknown>
 {
     private readonly int _count;
     private int _index;
 
+    /// <summary>
+    ///  Initializes an enumerator with total count and optional starting index.
+    /// </summary>
+    /// <param name="count">Total number of elements available for enumeration.</param>
+    /// <param name="index">Initial index position.</param>
     public EnumUnknown(int count, int index = 0)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(count);
@@ -18,6 +26,12 @@ public unsafe abstract class EnumUnknown : IEnumUnknown.Interface, IManagedWrapp
     }
 
     /// <inheritdoc cref="IEnumUnknown.Next(uint, IUnknown**, uint*)"/>
+    /// <remarks>
+    ///  <para>
+    ///   Each element written to <paramref name="rgelt"/> must be an AddRef'd pointer. Output pointers are
+    ///   caller-owned COM references when returned.
+    ///  </para>
+    /// </remarks>
     HRESULT IEnumUnknown.Interface.Next(uint celt, IUnknown** rgelt, uint* pceltFetched)
     {
         if (rgelt is null)
@@ -46,8 +60,16 @@ public unsafe abstract class EnumUnknown : IEnumUnknown.Interface, IManagedWrapp
     }
 
     /// <summary>
-    ///  Gets the <see cref="IUnknown"/> at the specified index. It should be add ref'ed.
+    ///  <para>
+    ///   Gets the <see cref="IUnknown"/> at the specified index.
+    ///  </para>
     /// </summary>
+    /// <param name="index">Zero-based element index.</param>
+    /// <returns>
+    ///  <para>
+    ///   A caller-owned AddRef'd pointer that will be copied into the COM enumeration output buffer.
+    ///  </para>
+    /// </returns>
     protected abstract IUnknown* GetAtIndex(int index);
 
     /// <inheritdoc cref="IEnumUnknown.Skip(uint)"/>
@@ -70,6 +92,11 @@ public unsafe abstract class EnumUnknown : IEnumUnknown.Interface, IManagedWrapp
     }
 
     /// <inheritdoc cref="IEnumUnknown.Clone(IEnumUnknown**)"/>
+    /// <remarks>
+    ///  <para>
+    ///   On success, <paramref name="ppenum"/> receives a caller-owned AddRef'd enumerator pointer.
+    ///  </para>
+    /// </remarks>
     HRESULT IEnumUnknown.Interface.Clone(IEnumUnknown** ppenum)
     {
         if (ppenum is null)
@@ -87,5 +114,6 @@ public unsafe abstract class EnumUnknown : IEnumUnknown.Interface, IManagedWrapp
     /// <summary>
     ///  Clones the current object with the same enumeration state.
     /// </summary>
+    /// <returns>A new enumerator instance.</returns>
     protected abstract EnumUnknown Clone();
 }

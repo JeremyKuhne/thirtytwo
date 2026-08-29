@@ -3,15 +3,23 @@
 
 namespace Windows.WinUI;
 
-/// <summary>Specifies automatic character casing for a WinUI text editor.</summary>
+/// <summary>
+///  Specifies automatic character casing for a WinUI text editor.
+/// </summary>
 public enum WinUITextCharacterCasing
 {
-    /// <summary>Preserves entered character casing.</summary>
+    /// <summary>
+    ///  Preserves entered character casing.
+    /// </summary>
     Normal = 0,
 
-    /// <summary>Converts entered characters to lowercase.</summary>
+    /// <summary>
+    ///  Converts entered characters to lowercase.
+    /// </summary>
     Lower = 1,
 
-    /// <summary>Converts entered characters to uppercase.</summary>
+    /// <summary>
+    ///  Converts entered characters to uppercase.
+    /// </summary>
     Upper = 2
 }

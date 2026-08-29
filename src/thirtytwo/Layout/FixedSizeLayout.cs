@@ -6,18 +6,27 @@ using System.Drawing;
 namespace Windows;
 
 /// <summary>
-///  Uses a fixed logical size, scaled by the layout scale, and aligns it within the available bounds.
+///  Uses a fixed logical size, scales it by the current layout scale, and aligns it in the available bounds.
 /// </summary>
-/// <param name="handler">The handler to layout within the specified space.</param>
-/// <param name="size">The fixed size to use.</param>
-/// <param name="verticalAlignment">The vertical alignment within the bounds.</param>
-/// <param name="horizontalAlignment">The horizontal alignment within the bounds.</param>
+/// <remarks>
+///  <para>
+///   Width and height are scaled independently with <see cref="MathF.Round(float)"/> and converted to integers
+///   before alignment. The aligned rectangle is then forwarded to the child handler.
+///  </para>
+/// </remarks>
+/// <param name="handler">The child handler that receives the computed and aligned rectangle.</param>
+/// <param name="size">The unscaled logical size to apply before alignment.</param>
+/// <param name="verticalAlignment">The vertical placement of the scaled rectangle inside the available bounds.</param>
+/// <param name="horizontalAlignment">
+///  The horizontal placement of the scaled rectangle inside the available bounds.
+/// </param>
 public class FixedSizeLayout(
     ILayoutHandler handler,
     Size size,
     VerticalAlignment verticalAlignment = VerticalAlignment.Center,
     HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center) : ILayoutHandler
 {
+    /// <inheritdoc/>
     public void Layout(Rectangle bounds, float scale)
     {
         Size scaledSize = new(

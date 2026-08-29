@@ -10,13 +10,12 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace ControlHost;
 
-internal sealed unsafe class RawScrollingScene : IDisposable
+internal sealed unsafe class RawScrollingScene : Touki.DisposableBase
 {
     private readonly RawWindowClass _viewportClass;
     private readonly RawWindowClass _contentClass;
     private readonly RawWindowClass _hostClass;
     private readonly RawWindowClass _focusClass;
-    private bool _disposed;
 
     private RawScrollingScene(
         RawWindowClass viewportClass,
@@ -118,14 +117,13 @@ internal sealed unsafe class RawScrollingScene : IDisposable
         }
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        if (_disposed)
+        if (!disposing)
         {
             return;
         }
 
-        _disposed = true;
         DestroyWindow(FocusTarget);
         Host.Dispose();
         DestroyWindow(Content);

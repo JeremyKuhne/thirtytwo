@@ -3,6 +3,9 @@
 
 namespace Windows;
 
+/// <summary>
+///  Specifies how two regions are combined.
+/// </summary>
 public enum RegionCombineMode : int
 {
     /// <summary>

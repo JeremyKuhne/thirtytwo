@@ -6,8 +6,15 @@ using System.Drawing;
 namespace Windows;
 
 /// <summary>
-///  Arranges elements vertically by allocating a percentage of the available width to each handler.
+///  Places child handlers in vertical columns by splitting the available width proportionally.
 /// </summary>
+/// <remarks>
+///  <para>
+///   Every child receives the full input height. Each handler except the last receives
+///   <c>(int)(bounds.Width * percent)</c> pixels, and the last handler receives the remaining width so total
+///   coverage matches the original bounds.
+///  </para>
+/// </remarks>
 public class VerticalLayout : ILayoutHandler
 {
     private readonly (float Percent, ILayoutHandler Handler)[] _handlers;
@@ -16,8 +23,9 @@ public class VerticalLayout : ILayoutHandler
     ///  Initializes a new instance of the <see cref="VerticalLayout"/> class.
     /// </summary>
     /// <param name="handlers">
-    ///  An array of tuples containing the percentage of width to allocate and the handler to layout in that space.
-    ///  The sum of all percentages must equal 1.0.
+    ///  The proportional child definitions. Each tuple contains a width percentage and the handler for that segment.
+    ///  Percentages must be finite, each percentage must be between <c>0.0</c> and <c>1.0</c>, and the total must
+    ///  equal <c>1.0</c> within tolerance.
     /// </param>
     /// <exception cref="ArgumentNullException">The handler array or one of its handlers is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">
@@ -29,10 +37,7 @@ public class VerticalLayout : ILayoutHandler
         _handlers = [.. handlers];
     }
 
-    /// <summary>
-    ///  Lays out the handlers vertically within the specified bounds.
-    /// </summary>
-    /// <param name="bounds">The bounds to layout within.</param>
+    /// <inheritdoc/>
     public void Layout(Rectangle bounds, float scale)
     {
         int last = _handlers.Length - 1;

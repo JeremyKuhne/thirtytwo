@@ -5,21 +5,34 @@ using System.Runtime.CompilerServices;
 
 namespace Windows.Support;
 
+/// <summary>
+///  Provides helpers for converting Win32 call results into mapped managed exceptions.
+/// </summary>
 public static class Win32ErrorExtensions
 {
+    /// <summary>
+    ///  Provides helpers for interpreting and throwing from a Win32 error value.
+    /// </summary>
+    /// <param name="error">The Win32 error value that extension members operate on.</param>
     extension(WIN32_ERROR error)
     {
         /// <summary>
-        ///  Throws the error using thirtytwo's exception mapping.
+        ///  Throws an exception mapped from this Win32 error.
         /// </summary>
+        /// <param name="path">Optional path text appended to the generated message.</param>
+        /// <exception cref="Exception">Always thrown. The concrete type depends on the Win32 error value.</exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DoesNotReturn]
         public void ThrowThirtyTwoException(string? path = null)
             => throw error.GetThirtyTwoException(path);
 
         /// <summary>
-        ///  Throws the error using thirtytwo's exception mapping when it is not successful.
+        ///  Throws an exception mapped from this Win32 error when it is not <see cref="WIN32_ERROR.ERROR_SUCCESS"/>.
         /// </summary>
+        /// <param name="path">Optional path text appended to the generated message.</param>
+        /// <exception cref="Exception">
+        ///  Thrown when this error value is not success. The concrete type depends on the Win32 error value.
+        /// </exception>
         public void ThrowIfThirtyTwoFailed(string? path = null)
         {
             if (error != WIN32_ERROR.ERROR_SUCCESS)
@@ -29,8 +42,10 @@ public static class Win32ErrorExtensions
         }
 
         /// <summary>
-        ///  Creates the exception that corresponds to the error using thirtytwo's exception mapping.
+        ///  Creates the exception that corresponds to this Win32 error using thirtytwo's mapping rules.
         /// </summary>
+        /// <param name="path">Optional path text appended to the generated message.</param>
+        /// <returns>The mapped exception instance.</returns>
         public Exception GetThirtyTwoException(string? path = null)
         {
             string message = path is null
@@ -41,8 +56,12 @@ public static class Win32ErrorExtensions
         }
 
         /// <summary>
-        ///  Throws the last Windows error when it is not this expected value.
+        ///  Throws the current thread's last Win32 error when it does not match this expected error.
         /// </summary>
+        /// <param name="path">Optional path text appended to the generated message.</param>
+        /// <exception cref="Exception">
+        ///  Thrown when the thread's last Win32 error differs from this expected error.
+        /// </exception>
         public void ThrowIfLastErrorNot(string? path = null)
         {
             WIN32_ERROR lastError = Error.GetLastError();
@@ -53,11 +72,17 @@ public static class Win32ErrorExtensions
         }
     }
 
+    /// <summary>
+    ///  Provides helpers that validate Win32 Boolean call results.
+    /// </summary>
+    /// <param name="result">The Boolean result returned from a Win32 API call.</param>
     extension(bool result)
     {
         /// <summary>
-        ///  Throws the last Windows error using thirtytwo's exception mapping when the result is false.
+        ///  Throws the thread's last Win32 error using thirtytwo's mapping when the result is false.
         /// </summary>
+        /// <param name="path">Optional path text appended to the generated message.</param>
+        /// <exception cref="Exception">Thrown when <paramref name="result"/> is false.</exception>
         internal void ThrowLastErrorIfFalse(string? path = null)
         {
             if (!result)
@@ -67,11 +92,17 @@ public static class Win32ErrorExtensions
         }
     }
 
+    /// <summary>
+    ///  Provides helpers that validate Win32 BOOL call results.
+    /// </summary>
+    /// <param name="result">The BOOL result returned from a Win32 API call.</param>
     extension(BOOL result)
     {
         /// <summary>
-        ///  Throws the last Windows error using thirtytwo's exception mapping when the result is false.
+        ///  Throws the thread's last Win32 error using thirtytwo's mapping when the result is false.
         /// </summary>
+        /// <param name="path">Optional path text appended to the generated message.</param>
+        /// <exception cref="Exception">Thrown when <paramref name="result"/> is false.</exception>
         internal void ThrowLastErrorIfFalse(string? path = null)
         {
             if (!result)
@@ -81,6 +112,13 @@ public static class Win32ErrorExtensions
         }
     }
 
+    /// <summary>
+    ///  Converts a Win32 error to the corresponding managed exception type used by thirtytwo.
+    /// </summary>
+    /// <param name="error">The Win32 error code to map.</param>
+    /// <param name="message">The message to use for the created exception.</param>
+    /// <param name="path">An optional path associated with the failure.</param>
+    /// <returns>The mapped managed exception instance.</returns>
     private static Exception WindowsErrorToException(WIN32_ERROR error, string? message, string? path)
     {
         switch (error)

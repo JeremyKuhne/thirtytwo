@@ -3,22 +3,34 @@
 
 namespace Windows.WinUI;
 
-/// <summary>Specifies rich-text formatting keyboard accelerators that are disabled.</summary>
+/// <summary>
+///  Specifies rich-text formatting keyboard accelerators that are disabled.
+/// </summary>
 [Flags]
 public enum WinUIRichEditDisabledFormattingAccelerators
 {
-    /// <summary>Leaves all formatting accelerators enabled.</summary>
+    /// <summary>
+    ///  Leaves all formatting accelerators enabled.
+    /// </summary>
     None = 0,
 
-    /// <summary>Disables the bold accelerator.</summary>
+    /// <summary>
+    ///  Disables the bold accelerator.
+    /// </summary>
     Bold = 1,
 
-    /// <summary>Disables the italic accelerator.</summary>
+    /// <summary>
+    ///  Disables the italic accelerator.
+    /// </summary>
     Italic = 2,
 
-    /// <summary>Disables the underline accelerator.</summary>
+    /// <summary>
+    ///  Disables the underline accelerator.
+    /// </summary>
     Underline = 4,
 
-    /// <summary>Disables all formatting accelerators.</summary>
+    /// <summary>
+    ///  Disables all formatting accelerators.
+    /// </summary>
     All = -1
 }

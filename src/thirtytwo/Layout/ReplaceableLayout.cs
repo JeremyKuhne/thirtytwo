@@ -6,18 +6,30 @@ using System.Drawing;
 namespace Windows;
 
 /// <summary>
-///  A layout handler that can be replaced at runtime.
+///  Represents a layout handler whose child handler can be replaced at runtime.
 /// </summary>
-/// <param name="handler">The initial layout handler.</param>
+/// <remarks>
+///  <para>
+///   This type stores the most recent layout bounds and scale. Assigning <see cref="Handler"/> immediately relays
+///   layout using the last stored values so the new child can update without waiting for another layout pass.
+///  </para>
+/// </remarks>
+/// <param name="handler">The initial child handler.</param>
 public class ReplaceableLayout(ILayoutHandler handler) : ILayoutHandler
 {
     private Rectangle _lastBounds;
     private float _lastScale = 1.0f;
 
     /// <summary>
-    ///  Gets or sets the current layout handler. When set, immediately performs layout
-    ///  with the last known bounds.
+    ///  Gets or sets the current child layout handler.
     /// </summary>
+    /// <value>The handler currently used to process layout requests.</value>
+    /// <remarks>
+    ///  <para>
+    ///   Setting this property immediately invokes layout on the assigned handler using the most recent bounds and
+    ///   scale captured by <see cref="Layout(Rectangle, float)"/>.
+    ///  </para>
+    /// </remarks>
     public ILayoutHandler Handler
     {
         get => handler;
@@ -28,6 +40,7 @@ public class ReplaceableLayout(ILayoutHandler handler) : ILayoutHandler
         }
     }
 
+    /// <inheritdoc/>
     public void Layout(Rectangle bounds, float scale)
     {
         _lastBounds = bounds;

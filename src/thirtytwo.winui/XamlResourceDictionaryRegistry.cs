@@ -9,7 +9,17 @@ namespace Windows.WinUI;
 ///  Composes application resource dictionaries using WinUI merge precedence.
 /// </summary>
 /// <remarks>
-///  <para>Instances are bound to their construction thread; cross-thread member access throws.</para>
+///  <para>
+///   Instances are bound to their construction thread; cross-thread member access throws.
+///  </para>
+///  <para>
+///   Existing dictionaries already present in <see cref="ResourceDictionary.MergedDictionaries"/> are indexed during
+///   construction in their current order.
+///  </para>
+///  <para>
+///   Resource-key selection follows merge precedence: later dictionaries override earlier dictionaries for duplicate
+///   keys.
+///  </para>
 /// </remarks>
 public sealed class XamlResourceDictionaryRegistry
 {
@@ -19,6 +29,10 @@ public sealed class XamlResourceDictionaryRegistry
     private readonly HashSet<ResourceDictionary> _registered = new(ReferenceEqualityComparer.Instance);
     private Dictionary<object, ResourceDictionary> _resourceOwners = [];
 
+    /// <summary>
+    ///  Creates a registry over an application's resource dictionary and its existing merged dictionaries.
+    /// </summary>
+    /// <param name="applicationResources">The application-level resource dictionary to compose.</param>
     public XamlResourceDictionaryRegistry(ResourceDictionary applicationResources)
     {
         ArgumentNullException.ThrowIfNull(applicationResources);
@@ -32,10 +46,20 @@ public sealed class XamlResourceDictionaryRegistry
         }
     }
 
-    /// <summary>Occurs when a later dictionary overrides a key from an earlier dictionary.</summary>
+    /// <summary>
+    ///  Occurs when a later dictionary overrides a key from an earlier dictionary.
+    /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   The event payload provides the duplicate key, the earlier dictionary that previously owned the key, and the
+    ///   later dictionary that becomes the winner.
+    ///  </para>
+    /// </remarks>
     public event EventHandler<XamlResourceCollisionEventArgs>? CollisionDetected;
 
-    /// <summary>Gets the number of registered dictionaries.</summary>
+    /// <summary>
+    ///  Gets the number of registered dictionaries.
+    /// </summary>
     public int Count
     {
         get
@@ -45,7 +69,9 @@ public sealed class XamlResourceDictionaryRegistry
         }
     }
 
-    /// <summary>Gets dictionaries in WinUI merge order.</summary>
+    /// <summary>
+    ///  Gets dictionaries in WinUI merge order.
+    /// </summary>
     public IReadOnlyList<ResourceDictionary> Dictionaries
     {
         get
@@ -55,15 +81,20 @@ public sealed class XamlResourceDictionaryRegistry
         }
     }
 
-    /// <summary>Gets the managed owner thread identifier.</summary>
+    /// <summary>
+    ///  Gets the managed owner thread identifier.
+    /// </summary>
     public int OwnerManagedThreadId => _affinity.ManagedThreadId;
 
-    /// <summary>Gets the native owner thread identifier.</summary>
+    /// <summary>
+    ///  Gets the native owner thread identifier.
+    /// </summary>
     public uint OwnerNativeThreadId => _affinity.NativeThreadId;
 
     /// <summary>
     ///  Registers a dictionary. Registering the same instance more than once has no effect.
     /// </summary>
+    /// <param name="dictionary">The resource dictionary to register and append to merged dictionaries.</param>
     /// <returns><see langword="true"/> when the dictionary was added.</returns>
     public bool Register(ResourceDictionary dictionary)
     {

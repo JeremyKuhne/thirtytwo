@@ -11,6 +11,9 @@ namespace Windows.Accessibility;
 /// </summary>
 public abstract class LegacyAccessibleBase : AccessibleBase, IManagedWrapper<IAccessible, IDispatchCcw>
 {
+    /// <summary>
+    ///  Initializes a new instance of the <see cref="LegacyAccessibleBase"/> class.
+    /// </summary>
     public LegacyAccessibleBase() : base()
     {
     }

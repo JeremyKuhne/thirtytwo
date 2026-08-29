@@ -5,10 +5,18 @@ using System.Drawing;
 
 namespace Windows.WinUI;
 
-/// <summary>Hosts a WinUI TextBox and projects its editing contract through .NET types.</summary>
+/// <summary>
+///  Hosts a WinUI TextBox and projects its editing contract through .NET types.
+/// </summary>
+/// <remarks>
+///  <see cref="BeforeTextChanging"/> is raised from the TextBox before-change pipeline and can cancel pending
+///  commits by setting the event arguments' <c>Cancel</c> property.
+/// </remarks>
 public sealed class WinUITextBox : WinUITextControl
 {
-    /// <summary>Creates a WinUI TextBox attached to <paramref name="parentWindow"/>.</summary>
+    /// <summary>
+    ///  Creates a WinUI TextBox attached to <paramref name="parentWindow"/>.
+    /// </summary>
     /// <param name="bounds">The control bounds in parent-client pixels.</param>
     /// <param name="parentWindow">The native parent window.</param>
     public WinUITextBox(Rectangle bounds, Window parentWindow)
@@ -16,10 +24,15 @@ public sealed class WinUITextBox : WinUITextControl
     {
     }
 
-    /// <summary>Occurs before a text change is committed.</summary>
+    /// <summary>
+    ///  Occurs before a text change is committed.
+    /// </summary>
+    /// <remarks>The event receives the proposed full text and runs before the TextBox applies it.</remarks>
     public event EventHandler<WinUITextBoxBeforeTextChangingEventArgs>? BeforeTextChanging;
 
-    /// <summary>Gets or sets the placeholder foreground color.</summary>
+    /// <summary>
+    ///  Gets or sets the placeholder foreground color.
+    /// </summary>
     /// <remarks>Returns <see cref="Color.Empty"/> when the WinUI brush is unset.</remarks>
     public Color PlaceholderForegroundColor
     {
@@ -27,9 +40,12 @@ public sealed class WinUITextBox : WinUITextControl
         set => GetTextBox().PlaceholderForeground = ToBrush(value);
     }
 
-    /// <summary>Gets the rectangle for a character index in editor-client view pixels.</summary>
+    /// <summary>
+    ///  Gets the rectangle for a character index in editor-client view pixels.
+    /// </summary>
     /// <param name="characterIndex">The zero-based character index.</param>
     /// <param name="trailingEdge">Whether to return the trailing rather than leading edge.</param>
+    /// <returns>The rectangle returned by WinUI for the specified character edge.</returns>
     public RectangleF GetRectangleFromCharacterIndex(int characterIndex, bool trailingEdge = false)
     {
         Windows.Foundation.Rect rectangle = GetTextBox().GetRectFromCharacterIndex(characterIndex, trailingEdge);
@@ -40,6 +56,11 @@ public sealed class WinUITextBox : WinUITextControl
             Convert.ToSingle(rectangle.Height));
     }
 
+    /// <summary>
+    ///  Raises <see cref="BeforeTextChanging"/> and returns whether the change should be canceled.
+    /// </summary>
+    /// <param name="newText">The proposed full text value from the underlying TextBox.</param>
+    /// <returns><see langword="true"/> when handlers canceled the change; otherwise <see langword="false"/>.</returns>
     private protected override bool OnBeforeTextChanging(string newText)
     {
         WinUITextBoxBeforeTextChangingEventArgs eventArgs = new(newText);

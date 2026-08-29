@@ -7,12 +7,11 @@ using Windows.WinUI;
 
 namespace IntegrationHost;
 
-internal sealed class AccessibilityScenario : IDisposable
+internal sealed class AccessibilityScenario : Touki.DisposableBase
 {
     private readonly ScenarioReporter _reporter;
     private readonly XamlHostControl _host;
     private readonly AccessibilityContent _content;
-    private bool _disposed;
 
     internal AccessibilityScenario(Window parent, ScenarioReporter reporter)
     {
@@ -39,14 +38,13 @@ internal sealed class AccessibilityScenario : IDisposable
         reporter.Write("host-accessibility-created", parent.Handle);
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        if (_disposed)
+        if (!disposing)
         {
             return;
         }
 
-        _disposed = true;
         _host.Dispose();
         GC.KeepAlive(_content);
         _reporter.Write("accessibility-disposed");

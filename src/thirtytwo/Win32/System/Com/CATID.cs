@@ -3,10 +3,13 @@
 
 namespace Windows.Win32.System.Com;
 
+/// <summary>
+///  Provides well-known COM category identifiers used by this library.
+/// </summary>
 public static class CATID
 {
     /// <summary>
-    ///  ActiveX control category id.
+    ///  Gets the COM category identifier for ActiveX controls.
     /// </summary>
     public static Guid Control { get; }
         // 40fc6ed4-2438-11cf-a3db-080036f12502

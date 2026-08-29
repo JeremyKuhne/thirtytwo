@@ -3,6 +3,9 @@
 
 namespace Windows;
 
+/// <summary>
+///  Specifies extended window styles.
+/// </summary>
 [Flags]
 public enum ExtendedWindowStyles : uint
 {
@@ -12,10 +15,19 @@ public enum ExtendedWindowStyles : uint
     /// </summary>
     Default = 0,
 
+    /// <summary>
+    ///  Gives the window generic left-aligned properties. This is the default alignment.
+    /// </summary>
     Left = WINDOW_EX_STYLE.WS_EX_LEFT,
 
+    /// <summary>
+    ///  Displays the window text using left-to-right reading order. This is the default reading order.
+    /// </summary>
     LeftToRightReading = WINDOW_EX_STYLE.WS_EX_LTRREADING,
 
+    /// <summary>
+    ///  Places the vertical scroll bar, if present, to the right of the client area. This is the default placement.
+    /// </summary>
     RightScrollBar = WINDOW_EX_STYLE.WS_EX_RIGHTSCROLLBAR,
 
     /// <summary>
@@ -104,8 +116,14 @@ public enum ExtendedWindowStyles : uint
     /// </summary>
     AppWindow = WINDOW_EX_STYLE.WS_EX_APPWINDOW,
 
+    /// <summary>
+    ///  Creates an overlapped window with both a raised outer edge and a sunken client edge.
+    /// </summary>
     OverlappedWindow = WINDOW_EX_STYLE.WS_EX_OVERLAPPEDWINDOW,
 
+    /// <summary>
+    ///  Creates a topmost tool window with a raised edge for use as a modeless command palette.
+    /// </summary>
     PaletteWindow = WINDOW_EX_STYLE.WS_EX_PALETTEWINDOW,
 
     /// <summary>
@@ -123,6 +141,9 @@ public enum ExtendedWindowStyles : uint
     /// </summary>
     NoRedirectionBitmap = WINDOW_EX_STYLE.WS_EX_NOREDIRECTIONBITMAP,
 
+    /// <summary>
+    ///  Places the horizontal origin at the right edge so increasing horizontal values advance to the left.
+    /// </summary>
     LayoutRtl = WINDOW_EX_STYLE.WS_EX_LAYOUTRTL,
 
     /// <summary>

@@ -3,12 +3,18 @@
 
 namespace Windows.WinUI;
 
-/// <summary>Specifies formats copied from a rich editor.</summary>
+/// <summary>
+///  Specifies formats copied from a rich editor.
+/// </summary>
 public enum WinUIRichEditClipboardFormat
 {
-    /// <summary>Copies every supported format.</summary>
+    /// <summary>
+    ///  Copies every supported format.
+    /// </summary>
     AllFormats = 0,
 
-    /// <summary>Copies plain text only.</summary>
+    /// <summary>
+    ///  Copies plain text only.
+    /// </summary>
     PlainText = 1
 }

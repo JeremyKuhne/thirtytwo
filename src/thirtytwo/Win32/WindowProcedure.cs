@@ -6,7 +6,21 @@ namespace Windows.Win32;
 /// <summary>
 ///  Callback that processes messages sent to a window. [WindowProc]
 /// </summary>
+/// <remarks>
+///  <para>
+///   A window procedure receives per-window message dispatch from the thread message loop and returns an
+///   <see cref="LRESULT"/> result for each message.
+///  </para>
+/// </remarks>
 /// <docs>https://learn.microsoft.com/windows/win32/api/winuser/nc-winuser-wndproc</docs>
+/// <param name="hwnd">Handle of the target window.</param>
+/// <param name="uMsg">Message identifier.</param>
+/// <param name="wParam">Additional message information, message-specific.</param>
+/// <param name="lParam">Additional message information, message-specific.</param>
+/// <returns>
+///  Message-specific result. Messages that are not handled should typically be passed to the default window
+///  procedure.
+/// </returns>
 public delegate LRESULT WindowProcedure(
     HWND hwnd,
     uint uMsg,

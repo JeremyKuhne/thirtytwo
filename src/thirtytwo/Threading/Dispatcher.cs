@@ -180,6 +180,9 @@ public sealed class Dispatcher
     /// <summary>
     ///  Returns whether the calling thread owns this dispatcher.
     /// </summary>
+    /// <returns>
+    ///  <see langword="true"/> when the calling thread owns this dispatcher; otherwise, <see langword="false"/>.
+    /// </returns>
     public bool CheckAccess() => ReferenceEquals(Thread.CurrentThread, _thread);
 
     /// <summary>
@@ -196,6 +199,9 @@ public sealed class Dispatcher
     /// <summary>
     ///  Creates a repeating timer whose ticks run on this dispatcher. Must be called by the owning thread.
     /// </summary>
+    /// <param name="interval">The repeating interval for the timer.</param>
+    /// <returns>A dispatcher timer associated with this dispatcher.</returns>
+    /// <exception cref="InvalidOperationException">The calling thread does not own this dispatcher.</exception>
     public DispatcherTimer CreateTimer(TimeSpan interval)
     {
         VerifyAccess();
@@ -230,6 +236,12 @@ public sealed class Dispatcher
     /// <summary>
     ///  Queues a synchronous callback. The callback is deferred even when called by the owning thread.
     /// </summary>
+    /// <param name="callback">The callback to run on the dispatcher thread.</param>
+    /// <param name="cancellationToken">The token that can prevent the callback from starting.</param>
+    /// <returns>
+    ///  A task that completes when the callback finishes, faults if the callback throws, or is canceled when the
+    ///  callback is canceled before it starts.
+    /// </returns>
     /// <remarks>
     ///  <para>
     ///   Cancellation prevents a queued callback from starting but does not interrupt one already running.
@@ -368,6 +380,13 @@ public sealed class Dispatcher
     /// <summary>
     ///  Queues a synchronous function and returns its result.
     /// </summary>
+    /// <typeparam name="TResult">The callback result type.</typeparam>
+    /// <param name="callback">The function to run on the dispatcher thread.</param>
+    /// <param name="cancellationToken">The token that can prevent the function from starting.</param>
+    /// <returns>
+    ///  A task that completes with the function result, faults if the function throws, or is canceled when the
+    ///  function is canceled before it starts.
+    /// </returns>
     public Task<TResult> InvokeAsync<TResult>(Func<TResult> callback, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(callback);
@@ -401,6 +420,12 @@ public sealed class Dispatcher
     /// <summary>
     ///  Queues an asynchronous callback and completes after its full <see cref="ValueTask"/> lifetime.
     /// </summary>
+    /// <param name="callback">The asynchronous callback to run on the dispatcher thread.</param>
+    /// <param name="cancellationToken">The token that can prevent the callback from starting.</param>
+    /// <returns>
+    ///  A task that represents the callback's complete asynchronous lifetime, including continuation work after the
+    ///  initial dispatcher turn.
+    /// </returns>
     public Task InvokeAsync(Func<ValueTask> callback, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(callback);
@@ -410,6 +435,13 @@ public sealed class Dispatcher
     /// <summary>
     ///  Queues an asynchronous function and completes after its full <see cref="ValueTask{TResult}"/> lifetime.
     /// </summary>
+    /// <typeparam name="TResult">The asynchronous result type.</typeparam>
+    /// <param name="callback">The asynchronous function to run on the dispatcher thread.</param>
+    /// <param name="cancellationToken">The token that can prevent the function from starting.</param>
+    /// <returns>
+    ///  A task that completes with the asynchronous result after the entire <see cref="ValueTask{TResult}"/>
+    ///  finishes.
+    /// </returns>
     public Task<TResult> InvokeAsync<TResult>(
         Func<ValueTask<TResult>> callback,
         CancellationToken cancellationToken = default)
@@ -421,6 +453,15 @@ public sealed class Dispatcher
     /// <summary>
     ///  Queues an asynchronous callback with an effective token linked to caller cancellation and dispatcher shutdown.
     /// </summary>
+    /// <param name="callback">
+    ///  The asynchronous callback to run. The provided token is canceled when either
+    ///  <paramref name="cancellationToken"/> is canceled or dispatcher shutdown begins.
+    /// </param>
+    /// <param name="cancellationToken">The caller token that participates in effective cancellation.</param>
+    /// <returns>
+    ///  A task that completes when the callback finishes, faults if the callback throws, or is canceled when the
+    ///  callback observes effective cancellation.
+    /// </returns>
     public Task InvokeAsync(
         Func<CancellationToken, ValueTask> callback,
         CancellationToken cancellationToken = default)
@@ -460,6 +501,15 @@ public sealed class Dispatcher
     /// <summary>
     ///  Queues an asynchronous function with an effective token linked to caller cancellation and dispatcher shutdown.
     /// </summary>
+    /// <typeparam name="TResult">The asynchronous result type.</typeparam>
+    /// <param name="callback">
+    ///  The asynchronous function to run. The provided token is canceled when either
+    ///  <paramref name="cancellationToken"/> is canceled or dispatcher shutdown begins.
+    /// </param>
+    /// <param name="cancellationToken">The caller token that participates in effective cancellation.</param>
+    /// <returns>
+    ///  A task that completes with the function result after the full asynchronous lifetime completes.
+    /// </returns>
     public Task<TResult> InvokeAsync<TResult>(
         Func<CancellationToken, ValueTask<TResult>> callback,
         CancellationToken cancellationToken = default)
@@ -499,6 +549,11 @@ public sealed class Dispatcher
     /// <summary>
     ///  Queues a synchronous callback after a monotonic delay.
     /// </summary>
+    /// <param name="delay">The non-negative delay before the callback becomes eligible to run.</param>
+    /// <param name="callback">The callback to run on the dispatcher thread.</param>
+    /// <param name="cancellationToken">The token that can prevent the callback from starting.</param>
+    /// <returns>A task that tracks callback completion once admitted and promoted from delayed scheduling.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="delay"/> is negative.</exception>
     public Task InvokeAsync(
         TimeSpan delay,
         Action callback,
@@ -533,6 +588,12 @@ public sealed class Dispatcher
     /// <summary>
     ///  Queues a synchronous function after a monotonic delay.
     /// </summary>
+    /// <typeparam name="TResult">The callback result type.</typeparam>
+    /// <param name="delay">The non-negative delay before the function becomes eligible to run.</param>
+    /// <param name="callback">The function to run on the dispatcher thread.</param>
+    /// <param name="cancellationToken">The token that can prevent the function from starting.</param>
+    /// <returns>A task that completes with the function result after delayed execution.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="delay"/> is negative.</exception>
     public Task<TResult> InvokeAsync<TResult>(
         TimeSpan delay,
         Func<TResult> callback,
@@ -567,6 +628,13 @@ public sealed class Dispatcher
     /// <summary>
     ///  Queues an asynchronous callback after a monotonic delay.
     /// </summary>
+    /// <param name="delay">The non-negative delay before the callback becomes eligible to run.</param>
+    /// <param name="callback">The asynchronous callback to run on the dispatcher thread.</param>
+    /// <param name="cancellationToken">The token that can prevent the callback from starting.</param>
+    /// <returns>
+    ///  A task that represents the callback's complete asynchronous lifetime after delayed scheduling.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="delay"/> is negative.</exception>
     public Task InvokeAsync(
         TimeSpan delay,
         Func<ValueTask> callback,
@@ -579,6 +647,12 @@ public sealed class Dispatcher
     /// <summary>
     ///  Queues an asynchronous function after a monotonic delay.
     /// </summary>
+    /// <typeparam name="TResult">The asynchronous result type.</typeparam>
+    /// <param name="delay">The non-negative delay before the function becomes eligible to run.</param>
+    /// <param name="callback">The asynchronous function to run on the dispatcher thread.</param>
+    /// <param name="cancellationToken">The token that can prevent the function from starting.</param>
+    /// <returns>A task that completes with the asynchronous result after delayed execution.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="delay"/> is negative.</exception>
     public Task<TResult> InvokeAsync<TResult>(
         TimeSpan delay,
         Func<ValueTask<TResult>> callback,
@@ -591,6 +665,17 @@ public sealed class Dispatcher
     /// <summary>
     ///  Queues an asynchronous callback with an effective cancellation token after a monotonic delay.
     /// </summary>
+    /// <param name="delay">The non-negative delay before the callback becomes eligible to run.</param>
+    /// <param name="callback">
+    ///  The asynchronous callback to run. The provided token is canceled when either
+    ///  <paramref name="cancellationToken"/> is canceled or dispatcher shutdown begins.
+    /// </param>
+    /// <param name="cancellationToken">The caller token that participates in effective cancellation.</param>
+    /// <returns>
+    ///  A task that completes when the callback finishes, faults if it throws, or is canceled through the effective
+    ///  token.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="delay"/> is negative.</exception>
     public Task InvokeAsync(
         TimeSpan delay,
         Func<CancellationToken, ValueTask> callback,
@@ -625,6 +710,15 @@ public sealed class Dispatcher
     /// <summary>
     ///  Queues an asynchronous function with an effective cancellation token after a monotonic delay.
     /// </summary>
+    /// <typeparam name="TResult">The asynchronous result type.</typeparam>
+    /// <param name="delay">The non-negative delay before the function becomes eligible to run.</param>
+    /// <param name="callback">
+    ///  The asynchronous function to run. The provided token is canceled when either
+    ///  <paramref name="cancellationToken"/> is canceled or dispatcher shutdown begins.
+    /// </param>
+    /// <param name="cancellationToken">The caller token that participates in effective cancellation.</param>
+    /// <returns>A task that completes with the asynchronous result after delayed execution.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="delay"/> is negative.</exception>
     public Task<TResult> InvokeAsync<TResult>(
         TimeSpan delay,
         Func<CancellationToken, ValueTask<TResult>> callback,

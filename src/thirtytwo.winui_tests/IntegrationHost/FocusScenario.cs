@@ -16,7 +16,7 @@ using XamlButton = Microsoft.UI.Xaml.Controls.Button;
 
 namespace IntegrationHost;
 
-internal sealed class FocusScenario : IDisposable
+internal sealed class FocusScenario : Touki.DisposableBase
 {
     private readonly NativeButton _beforeButton;
     private readonly Window _parent;
@@ -193,8 +193,13 @@ internal sealed class FocusScenario : IDisposable
         }
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
+        if (!disposing)
+        {
+            return;
+        }
+
         RestoreShiftState();
         _panel.Loaded -= PanelLoaded;
         _host.XamlGotFocus -= HostXamlGotFocus;
