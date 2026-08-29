@@ -10,6 +10,7 @@ namespace Windows.Messages;
 /// </summary>
 public class MouseHandler : IMouseMessageHandler
 {
+    private const ushort XButton2 = 2;
     private readonly Window _attachedWindow;
 
     /// <summary>
@@ -59,7 +60,10 @@ public class MouseHandler : IMouseMessageHandler
                 OnButtonUp(*(POINTS*)&lParam, MouseButton.Middle, (MouseKey)(uint)wParam);
                 break;
             case MessageType.ExtraButtonUp:
-                OnButtonUp(*(POINTS*)&lParam, MouseButton.X1, (MouseKey)(uint)wParam);
+                OnButtonUp(
+                    *(POINTS*)&lParam,
+                    wParam.HIWORD == XButton2 ? MouseButton.X2 : MouseButton.X1,
+                    (MouseKey)wParam.LOWORD);
                 break;
             case MessageType.LeftButtonDown:
                 OnButtonDown(*(POINTS*)&lParam, MouseButton.Left, (MouseKey)(uint)wParam);
@@ -71,7 +75,10 @@ public class MouseHandler : IMouseMessageHandler
                 OnButtonDown(*(POINTS*)&lParam, MouseButton.Middle, (MouseKey)(uint)wParam);
                 break;
             case MessageType.ExtraButtonDown:
-                OnButtonDown(*(POINTS*)&lParam, MouseButton.X1, (MouseKey)(uint)wParam);
+                OnButtonDown(
+                    *(POINTS*)&lParam,
+                    wParam.HIWORD == XButton2 ? MouseButton.X2 : MouseButton.X1,
+                    (MouseKey)wParam.LOWORD);
                 break;
         }
 
@@ -84,7 +91,7 @@ public class MouseHandler : IMouseMessageHandler
 
     /// <inheritdoc/>
     public virtual void OnButtonDown(Point position, MouseButton button, MouseKey mouseState)
-        => MouseDown?.Invoke(_attachedWindow, position, 0, mouseState);
+        => MouseDown?.Invoke(_attachedWindow, position, button, mouseState);
 
     /// <inheritdoc/>
     public virtual void OnButtonUp(Point position, MouseButton button, MouseKey mouseState)

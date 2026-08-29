@@ -10,7 +10,11 @@ namespace Windows;
 /// </summary>
 /// <param name="window">The window receiving the mouse message.</param>
 /// <param name="position">The mouse position in client coordinates, measured in physical pixels.</param>
-/// <param name="button">The mouse button associated with the message.</param>
+/// <param name="button">
+///  The mouse button associated with a button message. For a mouse-move message this value is
+///  <see langword="default"/> and should be ignored; use <paramref name="mouseState"/> to determine which buttons
+///  are pressed.
+/// </param>
 /// <param name="mouseState">Modifier and button state flags from the Win32 message payload.</param>
 public delegate void MouseMessageEvent(
     Window window,
