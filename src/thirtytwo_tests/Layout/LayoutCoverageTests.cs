@@ -538,6 +538,121 @@ public class LayoutCoverageTests
     }
 
     [STATestMethod]
+    public void LayoutWindow_UnchangedChildBounds_DoesNotMoveWindow()
+    {
+        using Window parent = new(
+            new Rectangle(100, 100, 400, 300),
+            style: WindowStyles.Overlapped | WindowStyles.Caption);
+        using Window child = new(
+            new Rectangle(30, 40, 120, 80),
+            style: WindowStyles.Child | WindowStyles.Border,
+            parentWindow: parent);
+        Rectangle currentBounds = child.GetWindowRectangle();
+        parent.ScreenToClient(ref currentBounds).Should().BeTrue();
+        currentBounds.Should().NotBe(child.GetClientRectangle());
+        int notificationCount = 0;
+        child.MessageHandler += CountPositionChanges;
+
+        ((ILayoutHandler)child).Layout(currentBounds, child.GetScale());
+
+        notificationCount.Should().Be(0);
+
+        LRESULT? CountPositionChanges(object sender, HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
+        {
+            if (message == MessageType.WindowPositionChanged)
+            {
+                notificationCount++;
+            }
+
+            return null;
+        }
+    }
+
+    [STATestMethod]
+    public void LayoutWindow_ChangedChildBounds_MovesWindow()
+    {
+        using Window parent = new(
+            new Rectangle(100, 100, 400, 300),
+            style: WindowStyles.Overlapped | WindowStyles.Caption);
+        using Window child = new(
+            new Rectangle(30, 40, 120, 80),
+            style: WindowStyles.Child | WindowStyles.Border,
+            parentWindow: parent);
+        Rectangle requestedBounds = new(50, 60, 140, 90);
+        int notificationCount = 0;
+        child.MessageHandler += CountPositionChanges;
+
+        ((ILayoutHandler)child).Layout(requestedBounds, child.GetScale());
+
+        Rectangle currentBounds = child.GetWindowRectangle();
+        parent.ScreenToClient(ref currentBounds).Should().BeTrue();
+        currentBounds.Should().Be(requestedBounds);
+        notificationCount.Should().BeGreaterThan(0);
+
+        LRESULT? CountPositionChanges(object sender, HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
+        {
+            if (message == MessageType.WindowPositionChanged)
+            {
+                notificationCount++;
+            }
+
+            return null;
+        }
+    }
+
+    [STATestMethod]
+    public void LayoutWindow_UnchangedTopLevelBounds_DoesNotMoveWindow()
+    {
+        using Window window = new(new Rectangle(100, 100, 200, 100));
+        Rectangle currentBounds = window.GetWindowRectangle();
+        int notificationCount = 0;
+        window.MessageHandler += CountPositionChanges;
+
+        ((ILayoutHandler)window).Layout(currentBounds, window.GetScale());
+
+        notificationCount.Should().Be(0);
+
+        LRESULT? CountPositionChanges(object sender, HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
+        {
+            if (message == MessageType.WindowPositionChanged)
+            {
+                notificationCount++;
+            }
+
+            return null;
+        }
+    }
+
+    [STATestMethod]
+    public void LayoutWindow_UnchangedOwnedTopLevelBounds_DoesNotMapToOwner()
+    {
+        using Window owner = new(new Rectangle(100, 100, 400, 300));
+        using Window owned = new(
+            new Rectangle(150, 160, 200, 100),
+            style: WindowStyles.PopUp,
+            parentWindow: owner);
+        owned.GetParent().Should().Be(owner.Handle);
+        owned.IsChildWindow().Should().BeFalse();
+        Rectangle currentBounds = owned.GetWindowRectangle();
+        int notificationCount = 0;
+        owned.MessageHandler += CountPositionChanges;
+
+        ((ILayoutHandler)owned).Layout(currentBounds, owned.GetScale());
+
+        notificationCount.Should().Be(0);
+
+        LRESULT? CountPositionChanges(object sender, HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
+        {
+            if (message == MessageType.WindowPositionChanged)
+            {
+                notificationCount++;
+            }
+
+            return null;
+        }
+    }
+
+    [STATestMethod]
     public void LayoutBinder_WindowPositionChanged_LaysOutClientBounds()
     {
         using Window window = new(new Rectangle(10, 20, 200, 100));
@@ -581,15 +696,75 @@ public class LayoutCoverageTests
     }
 
     [STATestMethod]
+    public void LayoutBinder_DpiChangedAfterParent_LaysOutUpdatedScale()
+    {
+        using Window window = new(new Rectangle(10, 20, 200, 100));
+        RecordingLayoutHandler handler = new();
+        using LayoutBinder binder = new(window, handler);
+        uint currentDpi = window.GetDpi();
+        uint previousDpi = currentDpi == 96 ? 120u : currentDpi - 24;
+        dynamic binderAccessor = binder.TestAccessor.Dynamic;
+        binderAccessor._lastScale = previousDpi / 96.0f;
+
+        SendDpiChangedAfterParent(window, previousDpi, currentDpi);
+
+        handler.CallCount.Should().Be(2);
+        handler.LastBounds.Should().Be(window.GetClientRectangle());
+        handler.LastScale.Should().Be(window.GetScale());
+    }
+
+    [STATestMethod]
+    public void LayoutBinder_DpiChangedAfterParent_UnchangedScaleDoesNotRepeatLayout()
+    {
+        using Window window = new(new Rectangle(10, 20, 200, 100));
+        RecordingLayoutHandler handler = new();
+        using LayoutBinder binder = new(window, handler);
+        uint currentDpi = window.GetDpi();
+        uint previousDpi = currentDpi == 96 ? 120u : currentDpi - 24;
+
+        SendDpiChangedAfterParent(window, previousDpi, currentDpi);
+
+        handler.CallCount.Should().Be(1);
+    }
+
+    [STATestMethod]
+    public unsafe void LayoutBinder_DpiChanged_LaysOutAfterSuggestedBoundsAreApplied()
+    {
+        using Window window = new(new Rectangle(10, 20, 200, 100));
+        RecordingLayoutHandler handler = new();
+        using LayoutBinder binder = new(window, handler);
+        dynamic binderAccessor = binder.TestAccessor.Dynamic;
+        binderAccessor._lastScale = window.GetScale() + 0.25f;
+        ushort newDpi = checked((ushort)(window.GetDpi() + 24));
+        nuint packedDpi = newDpi | ((nuint)newDpi << 16);
+        Rectangle suggestedBounds = new(30, 40, 300, 200);
+        RECT suggestedRectangle = suggestedBounds;
+
+        _ = window.SendMessage(
+            MessageType.DpiChanged,
+            (WPARAM)packedDpi,
+            (LPARAM)(nint)(&suggestedRectangle));
+
+        handler.CallCount.Should().Be(2);
+        handler.LastBounds.Should().Be(window.GetClientRectangle());
+        handler.LastScale.Should().Be(window.GetScale());
+    }
+
+    [STATestMethod]
     public void LayoutBinder_Dispose_DetachesHandlerAndIsIdempotent()
     {
         using Window window = new(new Rectangle(10, 20, 200, 100));
         RecordingLayoutHandler handler = new();
         LayoutBinder binder = new(window, handler);
+        Action layout = binder.TestAccessor.CreateDelegate<Action>("LayoutIfChanged");
 
         binder.Dispose();
         binder.Dispose();
+        layout();
         window.MoveWindow(new Rectangle(20, 30, 300, 150), repaint: false);
+        uint currentDpi = window.GetDpi();
+        uint previousDpi = currentDpi == 96 ? 120u : currentDpi - 24;
+        SendDpiChangedAfterParent(window, previousDpi, currentDpi);
 
         handler.CallCount.Should().Be(1);
     }
@@ -634,6 +809,9 @@ public class LayoutCoverageTests
             .Should().Throw<InvalidOperationException>();
 
         SendWindowPositionChanged(window);
+        uint currentDpi = window.GetDpi();
+        uint previousDpi = currentDpi == 96 ? 120u : currentDpi - 24;
+        SendDpiChangedAfterParent(window, previousDpi, currentDpi);
 
         notificationCount.Should().BeGreaterThan(0);
         handler.CallCount.Should().Be(1);
@@ -706,6 +884,15 @@ public class LayoutCoverageTests
         };
 
         _ = window.SendMessage(MessageType.WindowPositionChanged, lParam: (LPARAM)(nint)(&position));
+    }
+
+    private static void SendDpiChangedAfterParent(Window window, uint previousDpi, uint currentDpi)
+    {
+        dynamic accessor = window.TestAccessor.Dynamic;
+        accessor._lastDpi = previousDpi;
+        _ = window.SendMessage(MessageType.DpiChangedBeforeParent);
+        accessor._lastDpi = currentDpi;
+        _ = window.SendMessage(MessageType.DpiChangedAfterParent);
     }
 
     private sealed class ThrowingLayoutHandler : ILayoutHandler

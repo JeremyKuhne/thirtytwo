@@ -6,7 +6,7 @@ using System.Drawing;
 namespace Windows;
 
 /// <summary>
-///  Binds a <see cref="Window"/> to an <see cref="ILayoutHandler"/> and listens for window position changes
+///  Binds a <see cref="Window"/> to an <see cref="ILayoutHandler"/> and listens for window position and DPI changes
 ///  to trigger layout updates.
 /// </summary>
 /// <remarks>
@@ -64,7 +64,9 @@ public class LayoutBinder : DisposableBase
         WPARAM wParam,
         LPARAM lParam)
     {
-        if (message == MessageType.WindowPositionChanged && !Disposed)
+        // A top-level DPI change applies suggested bounds and produces WindowPositionChanged. A child
+        // DpiChangedAfterParent notification has no suggested move, so it must trigger layout directly.
+        if (message == MessageType.WindowPositionChanged || message == MessageType.DpiChangedAfterParent)
         {
             LayoutIfChanged();
         }
@@ -75,6 +77,11 @@ public class LayoutBinder : DisposableBase
 
     private void LayoutIfChanged()
     {
+        if (Disposed)
+        {
+            return;
+        }
+
         Rectangle bounds = _window.GetClientRectangle();
         float scale = _window.GetScale();
         LayoutValidation.ValidateScale(scale);
