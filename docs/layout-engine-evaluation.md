@@ -15,17 +15,18 @@ compose, deterministic, inexpensive to execute, DPI-aware where fixed logical
 dimensions are involved, and well covered by tests and samples. The engine
 should be evolved rather than replaced.
 
-The highest-priority lifecycle and input-contract work has been implemented.
-`LayoutBinder` performs an initial pass, skips unchanged notifications,
-validates its inputs, and detaches safely when disposed. The engine now defines
-physical-pixel coordinates and logical-to-physical scale centrally, rejects
-invalid configuration consistently, and detects integer geometry overflow.
-The most important remaining improvements are native-positioning and API-shape
-work, not new layout algorithms:
+The highest-priority lifecycle, input-contract, and native-positioning work has
+been implemented. `LayoutBinder` performs an initial pass, skips unchanged
+notifications, responds after effective DPI changes, validates its inputs, and
+detaches safely when disposed. The engine defines physical-pixel coordinates
+and logical-to-physical scale centrally, rejects invalid configuration
+consistently, and detects integer geometry overflow. Window leaves compare
+outer bounds in equivalent coordinate spaces and avoid redundant `MoveWindow`
+calls. The most important remaining work is API-shape and layout-policy
+clarification, not new layout algorithms:
 
-1. Avoid redundant `MoveWindow` calls by comparing equivalent coordinate
-   spaces.
-2. Clarify naming and stateful behavior before the public API stabilizes.
+1. Clarify naming and stateful behavior before the public API stabilizes.
+2. Replace heuristic tight-space margin compression with an explicit policy.
 
 Grid, flow, intrinsic measurement, and batched native positioning are useful
 future directions, but they should follow evidence from real application needs
@@ -39,7 +40,7 @@ This evaluation covers:
   [`src/thirtytwo/Layout`](../src/thirtytwo/Layout/);
 - window integration in [`Window`](../src/thirtytwo/Window.cs) and
   [`WindowExtensions`](../src/thirtytwo/WindowExtensions.cs);
-- the 66 dedicated tests in
+- the 73 dedicated tests in
   [`src/thirtytwo_tests/Layout`](../src/thirtytwo_tests/Layout/); and
 - nine sample windows that bind layout handlers under
   [`src/samples`](../src/samples/).
@@ -56,7 +57,7 @@ rectangle to one child or partitions it among several children.
 
 ```mermaid
 flowchart LR
-    Message[WM_WINDOWPOSCHANGED] --> Binder[LayoutBinder]
+  Message[Position or effective DPI change] --> Binder[LayoutBinder]
     Binder --> Root[Root ILayoutHandler]
     Root --> Split[Horizontal or Vertical split]
     Split --> Transform[Margin, fixed size, or fixed percent]
@@ -85,10 +86,11 @@ flowchart LR
   [`EmptyLayout`](../src/thirtytwo/Layout/EmptyLayout.cs) supply explicit
   pass-through and no-op composition nodes.
 - [`LayoutBinder`](../src/thirtytwo/Layout/LayoutBinder.cs) performs the initial
-  pass, starts changed-geometry passes from `WM_WINDOWPOSCHANGED`, and owns the
-  detachable event registration.
-- [`Window`](../src/thirtytwo/Window.cs) acts as the leaf handler and applies
-  requested bounds with `MoveWindow`.
+  pass, starts passes after changed geometry or effective DPI, and owns the
+  detachable event registrations.
+- [`Window`](../src/thirtytwo/Window.cs) acts as the leaf handler, compares
+  requested and current outer bounds in the same coordinate space, and applies
+  changes with `MoveWindow`.
 
 ## Strengths
 
@@ -140,7 +142,7 @@ caller mutation from changing an established layout tree.
 
 ### 6. Broad behavioral test coverage
 
-The 66 dedicated tests cover:
+The 73 dedicated tests cover:
 
 - all fixed-size and fixed-percentage alignment combinations;
 - nonzero parent origins and scale propagation;
@@ -151,7 +153,8 @@ The 66 dedicated tests cover:
 - null handlers, invalid alignment and percentage values, and invalid scale;
 - maximum integer dimensions and checked overflow behavior;
 - padding value conversions; and
-- integration with a real window-position notification.
+- native child, top-level, and owned-window positioning; and
+- position and effective-DPI binding notifications.
 
 This is unusually strong coverage for an engine of this size.
 
@@ -159,11 +162,13 @@ This is unusually strong coverage for an engine of this size.
 
 `LayoutBinder` validates its window and handler, performs an initial pass, and
 unsubscribes idempotently through `DisposableBase`. If the initial child layout
-throws, construction rolls back the event subscription. Successful bounds and
-scale are cached so equivalent notifications do not traverse the tree again.
+throws, construction rolls back its window-message subscription. Successful
+bounds and scale are cached so equivalent notifications do not traverse the
+tree again. Child DPI-driven passes sample the current effective DPI directly
+from the window while handling `WM_DPICHANGED_AFTERPARENT`.
 
-Focused tests cover initial layout, changed and unchanged notifications,
-double disposal, null arguments, and constructor rollback.
+Focused tests cover initial layout, changed and unchanged position and DPI
+notifications, double disposal, null arguments, and constructor rollback.
 
 ### 8. Explicit geometry and validation contracts
 
@@ -178,7 +183,18 @@ percentages. Percentages above 100% and negative margins remain supported for
 deliberate overflow and expansion. Checked conversion prevents unrepresentable
 integer geometry from silently wrapping.
 
-### 9. Demonstrated adoption
+### 9. Coordinate-correct native positioning
+
+Window leaves compare requested outer bounds against the current outer window
+rectangle instead of its `(0, 0)`-based client rectangle. Child rectangles are
+converted from screen coordinates to the parent's client coordinates before
+comparison. Top-level and owned pop-up windows remain in screen coordinates.
+
+Equivalent layout passes therefore avoid redundant `MoveWindow` calls, while
+changed bounds still move and resize the window. Integration tests cover
+bordered children at nonzero origins, top-level windows, and owned pop-ups.
+
+### 10. Demonstrated adoption
 
 Nine sample windows use `AddLayoutHandler`, including native controls, ActiveX,
 dark-mode controls, and WinUI-hosted content. They use concise one-line binding
@@ -188,19 +204,7 @@ exercised across more than its dedicated layout sample.
 
 ## Weaknesses and risks
 
-### 1. The window leaf compares different coordinate spaces
-
-`Window.LayoutWindow` compares requested parent-relative bounds with
-`GetClientRectangle()`. A Win32 client rectangle starts at `(0, 0)` and contains
-only the client size, while a layout rectangle normally includes the child
-position in its parent's client coordinates.
-
-For a child positioned away from `(0, 0)`, the comparison cannot prove that the
-window is already in the requested position, so repeated layout passes issue a
-redundant `MoveWindow`. This is primarily a performance and repaint concern, not
-a geometry correctness problem.
-
-### 2. Split-layout naming is easy to misread
+### 1. Split-layout naming is easy to misread
 
 `HorizontalLayout` creates horizontal bands by splitting height, while
 `VerticalLayout` creates vertical columns by splitting width. That interpretation
@@ -210,7 +214,7 @@ is internally consistent, but it is opposite the common convention where a
 The source documentation resolves the ambiguity after a reader opens the type;
 the factory call alone does not.
 
-### 3. `ReplaceableLayout` has surprising pre-layout behavior
+### 2. `ReplaceableLayout` has surprising pre-layout behavior
 
 Assigning `Handler` synchronously calls the new handler. Before the first real
 layout pass, it receives `Rectangle.Empty` and scale `1.0`. The behavior is
@@ -220,7 +224,7 @@ bounds if replacement occurs too early.
 The setter also combines state mutation with an immediate external callback,
 which makes exception and reentrancy behavior harder to reason about.
 
-### 4. Tight-space margin behavior is heuristic
+### 3. Tight-space margin behavior is heuristic
 
 When requested margins do not fit, `PaddedLayout` repeatedly halves already
 rounded edge values until they fit. This terminates quickly and tests cover very
@@ -233,13 +237,13 @@ large values, but it encodes a specific policy:
 The behavior is robust, but it is not obvious to callers and may not match every
 UI's desired compression policy.
 
-### 5. `PaddingF` is disconnected from layout
+### 4. `PaddingF` is disconnected from layout
 
 `PaddingF` is public and tested, but no built-in layout node consumes it. The
 engine accepts integer `Padding` and applies the scale later. This leaves an API
 surface that suggests fractional-margin support without an integration path.
 
-### 6. The engine has an intentional feature ceiling
+### 5. The engine has an intentional feature ceiling
 
 There is no measure/arrange distinction, intrinsic or preferred size, minimum
 and maximum constraints, visibility-aware allocation, wrapping, grid, or flow
@@ -250,7 +254,7 @@ That simplicity is a strength for small Win32 applications. It becomes a
 limitation when layout depends on text measurement, control content, or
 cross-child constraints.
 
-### 7. Native moves are not batched
+### 6. Native moves are not batched
 
 Each window leaf calls `MoveWindow` independently with repaint enabled. Large
 trees may therefore produce repeated native calls and intermediate repainting.
@@ -260,18 +264,7 @@ does not provide a transaction boundary where sibling moves could use
 
 ## Recommended next steps
 
-### Priority 1: Eliminate redundant native positioning
-
-Compare requested bounds with the current window bounds expressed in the same
-parent-client coordinate space, or retain the last successfully applied layout
-rectangle in the window leaf. Add an integration test that verifies an unchanged
-layout does not issue another native move.
-
-Measure layout during interactive resizing before and after this change. If
-native positioning or repainting is material, introduce an optional deferred
-positioning transaction rather than adding caching throughout every node.
-
-### Priority 2: Clarify composition APIs
+### Priority 1: Clarify composition APIs
 
 Before API stabilization:
 
@@ -282,7 +275,7 @@ Before API stabilization:
 - either add a `PaddingF` layout path with defined rounding or remove the unused
   public type.
 
-### Priority 3: Make margin compression a named policy
+### Priority 2: Make margin compression a named policy
 
 Replace the recursive half-scale fallback with an explicit policy or closed-form
 calculation. Useful policies could include:
@@ -295,6 +288,13 @@ calculation. Useful policies could include:
 Whichever policy is selected should be documented and tested for asymmetric,
 negative, extreme, and zero-sized inputs.
 
+### Priority 3: Measure before batching native moves
+
+Measure layout during interactive resizing and with a representative synthetic
+tree. The engine now suppresses unchanged native positioning, so measurements
+can show whether the remaining `MoveWindow` calls and repainting justify an
+optional `BeginDeferWindowPos` and `DeferWindowPos` transaction.
+
 ### Priority 4: Add features only from demonstrated demand
 
 If samples or applications need richer composition, add narrowly scoped nodes
@@ -306,7 +306,8 @@ and debugging complexity and is not justified by current usage evidence.
 
 The existing suite is strong. The highest-value additions are tests for:
 
-- unchanged window-leaf bounds avoiding redundant moves;
+- a real mixed-DPI transition confirming nested binders use the new effective
+  scale;
 - negative margins and the selected tight-space policy;
 - revised replacement behavior before the first real pass, updating the
   existing default-replay test if that contract changes; and
@@ -322,7 +323,9 @@ model is easier to understand than a general-purpose constraint or
 measure/arrange system, its geometry is deterministic, and its tests and samples
 show meaningful maturity.
 
-The next iteration should preserve that simplicity. With binder lifecycle and
-input contracts corrected, remove redundant native work before adding new layout
-primitives. Those changes would make the current design more predictable and
-extensible without turning it into a different kind of UI framework.
+The next iteration should preserve that simplicity. With binder lifecycle,
+input contracts, and coordinate-correct native positioning addressed, clarify
+the public composition and state contracts before adding new layout primitives.
+Measure the remaining native work before introducing deferred positioning.
+Those changes would make the current design more predictable and extensible
+without turning it into a different kind of UI framework.

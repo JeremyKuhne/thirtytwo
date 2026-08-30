@@ -687,7 +687,7 @@ public static unsafe partial class WindowExtensions
     /// <summary>
     ///  Binds the given layout <paramref name="handler"/> to the window. This will call
     ///  <see cref="ILayoutHandler.Layout(Rectangle, float)"/> with the window's client rectangle whenever the window's
-    ///  position or size changes.
+    ///  position, size, or effective DPI changes.
     /// </summary>
     /// <remarks>
     ///  <para>

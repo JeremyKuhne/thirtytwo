@@ -1063,12 +1063,43 @@ public unsafe partial class Window : ComponentBase, IHandle<HWND>, ILayoutHandle
     void ILayoutHandler.Layout(Rectangle bounds, float scale) => LayoutWindow(bounds);
 
     /// <summary>
-    ///  Lays out this window in the given client bounds.
+    ///  Lays out this window in the requested bounds.
     /// </summary>
-    /// <param name="bounds">The requested client bounds in physical pixels.</param>
+    /// <param name="bounds">
+    ///  The requested outer bounds in physical pixels, expressed in screen coordinates for top-level windows or in
+    ///  the parent's client coordinates for child windows.
+    /// </param>
     protected virtual void LayoutWindow(Rectangle bounds)
     {
-        if (bounds != this.GetClientRectangle())
+        Rectangle currentBounds;
+        if (this.IsChildWindow())
+        {
+            HWND parent = this.GetParent();
+            if (parent.IsNull)
+            {
+                Handle.MoveWindow(bounds, repaint: true);
+                return;
+            }
+
+            // Parent-client coordinates locate the child's outer window; they are not the child's client rectangle.
+            // GetClientRectangle would lose the child's position and exclude its borders. GetWindowRectangle keeps
+            // the outer bounds, and ScreenToClient converts their screen-relative location to the required space.
+            currentBounds = this.GetWindowRectangle();
+            if (!parent.ScreenToClient(ref currentBounds))
+            {
+                Handle.MoveWindow(bounds, repaint: true);
+                return;
+            }
+        }
+        else
+        {
+            // MoveWindow interprets top-level bounds in screen coordinates. GetClientRectangle always starts at
+            // (0, 0) and excludes the caption and borders, so an unchanged positioned window would never compare
+            // equal, forcing a redundant MoveWindow request and its position, size, and repaint work on every pass.
+            currentBounds = this.GetWindowRectangle();
+        }
+
+        if (bounds != currentBounds)
         {
             Handle.MoveWindow(bounds, repaint: true);
         }
