@@ -12,6 +12,8 @@ message loop, and safely schedule work on the UI thread.
    dispatcher, queue synchronous or asynchronous work, use cancellation and
    delays, create timers, optimize thread checks, and handle failures and
    shutdown.
+3. [Using the Layout Engine](layout.md) describes how to bind, compose, size,
+   align, and dynamically replace layouts for child windows.
 
 The complete sample applications under [`src/samples`](../src/samples/) provide
 larger examples of windows, controls, graphics, dialogs, and layout.

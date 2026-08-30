@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Windows;
 
@@ -54,19 +56,27 @@ public class LayoutCoverageTests
     }
 
     [TestMethod]
-    public void FixedPercentLayout_InvalidAlignments_DefaultToTopLeft()
+    public void FixedPercentLayout_InvalidAlignments_Throw()
     {
         RecordingLayoutHandler handler = new();
-        FixedPercentLayout layout = new(
+
+        Action invalidVertical = () => _ = new FixedPercentLayout(
             handler,
             heightPercent: 0.5f,
             widthPercent: 0.4f,
             (VerticalAlignment)int.MaxValue,
+            HorizontalAlignment.Left);
+        Action invalidHorizontal = () => _ = new FixedPercentLayout(
+            handler,
+            heightPercent: 0.5f,
+            widthPercent: 0.4f,
+            VerticalAlignment.Top,
             (HorizontalAlignment)int.MaxValue);
 
-        layout.Layout(new Rectangle(10, 20, 100, 60), 1.0f);
-
-        handler.LastBounds.Should().Be(new Rectangle(10, 20, 40, 30));
+        invalidVertical.Should().Throw<ArgumentOutOfRangeException>()
+            .WithParameterName("verticalAlignment");
+        invalidHorizontal.Should().Throw<ArgumentOutOfRangeException>()
+            .WithParameterName("horizontalAlignment");
     }
 
     [TestMethod]
@@ -125,18 +135,147 @@ public class LayoutCoverageTests
     }
 
     [TestMethod]
-    public void FixedSizeLayout_InvalidAlignments_DefaultToTopLeft()
+    public void FixedSizeLayout_InvalidAlignments_Throw()
     {
         RecordingLayoutHandler handler = new();
-        FixedSizeLayout layout = new(
+
+        Action invalidVertical = () => _ = new FixedSizeLayout(
             handler,
             new Size(40, 30),
             (VerticalAlignment)int.MaxValue,
+            HorizontalAlignment.Left);
+        Action invalidHorizontal = () => _ = new FixedSizeLayout(
+            handler,
+            new Size(40, 30),
+            VerticalAlignment.Top,
             (HorizontalAlignment)int.MaxValue);
+
+        invalidVertical.Should().Throw<ArgumentOutOfRangeException>()
+            .WithParameterName("verticalAlignment");
+        invalidHorizontal.Should().Throw<ArgumentOutOfRangeException>()
+            .WithParameterName("horizontalAlignment");
+    }
+
+    [TestMethod]
+    public void FixedPercentLayout_InvalidPercentages_Throw()
+    {
+        RecordingLayoutHandler handler = new();
+
+        Action negative = () => _ = new FixedPercentLayout(handler, -0.1f, 1.0f);
+        Action notFinite = () => _ = new FixedPercentLayout(handler, 1.0f, float.PositiveInfinity);
+
+        negative.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("heightPercent");
+        notFinite.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("widthPercent");
+    }
+
+    [TestMethod]
+    public void FixedPercentLayout_OverOnePercentage_AllowsOversizing()
+    {
+        RecordingLayoutHandler handler = new();
+        FixedPercentLayout layout = new(handler, heightPercent: 1.5f, widthPercent: 2.0f);
 
         layout.Layout(new Rectangle(10, 20, 100, 60), 1.0f);
 
-        handler.LastBounds.Should().Be(new Rectangle(10, 20, 40, 30));
+        handler.LastBounds.Should().Be(new Rectangle(-40, 5, 200, 90));
+    }
+
+    [TestMethod]
+    public void FixedSizeLayout_NegativeDimension_Throws()
+    {
+        RecordingLayoutHandler handler = new();
+
+        Action create = () => _ = new FixedSizeLayout(handler, new Size(-1, 10));
+
+        create.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("size");
+    }
+
+    [TestMethod]
+    public void LayoutHandlers_NullHandler_Throw()
+    {
+        FluentActions.Invoking(() => _ = new FillLayout(null!)).Should().Throw<ArgumentNullException>();
+        FluentActions.Invoking(() => _ = new FixedPercentLayout(null!, 1.0f, 1.0f))
+            .Should().Throw<ArgumentNullException>();
+        FluentActions.Invoking(() => _ = new FixedSizeLayout(null!, new Size(10, 10)))
+            .Should().Throw<ArgumentNullException>();
+        FluentActions.Invoking(() => _ = new PaddedLayout(0, null!)).Should().Throw<ArgumentNullException>();
+        FluentActions.Invoking(() => _ = new ReplaceableLayout(null!)).Should().Throw<ArgumentNullException>();
+    }
+
+    [TestMethod]
+    public void ScaledLayouts_NonpositiveOrNonfiniteScale_Throw()
+    {
+        RecordingLayoutHandler handler = new();
+        FixedSizeLayout fixedSize = new(handler, new Size(10, 10));
+        PaddedLayout padded = new(10, handler);
+
+        FluentActions.Invoking(() => fixedSize.Layout(Rectangle.Empty, 0))
+            .Should().Throw<ArgumentOutOfRangeException>();
+        FluentActions.Invoking(() => fixedSize.Layout(Rectangle.Empty, -1))
+            .Should().Throw<ArgumentOutOfRangeException>();
+        FluentActions.Invoking(() => padded.Layout(Rectangle.Empty, float.NaN))
+            .Should().Throw<ArgumentOutOfRangeException>();
+        FluentActions.Invoking(() => padded.Layout(Rectangle.Empty, float.PositiveInfinity))
+            .Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [TestMethod]
+    public void LayoutDimensions_UnitFactor_PreservesMaximumValue()
+    {
+        RecordingLayoutHandler fixedPercentHandler = new();
+        RecordingLayoutHandler fixedSizeHandler = new();
+        FixedPercentLayout fixedPercent = new(
+            fixedPercentHandler,
+            heightPercent: 1.0f,
+            widthPercent: 1.0f,
+            VerticalAlignment.Top,
+            HorizontalAlignment.Left);
+        FixedSizeLayout fixedSize = new(
+            fixedSizeHandler,
+            new Size(int.MaxValue, int.MaxValue),
+            VerticalAlignment.Top,
+            HorizontalAlignment.Left);
+        Rectangle maximumBounds = new(0, 0, int.MaxValue, int.MaxValue);
+
+        fixedPercent.Layout(maximumBounds, 1.0f);
+        fixedSize.Layout(maximumBounds, 1.0f);
+
+        fixedPercentHandler.LastBounds.Should().Be(maximumBounds);
+        fixedSizeHandler.LastBounds.Should().Be(maximumBounds);
+    }
+
+    [TestMethod]
+    public void SplitLayouts_UnitPercentage_PreservesMaximumExtent()
+    {
+        RecordingLayoutHandler horizontalFirst = new();
+        RecordingLayoutHandler horizontalLast = new();
+        RecordingLayoutHandler verticalFirst = new();
+        RecordingLayoutHandler verticalLast = new();
+        HorizontalLayout horizontal = new((1.0f, horizontalFirst), (0.0f, horizontalLast));
+        VerticalLayout vertical = new((1.0f, verticalFirst), (0.0f, verticalLast));
+
+        horizontal.Layout(new Rectangle(0, 0, 1, int.MaxValue), 1.0f);
+        vertical.Layout(new Rectangle(0, 0, int.MaxValue, 1), 1.0f);
+
+        horizontalFirst.LastBounds.Height.Should().Be(int.MaxValue);
+        horizontalLast.LastBounds.Height.Should().Be(0);
+        verticalFirst.LastBounds.Width.Should().Be(int.MaxValue);
+        verticalLast.LastBounds.Width.Should().Be(0);
+    }
+
+    [TestMethod]
+    public void ScaledGeometry_ResultOutsideIntegerRange_Throws()
+    {
+        RecordingLayoutHandler handler = new();
+        FixedPercentLayout fixedPercent = new(handler, heightPercent: 1.0f, widthPercent: 2.0f);
+        FixedSizeLayout fixedSize = new(handler, new Size(int.MaxValue, 1));
+        PaddedLayout padded = new((int.MaxValue, 0, 0, 0), handler);
+
+        FluentActions.Invoking(() => fixedPercent.Layout(new Rectangle(0, 0, int.MaxValue, 1), 1.0f))
+            .Should().Throw<OverflowException>();
+        FluentActions.Invoking(() => fixedSize.Layout(Rectangle.Empty, 2.0f))
+            .Should().Throw<OverflowException>();
+        FluentActions.Invoking(() => padded.Layout(new Rectangle(0, 0, 10, 10), 2.0f))
+            .Should().Throw<OverflowException>();
     }
 
     [TestMethod]
@@ -287,6 +426,18 @@ public class LayoutCoverageTests
     }
 
     [TestMethod]
+    public void PaddedLayout_NegativeMargins_ExpandBounds()
+    {
+        RecordingLayoutHandler handler = new();
+        PaddedLayout layout = new((-10, -20, -30, -40), handler);
+
+        layout.Layout(new Rectangle(10, 20, 100, 80), 1.0f);
+
+        handler.LastBounds.Should().Be(new Rectangle(0, 0, 140, 140));
+        handler.LastScale.Should().Be(1.0f);
+    }
+
+    [TestMethod]
     public void PaddedLayout_MaximumPadding_DoesNotOverflow()
     {
         RecordingLayoutHandler handler = new();
@@ -391,14 +542,141 @@ public class LayoutCoverageTests
     {
         using Window window = new(new Rectangle(10, 20, 200, 100));
         RecordingLayoutHandler handler = new();
-        LayoutBinder binder = new(window, handler);
+        using LayoutBinder binder = new(window, handler);
+
+        handler.CallCount.Should().Be(1);
+        handler.LastBounds.Should().Be(window.GetClientRectangle());
+        handler.LastScale.Should().Be(window.GetScale());
 
         window.MoveWindow(new Rectangle(20, 30, 300, 150), repaint: false);
 
-        handler.CallCount.Should().BeGreaterThan(0);
+        handler.CallCount.Should().BeGreaterThan(1);
         handler.LastBounds.Should().Be(window.GetClientRectangle());
         handler.LastScale.Should().Be(window.GetScale());
-        GC.KeepAlive(binder);
+    }
+
+    [STATestMethod]
+    public void LayoutBinder_UnchangedNotification_DoesNotRepeatLayout()
+    {
+        using Window window = new(new Rectangle(10, 20, 200, 100));
+        RecordingLayoutHandler handler = new();
+        using LayoutBinder binder = new(window, handler);
+        int notificationCount = 0;
+        window.MessageHandler += CountPositionChanges;
+
+        SendWindowPositionChanged(window);
+
+        notificationCount.Should().BeGreaterThan(0);
+        handler.CallCount.Should().Be(1);
+
+        LRESULT? CountPositionChanges(object sender, HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
+        {
+            if (message == MessageType.WindowPositionChanged)
+            {
+                notificationCount++;
+            }
+
+            return null;
+        }
+    }
+
+    [STATestMethod]
+    public void LayoutBinder_Dispose_DetachesHandlerAndIsIdempotent()
+    {
+        using Window window = new(new Rectangle(10, 20, 200, 100));
+        RecordingLayoutHandler handler = new();
+        LayoutBinder binder = new(window, handler);
+
+        binder.Dispose();
+        binder.Dispose();
+        window.MoveWindow(new Rectangle(20, 30, 300, 150), repaint: false);
+
+        handler.CallCount.Should().Be(1);
+    }
+
+    [STATestMethod]
+    public void LayoutBinder_MultipleBinders_DisposeIndependently()
+    {
+        using Window window = new(new Rectangle(10, 20, 200, 100));
+        RecordingLayoutHandler firstHandler = new();
+        RecordingLayoutHandler secondHandler = new();
+        LayoutBinder firstBinder = new(window, firstHandler);
+        using LayoutBinder secondBinder = new(window, secondHandler);
+
+        firstBinder.Dispose();
+        window.MoveWindow(new Rectangle(20, 30, 300, 150), repaint: false);
+
+        firstHandler.CallCount.Should().Be(1);
+        secondHandler.CallCount.Should().BeGreaterThan(1);
+    }
+
+    [STATestMethod]
+    public void LayoutBinder_NullArguments_Throw()
+    {
+        using Window window = new(new Rectangle(10, 20, 200, 100));
+        RecordingLayoutHandler handler = new();
+
+        FluentActions.Invoking(() => _ = new LayoutBinder(null!, handler))
+            .Should().Throw<ArgumentNullException>();
+        FluentActions.Invoking(() => _ = new LayoutBinder(window, null!))
+            .Should().Throw<ArgumentNullException>();
+    }
+
+    [STATestMethod]
+    public void LayoutBinder_InitialLayoutThrows_DetachesHandler()
+    {
+        using Window window = new(new Rectangle(10, 20, 200, 100));
+        ThrowingLayoutHandler handler = new();
+        int notificationCount = 0;
+        window.MessageHandler += CountPositionChanges;
+
+        FluentActions.Invoking(() => _ = new LayoutBinder(window, handler))
+            .Should().Throw<InvalidOperationException>();
+
+        SendWindowPositionChanged(window);
+
+        notificationCount.Should().BeGreaterThan(0);
+        handler.CallCount.Should().Be(1);
+
+        LRESULT? CountPositionChanges(object sender, HWND window, MessageType message, WPARAM wParam, LPARAM lParam)
+        {
+            if (message == MessageType.WindowPositionChanged)
+            {
+                notificationCount++;
+            }
+
+            return null;
+        }
+    }
+
+    [STATestMethod]
+    public void LayoutBinder_ReentrantLayoutSucceedsThenOuterThrows_PreservesNestedState()
+    {
+        using Window window = new(new Rectangle(10, 20, 200, 100));
+        CallbackLayoutHandler handler = new();
+        using LayoutBinder binder = new(window, handler);
+        dynamic accessor = binder.TestAccessor.Dynamic;
+        accessor._lastBounds = Rectangle.Empty;
+        bool reentered = false;
+        handler.Callback = () =>
+        {
+            if (reentered)
+            {
+                return;
+            }
+
+            reentered = true;
+            window.MoveWindow(new Rectangle(20, 30, 300, 150), repaint: false);
+            throw new InvalidOperationException("Expected");
+        };
+
+        Action layout = binder.TestAccessor.CreateDelegate<Action>("LayoutIfChanged");
+        FluentActions.Invoking(layout).Should().Throw<InvalidOperationException>();
+        int successfulNestedCallCount = handler.CallCount;
+
+        SendWindowPositionChanged(window);
+
+        handler.CallCount.Should().Be(successfulNestedCallCount);
     }
 
     private sealed class RecordingLayoutHandler : ILayoutHandler
@@ -412,6 +690,44 @@ public class LayoutCoverageTests
             CallCount++;
             LastBounds = bounds;
             LastScale = scale;
+        }
+    }
+
+    private static unsafe void SendWindowPositionChanged(Window window)
+    {
+        Rectangle bounds = window.GetWindowRectangle();
+        WINDOWPOS position = new()
+        {
+            hwnd = window.Handle,
+            x = bounds.X,
+            y = bounds.Y,
+            cx = bounds.Width,
+            cy = bounds.Height
+        };
+
+        _ = window.SendMessage(MessageType.WindowPositionChanged, lParam: (LPARAM)(nint)(&position));
+    }
+
+    private sealed class ThrowingLayoutHandler : ILayoutHandler
+    {
+        public int CallCount { get; private set; }
+
+        public void Layout(Rectangle bounds, float scale)
+        {
+            CallCount++;
+            throw new InvalidOperationException("Expected");
+        }
+    }
+
+    private sealed class CallbackLayoutHandler : ILayoutHandler
+    {
+        public int CallCount { get; private set; }
+        public Action? Callback { get; set; }
+
+        public void Layout(Rectangle bounds, float scale)
+        {
+            CallCount++;
+            Callback?.Invoke();
         }
     }
 }

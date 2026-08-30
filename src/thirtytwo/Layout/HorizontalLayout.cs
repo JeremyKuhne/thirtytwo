@@ -38,18 +38,20 @@ public class HorizontalLayout : ILayoutHandler
     }
 
     /// <inheritdoc/>
+    /// <exception cref="OverflowException">The computed child bounds cannot be represented by integers.</exception>
     public void Layout(Rectangle bounds, float scale)
     {
         int last = _handlers.Length - 1;
         int top = bounds.Top;
+        int bottom = checked(bounds.Y + bounds.Height);
 
         for (int i = 0; i < last; i++)
         {
-            int currentHeight = (int)(bounds.Height * _handlers[i].Percent);
+            int currentHeight = LayoutValidation.MultiplyAndTruncate(bounds.Height, _handlers[i].Percent);
             _handlers[i].Handler.Layout(new Rectangle(bounds.X, top, bounds.Width, currentHeight), scale);
-            top += currentHeight;
+            top = checked(top + currentHeight);
         }
 
-        _handlers[last].Handler.Layout(new Rectangle(bounds.X, top, bounds.Width, bounds.Bottom - top), scale);
+        _handlers[last].Handler.Layout(new Rectangle(bounds.X, top, bounds.Width, checked(bottom - top)), scale);
     }
 }

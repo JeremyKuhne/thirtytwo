@@ -20,35 +20,49 @@ namespace Windows;
 /// <param name="horizontalAlignment">
 ///  The horizontal placement of the scaled rectangle inside the available bounds.
 /// </param>
+/// <exception cref="ArgumentNullException"><paramref name="handler"/> is null.</exception>
+/// <exception cref="ArgumentOutOfRangeException">
+///  A size dimension is negative, or an alignment value is undefined.
+/// </exception>
 public class FixedSizeLayout(
     ILayoutHandler handler,
     Size size,
     VerticalAlignment verticalAlignment = VerticalAlignment.Center,
     HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center) : ILayoutHandler
 {
+    private readonly ILayoutHandler _handler = LayoutValidation.ValidateHandler(handler);
+    private readonly Size _size = LayoutValidation.ValidateFixedSize(size);
+    private readonly VerticalAlignment _verticalAlignment =
+        LayoutValidation.ValidateAlignment(verticalAlignment, nameof(verticalAlignment));
+    private readonly HorizontalAlignment _horizontalAlignment =
+        LayoutValidation.ValidateAlignment(horizontalAlignment, nameof(horizontalAlignment));
+
     /// <inheritdoc/>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="scale"/> is not finite or positive.</exception>
+    /// <exception cref="OverflowException">The scaled child bounds cannot be represented by integers.</exception>
     public void Layout(Rectangle bounds, float scale)
     {
+        LayoutValidation.ValidateScale(scale);
         Size scaledSize = new(
-            (int)MathF.Round(size.Width * scale),
-            (int)MathF.Round(size.Height * scale));
+            LayoutValidation.MultiplyAndRound(_size.Width, scale),
+            LayoutValidation.MultiplyAndRound(_size.Height, scale));
 
-        int x = horizontalAlignment switch
+        int x = _horizontalAlignment switch
         {
             HorizontalAlignment.Left => bounds.Left,
-            HorizontalAlignment.Right => bounds.Right - scaledSize.Width,
-            HorizontalAlignment.Center => bounds.X + ((bounds.Width - scaledSize.Width) / 2),
-            _ => bounds.Left,
+            HorizontalAlignment.Right => checked(bounds.X + bounds.Width - scaledSize.Width),
+            HorizontalAlignment.Center => checked(bounds.X + ((bounds.Width - scaledSize.Width) / 2)),
+            _ => throw new InvalidOperationException("The horizontal alignment was not validated."),
         };
 
-        int y = verticalAlignment switch
+        int y = _verticalAlignment switch
         {
             VerticalAlignment.Top => bounds.Top,
-            VerticalAlignment.Bottom => bounds.Bottom - scaledSize.Height,
-            VerticalAlignment.Center => bounds.Y + ((bounds.Height - scaledSize.Height) / 2),
-            _ => bounds.Top,
+            VerticalAlignment.Bottom => checked(bounds.Y + bounds.Height - scaledSize.Height),
+            VerticalAlignment.Center => checked(bounds.Y + ((bounds.Height - scaledSize.Height) / 2)),
+            _ => throw new InvalidOperationException("The vertical alignment was not validated."),
         };
 
-        handler.Layout(new Rectangle(new Point(x, y), scaledSize), scale);
+        _handler.Layout(new Rectangle(new Point(x, y), scaledSize), scale);
     }
 }

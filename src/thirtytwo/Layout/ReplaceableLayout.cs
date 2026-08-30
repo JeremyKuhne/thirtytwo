@@ -15,8 +15,10 @@ namespace Windows;
 ///  </para>
 /// </remarks>
 /// <param name="handler">The initial child handler.</param>
+/// <exception cref="ArgumentNullException"><paramref name="handler"/> is null.</exception>
 public class ReplaceableLayout(ILayoutHandler handler) : ILayoutHandler
 {
+    private ILayoutHandler _handler = LayoutValidation.ValidateHandler(handler);
     private Rectangle _lastBounds;
     private float _lastScale = 1.0f;
 
@@ -30,13 +32,14 @@ public class ReplaceableLayout(ILayoutHandler handler) : ILayoutHandler
     ///   scale captured by <see cref="Layout(Rectangle, float)"/>.
     ///  </para>
     /// </remarks>
+    /// <exception cref="ArgumentNullException">The assigned value is null.</exception>
     public ILayoutHandler Handler
     {
-        get => handler;
+        get => _handler;
         set
         {
-            handler = value;
-            handler.Layout(_lastBounds, _lastScale);
+            _handler = LayoutValidation.ValidateHandler(value);
+            _handler.Layout(_lastBounds, _lastScale);
         }
     }
 

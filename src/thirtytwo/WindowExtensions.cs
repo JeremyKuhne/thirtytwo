@@ -702,10 +702,14 @@ public static unsafe partial class WindowExtensions
     ///       (.5f, _textBox2)));
     ///   ]]>
     ///  </code>
+    ///  <para>
+    ///   Binding performs an initial layout. Retain and dispose the returned binder only when the layout should be
+    ///   detached before the window's lifetime ends.
+    ///  </para>
     /// </remarks>
     /// <param name="window">The target window.</param>
     /// <param name="handler">The layout callback implementation.</param>
-    /// <returns>A binder that controls the registration lifetime.</returns>
+    /// <returns>A binder that can detach the layout before the window's lifetime ends.</returns>
     public static LayoutBinder AddLayoutHandler(this Window window, ILayoutHandler handler)
         => new(window, handler);
 
