@@ -1,4 +1,4 @@
-﻿// Copyright (c) Jeremy W. Kuhne. All rights reserved.
+// Copyright (c) Jeremy W. Kuhne. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Drawing;
@@ -6,7 +6,7 @@ using System.Drawing;
 namespace Windows;
 
 /// <summary>
-///  Stacks child handlers in horizontal bands by splitting the available height proportionally.
+///  Places child handlers in rows by splitting the available height proportionally.
 /// </summary>
 /// <remarks>
 ///  <para>
@@ -15,12 +15,12 @@ namespace Windows;
 ///   coverage matches the original bounds.
 ///  </para>
 /// </remarks>
-public class HorizontalLayout : ILayoutHandler
+public class RowsLayout : ILayoutHandler
 {
     private readonly (float Percent, ILayoutHandler Handler)[] _handlers;
 
     /// <summary>
-    ///  Initializes a new instance of the <see cref="HorizontalLayout"/> class.
+    ///  Initializes a new instance of the <see cref="RowsLayout"/> class.
     /// </summary>
     /// <param name="handlers">
     ///  The proportional child definitions. Each tuple contains a height percentage and the handler for that segment.
@@ -31,7 +31,7 @@ public class HorizontalLayout : ILayoutHandler
     /// <exception cref="ArgumentOutOfRangeException">
     ///  A percentage is nonfinite or outside 0.0 through 1.0, or the sum does not equal 1.0 within float precision.
     /// </exception>
-    public HorizontalLayout(params (float Percent, ILayoutHandler Handler)[] handlers)
+    public RowsLayout(params (float Percent, ILayoutHandler Handler)[] handlers)
     {
         LayoutValidation.ValidateProportionalHandlers(handlers);
         _handlers = [.. handlers];

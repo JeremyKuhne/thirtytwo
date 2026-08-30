@@ -10,9 +10,15 @@ namespace Windows;
 /// </summary>
 /// <remarks>
 ///  <para>
-///   Each side is scaled with <see cref="MathF.Round(float)"/>. When the combined horizontal or vertical padding
-///   exceeds available space, this type repeatedly halves the effective padding until it fits or both sides are
-///   reduced to one pixel or less.
+///   Horizontal and vertical margins are resolved independently. Each side is first scaled with
+///   <see cref="MathF.Round(float)"/>. When the two margins on an axis exceed the available extent, their rounded
+///   integer values are repeatedly halved and rounded again. The first pair whose sum fits is applied; this policy
+///   therefore shrinks in powers of two rather than selecting the largest exact fit.
+///  </para>
+///  <para>
+///   Halving stops when both margins on the axis are one pixel or less. If that pair still does not fit, the axis is
+///   forwarded unchanged. An axis whose input extent is zero or negative is also unchanged. Negative margins are
+///   supported and expand the forwarded bounds when their combined value fits.
 ///  </para>
 /// </remarks>
 /// <param name="margin">The logical padding to apply on each edge.</param>

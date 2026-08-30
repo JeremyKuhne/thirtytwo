@@ -110,21 +110,21 @@ internal sealed class TextControlComparisonWindow : MainWindow
 
     private ILayoutHandler CreateLayout()
     {
-        ILayoutHandler legacyColumn = Layout.Horizontal(
+        ILayoutHandler legacyColumn = Layout.Rows(
             (.10f, Layout.Margin((20, 16, 10, 4), Layout.Fill(_legacyHeading))),
             (.07f, Layout.Margin((20, 4, 10, 2), Layout.Fill(_legacyTextBoxLabel))),
             (.14f, Layout.Margin((20, 2, 10, 12), Layout.FixedPercent(1f, .55f, _legacyTextBox))),
             (.07f, Layout.Margin((20, 8, 10, 2), Layout.Fill(_legacyRichEditBoxLabel))),
             (.62f, Layout.Margin((20, 2, 10, 20), Layout.Fill(_legacyRichEditBox))));
 
-        ILayoutHandler winUIColumn = Layout.Horizontal(
+        ILayoutHandler winUIColumn = Layout.Rows(
             (.10f, Layout.Margin((10, 16, 20, 4), Layout.Fill(_winUIHeading))),
             (.07f, Layout.Margin((10, 4, 20, 2), Layout.Fill(_winUITextBoxLabel))),
             (.14f, Layout.Margin((10, 2, 20, 12), Layout.FixedPercent(1f, .55f, _winUITextBox))),
             (.07f, Layout.Margin((10, 8, 20, 2), Layout.Fill(_winUIRichEditBoxLabel))),
             (.62f, Layout.Margin((10, 2, 20, 20), Layout.Fill(_winUIRichEditBox))));
 
-        return Layout.Vertical(
+        return Layout.Columns(
             (.5f, legacyColumn),
             (.5f, winUIColumn));
     }

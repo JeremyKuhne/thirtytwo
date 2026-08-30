@@ -19,7 +19,7 @@ Create child controls before binding the layout. For example, after creating
 two columns:
 
 ```csharp
-this.AddLayoutHandler(Layout.Vertical(
+this.AddLayoutHandler(Layout.Columns(
     (.30f, Layout.Margin((8, 8, 4, 8), _navigation)),
     (.70f, Layout.Margin((4, 8, 8, 8), _content))));
 ```
@@ -45,21 +45,17 @@ The `Layout` factory provides the common nodes:
 
 | Factory | Behavior |
 | --- | --- |
-| `Layout.Vertical(...)` | Places children in side-by-side columns by splitting width. |
-| `Layout.Horizontal(...)` | Stacks children in rows by splitting height. |
+| `Layout.Columns(...)` | Places children in side-by-side columns by splitting width. |
+| `Layout.Rows(...)` | Stacks children in rows by splitting height. |
 | `Layout.Margin(margin, handler)` | Insets the bounds by DPI-scaled logical margins. |
 | `Layout.FixedSize(size, handler, ...)` | Uses a DPI-scaled logical size and aligns it. |
 | `Layout.FixedPercent(percent, handler, ...)` | Uses and aligns a fraction of the available bounds. |
 | `Layout.Fill(handler)` | Passes all available bounds to its child. |
 | `Layout.Empty` | Does nothing, which can leave a split segment empty. |
 
-The `Horizontal` and `Vertical` names describe the bands they create. This
-means `Vertical` creates vertical columns and `Horizontal` creates horizontal
-rows.
-
 ## Split rows and columns
 
-Each child of `Horizontal` or `Vertical` is a tuple containing a fractional
+Each child of `Rows` or `Columns` is a tuple containing a fractional
 share and a handler. Every share must be between `0.0f` and `1.0f`, and the
 shares must total `1.0f`.
 
@@ -67,8 +63,8 @@ This layout creates a main row and a shorter status row. The main row contains
 a navigation column and a content column:
 
 ```csharp
-ILayoutHandler layout = Layout.Horizontal(
-    (.90f, Layout.Vertical(
+ILayoutHandler layout = Layout.Rows(
+    (.90f, Layout.Columns(
         (.25f, Layout.Margin((8, 8, 4, 4), _navigation)),
         (.75f, Layout.Margin((4, 8, 8, 4), _content)))),
     (.10f, Layout.Margin((8, 4, 8, 8), _status)));
@@ -83,7 +79,7 @@ rectangle.
 Use `Layout.Empty` when part of a split should remain unused:
 
 ```csharp
-Layout.Vertical(
+Layout.Columns(
     (.20f, Layout.Empty),
     (.80f, _content));
 ```
@@ -124,9 +120,17 @@ ILayoutHandler banner = Layout.FixedPercent(
 
 Fixed percentages must be finite and nonnegative. Values greater than `1.0f`
 are allowed and deliberately produce bounds larger than the available space.
-Margins may also be negative to expand bounds. When positive margins cannot fit
-in the available space, the built-in margin handler reduces them until they
-fit.
+Margins may also be negative to expand bounds.
+
+Horizontal and vertical margins are resolved independently. After applying the
+DPI scale and rounding each side, the margin handler compares the pair with the
+available extent. If they do not fit, it repeatedly halves those rounded values
+and rounds again until a pair fits. Margins therefore shrink in powers of two,
+not to the largest exact fit.
+
+Halving stops when both margins on an axis are at most one pixel. If even that
+pair does not fit, the bounds on that axis are forwarded unchanged. An axis with
+a zero or negative extent is also unchanged.
 
 ## Replace content at runtime
 
@@ -145,12 +149,11 @@ Later, replace the child by assigning `Handler`:
 _contentLayout.Handler = _details;
 ```
 
-The assignment synchronously applies the most recently received bounds and
-scale to the new handler. Change the controls' visibility separately when both
-old and new child windows already exist. Before the replaceable handler has
-participated in a layout pass, its stored values are `Rectangle.Empty` and
-`1.0f`; bind it before replacing its child when empty initial bounds are not
-desired.
+After the replaceable handler has participated in a layout pass, assignment
+synchronously applies its most recently received bounds and scale to the new
+handler. Before the first pass, assignment only selects which child will receive
+that pass. Change the controls' visibility separately when both old and new
+child windows already exist.
 
 ## Write a custom handler
 

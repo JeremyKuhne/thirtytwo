@@ -28,7 +28,7 @@ internal partial class Program
                 text: "Recent clipboard text:",
                 parentWindow: this);
 
-            this.AddLayoutHandler(Layout.Horizontal(
+            this.AddLayoutHandler(Layout.Rows(
                 (.1f, Layout.Margin((5, 5, 0, 0), _textLabel)),
                 (.9f, Layout.Fill(_editControl))));
 

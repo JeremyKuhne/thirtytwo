@@ -168,29 +168,29 @@ internal sealed class DarkModeWindow : MainWindow
 
     private ILayoutHandler CreateLayout()
     {
-        ILayoutHandler modeRow = Layout.Vertical(
+        ILayoutHandler modeRow = Layout.Columns(
             (.25f, Layout.Margin((20, 8, 8, 8), Layout.Fill(_modeLabel))),
             (.5f, Layout.Margin((8, 8, 8, 8), Layout.FixedPercent(1f, .55f, _modeSelector))),
             (.25f, Layout.Margin((8, 8, 20, 8), Layout.FixedPercent(.8f, .55f, _cycleButton))));
 
-        ILayoutHandler textControls = Layout.Horizontal(
+        ILayoutHandler textControls = Layout.Rows(
             (.15f, Layout.Margin((20, 8, 10, 8), Layout.Fill(_staticLabel))),
             (.15f, Layout.Margin((20, 8, 10, 8), Layout.Fill(_edit))),
             (.15f, Layout.Margin((20, 8, 10, 8), Layout.FixedPercent(1f, .55f, _comboBox))),
             (.4f, Layout.Margin((20, 8, 10, 8), Layout.Fill(_richEdit))),
             (.15f, Layout.Margin((20, 8, 10, 8), Layout.FixedPercent(1f, .55f, _disabledEdit))));
 
-        ILayoutHandler buttonControls = Layout.Horizontal(
+        ILayoutHandler buttonControls = Layout.Rows(
             (.16f, Layout.Margin((10, 8, 20, 8), Layout.FixedPercent(.7f, .6f, _pushButton))),
             (.16f, Layout.Margin((10, 8, 20, 8), Layout.Fill(_checkBox))),
             (.16f, Layout.Margin((10, 8, 20, 8), Layout.Fill(_radioButton))),
             (.16f, Layout.Margin((10, 8, 20, 8), Layout.FixedPercent(.7f, .6f, _disabledButton))),
             (.36f, Layout.Margin((10, 8, 20, 8), Layout.Fill(_direct2dLabel))));
 
-        return Layout.Horizontal(
+        return Layout.Rows(
             (.12f, Layout.Margin((20, 12, 20, 4), Layout.Fill(_title))),
             (.12f, modeRow),
-            (.64f, Layout.Vertical((.55f, textControls), (.45f, buttonControls))),
+            (.64f, Layout.Columns((.55f, textControls), (.45f, buttonControls))),
             (.12f, Layout.Margin((20, 8, 20, 12), Layout.Fill(_status))));
     }
 

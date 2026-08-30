@@ -697,7 +697,7 @@ public static unsafe partial class WindowExtensions
     ///  </para>
     ///  <code>
     ///   <![CDATA[
-    ///     this.AddLayoutHandler(Layout.Vertical(
+    ///     this.AddLayoutHandler(Layout.Columns(
     ///       (.5f, _textBox1),
     ///       (.5f, _textBox2)));
     ///   ]]>

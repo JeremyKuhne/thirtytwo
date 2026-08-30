@@ -71,10 +71,10 @@ internal sealed class AdvancedUsageWindow : MainWindow
             _statusLabel.SetFont("Consolas", 10);
 
             _colorPicker.ColorChanged += ColorPickerColorChanged;
-            this.AddLayoutHandler(ThirtyTwoLayout.Horizontal(
+            this.AddLayoutHandler(ThirtyTwoLayout.Rows(
                 (.0625f, ThirtyTwoLayout.Margin((16, 16, 16, 4), ThirtyTwoLayout.Fill(_beforeButton))),
                 (.4375f, ThirtyTwoLayout.Margin((16, 4, 16, 4), ThirtyTwoLayout.Fill(_overviewHost))),
-                (.4375f, ThirtyTwoLayout.Vertical(
+                (.4375f, ThirtyTwoLayout.Columns(
                     (.75f, ThirtyTwoLayout.Margin((16, 4, 8, 4), ThirtyTwoLayout.Fill(_colorPicker))),
                     (.25f, ThirtyTwoLayout.Margin((8, 4, 16, 4), ThirtyTwoLayout.Fill(_statusLabel))))),
                 (.0625f, ThirtyTwoLayout.Margin((16, 4, 16, 16), ThirtyTwoLayout.Fill(_afterButton)))));

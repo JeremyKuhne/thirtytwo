@@ -95,11 +95,11 @@ public class LayoutTests
     }
 
     [TestMethod]
-    public void HorizontalLayout_DistributesHeight()
+    public void RowsLayout_DistributesHeight()
     {
         LastLayoutHandler handler1 = new();
         LastLayoutHandler handler2 = new();
-        HorizontalLayout layout = new((0.3f, handler1), (0.7f, handler2));
+        RowsLayout layout = new((0.3f, handler1), (0.7f, handler2));
         Rectangle bounds = new(10, 20, 100, 200);
         layout.Layout(bounds, 1.0f);
         handler1.LastBounds.Should().Be(new Rectangle(10, 20, 100, 60));
@@ -107,11 +107,11 @@ public class LayoutTests
     }
 
     [TestMethod]
-    public void VerticalLayout_DistributesWidth()
+    public void ColumnsLayout_DistributesWidth()
     {
         LastLayoutHandler handler1 = new();
         LastLayoutHandler handler2 = new();
-        VerticalLayout layout = new((0.4f, handler1), (0.6f, handler2));
+        ColumnsLayout layout = new((0.4f, handler1), (0.6f, handler2));
         Rectangle bounds = new(10, 20, 100, 200);
         layout.Layout(bounds, 1.0f);
         handler1.LastBounds.Should().Be(new Rectangle(10, 20, 40, 200));
@@ -119,18 +119,18 @@ public class LayoutTests
     }
 
     [TestMethod]
-    public void HorizontalLayout_InvalidPercentages_Throws()
+    public void RowsLayout_InvalidPercentages_Throws()
     {
         LastLayoutHandler handler = new();
-        FluentActions.Invoking(() => new HorizontalLayout((0.2f, handler), (0.2f, handler)))
+        FluentActions.Invoking(() => new RowsLayout((0.2f, handler), (0.2f, handler)))
             .Should().Throw<ArgumentOutOfRangeException>();
     }
 
     [TestMethod]
-    public void VerticalLayout_InvalidPercentages_Throws()
+    public void ColumnsLayout_InvalidPercentages_Throws()
     {
         LastLayoutHandler handler = new();
-        FluentActions.Invoking(() => new VerticalLayout((0.5f, handler), (0.6f, handler)))
+        FluentActions.Invoking(() => new ColumnsLayout((0.5f, handler), (0.6f, handler)))
             .Should().Throw<ArgumentOutOfRangeException>();
     }
 

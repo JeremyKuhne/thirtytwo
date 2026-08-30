@@ -100,17 +100,17 @@ internal sealed class DpiTestWindow : MainWindow
 
     private ILayoutHandler CreateWindowLayout()
     {
-        ILayoutHandler titleLayout = ThirtyTwoLayout.Vertical(
+        ILayoutHandler titleLayout = ThirtyTwoLayout.Columns(
             (.8f, ThirtyTwoLayout.Margin((16, 8, 8, 4), ThirtyTwoLayout.Fill(_title))),
             (.2f, ThirtyTwoLayout.Margin((8, 8, 16, 4), ThirtyTwoLayout.Fill(_refreshButton))));
 
-        ILayoutHandler comparisonLayout = ThirtyTwoLayout.Vertical(
+        ILayoutHandler comparisonLayout = ThirtyTwoLayout.Columns(
             (.35f, ThirtyTwoLayout.Margin(
                 (16, 8, 8, 8),
                 ThirtyTwoLayout.FixedSize(s_referenceLogicalSize, _nativeReference))),
             (.65f, ThirtyTwoLayout.Margin((8, 8, 16, 8), ThirtyTwoLayout.Fill(_host))));
 
-        return ThirtyTwoLayout.Horizontal(
+        return ThirtyTwoLayout.Rows(
             (.09f, titleLayout),
             (.22f, ThirtyTwoLayout.Margin((16, 4, 16, 4), ThirtyTwoLayout.Fill(_nativeMetrics))),
             (.57f, comparisonLayout),

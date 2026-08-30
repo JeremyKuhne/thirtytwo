@@ -58,9 +58,9 @@ internal partial class Program
 
             _replaceableLayout = new ReplaceableLayout(_textLabel);
 
-            this.AddLayoutHandler(Layout.Vertical(
+            this.AddLayoutHandler(Layout.Columns(
                 (.5f, Layout.Margin((5, 5, 0, 0), Layout.Fill(_editControl))),
-                (.5f, Layout.Horizontal(
+                (.5f, Layout.Rows(
                     (.7f, Layout.FixedPercent(.4f, _replaceableLayout)),
                     (.3f, Layout.FixedPercent(.5f, _buttonControl))))));
 
