@@ -18,6 +18,9 @@
     <Project Path="src/samples/Layout/Layout.csproj">
       <Platform Project="x64" />
     </Project>
+    <Project Path="src/samples/PowerManagement/PowerManagement.csproj">
+      <Platform Project="x64" />
+    </Project>
     <Project Path="src/samples/Transparency/Transparency.csproj">
       <Platform Project="x64" />
     </Project>

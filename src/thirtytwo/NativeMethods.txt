@@ -24,6 +24,7 @@ CLEARTYPE_NATURAL_QUALITY
 ClientToScreen
 CLIPBOARD_FORMAT
 CloseClipboard
+CloseHandle
 CLSID_WICImagingFactory2
 CoCreateInstance
 CoGetClassObject
@@ -329,6 +330,10 @@ Polyline
 PostMessage
 PostThreadMessage
 PostQuitMessage
+PowerClearRequest
+PowerCreateRequest
+POWER_REQUEST_CONTEXT_*
+PowerSetRequest
 PROPVARIANT
 PropVariantClear
 Rectangle

@@ -82,7 +82,7 @@ public static class Win32ErrorExtensions
         ///  Throws the thread's last Win32 error using thirtytwo's mapping when the result is false.
         /// </summary>
         /// <param name="path">Optional path text appended to the generated message.</param>
-        /// <exception cref="Exception">Thrown when <paramref name="result"/> is false.</exception>
+        /// <exception cref="Exception">Thrown when <c>result</c> is <see langword="false"/>.</exception>
         internal void ThrowLastErrorIfFalse(string? path = null)
         {
             if (!result)
@@ -102,7 +102,7 @@ public static class Win32ErrorExtensions
         ///  Throws the thread's last Win32 error using thirtytwo's mapping when the result is false.
         /// </summary>
         /// <param name="path">Optional path text appended to the generated message.</param>
-        /// <exception cref="Exception">Thrown when <paramref name="result"/> is false.</exception>
+        /// <exception cref="Exception">Thrown when <c>result</c> is <see langword="false"/>.</exception>
         internal void ThrowLastErrorIfFalse(string? path = null)
         {
             if (!result)
