@@ -23,7 +23,15 @@ public unsafe partial class ClassPropertyDispatchAdapter
     private int _nextDispId = StartingDispId;
 
     private readonly WeakReference<object> _instance;
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+    [DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicFields
+        | DynamicallyAccessedMemberTypes.NonPublicFields
+        | DynamicallyAccessedMemberTypes.PublicMethods
+        | DynamicallyAccessedMemberTypes.NonPublicMethods
+        | DynamicallyAccessedMemberTypes.PublicProperties
+        | DynamicallyAccessedMemberTypes.NonPublicProperties
+        | DynamicallyAccessedMemberTypes.PublicConstructors
+        | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
     private readonly Type _type;
 
     private readonly Dictionary<int, DispatchEntry> _members = [];

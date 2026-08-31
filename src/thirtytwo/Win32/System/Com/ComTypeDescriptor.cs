@@ -96,16 +96,21 @@ internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
     }
 
     /// <inheritdoc cref="ICustomTypeDescriptor.GetConverter"/>
-    [RequiresUnreferencedCode("PropertyDescriptor's PropertyType cannot be statically discovered.")]
+    [RequiresUnreferencedCode(
+        "Generic TypeConverters may require the generic types to be annotated. For example, NullableConverter "
+        + "requires the underlying type to be DynamicallyAccessedMembers All.")]
     TypeConverter? ICustomTypeDescriptor.GetConverter() => null;
     /// <inheritdoc cref="ICustomTypeDescriptor.GetDefaultEvent"/>
-    [RequiresUnreferencedCode("PropertyDescriptor's PropertyType cannot be statically discovered.")]
+    [RequiresUnreferencedCode(
+        "The built-in EventDescriptor implementation uses Reflection which requires unreferenced code.")]
     EventDescriptor? ICustomTypeDescriptor.GetDefaultEvent() => throw new NotImplementedException();
     /// <inheritdoc cref="ICustomTypeDescriptor.GetDefaultProperty"/>
     [RequiresUnreferencedCode("PropertyDescriptor's PropertyType cannot be statically discovered.")]
     PropertyDescriptor? ICustomTypeDescriptor.GetDefaultProperty() => throw new NotImplementedException();
     /// <inheritdoc cref="ICustomTypeDescriptor.GetEditor"/>
-    [RequiresUnreferencedCode("Editors registered in the type's metadata may be trimmed.")]
+    [RequiresUnreferencedCode(
+        "Design-time attributes are not preserved when trimming. Types referenced by attributes like "
+        + "EditorAttribute and DesignerAttribute may not be available after trimming.")]
     object? ICustomTypeDescriptor.GetEditor(Type editorBaseType) => null;
 
     /// <inheritdoc cref="ICustomTypeDescriptor.GetEvents()"/>
@@ -224,7 +229,8 @@ internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
     }
 
     /// <inheritdoc cref="ICustomTypeDescriptor.GetEvents(Attribute[])"/>
-    [RequiresUnreferencedCode("EventDescriptor's EventType cannot be statically discovered.")]
+    [RequiresUnreferencedCode(
+        "The public parameterless constructor or the 'Default' static field may be trimmed from the Attribute's Type.")]
     EventDescriptorCollection ICustomTypeDescriptor.GetEvents(Attribute[]? attributes) => throw new NotImplementedException();
 
     /// <inheritdoc cref="ICustomTypeDescriptor.GetProperties()"/>
@@ -236,7 +242,9 @@ internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
     }
 
     /// <inheritdoc cref="ICustomTypeDescriptor.GetProperties(Attribute[])"/>
-    [RequiresUnreferencedCode("PropertyDescriptor's PropertyType cannot be statically discovered.")]
+    [RequiresUnreferencedCode(
+        "PropertyDescriptor's PropertyType cannot be statically discovered. The public parameterless constructor "
+        + "or the 'Default' static field may be trimmed from the Attribute's Type.")]
     PropertyDescriptorCollection ICustomTypeDescriptor.GetProperties(Attribute[]? attributes) =>
         ((ICustomTypeDescriptor)this).GetProperties();
 

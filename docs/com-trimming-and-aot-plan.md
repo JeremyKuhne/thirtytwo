@@ -25,7 +25,14 @@ The annotations added before this plan deliberately expose these limitations:
 - `ICustomTypeDescriptor` members carry the framework's matching `RequiresUnreferencedCode` contracts.
 - ActiveX property descriptor access propagates `RequiresUnreferencedCode`.
 - Runtime construction of event delegate types propagates `RequiresDynamicCode`.
-- Reflective managed dispatch propagates `RequiresUnreferencedCode` and preserves all members on its runtime `Type` while that path remains in use.
+- Reflective managed dispatch propagates `RequiresUnreferencedCode` and preserves the member categories required by
+    `Type.InvokeMember` on its runtime `Type` while that path remains in use.
+
+`RequiresDynamicCode` is temporarily applied to `ComTypeDescriptor` as a type-level contract. The dynamic operation is
+in event discovery, but `ICustomTypeDescriptor.GetEvents()` does not declare `RequiresDynamicCode`; adding the attribute
+only to its implementation produces `IL3051` because interface annotations must match. Consequently,
+`ActiveXControl` must propagate the requirement while it constructs this descriptor. Phase 5 removes this broad boundary
+by separating the static property path from dynamic event discovery.
 
 These annotations are compatibility boundaries, not the intended final AOT design.
 
