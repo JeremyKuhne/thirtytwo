@@ -60,7 +60,7 @@ rectangle to one child or partitions it among several children.
 flowchart LR
     Message[Position or effective DPI change] --> Binder[LayoutBinder]
     Binder --> Root[Root ILayoutHandler]
-    Root --> Split[Rows or columns]
+    Root --> Split[Rows or Columns]
     Split --> Transform[Margin, fixed size, or fixed percent]
     Transform --> Leaf[Window as ILayoutHandler]
     Leaf --> Move[MoveWindow]
