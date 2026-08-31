@@ -30,9 +30,9 @@ The annotations added before this plan deliberately expose these limitations:
 
 `RequiresDynamicCode` is temporarily applied to `ComTypeDescriptor` as a type-level contract. The dynamic operation is
 in event discovery, but `ICustomTypeDescriptor.GetEvents()` does not declare `RequiresDynamicCode`; adding the attribute
-only to its implementation produces `IL3051` because interface annotations must match. Consequently,
-`ActiveXControl` must propagate the requirement while it constructs this descriptor. Phase 5 removes this broad boundary
-by separating the static property path from dynamic event discovery.
+only to its implementation produces `IL3051` because interface annotations must match. `ActiveXControl` suppresses that
+contract only where it constructs the descriptor for exclusive use by the property path, which never constructs event
+types. Phase 5 removes the remaining broad boundary by separating static property metadata from dynamic event discovery.
 
 These annotations are compatibility boundaries, not the intended final AOT design.
 

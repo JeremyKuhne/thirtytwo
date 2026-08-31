@@ -36,7 +36,6 @@ public unsafe partial class ActiveXControl : CustomControl
     /// <param name="bounds">The host bounds in parent client coordinates.</param>
     /// <param name="parentWindow">The parent window that owns the host window.</param>
     /// <param name="parameters">Additional creation parameters passed as <c>lpParam</c>.</param>
-    [RequiresDynamicCode("COM event signatures may require constructing delegate types at run time.")]
     public ActiveXControl(
         Guid classId,
         Rectangle bounds,
@@ -66,7 +65,13 @@ public unsafe partial class ActiveXControl : CustomControl
         using ComScope<IOleClientSite> site = new(_site.GetComPointer<IOleClientSite>());
         HRESULT hr = oleObject.Pointer->SetClientSite(site.Pointer);
 
-        _typeDescriptor = new ComTypeDescriptor(_instance);
+        _typeDescriptor = CreatePropertyTypeDescriptor(_instance);
+
+        [UnconditionalSuppressMessage(
+            "AotAnalysis",
+            "IL3050:RequiresDynamicCode",
+            Justification = "ActiveXControl only uses the descriptor's property path, which does not construct event types.")]
+        static ICustomTypeDescriptor CreatePropertyTypeDescriptor(IComPointer instance) => new ComTypeDescriptor(instance);
     }
 
     protected internal override bool PreProcessMessage(ref MSG message)
