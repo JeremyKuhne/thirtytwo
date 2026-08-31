@@ -36,17 +36,17 @@ public static class Layout
         HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center)
         => new FixedSizeLayout(handler, size, verticalAlignment, horizontalAlignment);
 
-    /// <inheritdoc cref="HorizontalLayout"/>
-    /// <inheritdoc cref="HorizontalLayout(ValueTuple{float, ILayoutHandler}[])"/>
-    public static ILayoutHandler Horizontal(
+    /// <inheritdoc cref="RowsLayout"/>
+    /// <inheritdoc cref="RowsLayout(ValueTuple{float, ILayoutHandler}[])"/>
+    public static ILayoutHandler Rows(
         params (float Percent, ILayoutHandler Handler)[] handlers)
-        => new HorizontalLayout(handlers);
+        => new RowsLayout(handlers);
 
-    /// <inheritdoc cref="VerticalLayout"/>
-    /// <inheritdoc cref="VerticalLayout(ValueTuple{float, ILayoutHandler}[])"/>
-    public static ILayoutHandler Vertical(
+    /// <inheritdoc cref="ColumnsLayout"/>
+    /// <inheritdoc cref="ColumnsLayout(ValueTuple{float, ILayoutHandler}[])"/>
+    public static ILayoutHandler Columns(
         params (float Percent, ILayoutHandler Handler)[] handlers)
-        => new VerticalLayout(handlers);
+        => new ColumnsLayout(handlers);
 
     /// <inheritdoc cref="PaddedLayout(Padding, ILayoutHandler)"/>
     public static ILayoutHandler Margin(

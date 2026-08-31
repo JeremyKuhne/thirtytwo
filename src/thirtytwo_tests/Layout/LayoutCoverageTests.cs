@@ -246,20 +246,20 @@ public class LayoutCoverageTests
     [TestMethod]
     public void SplitLayouts_UnitPercentage_PreservesMaximumExtent()
     {
-        RecordingLayoutHandler horizontalFirst = new();
-        RecordingLayoutHandler horizontalLast = new();
-        RecordingLayoutHandler verticalFirst = new();
-        RecordingLayoutHandler verticalLast = new();
-        HorizontalLayout horizontal = new((1.0f, horizontalFirst), (0.0f, horizontalLast));
-        VerticalLayout vertical = new((1.0f, verticalFirst), (0.0f, verticalLast));
+        RecordingLayoutHandler firstRow = new();
+        RecordingLayoutHandler lastRow = new();
+        RecordingLayoutHandler firstColumn = new();
+        RecordingLayoutHandler lastColumn = new();
+        RowsLayout rows = new((1.0f, firstRow), (0.0f, lastRow));
+        ColumnsLayout columns = new((1.0f, firstColumn), (0.0f, lastColumn));
 
-        horizontal.Layout(new Rectangle(0, 0, 1, int.MaxValue), 1.0f);
-        vertical.Layout(new Rectangle(0, 0, int.MaxValue, 1), 1.0f);
+        rows.Layout(new Rectangle(0, 0, 1, int.MaxValue), 1.0f);
+        columns.Layout(new Rectangle(0, 0, int.MaxValue, 1), 1.0f);
 
-        horizontalFirst.LastBounds.Height.Should().Be(int.MaxValue);
-        horizontalLast.LastBounds.Height.Should().Be(0);
-        verticalFirst.LastBounds.Width.Should().Be(int.MaxValue);
-        verticalLast.LastBounds.Width.Should().Be(0);
+        firstRow.LastBounds.Height.Should().Be(int.MaxValue);
+        lastRow.LastBounds.Height.Should().Be(0);
+        firstColumn.LastBounds.Width.Should().Be(int.MaxValue);
+        lastColumn.LastBounds.Width.Should().Be(0);
     }
 
     [TestMethod]
@@ -279,12 +279,12 @@ public class LayoutCoverageTests
     }
 
     [TestMethod]
-    public void HorizontalLayout_ThreeChildren_AssignsRoundingRemainderToLast()
+    public void RowsLayout_ThreeChildren_AssignsRoundingRemainderToLast()
     {
         RecordingLayoutHandler first = new();
         RecordingLayoutHandler second = new();
         RecordingLayoutHandler third = new();
-        HorizontalLayout layout = new((0.333f, first), (0.333f, second), (0.334f, third));
+        RowsLayout layout = new((0.333f, first), (0.333f, second), (0.334f, third));
 
         layout.Layout(new Rectangle(10, 20, 101, 101), 1.5f);
 
@@ -297,12 +297,12 @@ public class LayoutCoverageTests
     }
 
     [TestMethod]
-    public void VerticalLayout_ThreeChildren_AssignsRoundingRemainderToLast()
+    public void ColumnsLayout_ThreeChildren_AssignsRoundingRemainderToLast()
     {
         RecordingLayoutHandler first = new();
         RecordingLayoutHandler second = new();
         RecordingLayoutHandler third = new();
-        VerticalLayout layout = new((0.333f, first), (0.333f, second), (0.334f, third));
+        ColumnsLayout layout = new((0.333f, first), (0.333f, second), (0.334f, third));
 
         layout.Layout(new Rectangle(10, 20, 101, 101), 1.5f);
 
@@ -315,23 +315,23 @@ public class LayoutCoverageTests
     }
 
     [TestMethod]
-    public void HorizontalAndVerticalLayout_SingleChild_ReceivesAllBounds()
+    public void RowsAndColumnsLayout_SingleChild_ReceivesAllBounds()
     {
         Rectangle bounds = new(10, 20, 101, 61);
-        RecordingLayoutHandler horizontalHandler = new();
-        RecordingLayoutHandler verticalHandler = new();
+        RecordingLayoutHandler rowHandler = new();
+        RecordingLayoutHandler columnHandler = new();
 
-        new HorizontalLayout((1.0f, horizontalHandler)).Layout(bounds, 1.25f);
-        new VerticalLayout((1.0f, verticalHandler)).Layout(bounds, 1.25f);
+        new RowsLayout((1.0f, rowHandler)).Layout(bounds, 1.25f);
+        new ColumnsLayout((1.0f, columnHandler)).Layout(bounds, 1.25f);
 
-        horizontalHandler.LastBounds.Should().Be(bounds);
-        verticalHandler.LastBounds.Should().Be(bounds);
-        horizontalHandler.LastScale.Should().Be(1.25f);
-        verticalHandler.LastScale.Should().Be(1.25f);
+        rowHandler.LastBounds.Should().Be(bounds);
+        columnHandler.LastBounds.Should().Be(bounds);
+        rowHandler.LastScale.Should().Be(1.25f);
+        columnHandler.LastScale.Should().Be(1.25f);
     }
 
     [TestMethod]
-    public void HorizontalAndVerticalLayout_CommonDecimalPercentages_AreAccepted()
+    public void RowsAndColumnsLayout_CommonDecimalPercentages_AreAccepted()
     {
         RecordingLayoutHandler handler = new();
         (float Percent, ILayoutHandler Handler)[] handlers =
@@ -343,74 +343,74 @@ public class LayoutCoverageTests
             (0.07f, handler)
         ];
 
-        Action createHorizontal = () => _ = new HorizontalLayout(handlers);
-        Action createVertical = () => _ = new VerticalLayout(handlers);
+        Action createRows = () => _ = new RowsLayout(handlers);
+        Action createColumns = () => _ = new ColumnsLayout(handlers);
 
-        createHorizontal.Should().NotThrow();
-        createVertical.Should().NotThrow();
+        createRows.Should().NotThrow();
+        createColumns.Should().NotThrow();
     }
 
     [TestMethod]
-    public void HorizontalAndVerticalLayout_NegativeOrOversizedIndividualPercentage_Throws()
+    public void RowsAndColumnsLayout_NegativeOrOversizedIndividualPercentage_Throws()
     {
         RecordingLayoutHandler handler = new();
 
-        Action createHorizontal = () => _ = new HorizontalLayout((-0.5f, handler), (1.5f, handler));
-        Action createVertical = () => _ = new VerticalLayout((1.5f, handler), (-0.5f, handler));
+        Action createRows = () => _ = new RowsLayout((-0.5f, handler), (1.5f, handler));
+        Action createColumns = () => _ = new ColumnsLayout((1.5f, handler), (-0.5f, handler));
 
-        createHorizontal.Should().Throw<ArgumentOutOfRangeException>();
-        createVertical.Should().Throw<ArgumentOutOfRangeException>();
+        createRows.Should().Throw<ArgumentOutOfRangeException>();
+        createColumns.Should().Throw<ArgumentOutOfRangeException>();
     }
 
     [TestMethod]
-    public void HorizontalAndVerticalLayout_NullHandler_Throws()
+    public void RowsAndColumnsLayout_NullHandler_Throws()
     {
-        Action createHorizontal = () => _ = new HorizontalLayout((1.0f, null!));
-        Action createVertical = () => _ = new VerticalLayout((1.0f, null!));
+        Action createRows = () => _ = new RowsLayout((1.0f, null!));
+        Action createColumns = () => _ = new ColumnsLayout((1.0f, null!));
 
-        createHorizontal.Should().Throw<ArgumentNullException>();
-        createVertical.Should().Throw<ArgumentNullException>();
+        createRows.Should().Throw<ArgumentNullException>();
+        createColumns.Should().Throw<ArgumentNullException>();
     }
 
     [TestMethod]
-    public void HorizontalAndVerticalLayout_NonfinitePercentage_Throws()
+    public void RowsAndColumnsLayout_NonfinitePercentage_Throws()
     {
         RecordingLayoutHandler handler = new();
 
-        Action createHorizontal = () => _ = new HorizontalLayout((float.NaN, handler), (1.0f, handler));
-        Action createVertical = () => _ = new VerticalLayout((float.PositiveInfinity, handler), (0.0f, handler));
+        Action createRows = () => _ = new RowsLayout((float.NaN, handler), (1.0f, handler));
+        Action createColumns = () => _ = new ColumnsLayout((float.PositiveInfinity, handler), (0.0f, handler));
 
-        createHorizontal.Should().Throw<ArgumentOutOfRangeException>();
-        createVertical.Should().Throw<ArgumentOutOfRangeException>();
+        createRows.Should().Throw<ArgumentOutOfRangeException>();
+        createColumns.Should().Throw<ArgumentOutOfRangeException>();
     }
 
     [TestMethod]
-    public void HorizontalAndVerticalLayout_CopyHandlerDefinitions()
+    public void RowsAndColumnsLayout_CopyHandlerDefinitions()
     {
         RecordingLayoutHandler original = new();
         RecordingLayoutHandler replacement = new();
-        (float Percent, ILayoutHandler Handler)[] horizontalDefinitions = [(1.0f, original)];
-        (float Percent, ILayoutHandler Handler)[] verticalDefinitions = [(1.0f, original)];
-        HorizontalLayout horizontal = new(horizontalDefinitions);
-        VerticalLayout vertical = new(verticalDefinitions);
-        horizontalDefinitions[0] = (0.0f, replacement);
-        verticalDefinitions[0] = (0.0f, replacement);
+        (float Percent, ILayoutHandler Handler)[] rowDefinitions = [(1.0f, original)];
+        (float Percent, ILayoutHandler Handler)[] columnDefinitions = [(1.0f, original)];
+        RowsLayout rows = new(rowDefinitions);
+        ColumnsLayout columns = new(columnDefinitions);
+        rowDefinitions[0] = (0.0f, replacement);
+        columnDefinitions[0] = (0.0f, replacement);
         Rectangle bounds = new(10, 20, 100, 60);
 
-        horizontal.Layout(bounds, 1.0f);
-        vertical.Layout(bounds, 1.0f);
+        rows.Layout(bounds, 1.0f);
+        columns.Layout(bounds, 1.0f);
 
         original.CallCount.Should().Be(2);
         replacement.CallCount.Should().Be(0);
     }
 
     [TestMethod]
-    public void HorizontalAndVertical_CreateExpectedLayouts()
+    public void RowsAndColumns_CreateExpectedLayouts()
     {
         RecordingLayoutHandler handler = new();
 
-        Layout.Horizontal((1.0f, handler)).Should().BeOfType<HorizontalLayout>();
-        Layout.Vertical((1.0f, handler)).Should().BeOfType<VerticalLayout>();
+        Layout.Rows((1.0f, handler)).Should().BeOfType<RowsLayout>();
+        Layout.Columns((1.0f, handler)).Should().BeOfType<ColumnsLayout>();
     }
 
     [TestMethod]
@@ -460,6 +460,18 @@ public class LayoutCoverageTests
     }
 
     [TestMethod]
+    public void PaddedLayout_MinimumMarginsStillDoNotFit_PreservesAxis()
+    {
+        RecordingLayoutHandler handler = new();
+        PaddedLayout layout = new((10, 0, 10, 0), handler);
+        Rectangle bounds = new(10, 20, 1, 5);
+
+        layout.Layout(bounds, 1.0f);
+
+        handler.LastBounds.Should().Be(bounds);
+    }
+
+    [TestMethod]
     public void Padding_ImplicitConversions_SetAllFields()
     {
         Padding uniform = 7;
@@ -506,16 +518,22 @@ public class LayoutCoverageTests
     }
 
     [TestMethod]
-    public void ReplaceableLayout_SetBeforeFirstLayout_UsesDefaults()
+    public void ReplaceableLayout_SetBeforeFirstLayout_WaitsForLayout()
     {
         RecordingLayoutHandler initial = new();
         RecordingLayoutHandler replacement = new();
         ReplaceableLayout layout = new(initial);
+        Rectangle bounds = new(10, 20, 100, 80);
 
         layout.Handler = replacement;
 
-        replacement.LastBounds.Should().Be(Rectangle.Empty);
-        replacement.LastScale.Should().Be(1.0f);
+        replacement.CallCount.Should().Be(0);
+        initial.CallCount.Should().Be(0);
+
+        layout.Layout(bounds, 1.5f);
+
+        replacement.LastBounds.Should().Be(bounds);
+        replacement.LastScale.Should().Be(1.5f);
         replacement.CallCount.Should().Be(1);
         initial.CallCount.Should().Be(0);
     }

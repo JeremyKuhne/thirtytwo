@@ -29,7 +29,7 @@ internal partial class Program
                 URL = Path.GetFullPath("Media.mpg"),
             };
 
-            this.AddLayoutHandler(Layout.Vertical(
+            this.AddLayoutHandler(Layout.Columns(
                 (.5f, _mediaPlayer),
                 (.5f, _mediaPlayer2)));
         }

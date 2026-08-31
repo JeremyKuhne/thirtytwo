@@ -218,43 +218,43 @@ internal sealed class BasicUsageWindow : MainWindow
 
     private ILayoutHandler CreateWindowLayout()
     {
-        ILayoutHandler titleLayout = Layout.Vertical(
+        ILayoutHandler titleLayout = Layout.Columns(
             (.75f, Layout.Margin((16, 4, 8, 0), Layout.Fill(_titleLabel))),
             (.25f, Layout.Margin((8, 4, 16, 0), Layout.Fill(_themeButton))));
 
-        ILayoutHandler selectorLayout = Layout.Horizontal(
+        ILayoutHandler selectorLayout = Layout.Rows(
             (.25f, CreateSelectorRow(_selectorLabels[0], _colorPresetSelector)),
             (.25f, CreateSelectorRow(_selectorLabels[1], _spectrumShapeSelector)),
             (.25f, CreateSelectorRow(_selectorLabels[2], _spectrumComponentsSelector)),
             (.25f, CreateSelectorRow(_selectorLabels[3], _orientationSelector)));
 
-        ILayoutHandler featureLayout = Layout.Horizontal(
+        ILayoutHandler featureLayout = Layout.Rows(
             (.25f, CreateFeatureRow(_featureToggles[0], _featureToggles[1])),
             (.25f, CreateFeatureRow(_featureToggles[2], _featureToggles[3])),
             (.25f, CreateFeatureRow(_featureToggles[4], _featureToggles[5])),
             (.25f, CreateFeatureRow(_featureToggles[6], _featureToggles[7])));
 
-        ILayoutHandler settingsLayout = Layout.Horizontal(
+        ILayoutHandler settingsLayout = Layout.Rows(
             (.5f, selectorLayout),
             (.5f, featureLayout));
 
-        ILayoutHandler contentLayout = Layout.Vertical(
+        ILayoutHandler contentLayout = Layout.Columns(
             (.375f, Layout.Margin((16, 0, 8, 0), settingsLayout)),
             (.625f, Layout.Margin((8, 0, 16, 0), Layout.Fill(_colorPicker))));
 
-        return Layout.Horizontal(
+        return Layout.Rows(
             (.0625f, titleLayout),
             (.875f, contentLayout),
             (.0625f, Layout.Margin((16, 4, 16, 8), Layout.Fill(_statusLabel))));
     }
 
     private static ILayoutHandler CreateSelectorRow(StaticControl label, ComboBoxControl selector)
-        => Layout.Vertical(
+        => Layout.Columns(
             (.375f, Layout.Margin((0, 8, 8, 8), Layout.FixedPercent(1f, .5f, Layout.Fill(label)))),
             (.625f, Layout.Margin((8, 8, 0, 8), Layout.FixedPercent(1f, .5f, Layout.Fill(selector)))));
 
     private static ILayoutHandler CreateFeatureRow(ButtonControl left, ButtonControl right)
-        => Layout.Vertical(
+        => Layout.Columns(
             (.5f, Layout.Margin((0, 8, 8, 8), Layout.Fill(left))),
             (.5f, Layout.Margin((8, 8, 0, 8), Layout.Fill(right))));
 

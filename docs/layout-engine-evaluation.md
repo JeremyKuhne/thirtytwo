@@ -15,18 +15,19 @@ compose, deterministic, inexpensive to execute, DPI-aware where fixed logical
 dimensions are involved, and well covered by tests and samples. The engine
 should be evolved rather than replaced.
 
-The highest-priority lifecycle, input-contract, and native-positioning work has
-been implemented. `LayoutBinder` performs an initial pass, skips unchanged
-notifications, responds after effective DPI changes, validates its inputs, and
-detaches safely when disposed. The engine defines physical-pixel coordinates
-and logical-to-physical scale centrally, rejects invalid configuration
-consistently, and detects integer geometry overflow. Window leaves compare
-outer bounds in equivalent coordinate spaces and avoid redundant `MoveWindow`
-calls. The most important remaining work is API-shape and layout-policy
-clarification, not new layout algorithms:
+The highest-priority lifecycle, input-contract, native-positioning, and API-shape
+work has been implemented. `LayoutBinder` performs an initial pass, skips
+unchanged notifications, responds after effective DPI changes, validates its
+inputs, and detaches safely when disposed. The engine defines physical-pixel
+coordinates and logical-to-physical scale centrally, rejects invalid
+configuration consistently, and detects integer geometry overflow. Window
+leaves avoid redundant native moves, split APIs use explicit row and column
+names, and replacement before an initial pass no longer forwards synthetic
+empty bounds.
 
-1. Clarify naming and stateful behavior before the public API stabilizes.
-2. Replace heuristic tight-space margin compression with an explicit policy.
+The recursive tight-space margin policy is now part of the documented contract.
+The most important remaining work is measurement and demonstrated feature
+demand, not another round of API correction.
 
 Grid, flow, intrinsic measurement, and batched native positioning are useful
 future directions, but they should follow evidence from real application needs
@@ -40,7 +41,7 @@ This evaluation covers:
   [`src/thirtytwo/Layout`](../src/thirtytwo/Layout/);
 - window integration in [`Window`](../src/thirtytwo/Window.cs) and
   [`WindowExtensions`](../src/thirtytwo/WindowExtensions.cs);
-- the 73 dedicated tests in
+- the 74 dedicated tests in
   [`src/thirtytwo_tests/Layout`](../src/thirtytwo_tests/Layout/); and
 - nine sample windows that bind layout handlers under
   [`src/samples`](../src/samples/).
@@ -57,9 +58,9 @@ rectangle to one child or partitions it among several children.
 
 ```mermaid
 flowchart LR
-  Message[Position or effective DPI change] --> Binder[LayoutBinder]
+    Message[Position or effective DPI change] --> Binder[LayoutBinder]
     Binder --> Root[Root ILayoutHandler]
-    Root --> Split[Horizontal or Vertical split]
+    Root --> Split[Rows or Columns]
     Split --> Transform[Margin, fixed size, or fixed percent]
     Transform --> Leaf[Window as ILayoutHandler]
     Leaf --> Move[MoveWindow]
@@ -71,23 +72,24 @@ flowchart LR
   complete `Layout(Rectangle bounds, float scale)` contract.
 - [`Layout`](../src/thirtytwo/Layout/Layout.cs) provides factories for the
   built-in composition nodes.
-- [`HorizontalLayout`](../src/thirtytwo/Layout/HorizontalLayout.cs) creates
-  horizontal bands by splitting height.
-- [`VerticalLayout`](../src/thirtytwo/Layout/VerticalLayout.cs) creates vertical
-  columns by splitting width.
+- [`RowsLayout`](../src/thirtytwo/Layout/RowsLayout.cs) creates rows by splitting
+  height.
+- [`ColumnsLayout`](../src/thirtytwo/Layout/ColumnsLayout.cs) creates columns by
+  splitting width.
 - [`FixedSizeLayout`](../src/thirtytwo/Layout/FixedSizeLayout.cs) and
   [`FixedPercentLayout`](../src/thirtytwo/Layout/FixedPercentLayout.cs) size and
   align one child.
 - [`PaddedLayout`](../src/thirtytwo/Layout/PaddedLayout.cs) applies scaled
   integer margins before forwarding the remaining bounds.
 - [`ReplaceableLayout`](../src/thirtytwo/Layout/ReplaceableLayout.cs) retains
-  the last pass and synchronously replays it when its child is replaced.
+  the last pass and synchronously replays it when its child is replaced after
+  that first pass.
 - [`FillLayout`](../src/thirtytwo/Layout/FillLayout.cs) and
   [`EmptyLayout`](../src/thirtytwo/Layout/EmptyLayout.cs) supply explicit
   pass-through and no-op composition nodes.
 - [`LayoutBinder`](../src/thirtytwo/Layout/LayoutBinder.cs) performs the initial
   pass, starts passes after changed geometry or effective DPI, and owns the
-  detachable event registrations.
+  detachable event registration.
 - [`Window`](../src/thirtytwo/Window.cs) acts as the leaf handler, compares
   requested and current outer bounds in the same coordinate space, and applies
   changes with `MoveWindow`.
@@ -111,7 +113,7 @@ child without custom layout code in
 The split layouts deliberately truncate intermediate dimensions and assign the
 remaining pixels to the last child. This guarantees that children cover the
 entire input extent without a final gap caused by percentage rounding. Dedicated
-tests pin this behavior for three-child horizontal and vertical splits.
+tests pin this behavior for three-row and three-column splits.
 
 Alignment also includes the input rectangle's nonzero origin, which is important
 when composing layouts inside an already partitioned parent.
@@ -142,7 +144,7 @@ caller mutation from changing an established layout tree.
 
 ### 6. Broad behavioral test coverage
 
-The 73 dedicated tests cover:
+The 74 dedicated tests cover:
 
 - all fixed-size and fixed-percentage alignment combinations;
 - nonzero parent origins and scale propagation;
@@ -152,7 +154,7 @@ The 73 dedicated tests cover:
 - replacement before and after an initial pass;
 - null handlers, invalid alignment and percentage values, and invalid scale;
 - maximum integer dimensions and checked overflow behavior;
-- padding value conversions; and
+- padding value conversions;
 - native child, top-level, and owned-window positioning; and
 - position and effective-DPI binding notifications.
 
@@ -194,7 +196,30 @@ Equivalent layout passes therefore avoid redundant `MoveWindow` calls, while
 changed bounds still move and resize the window. Integration tests cover
 bordered children at nonzero origins, top-level windows, and owned pop-ups.
 
-### 10. Demonstrated adoption
+### 10. Explicit composition and replacement APIs
+
+`Layout.Rows` and `Layout.Columns` state the direction of proportional
+composition directly. Their concrete `RowsLayout` and `ColumnsLayout` types use
+the same terminology, so factory calls and direct construction are consistent.
+
+`ReplaceableLayout` distinguishes selection from replay. Replacing its child
+before the first pass does not invoke it with synthetic defaults; the selected
+child receives the first real bounds normally. Replacements after that pass are
+still laid out synchronously with the most recent bounds and scale.
+
+### 11. Documented tight-space margins
+
+`PaddedLayout` resolves each axis independently. It first applies DPI scaling
+and integer rounding. If the two margins exceed the available extent, it
+repeatedly halves those rounded values and rounds again until they fit. This
+selects a power-of-two reduction rather than the largest exact fit.
+
+Halving stops when both margins on an axis are one pixel or less. If that pair
+still does not fit, or if the input extent is nonpositive, that axis is
+forwarded unchanged. Negative margins remain supported and expand bounds when
+their combined value fits.
+
+### 12. Demonstrated adoption
 
 Nine sample windows use `AddLayoutHandler`, including native controls, ActiveX,
 dark-mode controls, and WinUI-hosted content. They use concise one-line binding
@@ -204,27 +229,7 @@ exercised across more than its dedicated layout sample.
 
 ## Weaknesses and risks
 
-### 1. Split-layout naming is easy to misread
-
-`HorizontalLayout` creates horizontal bands by splitting height, while
-`VerticalLayout` creates vertical columns by splitting width. That interpretation
-is internally consistent, but it is opposite the common convention where a
-"horizontal layout" places children from left to right.
-
-The source documentation resolves the ambiguity after a reader opens the type;
-the factory call alone does not.
-
-### 2. `ReplaceableLayout` has surprising pre-layout behavior
-
-Assigning `Handler` synchronously calls the new handler. Before the first real
-layout pass, it receives `Rectangle.Empty` and scale `1.0`. The behavior is
-documented and tested, but a window leaf can consequently be moved to empty
-bounds if replacement occurs too early.
-
-The setter also combines state mutation with an immediate external callback,
-which makes exception and reentrancy behavior harder to reason about.
-
-### 3. Tight-space margin behavior is heuristic
+### 1. Tight-space margin behavior is coarse
 
 When requested margins do not fit, `PaddedLayout` repeatedly halves already
 rounded edge values until they fit. This terminates quickly and tests cover very
@@ -234,16 +239,16 @@ large values, but it encodes a specific policy:
 - repeated rounding can favor one edge; and
 - no minimum content size or minimum margin is part of the contract.
 
-The behavior is robust, but it is not obvious to callers and may not match every
+The behavior is robust, documented, and deterministic, but may not match every
 UI's desired compression policy.
 
-### 4. `PaddingF` is disconnected from layout
+### 2. `PaddingF` is disconnected from layout
 
 `PaddingF` is public and tested, but no built-in layout node consumes it. The
 engine accepts integer `Padding` and applies the scale later. This leaves an API
 surface that suggests fractional-margin support without an integration path.
 
-### 5. The engine has an intentional feature ceiling
+### 3. The engine has an intentional feature ceiling
 
 There is no measure/arrange distinction, intrinsic or preferred size, minimum
 and maximum constraints, visibility-aware allocation, wrapping, grid, or flow
@@ -254,7 +259,7 @@ That simplicity is a strength for small Win32 applications. It becomes a
 limitation when layout depends on text measurement, control content, or
 cross-child constraints.
 
-### 6. Native moves are not batched
+### 4. Native moves are not batched
 
 Each window leaf calls `MoveWindow` independently with repaint enabled. Large
 trees may therefore produce repeated native calls and intermediate repainting.
@@ -264,38 +269,20 @@ does not provide a transaction boundary where sibling moves could use
 
 ## Recommended next steps
 
-### Priority 1: Clarify composition APIs
-
-Before API stabilization:
-
-- consider `Rows` and `Columns` factory names, either as replacements or clear
-  aliases for `Horizontal` and `Vertical`;
-- track whether a real pass has occurred and avoid replaying empty default bounds
-  unless that behavior is required; and
-- either add a `PaddingF` layout path with defined rounding or remove the unused
-  public type.
-
-### Priority 2: Make margin compression a named policy
-
-Replace the recursive half-scale fallback with an explicit policy or closed-form
-calculation. Useful policies could include:
-
-- preserve requested margins and allow zero content;
-- scale margins proportionally to fit;
-- preserve a configured minimum content extent; or
-- clamp each edge independently.
-
-Whichever policy is selected should be documented and tested for asymmetric,
-negative, extreme, and zero-sized inputs.
-
-### Priority 3: Measure before batching native moves
+### Priority 1: Measure before batching native moves
 
 Measure layout during interactive resizing and with a representative synthetic
 tree. The engine now suppresses unchanged native positioning, so measurements
 can show whether the remaining `MoveWindow` calls and repainting justify an
 optional `BeginDeferWindowPos` and `DeferWindowPos` transaction.
 
-### Priority 4: Add features only from demonstrated demand
+### Priority 2: Integrate fractional margins when needed
+
+Retain `PaddingF` as the representation for fractional logical margins. Add a
+built-in layout path only when an application needs sub-unit margins, and define
+its rounding and tight-space behavior against the integer-margin contract.
+
+### Priority 3: Add features only from demonstrated demand
 
 If samples or applications need richer composition, add narrowly scoped nodes
 such as an even grid or minimum/maximum constraint wrapper. A general retained
@@ -308,10 +295,8 @@ The existing suite is strong. The highest-value additions are tests for:
 
 - a real mixed-DPI transition confirming nested binders use the new effective
   scale;
-- negative margins and the selected tight-space policy;
-- revised replacement behavior before the first real pass, updating the
-  existing default-replay test if that contract changes; and
-- `PaddingF` behavior if it remains public and becomes integrated.
+- `PaddingF` behavior when it becomes integrated; and
+- performance measurements before introducing deferred native positioning.
 
 Performance work should begin with measurements for a representative nested
 sample during live resizing, plus a synthetic tree with many sibling windows.
@@ -323,9 +308,8 @@ model is easier to understand than a general-purpose constraint or
 measure/arrange system, its geometry is deterministic, and its tests and samples
 show meaningful maturity.
 
-The next iteration should preserve that simplicity. With binder lifecycle,
-input contracts, and coordinate-correct native positioning addressed, clarify
-the public composition and state contracts before adding new layout primitives.
-Measure the remaining native work before introducing deferred positioning.
-Those changes would make the current design more predictable and extensible
-without turning it into a different kind of UI framework.
+The next iteration should preserve that simplicity. Binder lifecycle, input
+contracts, coordinate-correct native positioning, composition naming,
+replacement timing, and tight-space margin behavior are now explicit. Measure
+the remaining native work before introducing deferred positioning, and add
+layout primitives only for demonstrated application needs.
