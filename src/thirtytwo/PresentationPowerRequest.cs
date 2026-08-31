@@ -12,7 +12,7 @@ namespace Windows;
 /// </summary>
 public sealed class PresentationPowerRequest : DisposableBase.Finalizable
 {
-    private const string RequestReason = "thirtytwo Power Management sample presentation mode";
+    private const string RequestReason = "thirtytwo PresentationPowerRequest";
 
     private HANDLE _handle;
 
