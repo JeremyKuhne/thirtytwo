@@ -25,8 +25,8 @@ The annotations added before this plan deliberately expose these limitations:
 - `ICustomTypeDescriptor` members carry the framework's matching `RequiresUnreferencedCode` contracts.
 - ActiveX property descriptor access propagates `RequiresUnreferencedCode`.
 - Runtime construction of event delegate types propagates `RequiresDynamicCode`.
-- Reflective managed dispatch propagates `RequiresUnreferencedCode` and preserves the member categories required by
-    `Type.InvokeMember` on its runtime `Type` while that path remains in use.
+- Reflective managed dispatch propagates `RequiresUnreferencedCode`, discovers public non-indexed properties at
+    construction time, and invokes the resulting `PropertyInfo` accessors directly.
 
 `RequiresDynamicCode` is temporarily applied to `ComTypeDescriptor` as a type-level contract. The dynamic operation is
 in event discovery, but `ICustomTypeDescriptor.GetEvents()` does not declare `RequiresDynamicCode`; adding the attribute

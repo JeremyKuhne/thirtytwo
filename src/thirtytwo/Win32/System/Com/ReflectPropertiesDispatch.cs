@@ -16,7 +16,7 @@ public unsafe abstract class ReflectPropertiesDispatch : UnknownDispatch
     /// <summary>
     ///  Initializes a new reflective dispatch adapter for the current instance.
     /// </summary>
-    [RequiresUnreferencedCode("The derived type's public properties are discovered and invoked by name at run time.")]
+    [RequiresUnreferencedCode("The derived type's public properties are discovered at run time.")]
     public ReflectPropertiesDispatch() : base()
     {
         _dispatchAdapter = new(this);
