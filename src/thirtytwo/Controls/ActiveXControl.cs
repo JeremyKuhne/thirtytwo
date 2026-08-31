@@ -36,6 +36,7 @@ public unsafe partial class ActiveXControl : CustomControl
     /// <param name="bounds">The host bounds in parent client coordinates.</param>
     /// <param name="parentWindow">The parent window that owns the host window.</param>
     /// <param name="parameters">Additional creation parameters passed as <c>lpParam</c>.</param>
+    [RequiresDynamicCode("COM event signatures may require constructing delegate types at run time.")]
     public ActiveXControl(
         Guid classId,
         Rectangle bounds,
@@ -184,13 +185,17 @@ public unsafe partial class ActiveXControl : CustomControl
     ///  Gets the cached COM property descriptors for the hosted control instance.
     /// </summary>
     protected PropertyDescriptorCollection ComPropertyDescriptors
-        => _propertyDescriptors ??= _typeDescriptor.GetProperties();
+    {
+        [RequiresUnreferencedCode("COM property types are discovered from type information at run time.")]
+        get => _propertyDescriptors ??= _typeDescriptor.GetProperties();
+    }
 
     /// <summary>
     ///  Sets a COM property on the hosted control by name.
     /// </summary>
     /// <param name="name">The property name.</param>
     /// <param name="value">The value to assign.</param>
+    [RequiresUnreferencedCode("COM property types are discovered from type information at run time.")]
     protected void SetComProperty(string name, object? value)
         => ComPropertyDescriptors[name]!.SetValue(_instance, value);
 
@@ -199,6 +204,7 @@ public unsafe partial class ActiveXControl : CustomControl
     /// </summary>
     /// <param name="name">The property name.</param>
     /// <returns>The current property value.</returns>
+    [RequiresUnreferencedCode("COM property types are discovered from type information at run time.")]
     protected object? GetComProperty(string name)
         => ComPropertyDescriptors[name]!.GetValue(_instance);
 

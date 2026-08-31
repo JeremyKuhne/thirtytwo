@@ -91,6 +91,7 @@ internal unsafe class ComEventDescriptor : EventDescriptor
     ///   for the duration of this call.
     ///  </para>
     /// </remarks>
+    [RequiresDynamicCode("COM event signatures may require constructing delegate types at run time.")]
     public static Type? GetDelegateType(ITypeInfo* typeInfo, FUNCDESC* description)
     {
         if (description->funckind != FUNCKIND.FUNC_DISPATCH

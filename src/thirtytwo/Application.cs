@@ -41,6 +41,9 @@ public static unsafe partial class Application
 
             static ActivationContext? GetStylesContext()
             {
+                const int ExecutableManifestResourceId = 1;
+                const int LibraryManifestResourceId = 2;
+
                 if (!UseVisualStyles)
                 {
                     return null;
@@ -51,16 +54,33 @@ public static unsafe partial class Application
                     return s_visualStylesContext;
                 }
 
-                HINSTANCE instance = (HINSTANCE)Marshal.GetHINSTANCE(typeof(Application).Module);
-                if (!instance.IsNull && instance != (HINSTANCE)(-1))
+                HINSTANCE instance = GetLibraryInstance();
+                int manifestResourceId = LibraryManifestResourceId;
+                if (instance.IsNull || instance == (HINSTANCE)(-1))
                 {
-                    // We have a native module, point to our native embedded manifest resource.
-                    // CSC embeds DLL manifests as native resource ID 2.
-                    s_visualStylesContext = new ActivationContext(instance, nativeResourceManifestID: 2);
+                    HMODULE executableModule;
+                    if (!PInvoke.GetModuleHandleEx(
+                        Interop.GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                        (PCWSTR)null,
+                        &executableModule))
+                    {
+                        return null;
+                    }
+
+                    instance = (HINSTANCE)executableModule;
+                    manifestResourceId = ExecutableManifestResourceId;
                 }
 
+                s_visualStylesContext = new ActivationContext(instance, manifestResourceId);
                 return s_visualStylesContext;
             }
+
+            [UnconditionalSuppressMessage(
+                "SingleFile",
+                "IL3002",
+                Justification = "A missing assembly module is detected and the executable module is used instead.")]
+            static HINSTANCE GetLibraryInstance()
+                => (HINSTANCE)Marshal.GetHINSTANCE(typeof(Application).Module);
         }
     }
 

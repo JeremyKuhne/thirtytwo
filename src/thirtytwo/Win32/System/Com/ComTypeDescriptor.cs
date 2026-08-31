@@ -10,6 +10,7 @@ namespace Windows.Win32.System.Com;
 /// <summary>
 ///  Provides managed type descriptor metadata for COM objects.
 /// </summary>
+[RequiresDynamicCode("COM event signatures may require constructing delegate types at run time.")]
 internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
 {
     private string? _className;
@@ -95,12 +96,16 @@ internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
     }
 
     /// <inheritdoc cref="ICustomTypeDescriptor.GetConverter"/>
+    [RequiresUnreferencedCode("PropertyDescriptor's PropertyType cannot be statically discovered.")]
     TypeConverter? ICustomTypeDescriptor.GetConverter() => null;
     /// <inheritdoc cref="ICustomTypeDescriptor.GetDefaultEvent"/>
+    [RequiresUnreferencedCode("PropertyDescriptor's PropertyType cannot be statically discovered.")]
     EventDescriptor? ICustomTypeDescriptor.GetDefaultEvent() => throw new NotImplementedException();
     /// <inheritdoc cref="ICustomTypeDescriptor.GetDefaultProperty"/>
+    [RequiresUnreferencedCode("PropertyDescriptor's PropertyType cannot be statically discovered.")]
     PropertyDescriptor? ICustomTypeDescriptor.GetDefaultProperty() => throw new NotImplementedException();
     /// <inheritdoc cref="ICustomTypeDescriptor.GetEditor"/>
+    [RequiresUnreferencedCode("Editors registered in the type's metadata may be trimmed.")]
     object? ICustomTypeDescriptor.GetEditor(Type editorBaseType) => null;
 
     /// <inheritdoc cref="ICustomTypeDescriptor.GetEvents()"/>
@@ -219,9 +224,11 @@ internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
     }
 
     /// <inheritdoc cref="ICustomTypeDescriptor.GetEvents(Attribute[])"/>
+    [RequiresUnreferencedCode("EventDescriptor's EventType cannot be statically discovered.")]
     EventDescriptorCollection ICustomTypeDescriptor.GetEvents(Attribute[]? attributes) => throw new NotImplementedException();
 
     /// <inheritdoc cref="ICustomTypeDescriptor.GetProperties()"/>
+    [RequiresUnreferencedCode("PropertyDescriptor's PropertyType cannot be statically discovered.")]
     PropertyDescriptorCollection ICustomTypeDescriptor.GetProperties()
     {
         InitializePropertyDescriptors();
@@ -229,6 +236,7 @@ internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
     }
 
     /// <inheritdoc cref="ICustomTypeDescriptor.GetProperties(Attribute[])"/>
+    [RequiresUnreferencedCode("PropertyDescriptor's PropertyType cannot be statically discovered.")]
     PropertyDescriptorCollection ICustomTypeDescriptor.GetProperties(Attribute[]? attributes) =>
         ((ICustomTypeDescriptor)this).GetProperties();
 
@@ -422,5 +430,4 @@ internal unsafe sealed partial class ComTypeDescriptor : ICustomTypeDescriptor
             propertyInfo[function->memid] = info;
         }
     }
-
 }

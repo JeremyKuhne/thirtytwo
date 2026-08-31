@@ -23,6 +23,7 @@ public unsafe partial class ClassPropertyDispatchAdapter
     private int _nextDispId = StartingDispId;
 
     private readonly WeakReference<object> _instance;
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     private readonly Type _type;
 
     private readonly Dictionary<int, DispatchEntry> _members = [];
@@ -34,6 +35,7 @@ public unsafe partial class ClassPropertyDispatchAdapter
     /// <param name="instance">
     ///  Managed object whose public properties are exposed through dispatch metadata and invocation.
     /// </param>
+    [RequiresUnreferencedCode("The target's members are discovered and invoked by name at run time.")]
     public ClassPropertyDispatchAdapter(object instance)
     {
         ArgumentNullException.ThrowIfNull(instance);
