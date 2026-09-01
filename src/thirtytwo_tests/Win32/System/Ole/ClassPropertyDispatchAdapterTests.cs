@@ -272,7 +272,7 @@ public unsafe class ClassPropertyDispatchAdapterTests
     }
 
     [TestMethod]
-    public void Invoke_PropertyPutWithNullArgument_ReturnsPointerError()
+    public void Invoke_PropertyPutWithNullArgument_ReturnsInvalidArgument()
     {
         TestProperties target = new();
         ClassPropertyDispatchAdapter adapter = new(target);
@@ -284,7 +284,56 @@ public unsafe class ClassPropertyDispatchAdapterTests
             lcid: 0,
             DISPATCH_FLAGS.DISPATCH_PROPERTYPUT,
             &parameters,
-            result: null).Should().Be(HRESULT.E_POINTER);
+            result: null).Should().Be(HRESULT.E_INVALIDARG);
+        GC.KeepAlive(target);
+    }
+
+    [TestMethod]
+    public void Invoke_PropertyPutWithNullNamedArgumentPointer_ReturnsInvalidArgument()
+    {
+        TestProperties target = new();
+        ClassPropertyDispatchAdapter adapter = new(target);
+        int id = GetDispatchId(adapter, nameof(TestProperties.ReadWrite));
+        VARIANT argument = (VARIANT)1;
+        DISPPARAMS parameters = new()
+        {
+            cArgs = 1,
+            cNamedArgs = 1,
+            rgvarg = &argument,
+            rgdispidNamedArgs = null
+        };
+
+        adapter.Invoke(
+            id,
+            lcid: 0,
+            DISPATCH_FLAGS.DISPATCH_PROPERTYPUT,
+            &parameters,
+            result: null).Should().Be(HRESULT.E_INVALIDARG);
+        GC.KeepAlive(target);
+    }
+
+    [TestMethod]
+    public void Invoke_NamedArgumentCountExceedsArgumentCount_ReturnsInvalidArgument()
+    {
+        TestProperties target = new();
+        ClassPropertyDispatchAdapter adapter = new(target);
+        int id = GetDispatchId(adapter, nameof(TestProperties.ReadWrite));
+        VARIANT argument = (VARIANT)1;
+        int propertyPutId = PInvoke.DISPID_PROPERTYPUT;
+        DISPPARAMS parameters = new()
+        {
+            cArgs = 1,
+            cNamedArgs = 2,
+            rgvarg = &argument,
+            rgdispidNamedArgs = &propertyPutId
+        };
+
+        adapter.Invoke(
+            id,
+            lcid: 0,
+            DISPATCH_FLAGS.DISPATCH_PROPERTYPUT,
+            &parameters,
+            result: null).Should().Be(HRESULT.E_INVALIDARG);
         GC.KeepAlive(target);
     }
 
@@ -304,6 +353,32 @@ public unsafe class ClassPropertyDispatchAdapterTests
             DISPATCH_FLAGS.DISPATCH_PROPERTYGET,
             &parameters,
             &result).Should().Be(PInvoke.DISP_E_BADPARAMCOUNT);
+        GC.KeepAlive(target);
+    }
+
+    [TestMethod]
+    public void Invoke_PropertyGetWithNamedArgument_ReturnsNoNamedArguments()
+    {
+        TestProperties target = new();
+        ClassPropertyDispatchAdapter adapter = new(target);
+        int id = GetDispatchId(adapter, nameof(TestProperties.ReadWrite));
+        VARIANT argument = (VARIANT)1;
+        int namedArgumentId = 0;
+        DISPPARAMS parameters = new()
+        {
+            cArgs = 1,
+            cNamedArgs = 1,
+            rgvarg = &argument,
+            rgdispidNamedArgs = &namedArgumentId
+        };
+        using VARIANT result = default;
+
+        adapter.Invoke(
+            id,
+            lcid: 0,
+            DISPATCH_FLAGS.DISPATCH_PROPERTYGET,
+            &parameters,
+            &result).Should().Be(PInvoke.DISP_E_NONAMEDARGS);
         GC.KeepAlive(target);
     }
 
@@ -330,6 +405,38 @@ public unsafe class ClassPropertyDispatchAdapterTests
             &twoArguments,
             result: null).Should().Be(PInvoke.DISP_E_BADPARAMCOUNT);
         GC.KeepAlive(target);
+    }
+
+    [TestMethod]
+    public void Invoke_PropertyPutWithoutPropertyPutNamedArgument_ReturnsParameterNotFound()
+    {
+        TestProperties target = new();
+        ClassPropertyDispatchAdapter adapter = new(target);
+        int id = GetDispatchId(adapter, nameof(TestProperties.ReadWrite));
+        VARIANT argument = (VARIANT)1;
+        DISPPARAMS missingName = new() { cArgs = 1, rgvarg = &argument };
+        int wrongNamedArgumentId = 0;
+        DISPPARAMS wrongName = new()
+        {
+            cArgs = 1,
+            cNamedArgs = 1,
+            rgvarg = &argument,
+            rgdispidNamedArgs = &wrongNamedArgumentId
+        };
+
+        adapter.Invoke(
+            id,
+            lcid: 0,
+            DISPATCH_FLAGS.DISPATCH_PROPERTYPUT,
+            &missingName,
+            result: null).Should().Be(PInvoke.DISP_E_PARAMNOTFOUND);
+        adapter.Invoke(
+            id,
+            lcid: 0,
+            DISPATCH_FLAGS.DISPATCH_PROPERTYPUT,
+            &wrongName,
+            result: null).Should().Be(PInvoke.DISP_E_PARAMNOTFOUND);
+        target.ReadWrite.Should().Be(0);
     }
 
     [TestMethod]

@@ -143,7 +143,8 @@ public unsafe partial class ClassPropertyDispatchAdapter
     /// <returns>
     ///  <see cref="HRESULT.S_OK"/> on success, or the corresponding COM error such as
     ///  <see cref="HRESULT.E_INVALIDARG"/>, <see cref="HRESULT.E_POINTER"/>,
-    ///  <see cref="PInvoke.DISP_E_MEMBERNOTFOUND"/>, or <see cref="PInvoke.DISP_E_BADPARAMCOUNT"/>.
+    ///  <see cref="PInvoke.DISP_E_MEMBERNOTFOUND"/>, <see cref="PInvoke.DISP_E_BADPARAMCOUNT"/>,
+    ///  <see cref="PInvoke.DISP_E_NONAMEDARGS"/>, or <see cref="PInvoke.DISP_E_PARAMNOTFOUND"/>.
     /// </returns>
     public HRESULT Invoke(
         int dispId,
@@ -172,6 +173,13 @@ public unsafe partial class ClassPropertyDispatchAdapter
             return HRESULT.E_POINTER;
         }
 
+        if ((parameters->cArgs > 0 && parameters->rgvarg is null)
+            || (parameters->cNamedArgs > 0 && parameters->rgdispidNamedArgs is null)
+            || parameters->cNamedArgs > parameters->cArgs)
+        {
+            return HRESULT.E_INVALIDARG;
+        }
+
         if (flags == DISPATCH_FLAGS.DISPATCH_PROPERTYPUT)
         {
             if (parameters->cArgs != 1)
@@ -179,9 +187,10 @@ public unsafe partial class ClassPropertyDispatchAdapter
                 return PInvoke.DISP_E_BADPARAMCOUNT;
             }
 
-            if (parameters->rgvarg is null)
+            if (parameters->cNamedArgs != 1
+                || *parameters->rgdispidNamedArgs != PInvoke.DISPID_PROPERTYPUT)
             {
-                return HRESULT.E_POINTER;
+                return PInvoke.DISP_E_PARAMNOTFOUND;
             }
 
             try
@@ -196,6 +205,11 @@ public unsafe partial class ClassPropertyDispatchAdapter
         }
         else
         {
+            if (parameters->cNamedArgs != 0)
+            {
+                return PInvoke.DISP_E_NONAMEDARGS;
+            }
+
             if (parameters->cArgs != 0)
             {
                 return PInvoke.DISP_E_BADPARAMCOUNT;
