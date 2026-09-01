@@ -65,7 +65,13 @@ public unsafe partial class ActiveXControl : CustomControl
         using ComScope<IOleClientSite> site = new(_site.GetComPointer<IOleClientSite>());
         HRESULT hr = oleObject.Pointer->SetClientSite(site.Pointer);
 
-        _typeDescriptor = new ComTypeDescriptor(_instance);
+        _typeDescriptor = CreatePropertyTypeDescriptor(_instance);
+
+        [UnconditionalSuppressMessage(
+            "AotAnalysis",
+            "IL3050:RequiresDynamicCode",
+            Justification = "ActiveXControl only uses the descriptor's property path, which does not construct event types.")]
+        static ICustomTypeDescriptor CreatePropertyTypeDescriptor(IComPointer instance) => new ComTypeDescriptor(instance);
     }
 
     protected internal override bool PreProcessMessage(ref MSG message)
@@ -184,13 +190,17 @@ public unsafe partial class ActiveXControl : CustomControl
     ///  Gets the cached COM property descriptors for the hosted control instance.
     /// </summary>
     protected PropertyDescriptorCollection ComPropertyDescriptors
-        => _propertyDescriptors ??= _typeDescriptor.GetProperties();
+    {
+        [RequiresUnreferencedCode("COM property types are discovered from type information at run time.")]
+        get => _propertyDescriptors ??= _typeDescriptor.GetProperties();
+    }
 
     /// <summary>
     ///  Sets a COM property on the hosted control by name.
     /// </summary>
     /// <param name="name">The property name.</param>
     /// <param name="value">The value to assign.</param>
+    [RequiresUnreferencedCode("COM property types are discovered from type information at run time.")]
     protected void SetComProperty(string name, object? value)
         => ComPropertyDescriptors[name]!.SetValue(_instance, value);
 
@@ -199,6 +209,7 @@ public unsafe partial class ActiveXControl : CustomControl
     /// </summary>
     /// <param name="name">The property name.</param>
     /// <returns>The current property value.</returns>
+    [RequiresUnreferencedCode("COM property types are discovered from type information at run time.")]
     protected object? GetComProperty(string name)
         => ComPropertyDescriptors[name]!.GetValue(_instance);
 

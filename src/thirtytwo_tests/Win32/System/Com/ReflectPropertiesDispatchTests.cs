@@ -103,7 +103,7 @@ public unsafe class ReflectPropertiesDispatchTests
 
         value = (VARIANT)(uint)0x000000FF;
         hr = dispatch.Pointer->TrySetPropertyValue(dispatchIds["Color"], value);
-        hr.Should().Be(PInvoke.DISP_E_MEMBERNOTFOUND);
+        hr.Should().Be(HRESULT.E_INVALIDARG);
 
         dispatch.Pointer->GetMemberProperties(dispatchIds["Color"], uint.MaxValue, out var flags);
         flags.Should().Be(fdexPropCanGet | fdexPropCanPut | fdexPropCannotPutRef

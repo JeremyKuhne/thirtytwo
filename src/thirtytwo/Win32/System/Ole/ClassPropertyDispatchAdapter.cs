@@ -10,7 +10,7 @@ using InteropMarshal = System.Runtime.InteropServices.Marshal;
 namespace Windows.Win32.System.Ole;
 
 /// <summary>
-///  Provides an <see cref="IDispatchEx"/> friendly view of a given class' public properties.
+///  Provides an <see cref="IDispatchEx"/> friendly view of a given class' public, non-indexed properties.
 /// </summary>
 /// <remarks>
 ///  <para>
@@ -23,7 +23,6 @@ public unsafe partial class ClassPropertyDispatchAdapter
     private int _nextDispId = StartingDispId;
 
     private readonly WeakReference<object> _instance;
-    private readonly Type _type;
 
     private readonly Dictionary<int, DispatchEntry> _members = [];
     private readonly Dictionary<string, int> _reverseLookup = new(StringComparer.OrdinalIgnoreCase);
@@ -34,15 +33,21 @@ public unsafe partial class ClassPropertyDispatchAdapter
     /// <param name="instance">
     ///  Managed object whose public properties are exposed through dispatch metadata and invocation.
     /// </param>
+    [RequiresUnreferencedCode("The target's public properties are discovered at run time.")]
     public ClassPropertyDispatchAdapter(object instance)
     {
         ArgumentNullException.ThrowIfNull(instance);
         _instance = new(instance);
-        _type = instance.GetType();
 
-        var properties = _type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+        var properties = instance.GetType().GetProperties(
+            BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
         foreach (var property in properties)
         {
+            if (property.GetIndexParameters().Length != 0)
+            {
+                continue;
+            }
+
             var (name, dispId, flags) = GetPropertyInfo(property);
             dispId = GetUnusedDispId(dispId);
 
@@ -58,7 +63,8 @@ public unsafe partial class ClassPropertyDispatchAdapter
                 {
                     DispId = dispId,
                     Flags = flags,
-                    Name = name
+                    Name = name,
+                    Property = property
                 });
 
             _reverseLookup.Add(name, dispId);
@@ -136,8 +142,9 @@ public unsafe partial class ClassPropertyDispatchAdapter
     /// <param name="result">Output location for the return value of get-style invocations.</param>
     /// <returns>
     ///  <see cref="HRESULT.S_OK"/> on success, or the corresponding COM error such as
-    ///  <see cref="HRESULT.E_POINTER"/>, <see cref="PInvoke.DISP_E_MEMBERNOTFOUND"/>, or
-    ///  <see cref="PInvoke.DISP_E_BADPARAMCOUNT"/>.
+    ///  <see cref="HRESULT.E_INVALIDARG"/>, <see cref="HRESULT.E_POINTER"/>,
+    ///  <see cref="PInvoke.DISP_E_MEMBERNOTFOUND"/>, <see cref="PInvoke.DISP_E_BADPARAMCOUNT"/>,
+    ///  <see cref="PInvoke.DISP_E_NONAMEDARGS"/>, or <see cref="PInvoke.DISP_E_PARAMNOTFOUND"/>.
     /// </returns>
     public HRESULT Invoke(
         int dispId,
@@ -146,11 +153,14 @@ public unsafe partial class ClassPropertyDispatchAdapter
         DISPPARAMS* parameters,
         VARIANT* result)
     {
-        BindingFlags bindingFlags = DispatchToBindingFlags(flags);
-
         if (!_members.TryGetValue(dispId, out var entry))
         {
             return PInvoke.DISP_E_MEMBERNOTFOUND;
+        }
+
+        if (!CanInvoke(entry, flags))
+        {
+            return HRESULT.E_INVALIDARG;
         }
 
         if (!_instance.TryGetTarget(out object? target))
@@ -158,24 +168,35 @@ public unsafe partial class ClassPropertyDispatchAdapter
             return HRESULT.COR_E_OBJECTDISPOSED;
         }
 
-        object? resultObject = null;
+        if (parameters is null)
+        {
+            return HRESULT.E_POINTER;
+        }
 
-        if (bindingFlags.HasFlag(BindingFlags.PutDispProperty))
+        if ((parameters->cArgs > 0 && parameters->rgvarg is null)
+            || (parameters->cNamedArgs > 0 && parameters->rgdispidNamedArgs is null)
+            || parameters->cNamedArgs > parameters->cArgs)
+        {
+            return HRESULT.E_INVALIDARG;
+        }
+
+        if (flags == DISPATCH_FLAGS.DISPATCH_PROPERTYPUT)
         {
             if (parameters->cArgs != 1)
             {
                 return PInvoke.DISP_E_BADPARAMCOUNT;
             }
 
+            if (parameters->cNamedArgs != 1
+                || *parameters->rgdispidNamedArgs != PInvoke.DISPID_PROPERTYPUT)
+            {
+                return PInvoke.DISP_E_PARAMNOTFOUND;
+            }
+
             try
             {
                 object? value = InteropMarshal.GetObjectForNativeVariant((nint)parameters->rgvarg);
-                resultObject = _type.InvokeMember(
-                    entry.Name,
-                    bindingFlags,
-                    binder: null,
-                    target,
-                    [value]);
+                entry.Property.SetValue(target, value);
             }
             catch (Exception ex)
             {
@@ -184,6 +205,16 @@ public unsafe partial class ClassPropertyDispatchAdapter
         }
         else
         {
+            if (parameters->cNamedArgs != 0)
+            {
+                return PInvoke.DISP_E_NONAMEDARGS;
+            }
+
+            if (parameters->cArgs != 0)
+            {
+                return PInvoke.DISP_E_BADPARAMCOUNT;
+            }
+
             if (result is null)
             {
                 return HRESULT.E_POINTER;
@@ -191,13 +222,7 @@ public unsafe partial class ClassPropertyDispatchAdapter
 
             try
             {
-                resultObject = _type.InvokeMember(
-                    entry.Name,
-                    bindingFlags,
-                    binder: null,
-                    target,
-                    args: null);
-
+                object? resultObject = entry.Property.GetValue(target);
                 InteropMarshal.GetNativeVariantForObject(resultObject, (nint)result);
             }
             catch (Exception ex)
@@ -208,6 +233,13 @@ public unsafe partial class ClassPropertyDispatchAdapter
 
         return HRESULT.S_OK;
     }
+
+    private static bool CanInvoke(DispatchEntry entry, DISPATCH_FLAGS flags) => flags switch
+    {
+        DISPATCH_FLAGS.DISPATCH_PROPERTYGET => entry.Flags.HasFlag(FDEX_PROP_FLAGS.fdexPropCanGet),
+        DISPATCH_FLAGS.DISPATCH_PROPERTYPUT => entry.Flags.HasFlag(FDEX_PROP_FLAGS.fdexPropCanPut),
+        _ => false
+    };
 
     /// <summary>
     ///  Try to find the next logical DISPID after the given <paramref name="dispId"/>.
@@ -286,8 +318,8 @@ public unsafe partial class ClassPropertyDispatchAdapter
         int dispid = info.GetCustomAttribute<DispIdAttribute>()?.Value ?? PInvoke.DISPID_UNKNOWN;
         string name = info.Name;
         FDEX_PROP_FLAGS flags =
-            (info.CanRead ? FDEX_PROP_FLAGS.fdexPropCanGet : FDEX_PROP_FLAGS.fdexPropCannotGet)
-            | (info.CanWrite ? FDEX_PROP_FLAGS.fdexPropCanPut : FDEX_PROP_FLAGS.fdexPropCannotPut)
+            (info.GetMethod?.IsPublic == true ? FDEX_PROP_FLAGS.fdexPropCanGet : FDEX_PROP_FLAGS.fdexPropCannotGet)
+            | (info.SetMethod?.IsPublic == true ? FDEX_PROP_FLAGS.fdexPropCanPut : FDEX_PROP_FLAGS.fdexPropCannotPut)
             | FDEX_PROP_FLAGS.fdexPropCannotPutRef
             | FDEX_PROP_FLAGS.fdexPropCannotCall
             | FDEX_PROP_FLAGS.fdexPropCannotConstruct
@@ -295,39 +327,4 @@ public unsafe partial class ClassPropertyDispatchAdapter
 
         return (name, dispid, flags);
     }
-
-    private static BindingFlags DispatchToBindingFlags(DISPATCH_FLAGS dispatchFlags)
-    {
-        BindingFlags bindingFlags = default;
-
-        if (dispatchFlags.HasFlag((DISPATCH_FLAGS)PInvoke.DISPATCH_CONSTRUCT))
-        {
-            bindingFlags |= BindingFlags.CreateInstance;
-        }
-
-        if (dispatchFlags.HasFlag(DISPATCH_FLAGS.DISPATCH_METHOD))
-        {
-            bindingFlags |= BindingFlags.InvokeMethod;
-        }
-
-        if (dispatchFlags.HasFlag(DISPATCH_FLAGS.DISPATCH_PROPERTYPUT | DISPATCH_FLAGS.DISPATCH_PROPERTYPUTREF))
-        {
-            bindingFlags |= BindingFlags.SetProperty;
-        }
-        else if (dispatchFlags.HasFlag(DISPATCH_FLAGS.DISPATCH_PROPERTYPUT))
-        {
-            bindingFlags |= BindingFlags.PutDispProperty;
-        }
-        else if (dispatchFlags.HasFlag(DISPATCH_FLAGS.DISPATCH_PROPERTYPUTREF))
-        {
-            bindingFlags |= BindingFlags.PutRefDispProperty;
-        }
-        else
-        {
-            bindingFlags |= BindingFlags.GetProperty;
-        }
-
-        return bindingFlags;
-    }
-
 }

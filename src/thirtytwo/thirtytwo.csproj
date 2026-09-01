@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
     <RootNamespace>Windows</RootNamespace>
     <Win32Manifest>Resources\comctl6.manifest</Win32Manifest>
 

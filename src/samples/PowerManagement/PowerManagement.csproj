@@ -2,7 +2,26 @@
 
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowedReferenceRelatedFileExtensions>.pri;.dll.config;.exe.config</AllowedReferenceRelatedFileExtensions>
+    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+    <DebuggerSupport>false</DebuggerSupport>
+    <EventSourceSupport>false</EventSourceSupport>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <MetricsSupport>false</MetricsSupport>
+    <NoWarn>$(NoWarn);EnableGenerateDocumentationFile</NoWarn>
+    <OptimizationPreference>Size</OptimizationPreference>
     <OutputType>WinExe</OutputType>
+    <PublishAot>true</PublishAot>
+    <PublishTrimmed>true</PublishTrimmed>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <StackTraceSupport>false</StackTraceSupport>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <Win32Manifest>..\..\thirtytwo\Resources\comctl6.manifest</Win32Manifest>
   </PropertyGroup>
 
   <ItemGroup>

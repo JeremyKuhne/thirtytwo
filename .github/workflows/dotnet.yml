@@ -49,9 +49,25 @@ jobs:
         }
 
         $runtimeDirectory = $runtimeDirectories[0]
+        # ERROR_INSTALL_PACKAGE_DOWNGRADE: an equal or newer package already satisfies this dependency.
+        $packageDowngrade = [int] 0x80073D06
         Get-Content (Join-Path $runtimeDirectory 'MSIX.inventory') | ForEach-Object {
           $fileName = ($_ -split '=', 2)[0]
-          Add-AppxPackage -Path (Join-Path $runtimeDirectory $fileName)
+          try {
+            Add-AppxPackage -Path (Join-Path $runtimeDirectory $fileName) -ErrorAction Stop
+          }
+          catch {
+            $exception = $_.Exception
+            while ($exception -and $exception.HResult -ne $packageDowngrade) {
+              $exception = $exception.InnerException
+            }
+
+            if (-not $exception) {
+              throw
+            }
+
+            Write-Host "Skipping $fileName because a newer version is installed."
+          }
         }
     - name: Build
       run: dotnet build --no-restore
