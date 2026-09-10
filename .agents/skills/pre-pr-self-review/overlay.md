@@ -1,6 +1,6 @@
 ---
 core: pre-pr-self-review
-core-pin: v0.14.0
+core-pin: v0.17.0
 ---
 
 # Pre-PR self-review overlay
@@ -19,6 +19,8 @@ Repository-specific bindings for thirtytwo.
   P/Invoke, native ownership, or caller-supplied buffers and lengths.
 - Invoke [agent-files-review](../agent-files-review/SKILL.md) for changes under
   `.agents/`.
+- Invoke [performance-testing](../performance-testing/SKILL.md) for performance
+  claims and include the measured scenario, command, environment, and result.
 
 Run both configurations before publishing:
 

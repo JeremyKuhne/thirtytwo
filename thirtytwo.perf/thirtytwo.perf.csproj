@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <StartupObject>thirtytwo.perf.Program</StartupObject>
+    <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace />
+
+    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
+    <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
+    <DisableTestingPlatformServerCapability>true</DisableTestingPlatformServerCapability>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\thirtytwo\thirtytwo.csproj" />
+  </ItemGroup>
+
+</Project>

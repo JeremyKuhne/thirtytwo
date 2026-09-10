@@ -1,6 +1,6 @@
 ---
 core: winui-win32-hosting
-core-pin: b9c28f1a214370fa4aa396afc19566cf8bd67296
+core-pin: v0.17.0
 ---
 
 # WinUI Win32 hosting overlay

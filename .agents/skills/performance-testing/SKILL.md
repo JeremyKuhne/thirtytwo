@@ -1,0 +1,169 @@
+---
+compatibility: Requires the .NET SDK. BenchmarkDotNet is used for in-process microbenchmarks; profiling may require an optional repository-specific trace tool.
+description: Design, run, and validate .NET performance measurements, from BenchmarkDotNet microbenchmarks to fresh-process CLI and multi-phase workflows. Use when adding or running benchmarks, comparing implementations, profiling hot methods or lines, evaluating latency, throughput, allocations, retained memory, GC/JIT cost, or generated code, investigating regressions, or helping make code faster with measured evidence.
+license: MIT
+metadata:
+    applicability: dotnet-project-gated
+    binding: optional-overlay
+    github-path: skills/performance-testing
+    github-pinned: v0.17.0
+    github-ref: refs/tags/v0.17.0
+    github-repo: https://github.com/JeremyKuhne/agent-skills
+    github-tree-sha: a059730a2f64a819c5f2691ebfa9d29a17f4d646
+    maturity: canary
+    portability: portable
+    related: framework-jit-optimization, scratch-buffer-strategy, pre-pr-self-review
+    requires: none
+    risk: local-write
+name: performance-testing
+---
+# Performance testing
+
+If `overlay.md` exists beside this file, read it before acting; it contains
+repository-specific bindings. This core remains usable without it.
+
+This skill turns a user's outcome-shaped performance question into a concrete,
+validated measurement and a useful answer. It covers
+[BenchmarkDotNet](https://benchmarkdotnet.org/) for repeatable in-process
+operations and external harnesses for fresh-process startup, command discovery,
+or multi-phase workflows.
+
+A consuming repository wires concrete project names, supported target frameworks,
+cross-skill links, and optional profiling tooling in its overlay. This core uses
+`<root>.perf` for a conventional perf project and `<tfm>` for a target-framework
+moniker. Measure every supported target affected by the change; a single-target
+repository runs only its one target.
+
+When a repository has a Framework-only source tree, references to those types
+from a shared benchmark must be guarded with `#if NETFRAMEWORK`.
+
+## Starting from a user's question
+
+Users ask outcome questions - "how long does this take?", "how much memory does
+this use?", "where is the time going?", "help me make this faster?" - not tooling
+commands. They will not pick a scenario, write a benchmark, or capture a trace on
+their own; **translating the question into a measurement and leading them through
+it is the job.** Before reaching for the mechanics below, read
+[interpreting-requests.md](interpreting-requests.md): it maps each kind of
+question to the right workflow, says which clarifications to ask (and which to
+answer yourself from the code), walks the "make X faster" journey end to end, and
+lists the follow-ups to offer once a result is in hand. The rest of this skill is
+the *how*; that page is the *what to measure and why*.
+
+Choose the narrowest workflow that answers the question:
+
+| Need | Start with | Escalate only when |
+| --- | --- | --- |
+| One latency/allocation number | [running.md](running.md) | the scenario or result needs explanation |
+| A new benchmark | [authoring.md](authoring.md) | the benchmark exposes a multi-phase investigation |
+| Interpret an A/B result | [interpreting-results.md](interpreting-results.md) | the targeted cost is unclear |
+| Find a hot method/line | the repository profiling overlay | a code change needs measured verification |
+| Try multiple optimization candidates | [investigation-workflow.md](investigation-workflow.md) | each stage's gate passes |
+
+**Related skills** (a consuming repo links the ones it vendors in its overlay):
+
+- A **trace-analyzer** skill - the profiler this skill drives to find the hot
+  method or source line. The overlay names it and the concrete profiling page.
+- A **framework-JIT-optimization** skill, when available - decisions about specialization,
+  unrolling, and BCL-delegation on the older Framework JIT that the benchmarks
+  here exist to validate.
+- A **scratch-buffer-strategy** skill, when available - choosing between zeroed `stackalloc`,
+  `[SkipLocalsInit]`, a stack-with-pool-fallback buffer, and an `ArrayPool`
+  rental; several benchmarks exist to validate those crossovers.
+- A **pre-pr-self-review** skill - which requires a benchmark (or an explicit
+  "not measured" note) for any perf claim that drives a Framework-only code
+  change.
+
+## The rules that always apply
+
+Five rules cover most measurement work; the sub-pages hold the rest.
+
+1. **Define the operation and validity gate first.** Require nonempty equivalent
+   work, populated expected rows, exact operation/phase denominators, and recorded
+   identities. See [investigation-workflow.md](investigation-workflow.md).
+2. **`-c Release` is mandatory.** Debug runs are not representative.
+3. **Make measured work observable.** Return or consume a value derived from the
+   work, or validate mutated state outside the timed region. A `void` benchmark is
+   not automatically eliminated, but unobserved pure work can be optimized away.
+4. **Use `[MemoryDiagnoser]` on BenchmarkDotNet classes** when allocation is in
+   scope. Its `Allocated` column is cumulative managed allocation per operation,
+   not retained memory.
+5. **Run every affected supported TFM.** Pass `-f <tfm>` when the perf project is
+   multi-targeted; do not invent a second target for a single-target repository.
+
+For a multi-candidate optimization, **screen before you confirm**: predeclare the
+product gate and time/candidate budget, use a narrow short-job benchmark and small
+real-scenario pilot, and reject hard-gate failures before broad matrices, retained
+runs, or candidate before/after profiling. A lightweight baseline profile may form
+the hypothesis; defer candidate attribution until the product pilot passes. The
+staged defaults and stop rules are in [investigation-workflow.md](investigation-workflow.md).
+
+```powershell
+# One affected TFM; repeat only for additional supported targets the change affects.
+dotnet run -c Release -f <tfm> --project <root>.perf -- --filter *MyBenchmark*
+```
+
+## Workflow checklist for a new BenchmarkDotNet benchmark
+
+1. Add a `<Name>.cs` file under the perf project with a `public` class in the
+   perf namespace. See [authoring.md](authoring.md) for layout, globals, and
+   attributes.
+2. Decorate the class with `[MemoryDiagnoser]`.
+3. Add `[Benchmark(Baseline = true)]` to the reference implementation and
+   `[Benchmark]` to each variant.
+4. Make the measured work observable through a derived return value, a consumer,
+   or post-iteration validation of mutated state.
+5. Avoid avoidable helper overhead between the benchmark and system-under-test.
+   Resolve overloads with explicit argument types or casts, or split benchmark
+   classes; do not rename product APIs merely to obtain a measurement.
+6. Build Release: `dotnet build -c Release <root>.perf`.
+7. Smoke-test with `--job short --filter *<Name>*` on each supported target
+   individually. See [running.md](running.md).
+8. Run the full benchmark on every affected supported target (drop `--job short`).
+9. Inspect `Allocated` and `Ratio` columns; copy the Markdown report into the PR.
+   See [interpreting-results.md](interpreting-results.md).
+10. If one method dominates and you need to know which - or which *line* inside
+    it - profile it. See your repo's profiling overlay (the trace-analyzer skill).
+
+When the change is driven by a profile, follow the before/after discipline in
+[interpreting-results.md](interpreting-results.md) (baseline every affected
+supported TFM, re-run them, keep full rows, confirm the targeted frame moved).
+
+## Codegen-level optimization rules
+
+For decisions about *how to write* a hot path - whether to specialize a generic
+for primitives, choose between scalar/unrolled forms, defer to BCL primitives
+like `IndexOf` / `SequenceEqual`, or interpret a Framework-vs-modern divergence -
+see the framework-JIT-optimization skill when the consuming repository provides it.
+That skill is the right entry point for
+"this loop is slow on the older Framework JIT, what should I try?" questions,
+while this one is about authoring and running the benchmarks themselves.
+
+To see *why* a result is what it is - the C# lowering, the IL, or the JIT asm
+behind a number - see [reading-codegen.md](reading-codegen.md). It covers
+sharplab, BenchmarkDotNet's `[DisassemblyDiagnoser]` / `[HardwareCounters]`, the
+`DOTNET_JitDisasm*` knobs, and the tiering/PGO traps that bite codegen
+inspection.
+
+## Sub-pages
+
+- [interpreting-requests.md](interpreting-requests.md) - turning a user's
+  outcome question ("how long?", "how much memory?", "where's the time?", "make
+  it faster") into a scenario, a measurement, an answer in their words, and the
+  next follow-up to offer. Start here when the request is a question, not a task.
+- [authoring.md](authoring.md) - file/class layout, the imported globals, the
+  required and optional attributes, and what a benchmark method must do.
+- [running.md](running.md) - the `-f <tfm>` requirement, filtering to a class or
+  method, the interactive picker, and useful switches.
+- [interpreting-results.md](interpreting-results.md) - before/after discipline on supported TFMs and reading the memory columns.
+- [investigation-workflow.md](investigation-workflow.md) - staged fail-fast
+  screening, fresh-state phase measurement versus profiling, experiment ledgers,
+  exact-source oracles, and reconstructable run provenance for multi-step
+  investigations.
+- [reading-codegen.md](reading-codegen.md) - seeing the C# lowering, IL, and JIT
+  asm behind a number: sharplab, `[DisassemblyDiagnoser]`, `[HardwareCounters]`,
+  the `DOTNET_JitDisasm*` knobs, and the tiering/PGO inspection traps.
+
+Profiling a benchmark down to the hot method or source line is a repo-specific
+page supplied by the overlay (it drives the repo's trace analyzer), not part of
+this core.

@@ -26,6 +26,10 @@ the target framework(s), the package id and one-line description, the license
 them, ask once. These are the literals the script takes as parameters, and what
 a brownfield repo would keep in its overlay.
 
+Use `technical-writing` revise mode on the supplied one-line description and
+other human-facing metadata. Preserve the user's product claims and scope; do
+not infer a benefit, audience, support promise, or maturity level.
+
 ## 2. Run the scaffold script
 
 Invoke `New-DotnetRepo.ps1` from the skill's `scripts/` directory (or a
@@ -135,13 +139,13 @@ The script creates an `AGENTS.md` stub, generates its Copilot mirror
 an `agent-files.yml` workflow that fails if the mirror drifts from `AGENTS.md`,
 and vendors a pinned starting skill tier into `.agents/skills/` via `gh skill`
 (`manage-skills`, `agent-files-review`, `create-pr`, `address-pr-feedback`,
-and `security-review` by default; override with `-Skills` / `-SkillsRef`). When
-`gh skill` is unavailable it records the pinned install commands instead of
-failing. Vendor the GitHub Actions cost optimization skill when the repository
-needs a measured workflow audit beyond these defaults. The broader agent-file
-gate (skill-frontmatter validation, link checking) and vendoring any domain
-skills remain a handoff to the skill-lifecycle skill and the fleet onboarding
-runbook - do not reinvent that pipeline here.
+`technical-writing`, and `security-review` by default; override with `-Skills` /
+`-SkillsRef`). When `gh skill` is unavailable it records the pinned install
+commands instead of failing. Vendor the GitHub Actions cost optimization skill
+when the repository needs a measured workflow audit beyond these defaults. The
+broader agent-file gate (skill-frontmatter validation, link checking) and
+vendoring any domain skills remain a handoff to the skill-lifecycle skill and
+the fleet onboarding runbook - do not reinvent that pipeline here.
 
 ## 7. Validate locally
 
@@ -164,18 +168,25 @@ publishing verb.** Do not run them silently:
 - `gh repo create <owner>/<name> --public --source . --remote origin`
 - `git init && git add -A && git commit -m "Initial scaffold" && git push -u origin main`
 - For a private repository, enable GitHub Code Security before the first pull
-    request. If it is unavailable, replace CodeQL with a supported scanner.
+  request. If it is unavailable, replace CodeQL with a supported scanner.
 - Branch protection / ruleset on `main`: require `build`, strict up-to-date
-    branches or a merge queue, and either CodeQL code-scanning results at
-    documented thresholds or the replacement scanner's status check; require pull
-    requests with no bypass path; block force-push and deletion. If a bypass path
-    is required, restore default-branch push validation in CI, CodeQL or its
-    replacement, and the agent mirror first. Emit the exact `gh api` call or
-    ruleset JSON for review.
+  branches or a merge queue, and either CodeQL code-scanning results at
+  documented thresholds or the replacement scanner's status check; require pull
+  requests with no bypass path; block force-push and deletion. If a bypass path
+  is required, restore default-branch push validation in CI, CodeQL or its
+  replacement, and the agent mirror first. Emit the exact `gh api` call or
+  ruleset JSON for review.
 - Enable secret scanning and push protection (GitHub repo Settings > Security).
 - Register the trusted-publishing policy on nuget.org before the first publish.
 
 Present these as a numbered checklist, then stop.
+
+Before presenting or executing any approved remote step, run
+`technical-writing` pre-publication mode on the exact repository description,
+README and governance changes, commit message, and public checklist. Rerun it if
+local validation or generated content changes. The result does not authorize a
+remote action. Put the reviewed repository description next to the creation
+command so the user can verify the public metadata before approval.
 
 ## 9. Report back
 

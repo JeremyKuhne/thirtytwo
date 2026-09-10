@@ -58,7 +58,8 @@
 .PARAMETER Skills
     The agent skills to vendor into .agents/skills from the commons. Default: the
     universal starting tier (manage-skills, agent-files-review, create-pr,
-    address-pr-feedback, security-review). Pass an empty array to skip vendoring.
+    address-pr-feedback, technical-writing, security-review). Pass an empty array
+    to skip vendoring.
 
 .PARAMETER SkillsRef
     The release tag or commit SHA to pin vendored skills to. Default: the latest
@@ -93,6 +94,7 @@ param(
         'agent-files-review',
         'create-pr',
         'address-pr-feedback',
+        'technical-writing',
         'security-review'),
     [string] $SkillsRef,
     [string] $SkillsRepo = 'JeremyKuhne/agent-skills'

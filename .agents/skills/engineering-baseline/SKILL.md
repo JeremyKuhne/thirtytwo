@@ -6,14 +6,14 @@ metadata:
     applicability: dotnet
     binding: optional-overlay
     github-path: skills/engineering-baseline
-    github-pinned: v0.14.0
-    github-ref: refs/tags/v0.14.0
+    github-pinned: v0.17.0
+    github-ref: refs/tags/v0.17.0
     github-repo: https://github.com/JeremyKuhne/agent-skills
-    github-tree-sha: b0e52e484192142c2b3083ee181b4f7a5b61b0d6
+    github-tree-sha: 3bafa5816b1412f1ac119596780e58cf3614f4b8
     maturity: canary
     portability: portable
     related: manage-skills, security-review, create-pr, github-actions-cost-optimization
-    requires: none
+    requires: technical-writing
     risk: remote-write
 name: engineering-baseline
 ---
@@ -38,6 +38,11 @@ validated packages with rich metadata), **released** deterministically from tags
 skills and the agent-file gates. The [baseline](baseline.md) is that standard as
 a checklist; the [citation catalog](references/best-practices.md) is the *why*
 behind every line.
+
+Use the required `technical-writing` skill for scored reports, governance prose,
+repository descriptions, and remote checklists. This skill owns the baseline,
+evidence, remediation, and remote-action approval. The writing pass cannot turn
+an unverified setting into a finding or a proposed action into permission.
 
 ## When to use
 
@@ -103,6 +108,10 @@ publishing verb before executing:
 This mirrors the publish boundary in the repository's own agent guidance: the
 work of preparing a change is authorized by the request; the publish is not.
 When in doubt, stop and ask one yes/no question.
+
+Run `technical-writing` pre-publication mode on the exact public text and remote
+checklist after local validation stabilizes. A `Ready` result does not cross
+this boundary.
 
 ## Related skills
 

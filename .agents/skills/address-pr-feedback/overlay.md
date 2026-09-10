@@ -1,6 +1,6 @@
 ---
 core: address-pr-feedback
-core-pin: v0.14.0
+core-pin: v0.17.0
 ---
 
 # Address PR feedback overlay

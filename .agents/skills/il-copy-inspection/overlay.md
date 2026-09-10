@@ -1,6 +1,6 @@
 ---
 core: il-copy-inspection
-core-pin: v0.14.0
+core-pin: v0.17.0
 ---
 
 # IL copy inspection overlay
@@ -27,6 +27,7 @@ Get-ChildItem artifacts -Filter thirtytwo.dll -Recurse
 
 Use [scratch-buffer-strategy](../scratch-buffer-strategy/SKILL.md) for storage
 design and [security-review](../security-review/SKILL.md) for unsafe
-preconditions. This repository has no dedicated analyzer or performance
-project, so do not claim source diagnostics or benchmark evidence that was not
+preconditions. Use [performance-testing](../performance-testing/SKILL.md) for
+runtime and allocation measurements. This repository has no dedicated source
+analyzer for copy diagnostics, so do not claim source diagnostics that were not
 actually produced.
