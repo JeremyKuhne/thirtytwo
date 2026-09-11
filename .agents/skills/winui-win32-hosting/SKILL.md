@@ -6,8 +6,8 @@ metadata:
     applicability: dotnet
     binding: optional-overlay
     github-path: skills/winui-win32-hosting
-    github-pinned: b9c28f1a214370fa4aa396afc19566cf8bd67296
-    github-ref: b9c28f1a214370fa4aa396afc19566cf8bd67296
+    github-pinned: v0.17.0
+    github-ref: refs/tags/v0.17.0
     github-repo: https://github.com/JeremyKuhne/agent-skills
     github-tree-sha: 76842d0c0caeca90d4f2d51dec490ccd10e9757d
     maturity: canary

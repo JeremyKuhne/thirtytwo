@@ -1,6 +1,6 @@
 ---
 core: engineering-baseline
-core-pin: v0.14.0
+core-pin: v0.17.0
 ---
 
 # Engineering baseline overlay

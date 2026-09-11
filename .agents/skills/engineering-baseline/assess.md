@@ -69,6 +69,11 @@ Produce a compact table, one row per domain, plus an itemized list of every
 Partial and Missing finding. Keep it factual - cite the file and the line, not
 an opinion.
 
+After the scores and dispositions are fixed, use `technical-writing` to review
+the report for its reader. Keep current state and the highest-risk finding first.
+Preserve the distinctions among verified, inferred, **unverified - admin
+required**, and accepted divergence; prose compression must not merge them.
+
 ## 3. Report gaps, highest-risk first
 
 Order findings so the report leads with what matters. Use this risk order, which
@@ -145,6 +150,7 @@ A consuming repository names both skills in its overlay.
 
 ## 6. Report back
 
-Summarize: the per-domain score before and after, the fixes applied, the
-behavior-changing commits to review, and the remote actions awaiting approval
-with their exact commands. End with the single highest-value next step.
+Summarize the per-domain score before and after, fixes applied,
+behavior-changing commits to review, and remote actions awaiting approval with
+their exact commands. Run `technical-writing` review mode on that final report,
+then end with the single highest-value next step.

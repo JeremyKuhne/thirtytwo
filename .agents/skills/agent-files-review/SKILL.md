@@ -6,13 +6,13 @@ metadata:
     applicability: agent-customization
     binding: optional-overlay
     github-path: skills/agent-files-review
-    github-pinned: v0.14.0
-    github-ref: refs/tags/v0.14.0
+    github-pinned: v0.17.0
+    github-ref: refs/tags/v0.17.0
     github-repo: https://github.com/JeremyKuhne/agent-skills
-    github-tree-sha: 64a00d548909d8f84fb8ac6f6e3db77deceab270
+    github-tree-sha: 9b83bf2c2da636e09b8467db74757401eecadcc4
     maturity: canary
     portability: portable
-    related: manage-skills
+    related: manage-skills, technical-writing
     requires: none
     risk: local-write
 name: agent-files-review
@@ -24,6 +24,12 @@ repository-specific bindings. This core remains usable without it.
 
 Run through every applicable item below before approving a change to an agent
 customization file. Each item below caught a real bug in PR review history.
+
+This skill owns customization behavior and file correctness. Use
+`technical-writing` as an optional handoff for human and agent comprehension.
+A readability edit must preserve literal triggers, requirement strength,
+commands, permissions, and stop conditions; changing one is a behavior change
+that must return to semantic review.
 
 This skill assumes the repository has adopted the agent-file scaffold: an
 `AGENTS.md` single-source with a generated `.github/copilot-instructions.md`
@@ -118,6 +124,12 @@ on the canonical repo's `main` but not in your branch will fail.
 - No trailing whitespace.
 - No whitespace-only lines (a "blank" line must be truly empty).
 - Tabs are forbidden in Markdown bodies.
+- **Wrapped prose in a list item must stay on the paragraph's starting column.**
+  For common markers, continuation text starts under the content: three spaces
+  after an ordered `1.` marker and two after an unordered `-` marker. CommonMark
+  accepts lazy or deeper indentation, so standard markdownlint does not catch
+  inconsistent prose alignment. Inspect
+  changed list paragraphs and run the repository's skill validator when available.
 - **Files must end with a single newline character** (markdownlint MD047).
   The validator flags a *missing* trailing newline (it checks the file ends
   with `\n`, not that there is exactly one); markdownlint enforces the full
@@ -131,8 +143,9 @@ on the canonical repo's `main` but not in your branch will fail.
 **Always run the validator before declaring a review complete or pushing
 agent-file changes.** It catches mirror drift, missing/invalid frontmatter,
 `SKILL.md` naming mistakes, missing trailing newlines, and trailing/empty-line
-whitespace - the same rules CI enforces. Run it in plain mode to validate, and
-in fix mode (`-Fix`) to regenerate the mirror after editing `AGENTS.md`.
+whitespace and list-continuation indentation - the same rules CI enforces. Run it
+in plain mode to validate, and in fix mode (`-Fix`) to regenerate the mirror after
+editing `AGENTS.md`.
 
 The validator does **not** reproduce markdownlint's full rule set. After it
 passes, sanity-check that your Markdown:

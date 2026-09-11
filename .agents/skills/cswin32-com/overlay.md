@@ -1,6 +1,6 @@
 ---
 core: cswin32-com
-core-pin: f1dcc2d25b8148ecc75c02f33aa05b1f25b83a42
+core-pin: v0.17.0
 ---
 
 # CsWin32 COM overlay
@@ -13,7 +13,7 @@ Repository-specific bindings for thirtytwo.
   [ComScope](../../../src/thirtytwo/Win32/System/Com/ComScope.cs) and its generic
   companion.
 - Stable interface IDs use
-  [IID.Get<T>()](../../../src/thirtytwo/Win32/Foundation/IID.cs).
+  [`IID.Get<T>()`](../../../src/thirtytwo/Win32/Foundation/IID.cs).
 - Managed CCWs are implemented by
   [CustomComWrappers](../../../src/thirtytwo/Win32/System/Com/CustomComWrappers.cs)
   and the `IManagedWrapper<T>`/vtable infrastructure in the same directory.

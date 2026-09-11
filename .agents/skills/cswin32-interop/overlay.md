@@ -1,6 +1,6 @@
 ---
 core: cswin32-interop
-core-pin: v0.14.0
+core-pin: v0.17.0
 ---
 
 # CsWin32 interop overlay

@@ -2,6 +2,11 @@
   <Configurations>
     <Platform Name="x64" />
   </Configurations>
+  <Folder Name="/Performance/">
+    <Project Path="thirtytwo.perf/thirtytwo.perf.csproj">
+      <Platform Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/Samples/">
     <Project Path="src/samples/ActiveX/ActiveX.csproj">
       <Platform Project="x64" />

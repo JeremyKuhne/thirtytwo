@@ -1,14 +1,11 @@
 # thirtytwo agent skills
 
-This repository carries 14 portable skill cores from the
+This repository carries 16 portable skill cores from the
 [JeremyKuhne/agent-skills](https://github.com/JeremyKuhne/agent-skills)
-commons, pinned to immutable upstream refs. Most use the `v0.14.0` release;
-`cswin32-com` is pinned to commit `f1dcc2d` for its post-release `IComIID`
-guidance, and `winui-win32-hosting` is pinned to commit `b9c28f1` for the merged
-production-hosting guides and sample review fixes. The installed core files carry
-`metadata.github-*` provenance injected by `gh skill install` and must remain exact
-upstream mirrors. Repository-specific paths and conventions live in each sibling
-`overlay.md`.
+commons, pinned to the immutable `v0.17.0` release. The installed core files
+carry `metadata.github-*` provenance injected by `gh skill install` and must
+remain exact upstream mirrors. Repository-specific paths and conventions live
+in each sibling `overlay.md`.
 
 ## Inventory
 
@@ -24,9 +21,11 @@ upstream mirrors. Repository-specific paths and conventions live in each sibling
 | [github-actions-cost-optimization](github-actions-cost-optimization/SKILL.md) | Analyze GitHub Actions cost without weakening required checks. | Preserves the Windows runner required by product and test behavior. |
 | [il-copy-inspection](il-copy-inspection/SKILL.md) | Inspect emitted IL for copies and boxing of structs and ref structs. | Focuses on handles, COM scopes, message views, and buffer scopes. |
 | [manage-skills](manage-skills/SKILL.md) | Find, build, review, update, retire, and reconcile skills. | Owns the pinned-core plus local-overlay lifecycle for this catalog. |
+| [performance-testing](performance-testing/SKILL.md) | Measure latency, allocations, throughput, and code generation with BenchmarkDotNet. | Uses the single-target `thirtytwo.perf` project and writes results under `artifacts/`. |
 | [pre-pr-self-review](pre-pr-self-review/SKILL.md) | Review the working diff before publishing. | Runs Debug and Release checks and invokes security review for unsafe changes. |
 | [scratch-buffer-strategy](scratch-buffer-strategy/SKILL.md) | Choose among stack, pooled, and heap scratch buffers. | Binds to `BstrBuffer`, `ValueBuffer<T>`, and the modern-only TFM. |
 | [security-review](security-review/SKILL.md) | Audit unsafe code, native boundaries, malformed input, and resource ownership. | Uses the mirrored product/test layout and Windows interop threat surface. |
+| [technical-writing](technical-writing/SKILL.md) | Draft or review grounded human-facing technical prose. | Binds PR prose to the repository template, current diff, and validation evidence. |
 | [winui-win32-hosting](winui-win32-hosting/SKILL.md) | Build and diagnose WinUI controls hosted in existing Win32 HWND applications. | Binds to `XamlHostControl`, the raw `ControlHost`, and the real-window integration harness. |
 
 ## Selection boundary
@@ -37,10 +36,11 @@ The .NET Framework-only skills (`dotnet-polyfills` and
 cross-TFM backing data because this repository directly owns stack-backed and
 pooled buffer abstractions.
 
-The project-gated `performance-testing`, `fuzz-testing`, and
-`roslyn-analyzers` skills are not installed because the repository has no perf,
-fuzz, or analyzer project. Add the corresponding project as a separate,
-reviewed prerequisite before vendoring one of those cores.
+The project-gated `performance-testing` skill is installed alongside the
+`thirtytwo.perf` BenchmarkDotNet project. The `fuzz-testing` and
+`roslyn-analyzers` skills are not installed because the repository has no fuzz
+or analyzer project. Add the corresponding project as a separate, reviewed
+prerequisite before vendoring either core.
 
 `winui-win32-hosting` is installed because the optional `thirtytwo.winui` package,
 raw HWND samples, and integration harness own the native/WinUI lifecycle, input,
@@ -69,6 +69,8 @@ DPI, airspace, accessibility, drag/drop, and shutdown boundaries directly.
 ### Review and publishing
 
 - Use `pre-pr-self-review` before any initial publish.
+- Use `technical-writing` after domain facts are settled and immediately before
+  publishing human-facing prose.
 - Use `create-pr` when no PR exists for the branch.
 - Use `address-pr-feedback` after review comments or CI results exist.
 - Run `security-review` alongside the pre-PR review for unsafe, pointer,
@@ -85,10 +87,14 @@ DPI, airspace, accessibility, drag/drop, and shutdown boundaries directly.
 - Use `github-actions-cost-optimization` for runner time and workflow cost
   specifically.
 
-### Struct and buffer analysis
+### Performance, struct, and buffer analysis
 
+- Use `performance-testing` to measure runtime, allocations, throughput, or
+  generated code in `thirtytwo.perf`.
 - Use `scratch-buffer-strategy` to choose the storage design.
 - Use `il-copy-inspection` to inspect what the compiler emitted.
+- Use `github-actions-cost-optimization` only for workflow runner cost, not
+  application runtime.
 - Use `security-review` to verify pointer, length, ownership, and cleanup
   preconditions.
 
@@ -101,10 +107,12 @@ local overlay:
 gh skill install JeremyKuhne/agent-skills skills/<name> --pin <tag-or-commit> --agent github-copilot --scope project --force
 ```
 
-Install hard dependencies before their consumers: `agent-files-review` before
-`manage-skills`, and `cswin32-interop` before `cswin32-com`. Update every
-affected overlay's `core-pin` and review the resulting diff. Never hand-edit a
-vendored core to resolve drift.
+Install hard dependencies before their consumers: `agent-files-review` and
+`technical-writing` before `manage-skills`; `technical-writing` before
+`address-pr-feedback`, `create-pr`, and `engineering-baseline`; and
+`cswin32-interop` before `cswin32-com`. Update every affected overlay's
+`core-pin` and review the resulting diff. Never hand-edit a vendored core to
+resolve drift.
 
 ## Validation
 
