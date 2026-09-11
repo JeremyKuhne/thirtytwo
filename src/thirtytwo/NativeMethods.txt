@@ -338,6 +338,7 @@ PROPVARIANT
 PropVariantClear
 Rectangle
 RegCloseKey
+RegEnumKeyEx
 RegEnumValue
 RegisterClassEx
 RegisterClipboardFormat
